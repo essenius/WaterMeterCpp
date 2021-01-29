@@ -35,9 +35,13 @@ bool SerialScheduler::wasResultWritten() {
     return _resultWritten;
 }
 
+bool SerialScheduler::awaitingResponse() {
+    return _lastSent > 0L;
+}
+
 // Don't call this function in the middle of a run. It will overwrite the print buffer.
 void SerialScheduler::writeHeaders() {
-    if (_isConnected && _lastSent == 0) {
+    if (_isConnected && _lastSent == 0L) {
         _serialDriver->println(_writer[MEASURE]->getHeader());
         _writer[MEASURE]->flush();
         _serialDriver->println(_writer[RESULT]->getHeader());
@@ -58,7 +62,7 @@ int SerialScheduler::optimalWriteCount(int round) {
 bool SerialScheduler::processOutput() {
     _resultWritten = false;
     bool hasWritten = false;
-    if (isConnected()) {
+    if (isConnected() && _lastSent == 0L) {
         _delayedFlush = false;
         int writes = 0;
         for (int i = 0; i < WRITER_COUNT; i++) {
@@ -84,7 +88,7 @@ bool SerialScheduler::processOutput() {
 }
 
 bool SerialScheduler::isConnected() {
-    if (_isConnected && _lastSent > 0) {
+    if (_isConnected && (_lastSent > 0L)) {
         if (micros() - _lastSent > RESPONSE_TIMEOUT_MICROS) { 
             _isConnected = false;
         }

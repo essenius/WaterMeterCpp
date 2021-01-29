@@ -84,7 +84,7 @@ void loop() {
     bool hasInput = scheduler.processInput();
     bool hasOutput = scheduler.processOutput();
     ledDriver.signalConnected(scheduler.isConnected());
-    ledDriver.signalError(scheduler.hasDelayedFlush());
+    ledDriver.signalError(scheduler.hasDelayedFlush() || scheduler.awaitingResponse());
     ledDriver.signalFlush(scheduler.wasResultWritten());
     if (freeMemory() < 2048) {
         if (timeout == 0) {

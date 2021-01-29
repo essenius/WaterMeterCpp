@@ -19,8 +19,9 @@ class SerialScheduler
 {
 public:
 	// Disconnect if a message is not acknowledged within 250 ms
-	static const long RESPONSE_TIMEOUT_MICROS = 250L * 1000L;
+	static const unsigned long RESPONSE_TIMEOUT_MICROS = 250L * 1000L;
 	SerialScheduler(SerialDriver* serialDriver, BatchWriter* measureWriter, BatchWriter* resultWriter, BatchWriter* infoWriter, int (* freeMemory)());
+	bool awaitingResponse();
 	bool isConnected();
 	int optimalWriteCount(int round);
 	bool processInput();
@@ -39,7 +40,7 @@ private:
 	bool _delayedFlush = false;
 	bool _isConnected = false;
 	bool _resultWritten = false;
-	long _lastSent = 0L;
+	unsigned long _lastSent = 0L;
 	int (* _freeMemory)();
 };
 

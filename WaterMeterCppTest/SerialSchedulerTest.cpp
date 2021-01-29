@@ -152,6 +152,7 @@ public:
 		FlowMeterDriver expected5(6.0f, false, false, 3.0f, 4.0f, false, 1104.0f, 1106.0f, 2.0f, 3.0f, false, false, false, false, 0);
 		resultWriter.addMeasurement(1107, 390, &expected5);
 		Assert::IsFalse(scheduler.processOutput(), L"processOutput returns false (1)");
+		Assert::IsFalse(scheduler.wasResultWritten(), L"Result not written");
 		Assert::AreEqual("", serialDriver.getOutput(), "Disconnect causes silence");
 
         // this one neither
@@ -181,8 +182,9 @@ public:
 		measurementWriter.addMeasurement(1104, 399);
 		FlowMeterDriver expected7(4.0f, false, false, 2.0f, 3.0f, false, 1105.0f, 1103.0f, 5.0f, 4.0f, false, false, false, false, 0);
 		resultWriter.addMeasurement(1104, 399, &expected7);
-		scheduler.processOutput();
-		Assert::AreEqual("S,4,0,0,0,0,1103,1105,3,0,0,0,400,410,0,30816\n", serialDriver.getOutput(), 
+		Assert::IsTrue(scheduler.processOutput(), L"Output delivered after reconnect");
+		Assert::IsTrue(scheduler.wasResultWritten(), L"Summmary result was written");
+		Assert::AreEqual("S,4,0,0,0,0,1103,1105,3,0,0,0,400,410,0,30816\n", serialDriver.getOutput(),
 			"Results gathering continuned during disconnected state, and includes the one from before the previous flush");
 		serialDriver.clearOutput();
 
@@ -211,24 +213,13 @@ public:
 			shiftMicros(scheduler.RESPONSE_TIMEOUT_MICROS);
 			unsigned long after = micros();
 			Assert::IsFalse(scheduler.isConnected(), L"Disconnected due to lack of response");
+			Assert::IsFalse(scheduler.processOutput(), L"Output not processed when disconnected");
 
 			serialDriver.setNextReadResponse("A\n");
 			scheduler.processInput();
 			Assert::IsTrue(scheduler.isConnected(), L"Connected 2");
 			serialDriver.setNextReadResponse("Y\n");
 			scheduler.processInput();
-
-			/*shiftMicros((scheduler.KEEP_ALIVE_MICROS + scheduler.RESPONSE_TIMEOUT_MICROS) / 2LL);
-			Assert::IsTrue(scheduler.isConnected(), L"Still connected, response received on time");
-			shiftMicros(scheduler.KEEP_ALIVE_MICROS - 500000LL);
-			Assert::IsTrue(scheduler.isConnected(), L"Still connected, just before Keepalive timeout");
-			serialDriver.setNextReadResponse("K\n");
-			scheduler.processInput();
-			Assert::IsTrue(scheduler.isConnected(), L"Keepalive timeout reset");
-			shiftMicros(2 * scheduler.KEEP_ALIVE_MICROS - 550000LL);
-			Assert::IsTrue(scheduler.isConnected(), L"Keepalive threshold not reached yet");
-			shiftMicros(2 * scheduler.KEEP_ALIVE_MICROS - 499999LL);
-			Assert::IsFalse(scheduler.isConnected(), L"Threshold reached, disconnected"); */
 			shiftMicros(0);
 
 			// Ignore unknown commands
