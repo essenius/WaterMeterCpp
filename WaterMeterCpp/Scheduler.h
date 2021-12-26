@@ -9,25 +9,27 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_MEASUREMENTWRITER
-#define HEADER_MEASUREMENTWRITER
+#ifndef HEADER_IOSCHEDULER
+#define HEADER_IOSCHEDULER
 
 #include "BatchWriter.h"
 #include "PubSub.h"
 
-class MeasurementWriter : public BatchWriter {
+class Scheduler : public EventClient {
 public:
-    MeasurementWriter(EventServer* eventServer, TimeServer* timeServer, PayloadBuilder* payloadBuilder);
-    using BatchWriter::begin;
-    virtual void begin();
-    void addMeasurement(int measure);
-    void prepareFlush() override;
-    void update(Topic topic, const char* payload) override;
-    void update(Topic topic, long payload) override;
-protected:
-    void initBuffer() override;
-    static constexpr unsigned char DEFAULT_FLUSH_RATE = 50;
-    static constexpr unsigned char MAX_FLUSH_RATE = 50;
+    Scheduler(EventServer* eventServer, BatchWriter* measureWriter, BatchWriter* resultWriter);
+    bool processOutput();
+private:
+    static const int MEASURE_ID = 0;
+    static const int RESULT_ID = 1;
+    static const int WRITER_COUNT = 2;
+
+    bool _delayedFlush = false;
+    bool _resultWritten = false;
+    BatchWriter* _writer[WRITER_COUNT];
+
+    int optimalWriteCount(int round);
+
 };
 
 #endif

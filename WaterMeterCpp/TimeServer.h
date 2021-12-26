@@ -9,21 +9,23 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef ARDUINO
+#ifndef HEADER_TIME_H
+#define HEADER_TIME_H
 
-	#include "QMC5883LCompass.h"
+#include "PubSub.h"
 
-	void QMC5883LCompass::init() {
-	}
+class TimeServer : public EventClient {
+public:
+    TimeServer(EventServer* eventServer);
+    void begin();
+    virtual bool setTime();
+    virtual const char* getTime();
+    const char* get(Topic topic, const char* defaultValue) override;
+    bool timeWasSet() const;
 
-	void QMC5883LCompass::read() {
-	}
-
-	void QMC5883LCompass::setCalibration(int a, int b, int c, int d, int e, int f) {
-	}
-
-	int QMC5883LCompass::getY() {
-		return 0;
-	}
-
+protected:
+    static constexpr int BUFFER_SIZE = 26;
+    static char _buffer[BUFFER_SIZE];
+    bool _wasSet = false;
+};
 #endif

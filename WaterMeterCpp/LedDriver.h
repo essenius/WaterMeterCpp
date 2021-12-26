@@ -11,31 +11,31 @@
 #ifndef HEADER_LEDDRIVER
 #define HEADER_LEDDRIVER
 
-class LedDriver {
+#include "PubSub.h"
+
+class LedDriver : public EventClient {
 public:
-	void begin();
-	void toggleBuiltin();
-	void signalError(bool hasError);
-    void signalFlush(bool hasFlushed);
-	void signalInput(bool hasError);
-	void signalMeasurement(bool isExcluded, bool hasFlow);
-    void signalConnected(bool isConnected);
-  #ifdef ESP8266
-  static const unsigned char BLUE_LED = D5;
-  static const unsigned char GREEN_LED = D6;
-  static const unsigned char RED_LED = D7;
-  #else
-	static const unsigned char BLUE_LED = 2;
-	static const unsigned char GREEN_LED = 3;
-	static const unsigned char RED_LED = 4;
- #endif
-	static const unsigned int WAIT_INTERVAL = 100;
-	static const unsigned int FLOW_INTERVAL = 50;
-	static const unsigned int EXCLUDE_INTERVAL = 25;
+    LedDriver(EventServer* eventServer);
+    void begin();
+    void update(Topic topic, const char* payload) override;
+    void update(Topic topic, long payload) override;
+
+    static constexpr unsigned char AUX_LED = 19;
+    static constexpr unsigned char BLUE_LED = 16;
+    static constexpr unsigned char GREEN_LED = 17;
+    static constexpr unsigned char RED_LED = 18;
+
+    // number of samples for led blinking intervals
+    static constexpr unsigned int EXCLUDE_INTERVAL = 25;
+    static constexpr unsigned int FLOW_INTERVAL = 50;
+    static constexpr unsigned int WAIT_INTERVAL = 100;
+
 private:
-	unsigned int _interval = 0;
-	unsigned int _ledCounter = 0;
-	bool _isOn = false;
+    unsigned int _interval = 0;
+    unsigned int _ledCounter = 0;
+    unsigned int _newInterval = 0;
+    uint8_t convertToState(const char* state);
+    void signalMeasurement();
 };
 
 #endif

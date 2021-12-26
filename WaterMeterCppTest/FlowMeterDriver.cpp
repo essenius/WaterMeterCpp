@@ -1,4 +1,6 @@
-#include "pch.h"
+
+ #include "pch.h"
+/*
 #include "FlowMeterDriver.h"
 
 FlowMeterDriver::FlowMeterDriver() {
@@ -27,7 +29,6 @@ FlowMeterDriver::FlowMeterDriver(float amplitude, bool outlier, bool firstOutlie
 	_firstOutlier = firstOutlier;
 	_highPass = highPass;
 	_lowPassOnHighPass = lowPassOnHighPass;
-	_calculatedFlow = calulatedFlow;
 	_lowPassSlow = lowPassSlow;
 	_lowPassFast = lowPassFast;
 	_lowPassDifference = lowPassDifference;
@@ -62,3 +63,4 @@ float FlowMeterDriver::hasCalculatedFlow() {
 int FlowMeterDriver::hasCalculatedPeak() {
 	return _calculatedPeak;
 }
+*/

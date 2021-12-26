@@ -8,21 +8,21 @@
 //    Unless required by applicable law or agreed to in writing, software distributed under the License
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
+#ifndef HEADER_LOG_H
+#define HEADER_LOG_H
 
-// Mock implementation for if we are not targeting the Arduino
+#include "ChangePublisher.h"
+#include "PubSub.h"
 
-#ifndef ARDUINO
+class Log : public EventClient{
+   public:
+       Log(EventServer * eventServer);
+       void begin();
+       void update(Topic topic, const char* payload) override;
+private:
+    // We want to log changes to the connection status only
+    ChangePublisher<const char*> _disconnectedPublisher;
+    ChangePublisher<const char*> _connectedPublisher;
 
-	#ifndef HEADER_QMC5883LCOMPASS
-	#define HEADER_QMC5883LCOMPASS
-
-	class QMC5883LCompass {
-	public:
-		void init();
-		void read();
-		void setCalibration(int a, int b, int c, int d, int e, int f);
-		int getY();
-	};
-	#endif
-
+};
 #endif

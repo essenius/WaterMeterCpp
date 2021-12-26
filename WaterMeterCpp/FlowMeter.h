@@ -14,53 +14,37 @@
 
 class FlowMeter {
 public:
-	void addMeasurement(int measurement);
-	bool areAllExcluded();
-	float getAmplitude();
-	float getLowPassFast();
-	float getLowPassSlow();
-	float getLowPassOnHighPass();
-	bool hasDrift();
-	bool hasFlow();
-	int getPeak();
-	bool isExcluded();
-	bool isOutlier();
+    void addMeasurement(int measurement);
+    bool areAllExcluded();
+    float getSmoothValue();
+    float getDerivative();
+    float getSmoothDerivative();
+    int getPeak();
+    bool isExcluded();
+    bool isOutlier();
 protected:
-	static const int STARTUP_SAMPLES = 10;
-	float _amplitude = 0.0f;
-	bool _calculatedFlow = false;
-	int _calculatedPeak = 0;
-	float _derivativeAmplitude = 0.0f;
-	bool _drift = false;
-	bool _exclude = false;
-	bool _excludeAll = false;
-	bool _firstOutlier = false;
-	bool _flow = false;
-	float _highPass = 0.0f;
-	float _lastValueBeforePeak = 0.0f;
-	float _lowPassAmplitude = 0.0f;
-	float _lowPassOnDerivativeAmplitude = 0.0f;
-	float _lowPassDifference = 0.0f;
-	float _lowPassFast = 0.0f;;
-	float _lowPassOnDifference = 0.0f;
-	float _lowPassOnHighPass = 0.0f;
-	float _lowPassSlow = 0.0f;
-	bool _outlier = false;
-	int _peak = 0;
-	int _peakCountDown = 0;
-	int _previousMeasure = 0;
-	unsigned int _startupSamplesLeft = STARTUP_SAMPLES;
+    static const int STARTUP_SAMPLES = 10;
+    static const int MIN_DERIVATIVE_PEAK = -9;
+    bool _exclude = false;
+    bool _excludeAll = false;
+    bool _firstOutlier = false;
+    float _derivative = 0.0f;
+    float _smoothValue = 0.0f;
+    float _smoothDerivative = 0.0f;
+    float _minDerivative = MIN_DERIVATIVE_PEAK;
+    float _previousSmoothDerivative = 0.0f;
+    float _previousSmoothValue = 0.0f;
+    bool _outlier = false;
+    int _peak = 0;
+    unsigned int _startupSamplesLeft = STARTUP_SAMPLES;
 
-	void detectDrift(int measurement);
-	void detectFlow(int measurement);
-	void detectOutlier(int measurement);
-	void detectPeaks();
-	float lowPassFilter(float measure, float filterValue, float alpha);
-	float highPassFilter(float measure, float previous, float filterValue, float alpha);
-	void markAnomalies(int measurement);
-	void resetAnomalies();
-	void resetFilters(int initialMeasurement);
-	float sign(float value);
+    void detectOutlier(int measurement);
+    void detectPeaks(int measurement);
+    float highPassFilter(float measure, float previous, float filterValue, float alpha);
+    float lowPassFilter(float measure, float filterValue, float alpha);
+    void markAnomalies(int measurement);
+    void resetAnomalies();
+    void resetFilters(int initialMeasurement);
 };
 
 #endif

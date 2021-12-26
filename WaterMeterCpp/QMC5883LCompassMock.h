@@ -9,19 +9,22 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
-#include "SerialDriverMock.h"
-#include "../WaterMeterCpp/Arduino.h"
-#include "string.h"
+// Mock implementation for if we are not targeting the Arduino
 
-void SerialDriverMock::setNextReadResponse(const char* command) {
-	Serial.setInput(command);
-}
+#ifndef ARDUINO
 
-char* SerialDriverMock::getOutput() {
-	return Serial.getOutput();
-}
+	#ifndef HEADER_QMC5883LCOMPASS
+	#define HEADER_QMC5883LCOMPASS
 
-void SerialDriverMock::clearOutput() {
-	Serial.clearOutput();
-}
+	class QMC5883LCompass {
+	public:
+		void init();
+		void read();
+		void setCalibration(int a, int b, int c, int d, int e, int f);
+		int getX();
+		int getY();
+		int getZ();
+	};
+	#endif
+
+#endif

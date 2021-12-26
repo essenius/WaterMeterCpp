@@ -345,4 +345,4 @@ healthchecksdb
 #secrets
 # secrets and certificates
 *.crt
-secrets.*
+secrets*.*

@@ -10,6 +10,8 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "pch.h"
+
+/*
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Serialscheduler.h"
 #include "MeasurementWriterDriver.h"
@@ -404,3 +406,4 @@ public:
 
 	};
 }
+*/

@@ -17,6 +17,9 @@
 #define HEADER_ARDUINO
 
 #include <stdint.h>
+#include <string>
+
+typedef uint8_t byte;
 
 const uint8_t INPUT = 0x0;
 const uint8_t OUTPUT = 0x1;
@@ -34,6 +37,7 @@ public:
 	int available();
 	void begin(int speed);
 	void print(const char* input);
+	void printf(const char* format, ...);
 	void println(const char* input);
 	char read();
 	void setTimeout(long timeout);

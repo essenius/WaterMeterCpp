@@ -9,51 +9,57 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-
-// We need to use sprintf etc. on the Arduino (sprintf_s doesn't work there), so suppressing the warnings
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-#ifdef ARDUINO
-#include <Arduino.h>
-#else
-#include <stdio.h>
-#endif
-
 #include "MeasurementWriter.h"
+#include <string.h>
 
-MeasurementWriter::MeasurementWriter(Storage *storage) : BatchWriter(storage->getLogRate(DEFAULT_FLUSH_RATE), 'M') {
-    //setDesiredFlushRate(DEFAULT_FLUSH_RATE);
-    _storage = storage;
+MeasurementWriter::MeasurementWriter(EventServer* eventServer, TimeServer* timeServer, PayloadBuilder* payloadBuilder) :
+    BatchWriter("MeasurementWriter", eventServer, timeServer, payloadBuilder) {
+    _flushRatePublisher.setTopic(Topic::BatchSize);
 }
 
-void MeasurementWriter::addMeasurement(int measure, int duration) {
-    // Only record measurements if flush rate > 0 and we can flush
-    if (newMessage() && _canFlush) {
-        writeParam(toString(measure));
+void MeasurementWriter::addMeasurement(int measure) {
+    // Only record measurements if we need to
+    if (newMessage()) {
+        _payloadBuilder->writeArrayValue(measure);
     }
     else {
-        // If we can't flush (broken connection), discard what we have in the buffer
-        flush();
-        resetCounters();
+        if (_messageCount > 0) {
+            // If we can't create a new message (flush rate 0) and we have messages already, discard them
+            flush();
+            resetCounters();
+        }
     }
 }
 
-char* MeasurementWriter::getHeader() {
-    for (int i = 0; i < getFlushRate(); i++) {
-        sprintf(_numberBuffer, "M%i", i);
-        writeParam(_numberBuffer);
+void MeasurementWriter::begin() {
+    _eventServer->subscribe(this, Topic::BatchSizeDesired);
+    BatchWriter::begin(DEFAULT_FLUSH_RATE);
+    // This is the only time the desired rate gets published from here.
+    _eventServer->publish(this, Topic::BatchSizeDesired, _desiredFlushRate);
+}
+
+void MeasurementWriter::initBuffer() {
+    BatchWriter::initBuffer();
+    _payloadBuilder->writeArrayStart("measurements");
+}
+
+void MeasurementWriter::prepareFlush() {
+    _payloadBuilder->writeArrayEnd();
+    BatchWriter::prepareFlush();
+}
+
+void MeasurementWriter::update(Topic topic, const char* payload) {
+    if (topic == Topic::BatchSizeDesired) {
+        auto desiredRate = convertToLong(payload, DEFAULT_FLUSH_RATE);
+        return update(topic, desiredRate);
     }
-    return BatchWriter::getHeader();
 }
 
-void MeasurementWriter::setDesiredFlushRate(long flushRate) {
-    BatchWriter::setDesiredFlushRate(flushRate);
-    _storage->setLogRate((unsigned char)flushRate);
-}
-
-void MeasurementWriter::setDesiredFlushRate(char* desiredFlushRate) {
-    unsigned char desiredRate = convertToLong(desiredFlushRate, DEFAULT_FLUSH_RATE, 0L, MAX_FLUSH_RATE);
-    setDesiredFlushRate(desiredRate);
+void MeasurementWriter::update(Topic topic, long payload) {
+    if (topic == Topic::BatchSizeDesired) {
+        unsigned char desiredRate = (unsigned char)limit(payload, 0L, MAX_FLUSH_RATE);
+        setDesiredFlushRate(desiredRate);
+        return;
+    }
+    BatchWriter::update(topic, payload);
 }

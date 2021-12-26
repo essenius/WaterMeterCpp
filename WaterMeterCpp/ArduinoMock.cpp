@@ -11,11 +11,12 @@
 
 #ifndef ARDUINO
 
-#define _CRT_SECURE_NO_WARNINGS
-#include "Arduino.h"
+#include "ArduinoMock.h"
 #include <stdio.h>
 #include <chrono>
 #include <string.h>
+#include <stdarg.h> 
+#include <iostream>
 
 HardwareSerial Serial;
 auto startTime = std::chrono::high_resolution_clock::now();
@@ -62,7 +63,7 @@ unsigned long micros(void) {
 void delay(int delay) {}
 
 int HardwareSerial::available() {
-	return strlen(_bufferPointer);
+	return static_cast<int>(strlen(_bufferPointer));
 }
 
 void HardwareSerial::begin(int speed) {
@@ -86,6 +87,14 @@ char* HardwareSerial::getOutput() {
 void HardwareSerial::print(const char* input) {
 	strcat_s(_printBuffer, PRINTBUFFER_SIZE, input);
 };
+
+void HardwareSerial::printf(const char* format, ...) {
+	va_list args;
+  	va_start(args, format);
+  	vsprintf_s(_printBuffer, PRINTBUFFER_SIZE, format, args);
+	std::cout << _printBuffer;
+  	va_end(args);
+}
 
 void HardwareSerial::println(const char* input) {
 	print(input);

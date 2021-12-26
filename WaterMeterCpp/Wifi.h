@@ -9,21 +9,33 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_MAGNETOSENSORREADER
-#define HEADER_MAGNETOSENSORREADER
+#ifndef HEADER_WIFI_H
+#define HEADER_WIFI_H
 
-struct SensorReading {
-  int x;
-  int y;
-  int z;
-};
+#include "PayloadBuilder.h"
 
-class MagnetoSensorReader {
+#ifdef ESP32
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#else
+#include "NetMock.h"
+#endif
+
+class Wifi {
+
 public:
     void begin();
-    SensorReading read();
+    const char* getHostName();
+    bool isConnected();
+    const char* macAddress();
+    const char* statusSummary();
+    WiFiClientSecure* getClient();
 private:
-    SensorReading sensorReading;
+    static const int HOSTNAME_LENGTH = 30;
+    char _hostName[HOSTNAME_LENGTH] = { 0 };
+    PayloadBuilder _payloadBuilder;
+    WiFiClientSecure _wifiClient;
+    static const int MAC_ADDRESS_SIZE = 14;
+    char _macAddress[MAC_ADDRESS_SIZE];
 };
-
 #endif

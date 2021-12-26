@@ -9,27 +9,29 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_SERIALDRIVER
-#define HEADER_SERIALDRIVER
+#ifndef HEADER_DEVICE_H
+#define HEADER_DEVICE_H
 
-class SerialDriver {
+#include <stdint.h>
+#include "PubSub.h"
+
+class Device : public EventClient {
 public:
-	SerialDriver();
-	void begin();
-	char* getCommand();
-	char* getParameter();
-	bool inputAvailable();
-	void println(const char *line);
-	void clearInput();
-protected:
-	// 115200 is a speed that a Pi 2 should be able to read comfortably. Can't go much slower to keep up.
-    static const long SERIAL_SPEED = 115200;
-	static const int INPUT_BUFFER_SIZE = 50;
-	char _buffer[INPUT_BUFFER_SIZE];
-	int _commandIndex = 0;
-	bool _initialized = false;
-	bool _inputAvailable = false;
-	char* _parameter = 0;
-};
+    Device(EventServer* eventServer);
 
+    // Device does not subscribe, so no destructor needed
+
+    void begin();
+    void log(Topic topic);
+    void reportHealth();
+    void update(Topic topic, const char* payload);
+    void update(Topic topic, long payload);
+private:
+    long _freeHeap = 0l;
+    long _freeStack = 0L;
+    long freeHeap();
+    long freeStack();
+    void reportFreeHeap();
+    void reportFreeStack();
+};
 #endif

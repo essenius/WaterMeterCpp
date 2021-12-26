@@ -1,7 +1,9 @@
 #include "pch.h"
+
+#include <regex>
+
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/BatchWriter.h"
-#include "BatchWriterDriver.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -9,13 +11,32 @@ namespace WaterMeterCppTest {
 	TEST_CLASS(BatchWriterTest) {
 	public:
 
-		TEST_METHOD(BatchWriterCrcTest) {
-			char buffer[] = "1234567890";
-			unsigned int result = BatchWriter::getCrc(buffer);
-			Assert::AreEqual(50554u, result);
+        TEST_METHOD(BatchWriterWriteParamTest) {
+			EventServer eventServer;
+			TimeServer timeServer(&eventServer);
+			PayloadBuilder builder;
+			BatchWriter bw("BW", &eventServer, &timeServer, &builder);
+			bw.begin(0);
+			Assert::IsFalse(bw.newMessage(), L"Can't create new message when flush rate is 0");
+			bw.setDesiredFlushRate(5);
+			Assert::AreEqual(5L, bw.getFlushRate(), L"Flush rate OK");
+			Assert::IsFalse(bw.needsFlush(), L"No need for flush before first message");
+			bw.newMessage();
+			Assert::IsTrue(std::regex_match(
+				bw.getMessage(), 
+				std::regex(R"(\{"timestamp":"\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}")")
+			), L"Start of message created correctly");
+
+			Assert::IsFalse(bw.needsFlush(), L"Still no need for flush after new message");
+			Assert::IsTrue(bw.needsFlush(true), L"Needs flush when at end. This also kicks off prep");
+			Assert::IsTrue(bw.needsFlush(), L"Needs flush after flush preparation");
+			Assert::IsTrue(std::regex_match(
+				bw.getMessage(),
+				std::regex(R"(\{"timestamp":"\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}"\})")
+			), L"Message created correctly");
 		}
 
-		TEST_METHOD(BatchWriterToStringTest) {
+		/* TEST_METHOD(BatchWriterToStringTest) {
 			BatchWriterDriver bw;
 			Assert::AreEqual("0", bw.toStringDriver(0, 0));
 			Assert::AreEqual("1", bw.toStringDriver(1, 5));
@@ -88,7 +109,7 @@ namespace WaterMeterCppTest {
 			Assert::AreEqual("B", bw.getMessage(), "buffer emptied");
 			Assert::AreEqual("B,1,125", bw.getOutput(), "Correct output written for shutdown");
 			Assert::IsFalse(bw.needsFlush(true), L"No flush needed");
-		}
+		} */
 
 	};
 }

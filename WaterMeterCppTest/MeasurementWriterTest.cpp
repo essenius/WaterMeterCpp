@@ -1,4 +1,5 @@
 #include "pch.h"
+/*
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/MeasurementWriter.h"
 #include "MeasurementWriterDriver.h"
@@ -50,3 +51,4 @@ namespace WaterMeterCppTest {
 		}
 	};
 }
+*/

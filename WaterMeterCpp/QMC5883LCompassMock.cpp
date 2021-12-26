@@ -9,19 +9,29 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_BATCHWRITERDRIVER
-#define HEADER_BATCHWRITERDRIVER
+#ifndef ARDUINO
 
-#include "../WaterMeterCpp/BatchWriter.h"
+	#include "QMC5883LCompassMock.h"
 
-class BatchWriterDriver : public BatchWriter {
-public:
-	BatchWriterDriver();
-	char *toStringDriver(float input, byte fractionDigits);
-	char* getOutput();
-	virtual void flush();
-protected:
-	char _output[BatchWriter::PRINT_BUFFER_SIZE];
-};
+	void QMC5883LCompass::init() {
+	}
+
+	void QMC5883LCompass::read() {
+	}
+
+	void QMC5883LCompass::setCalibration(int a, int b, int c, int d, int e, int f) {
+	}
+
+	int QMC5883LCompass::getX() {
+		return 0;
+	}
+
+	int QMC5883LCompass::getY() {
+		return 0;
+	}
+
+	int QMC5883LCompass::getZ() {
+		return 0;
+	}
 
 #endif

@@ -9,30 +9,36 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifdef ARDUINO
-    #include <QMC5883LCompass.h>
-    #include <Arduino.h>
+#ifdef ESP32
+#include <Wire.h>
+#include <QMC5883LCompass.h>
+#include <ESP.h>
 #else
-    #include "QMC5883LCompass.h"
-    #include "Arduino.h"
+#include "QMC5883LCompassMock.h"
+#include "ArduinoMock.h"
 #endif
 
 #include "MagnetoSensorReader.h"
 
-QMC5883LCompass compass1;
+QMC5883LCompass compass;
 
 void MagnetoSensorReader::begin() {
-    compass1.setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
-    compass1.init();
+    //pinMode(SDA, INPUT_PULLUP);
+    //pinMode(SCL, INPUT_PULLUP);
+    compass.setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
+    compass.init();
     // ignore the first measurements, often outliers
-    compass1.read();
+    compass.read();
     delay(10);
-    compass1.read();
+    compass.read();
     delay(10);
-    compass1.read();
+    compass.read();
 }
 
-int MagnetoSensorReader::read() {
-    compass1.read();
-    return compass1.getY();
+SensorReading MagnetoSensorReader::read() {
+    compass.read();
+    sensorReading.x = compass.getX();
+    sensorReading.y = compass.getY();
+    sensorReading.z = compass.getZ();
+    return sensorReading;
 }

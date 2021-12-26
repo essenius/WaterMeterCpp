@@ -33,22 +33,49 @@
     <ClCompile Include="MagnetoSensorReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SerialDriver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LedDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Arduino.cpp">
+    <ClCompile Include="ArduinoMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Storage.cpp">
+    <ClCompile Include="QMC5883LCompassMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SerialScheduler.cpp">
+    <ClCompile Include="Device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QMC5883LCompass.cpp">
+    <ClCompile Include="FirmwareManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MqttGateway.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PayloadBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PubSub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Scheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wifi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NetMock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PubSubClientMock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryStatusPublisher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,22 +95,61 @@
     <ClInclude Include="MagnetoSensorReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="QMC5883LCompass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SerialDriver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LedDriver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Arduino.h">
+    <ClInclude Include="ArduinoMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Storage.h">
+    <ClInclude Include="QMC5883LCompassMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SerialScheduler.h">
+    <ClInclude Include="ChangePublisher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FirmwareManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MqttGateway.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PayloadBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PubSub.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="secrets.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="secrets_mqtt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="secrets_wifi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wifi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PubSubClientMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BinaryStatusPublisher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

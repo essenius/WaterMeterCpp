@@ -9,176 +9,100 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-#ifdef ARDUINO
-  #include <Arduino.h>
-#else
-  #include <stdio.h>
-  #include "Arduino.h"
-#endif
-
 #include <string.h>
 #include <stdlib.h>
 #include "BatchWriter.h"
 
-BatchWriter::BatchWriter(long flushRate, char startSymbol) {
-    _desiredFlushRate = flushRate;
-    _startSymbol = startSymbol;
-    _numberBuffer[0] = '\0';
+BatchWriter::BatchWriter(const char* name, EventServer* eventServer, TimeServer* timeServer, PayloadBuilder* payloadBuilder) :
+    EventClient(name, eventServer), _timeServer(timeServer), _payloadBuilder(payloadBuilder), _flushRatePublisher(eventServer, this, Topic::Rate) {
+}
+
+void BatchWriter::begin(long desiredFlushRate) {
+    setDesiredFlushRate(desiredFlushRate);
     flush();
     resetCounters();
 }
 
-long BatchWriter::convertToLong(char* stringParam, long defaultValue, long min, long max) {
+long BatchWriter::convertToLong(const char* stringParam, long defaultValue) {
     if (strcmp(stringParam, "DEFAULT") == 0) {
         return defaultValue;
     }
-    long convertedValue = strtoul(stringParam, 0, 10);
-    if (convertedValue > max) {
-        return max;
-    }
-    if (convertedValue < min) {
-        return min;
-    }
-    return convertedValue;
-}
-
-unsigned short int BatchWriter::crc16_update(unsigned short int  crc, byte a) {
-    int i;
-    crc ^= a;
-    for (i = 0; i < 8; ++i) {
-        if (crc & 1) {
-            crc = (crc >> 1) ^ 0xA001;
-        }
-        else {
-            crc = (crc >> 1);
-        }
-    }
-    return crc;
+    return strtol(stringParam, 0, 10);
 }
 
 void BatchWriter::flush() {
-    _printBuffer[0] = _startSymbol;
-    _printBuffer[1] = '\0';
+    initBuffer();
     _flushWaiting = false;
 }
 
-unsigned int BatchWriter::getCrc(const char* input) {
-    unsigned short int  crc = 0;
-    for (size_t i = 0; i < strlen(input); i++) {
-        crc = crc16_update(crc, input[i]);
-    }
-    return crc;
-}
-
 long BatchWriter::getFlushRate() {
-    return _flushRate;
+    return _flushRatePublisher.value();
 }
 
-char* BatchWriter::getHeader() {
-    writeParam("CRC");
-    return _printBuffer;
-};
+const char* BatchWriter::getMessage() {
+    return _payloadBuilder->toString();
+}
 
-char* BatchWriter::getMessage() {
-    return _printBuffer;
+void BatchWriter::initBuffer() {
+    _payloadBuilder->initialize();
+    _payloadBuilder->writeParam("timestamp", _timeServer->getTime());
+}
+
+long BatchWriter::limit(long input, long min, long max) {
+    return (input < min) ? min : (input > max) ? max : input;
 }
 
 // We flush the log every nth time, n being the flush rate. This puts less strain on the receiving end.
 // Returns whether a write action took place, so we can ensure writes are in different loops.
-
 bool BatchWriter::needsFlush(bool endOfFile) {
     if (_flushWaiting) {
         return true;
     }
-    if (_flushRate == 0 || _messageCount == 0 || !_canFlush) { 
-        return false; 
+    if (_flushRatePublisher.value() == 0 || _messageCount == 0 || !_canFlush) {
+        return false;
     }
-    bool bufferAlmostFull = strlen(_printBuffer) > PRINT_BUFFER_SIZE - PRINT_BUFFER_MARGIN;
-    if (_messageCount % _flushRate != 0 && !endOfFile && !bufferAlmostFull) {
-        return false; 
+    if (_messageCount % _flushRatePublisher.value() != 0 && !endOfFile && !_payloadBuilder->isAlmostFull()) {
+        return false;
     }
     prepareFlush();
     return true;
 }
 
 bool BatchWriter::newMessage() {
-    if (_flushRate == 0) return false;
+    if (_flushRatePublisher.value() == 0) return false;
     _messageCount++;
     return true;
 }
 
 void BatchWriter::prepareFlush() {
-    int crc = getCrc(_printBuffer);
-    writeParam(crc);
     // Now we can start recording the next round. The buffer isn't necessarily flushed in the same cycle as it's prepared.
+    _payloadBuilder->writeGroupEnd();
     resetCounters();
     _flushWaiting = true;
 }
 
 void BatchWriter::resetCounters() {
     _messageCount = 0;
-    _flushRate = _desiredFlushRate;
+    _flushRatePublisher.update(_desiredFlushRate);
 }
 
 void BatchWriter::setDesiredFlushRate(long flushRate) {
     _desiredFlushRate = flushRate;
     // Immediately apply if we are starting a new round, or aren't logging
     // Otherwise it will be done at the next reset.
-    if (_messageCount == 0 || _flushRate == 0) {
-        _flushRate = _desiredFlushRate;
+    if (_messageCount == 0 || _flushRatePublisher.value() == 0) {
+        _flushRatePublisher.update(_desiredFlushRate);
     }
 }
 
-long BatchWriter::getDesiredFlushRate() {
-    return _desiredFlushRate;
-}
-
-void BatchWriter::setCanFlush(bool canFlush) {
-    _canFlush = canFlush;
-}
-
-char* BatchWriter::toString(float input, unsigned char precision) {
-    dtostrf(input, 1, precision, _numberBuffer);
-    if (strchr(_numberBuffer, '.') == 0) return _numberBuffer;
-    // we have a fraction. Clean up overprecision.
-    char* endPointer = _numberBuffer + strlen(_numberBuffer);
-    while (*(--endPointer) == '0');
-    if (*endPointer != '.') {
-        endPointer++;
+/*void BatchWriter::setFlushRate(long flushRate) {
+    _flushRatePublisher.update(flushRate);
+    if (_flushRate == flushRate) {
+        return;
     }
-    *endPointer = 0;
-    return _numberBuffer;    
-}
+    _flushRate = flushRate;
+    _eventServer->publish(_flushRateTopic, flushRate); 
+} */
 
-char* BatchWriter::toString(int number) {
-    sprintf(_numberBuffer, "%i", number);
-    return _numberBuffer;
-}
-
-char* BatchWriter::toString(long number) {
-    sprintf(_numberBuffer, "%ld", number);
-    return _numberBuffer;
-}
-
-// Do not call the following methods if newMessage has returned false.
-
-void BatchWriter::writeParam(const char* value) {
-    strcat(_printBuffer, ",");
-    strcat(_printBuffer, value);
-}
-
-void BatchWriter::writeParam(float value) {
-    writeParam(toString(value, 2));
-}
-
-void BatchWriter::writeParam(int value) {
-    writeParam(toString(value));
-}
-
-void BatchWriter::writeParam(long value) {
-    writeParam(toString(value));
+void BatchWriter::update(Topic topic, long payload) {
 }

@@ -12,7 +12,8 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/LedDriver.h"
-#include "../WaterMeterCpp/Arduino.h"
+#include "../WaterMeterCpp/ArduinoMock.h"
+#include "../WaterMeterCpp/PubSub.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -21,58 +22,73 @@ namespace WaterMeterCppTest {
 	TEST_CLASS(LedDriverTest) {
 	public:
 		TEST_METHOD(LedDriverTest1) {
-
-			LedDriver ledDriver;
+			EventServer eventServer;
+			LedDriver ledDriver(&eventServer);
 			ledDriver.begin();
 			Assert::AreEqual(OUTPUT, getPinMode(LED_BUILTIN), L"Built-in led on output");
-			Assert::AreEqual(OUTPUT, getPinMode(ledDriver.RED_LED), L"Red led on output");
-			Assert::AreEqual(OUTPUT, getPinMode(ledDriver.GREEN_LED), L"Green led on output");
-			Assert::AreEqual(OUTPUT, getPinMode(ledDriver.BLUE_LED), L"Blue led on output");
-			Assert::AreEqual(LOW, digitalRead(ledDriver.RED_LED), L"Red led off");
-			Assert::AreEqual(LOW, digitalRead(ledDriver.GREEN_LED), L"Green led off");
-			Assert::AreEqual(LOW, digitalRead(ledDriver.BLUE_LED), L"Blue led off");
+			Assert::AreEqual(OUTPUT, getPinMode(LedDriver::RED_LED), L"Red led on output");
+			Assert::AreEqual(OUTPUT, getPinMode(LedDriver::GREEN_LED), L"Green led on output");
+			Assert::AreEqual(OUTPUT, getPinMode(LedDriver::BLUE_LED), L"Blue led on output");
+			Assert::AreEqual(OUTPUT, getPinMode(LedDriver::AUX_LED), L"Aux led on output");
 			Assert::AreEqual(HIGH, digitalRead(LED_BUILTIN), L"Built-in led on");
 
-			ledDriver.signalFlush(true);
-			Assert::AreEqual(HIGH, digitalRead(ledDriver.BLUE_LED), L"Blue led on after flush");
-			ledDriver.signalFlush(false);
-			Assert::AreEqual(LOW, digitalRead(ledDriver.BLUE_LED), L"Blue led on after flush");
+		    assertLeds(LOW, LOW, LOW, LOW,L"Initial values");
 
-			ledDriver.signalConnected(true);
-			Assert::AreEqual(HIGH, digitalRead(ledDriver.GREEN_LED), L"Green led on after connection");
-			Assert::AreEqual(LOW, digitalRead(ledDriver.BLUE_LED), L"Blue led off after connection");
+			eventServer.publish(Topic::Connected,  true);
+			assertLeds(LOW, HIGH, LOW, LOW, L"Connected");
+			eventServer.publish(Topic::Sending, true);
+			assertLeds(LOW, HIGH, LOW, HIGH, L"Sending");
+			eventServer.publish(Topic::TimeOverrun, true);
+			assertLeds(HIGH, HIGH, LOW, HIGH, L"Overrun");
+			eventServer.publish(Topic::Peak, true);
+			assertLeds(HIGH, HIGH, HIGH, HIGH, L"Peak");
+			eventServer.publish(Topic::Sending, false);
+			assertLeds(HIGH, HIGH, HIGH, LOW, L"Stopped sending");
+			eventServer.publish(Topic::TimeOverrun, false);
+			assertLeds(LOW, HIGH, HIGH, LOW, L"No overrun");
+			eventServer.publish(Topic::Disconnected, true);
+			assertLeds(LOW, LOW, HIGH, LOW, L"Disconnected");
+			eventServer.publish(Topic::Peak, false);
+			assertLeds(LOW, LOW, LOW, LOW, L"No peak");
+			eventServer.publish(Topic::Error, "Problem");
+			assertLeds(HIGH, LOW, LOW, LOW, L"Error");
+			eventServer.publish(Topic::Error, "");
+			assertLeds(LOW, LOW, LOW, LOW, L"No error");
 
-			ledDriver.signalError(true);
-			Assert::AreEqual(HIGH, digitalRead(ledDriver.RED_LED), L"Red led on after error");
 
-			ledDriver.signalError(false);
-			Assert::AreEqual(LOW, digitalRead(ledDriver.RED_LED), L"Red led off after error reset");
-
-			ledDriver.signalConnected(false);
-			Assert::AreEqual(LOW, digitalRead(ledDriver.GREEN_LED), L"Green led off after disconnection");
-			Assert::AreEqual(LOW, digitalRead(ledDriver.BLUE_LED), L"Blue led off after disconnection");
-
-			AssertLedCycle(&ledDriver, true, false, ledDriver.EXCLUDE_INTERVAL, L"Exclude");
-			AssertLedCycle(&ledDriver, false, true, ledDriver.FLOW_INTERVAL, L"Flow");
-			AssertLedCycle(&ledDriver, false, false, ledDriver.WAIT_INTERVAL, L"Wait");
+			AssertLedCycle(&ledDriver, Topic::Exclude, true, LedDriver::EXCLUDE_INTERVAL, L"Exclude");
+			AssertLedCycle(&ledDriver, Topic::Exclude, false, LedDriver::WAIT_INTERVAL, L"Wait");
 		}
 
 	private:
-		void AssertLedCycle(LedDriver *ledDriver, bool isExcluded, bool hasFlow, int interval, const wchar_t* description) {
+		void assertLed(const wchar_t* id, uint8_t state, unsigned char ledNo, const wchar_t* description) {
+			std::wstring message(description);
+			message += std::wstring(L": ") + id + std::wstring(L" ") + std::to_wstring(state);
+			Assert::AreEqual(state, digitalRead(ledNo), message.c_str());
+		}
+
+		void assertLeds(uint8_t red, uint8_t green, uint8_t blue, uint8_t aux, const wchar_t* message) {
+			assertLed(L"Red", red, LedDriver::RED_LED, message);
+			assertLed(L"Green", green, LedDriver::GREEN_LED, message);
+			assertLed(L"Blue", blue, LedDriver::BLUE_LED, message);
+			assertLed(L"Aux", aux, LedDriver::AUX_LED, message);
+		}
+
+		void AssertLedCycle(LedDriver *ledDriver, Topic topic, long payload, int interval, const wchar_t* description) {
 			std::wstring messageBase(L"Built-in led for ");
 			messageBase += std::wstring(description) + L" cycle " ;
 			std::wstring messageOn = messageBase + L"ON";
-
+			ledDriver->update(topic, payload);
 			for (int i = 0; i < interval; i++) {
-				ledDriver->signalMeasurement(isExcluded, hasFlow);
+				ledDriver->update(Topic::Sample, "");
 				AssertBuiltinLed(HIGH, messageOn.c_str(), i);
 			}
 			std::wstring messageOff = messageBase + L"OFF";
 			for (int i = 0; i < interval; i++) {
-				ledDriver->signalMeasurement(isExcluded, hasFlow);
+				ledDriver->update(Topic::Sample, "");
 				AssertBuiltinLed(LOW, messageOff.c_str(), i);
 			}
-			ledDriver->signalMeasurement(isExcluded, hasFlow);
+			ledDriver->update(Topic::Sample, "");
 			AssertBuiltinLed(HIGH, messageOn.c_str(), 255);
 		}
 

@@ -1,3 +1,4 @@
+/*
 #ifndef HEADER_FLOWMETERDRIVER
 #define HEADER_FLOWMETERDRIVER
 
@@ -20,3 +21,5 @@ public:
 };
 
 #endif
+
+*/

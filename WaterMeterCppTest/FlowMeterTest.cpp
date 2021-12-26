@@ -11,15 +11,49 @@
 
 #include "pch.h"
 #include "CppUnitTest.h"
-#include "FlowMeterDriver.h"
+//#include "FlowMeterDriver.h"
 #include "../WaterMeterCpp/FlowMeter.h"
-#include <math.h>
+//#include <math.h>
+
+#include <iostream>
+#include <fstream>
+#include <vector>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WaterMeterCppTest {
 	TEST_CLASS(FlowMeterTest) {
 	public:
+
+		TEST_METHOD(FlowMeterGoodFlowTest)
+		{
+			FlowMeter flowMeter;
+			int measurement;
+			float smoothValue;
+			float derivative;
+			float smoothDerivative;
+			int totalPeaks = 0;
+            std::ifstream measurements("flow_test.csv");
+			Assert::IsTrue(measurements.is_open(), L"File open");
+			long index = 0;
+			while(measurements >> measurement)
+			{
+				flowMeter.addMeasurement(measurement);
+				measurements >> smoothValue;
+				assertFloatAreEqual(smoothValue, flowMeter.getSmoothValue(), L"Smooth value", index);
+				measurements >> derivative;
+				assertFloatAreEqual(derivative, flowMeter.getDerivative(), L"Derivative #" + index);
+				measurements >> smoothDerivative;
+				assertFloatAreEqual(smoothDerivative, flowMeter.getSmoothDerivative(), L"Smooth Derivative");
+				std::cout << measurement << "," << flowMeter.getSmoothValue() << "," << flowMeter.getDerivative() << "," << flowMeter.getSmoothDerivative() << "," << flowMeter.getPeak() << "," << flowMeter.isExcluded() << "\n";
+				totalPeaks += flowMeter.getPeak();
+				index++;
+			}
+			Assert::AreEqual(5, totalPeaks, L"Found 5 peaks");
+			measurements.close();
+		}
+
+		/*
 		TEST_METHOD(FlowMeterDriftTest) {
 			FlowMeterDriver actual;
 
@@ -150,15 +184,17 @@ namespace WaterMeterCppTest {
 			Assert::AreEqual(expected->hasFlow(), actual->hasFlow(), (message + L"Flow").c_str());
 			Assert::AreEqual(expected->isExcluded(), actual->isExcluded(), (message + L"Exclude").c_str());
 			Assert::AreEqual(expected->areAllExcluded(), actual->areAllExcluded(), (message + L"ExcludeAll").c_str());
-		}
+		} */
 
-		static void assertFloatAreEqual(float expected, float actual, const wchar_t* description = L"") {
+private:
+		static void assertFloatAreEqual(float expected, float actual, const wchar_t* description = L"", long index = 0) {
 			std::wstring message(description);
 			float difference = fabsf(expected - actual);
 			message += std::wstring(L". expected: ") + std::to_wstring(expected) + 
 				       std::wstring(L" actual: " + std::to_wstring(actual) +
-					   std::wstring(L" difference: ") + std::to_wstring(difference));
-			Assert::IsTrue(difference < 0.002, message.c_str());
-		}
+					   std::wstring(L" difference: ") + std::to_wstring(difference) +
+					   std::wstring(L" #") + std::to_wstring(index));
+			Assert::IsTrue(difference < 0.002f, message.c_str());
+		} 
 	};
 }
