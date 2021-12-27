@@ -17,7 +17,7 @@
 
 class MeasurementWriter : public BatchWriter {
 public:
-    MeasurementWriter(EventServer* eventServer, TimeServer* timeServer, PayloadBuilder* payloadBuilder);
+    MeasurementWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder);
     using BatchWriter::begin;
     virtual void begin();
     void addMeasurement(int measure);

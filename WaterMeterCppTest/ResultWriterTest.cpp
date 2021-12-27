@@ -12,10 +12,10 @@ namespace WaterMeterCppTest {
 	public:
 		/*
 		TEST_METHOD(ResultWriterIdleTest) {
-			ResultWriterDriver rwd;
-			rwd.setCanFlush(true);
-			Assert::AreEqual(6000L, rwd.getFlushRate(), L"Default flush rate OK.");
-			rwd.setIdleFlushRate("10");
+			ResultWriter rw();
+			Assert::AreEqual(6000L, rw.getFlushRate(), L"Default flush rate OK.");
+
+			rw.setIdleFlushRate("10");
 			rwd.setNonIdleFlushRate("5");
 			Assert::AreEqual(10L, rwd.getFlushRate(), L"Updated flush rate from idle.");
 			for (int i = 0; i < 10; i++) {

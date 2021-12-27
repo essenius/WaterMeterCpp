@@ -13,8 +13,8 @@
 #include <stdlib.h>
 #include "BatchWriter.h"
 
-BatchWriter::BatchWriter(const char* name, EventServer* eventServer, TimeServer* timeServer, PayloadBuilder* payloadBuilder) :
-    EventClient(name, eventServer), _timeServer(timeServer), _payloadBuilder(payloadBuilder), _flushRatePublisher(eventServer, this, Topic::Rate) {
+BatchWriter::BatchWriter(const char* name, EventServer* eventServer, PayloadBuilder* payloadBuilder) :
+    EventClient(name, eventServer), _payloadBuilder(payloadBuilder), _flushRatePublisher(eventServer, this, Topic::Rate) {
 }
 
 void BatchWriter::begin(long desiredFlushRate) {
@@ -45,7 +45,7 @@ const char* BatchWriter::getMessage() {
 
 void BatchWriter::initBuffer() {
     _payloadBuilder->initialize();
-    _payloadBuilder->writeParam("timestamp", _timeServer->getTime());
+    _payloadBuilder->writeParam("timestamp", _eventServer->request(Topic::Time, ""));
 }
 
 long BatchWriter::limit(long input, long min, long max) {

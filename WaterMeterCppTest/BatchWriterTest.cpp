@@ -14,8 +14,9 @@ namespace WaterMeterCppTest {
         TEST_METHOD(BatchWriterWriteParamTest) {
 			EventServer eventServer;
 			TimeServer timeServer(&eventServer);
+			timeServer.begin();
 			PayloadBuilder builder;
-			BatchWriter bw("BW", &eventServer, &timeServer, &builder);
+			BatchWriter bw("BW", &eventServer, &builder);
 			bw.begin(0);
 			Assert::IsFalse(bw.newMessage(), L"Can't create new message when flush rate is 0");
 			bw.setDesiredFlushRate(5);

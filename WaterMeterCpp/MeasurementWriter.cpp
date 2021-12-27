@@ -12,8 +12,8 @@
 #include "MeasurementWriter.h"
 #include <string.h>
 
-MeasurementWriter::MeasurementWriter(EventServer* eventServer, TimeServer* timeServer, PayloadBuilder* payloadBuilder) :
-    BatchWriter("MeasurementWriter", eventServer, timeServer, payloadBuilder) {
+MeasurementWriter::MeasurementWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder) :
+    BatchWriter("MeasurementWriter", eventServer, payloadBuilder) {
     _flushRatePublisher.setTopic(Topic::BatchSize);
 }
 

@@ -13,8 +13,8 @@
 #include <limits.h>
 #include "ResultWriter.h"
 
-ResultWriter::ResultWriter(EventServer* eventServer, TimeServer* timeServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros) :
-    BatchWriter("ResultWriter", eventServer, timeServer, payloadBuilder) {
+ResultWriter::ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros) :
+    BatchWriter("ResultWriter", eventServer, payloadBuilder) {
     _measureIntervalMicros = measureIntervalMicros;
     _desiredFlushRate = _idleFlushRate;
 }
@@ -51,6 +51,7 @@ void ResultWriter::addMeasurement(int value, FlowMeter* result) {
 
 void ResultWriter::begin() {
     _eventServer->subscribe(this, Topic::Connected);
+    _eventServer->subscribe(this, Topic::Disconnected);
     _eventServer->subscribe(this, Topic::IdleRate);
     _eventServer->subscribe(this, Topic::NonIdleRate);
     _eventServer->subscribe(this, Topic::ProcessTime);
@@ -95,8 +96,6 @@ void ResultWriter::prepareFlush() {
     _payloadBuilder->writeParam("max", _maxDuration);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("analysis");
-    //_payloadBuilder->writeParam("sumAmplitude", _sumAmplitude);
-    //_payloadBuilder->writeParam("sumLowPassOnHighPass", _sumLowPassOnHighPass);
     _payloadBuilder->writeParam("smoothValue", _result->getSmoothValue());
     _payloadBuilder->writeParam("derivative", _result->getDerivative());
     _payloadBuilder->writeParam("smoothDerivative", _result->getSmoothDerivative());
@@ -106,18 +105,14 @@ void ResultWriter::prepareFlush() {
 
 void ResultWriter::resetCounters() {
     BatchWriter::resetCounters();
-    _driftCount = 0L;
     _excludeCount = 0L;
     _flowCount = 0L;
     _maxDuration = 0L;
     _outlierCount = 0L;
     _overrunCount = 0L;
     _peakCount = 0L;
-    _sumAmplitude = 0.0;
     _sumDuration = 0L;
-    _sumLowPassOnHighPass = 0.0;
     _eventServer->publish(this, Topic::TimeOverrun, LONG_FALSE);
-    _eventServer->publish(this, Topic::Flow, LONG_FALSE);
     _eventServer->publish(this, Topic::Exclude, LONG_FALSE);
 }
 
@@ -149,11 +144,14 @@ void ResultWriter::update(Topic topic, long payload) {
         setNonIdleFlushRate(rate);
         break;
     case Topic::Connected:
-        _canFlush = payload == LONG_TRUE;
+        _canFlush = true;
+        break;
+    case Topic::Disconnected:
+        _canFlush = false;
         break;
     case Topic::ProcessTime:
         addDuration(payload);
     default:
-        BatchWriter::update(topic, payload);;
+        BatchWriter::update(topic, payload);
     }
 }

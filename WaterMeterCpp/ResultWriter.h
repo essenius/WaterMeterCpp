@@ -18,11 +18,7 @@
 
 class ResultWriter : public BatchWriter {
 public:
-    ResultWriter(
-        EventServer* eventServer,
-        TimeServer* timeServer,
-        PayloadBuilder* payloadBuilder,
-        int measureIntervalMicros);
+    ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros);
     void addDuration(long duration);
     void addMeasurement(int value, FlowMeter* result);
     using BatchWriter::begin;
@@ -51,12 +47,10 @@ protected:
     long _peakCount = 0L;
     long _processTime = 0L;
     FlowMeter* _result = nullptr;
-    float _sumAmplitude = 0.0f;
     long _sumDuration = 0L;
-    float _sumLowPassOnHighPass = 0.0f;
 
     void publishOverrun(bool overrun);
-    virtual void resetCounters();
+    void resetCounters() override;
     void setIdleFlushRate(long rate);
     void setNonIdleFlushRate(long rate);
 };

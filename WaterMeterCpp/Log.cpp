@@ -22,6 +22,8 @@ Log::Log(EventServer* eventServer) :
     _connectedPublisher(eventServer, this, Topic::Info) {}
 
 void Log::begin() {
+    Serial.begin(115200);
+    Serial.println("Starting");
     _eventServer->subscribe(this, Topic::Connected);
     _eventServer->subscribe(this, Topic::Disconnected);
     _eventServer->subscribe(this, Topic::Error);

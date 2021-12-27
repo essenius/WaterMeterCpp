@@ -21,7 +21,7 @@ using byte = unsigned char;
 
 class BatchWriter : public EventClient {
 public:
-    BatchWriter(const char* name, EventServer* eventServer, TimeServer* timeServer, PayloadBuilder* payloadBuilder);
+    BatchWriter(const char* name, EventServer* eventServer, PayloadBuilder* payloadBuilder);
     virtual void begin(long desiredFlushRate);
     virtual void flush();
     long getFlushRate();
@@ -32,7 +32,6 @@ public:
     virtual void setDesiredFlushRate(long flushRate);
 
 protected:
-    TimeServer* _timeServer;
     virtual void initBuffer();
     long convertToLong(const char* stringParam, long defaultValue = 0L);
     long limit(long input, long min, long max);

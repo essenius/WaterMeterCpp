@@ -21,14 +21,15 @@
 #include "FlowMeter.h"
 #include "LedDriver.h"
 #include "MagnetoSensorReader.h"
-//#include "MeasurementWriter.h"
 #include "MqttGateway.h"
 #include "EventServer.h"
-//#include "ResultWriter.h"
-//#include "Scheduler.h"
+#include "ResultWriter.h"
+#include "Scheduler.h"
 #include "TimeServer.h"
 #include "Wifi.h"
 #include "FirmwareManager.h"
+#include "Log.h"
+#include "MeasurementWriter.h"
 #include "secrets.h" // for CONFIG_BASE_FIRMWARE_URL
 
 
@@ -44,14 +45,15 @@ Wifi wifi;
 TimeServer timeServer(&eventServer);
 Device device(&eventServer);
 MagnetoSensorReader sensorReader;
-//PayloadBuilder measurementPayloadBuilder;
-//MeasurementWriter measurementWriter(&eventServer, &timeServer, &measurementPayloadBuilder);
+PayloadBuilder measurementPayloadBuilder;
+MeasurementWriter measurementWriter(&eventServer, &measurementPayloadBuilder);
 FlowMeter flowMeter;
-//PayloadBuilder resultPayloadBuilder;
-//ResultWriter resultWriter(&eventServer, &timeServer, &resultPayloadBuilder, MEASURE_INTERVAL_MICROS);
+PayloadBuilder resultPayloadBuilder;
+ResultWriter resultWriter(&eventServer, &resultPayloadBuilder, MEASURE_INTERVAL_MICROS);
 MqttGateway mqttGateway(&eventServer);
-//Scheduler scheduler(&eventServer, &measurementWriter, &resultWriter);
+Scheduler scheduler(&eventServer, &measurementWriter, &resultWriter);
 FirmwareManager firmwareManager;
+Log logger(&eventServer);
 
 unsigned long nextMeasureTime;
 //unsigned long startLoopTimestamp;
@@ -59,9 +61,7 @@ unsigned long nextMeasureTime;
 bool clearedToGo = false;
 
 void setup() {
-    Serial.begin(115200);
-    Serial.println("Starting");
-    // start early to switch on led and subscribe to connected event
+    logger.begin();
     ledDriver.begin();
     sensorReader.begin();
     eventServer.publish(Topic::Processing, LONG_TRUE);
@@ -70,22 +70,17 @@ void setup() {
     firmwareManager.begin(wifi.getClient(), CONFIG_BASE_FIRMWARE_URL, wifi.macAddress());
 
     if (timeServer.timeWasSet()) {
-         // force blue led, TODO fix structurally
-        eventServer.publish(Topic::TimeOverrun, LONG_TRUE);
         firmwareManager.tryUpdateFrom(BUILD_NUMBER);
         eventServer.publish(Topic::TimeOverrun, LONG_FALSE);
         mqttGateway.begin(wifi.getClient(), wifi.getHostName());
         // the writers need the time, so can't do this earlier. This means connected is true by default
-        //measurementWriter.begin();
-        //resultWriter.begin();
+        measurementWriter.begin();
+        resultWriter.begin();
 
-        eventServer.publish(Topic::Processing, LONG_FALSE);
         nextMeasureTime = micros();
-        Serial.printf("Next measure time: %lu\n", nextMeasureTime);
         clearedToGo = true;
     } else {
         eventServer.publish(Topic::Error, "Could not set time");
-        Serial.print("Could not set time");
     }
 }
 unsigned int timeout = 0;
@@ -104,15 +99,17 @@ void loop() {
         eventServer.publish(Topic::Processing, LONG_TRUE);
         SensorReading measure = sensorReader.read();
         flowMeter.addMeasurement(measure.y);
-        //measurementWriter.addMeasurement(measure);
-        //resultWriter.addMeasurement(measure.y, &flowMeter);
+        measurementWriter.addMeasurement(measure.y);
+        resultWriter.addMeasurement(measure.y, &flowMeter);
 
         if (flowMeter.isPeak()) {
             eventServer.publish(Topic::Peak, LONG_TRUE);
             peaks++;
+        } else {
+            eventServer.publish(Topic::Peak, LONG_FALSE);
         }
 
-        //scheduler.processOutput();
+        scheduler.processOutput();
 
         // Do everything we can before the timing moment. Only the reporting of the timing itself is not counted.
         loopCount++;
@@ -141,6 +138,7 @@ void loop() {
             maxUsedTime = usedTime > maxUsedTime ? usedTime : maxUsedTime;
 
             // If we need to write out, complete the message and do it
+            // TODO: eliminate
             if (loopCount >= 10) {
                 payloadBuilder.writeParam("used", totalUsedTime);
                 payloadBuilder.writeParam("max", maxUsedTime);
