@@ -12,7 +12,7 @@
 #ifdef ESP32
 #include <HTTPClient.h>
 #else
-#include <string.h>
+#include <cstring>
 #endif
 
 #include "Wifi.h"

@@ -9,12 +9,12 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-// Mock implementation for if we are not targeting the Arduino
+// Mock implementation for unit testing (not targeting the ESP32)
 
-#ifndef ARDUINO
+#ifndef ESP32
 
-#ifndef HEADER_ARDUINO
-#define HEADER_ARDUINO
+#ifndef HEADER_ARDUINOMOCK
+#define HEADER_ARDUINOMOCK
 
 #include <stdint.h>
 #include <string>

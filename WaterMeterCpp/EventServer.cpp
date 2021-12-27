@@ -17,25 +17,6 @@
 #include "ArduinoMock.h"
 #endif
 
-/*
-EventClient::EventClient(const char* name, EventServer* eventServer) : _name(name), _eventServer(eventServer) {}
-
-EventClient::~EventClient() {
-    _eventServer->unsubscribe(this);
-    _eventServer->cannotProvide(this);
-}
-
-const char* EventClient::getName() {
-    return _name;
-}
-
-void EventClient::update(Topic topic, long payload) {
-    char numberBuffer[20];
-    sprintf(numberBuffer, "%ld", payload);
-    update(topic, numberBuffer);
-}
-*/
-
 EventServer::EventServer(LogLevel logLevel) : _logLevel(logLevel) {
     _numberBuffer[0] = '\0';
 }

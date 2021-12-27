@@ -11,7 +11,7 @@
 
 // Mock implementation for if we are not targeting the Arduino
 
-#ifndef ARDUINO
+#ifndef ESP32
 
     #ifndef HEADER_PUBSUBCLIENT_MOCK
     #define HEADER_PUBSUBCLIENT_MOCK

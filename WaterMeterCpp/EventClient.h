@@ -12,13 +12,8 @@
 #ifndef HEADER_EVENTCLIENT
 #define HEADER_EVENTCLIENT
 
-//#ifdef ESP32
-//#include <ESP.h>
-//#else
-//#endif
 #include <cstdarg>
 #include <map>
-//#include <set>
 
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;
