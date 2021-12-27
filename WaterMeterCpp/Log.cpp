@@ -29,6 +29,8 @@ void Log::begin() {
 }
 
 void Log::update(Topic topic, const char* payload) {
+    const char* timestamp = _eventServer->request(Topic::Time, "");
+    Serial.printf("[%s] ", timestamp);
     switch (topic) {
     case Topic::Error:
         Serial.printf("Error: %s\n", payload);
@@ -37,14 +39,14 @@ void Log::update(Topic topic, const char* payload) {
         Serial.printf("Info: %s\n", payload);
         break;
     case Topic::Connected:
-        _connectedPublisher.update("Connection established");
-        _disconnectedPublisher.reset();
+        Serial.println("Connected");
         break;
     case Topic::Disconnected:
-        _disconnectedPublisher.update(payload);
-        _connectedPublisher.reset();
+        Serial.println("Disconnected");
         break;
     default:
-        Serial.printf("Upexpected topic %d: %s\n", static_cast<int>(topic), payload);
+        Serial.printf("Upexpected topic '%d', payload '%s'\n", static_cast<int>(topic), payload);
     }
 }
+
+

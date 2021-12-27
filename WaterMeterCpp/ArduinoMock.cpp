@@ -12,10 +12,10 @@
 #ifndef ARDUINO
 
 #include "ArduinoMock.h"
-#include <stdio.h>
+#include <cstdio>
 #include <chrono>
-#include <string.h>
-#include <stdarg.h> 
+#include <cstring>
+#include <cstdarg>
 #include <iostream>
 
 HardwareSerial Serial;
@@ -60,7 +60,9 @@ unsigned long micros(void) {
 }
 
 
-void delay(int delay) {}
+void delayMicroseconds(int delay) { microShift += delay;  }
+
+void delay(int delay) { microShift += delay * 1000L;  }
 
 int HardwareSerial::available() {
 	return static_cast<int>(strlen(_bufferPointer));
@@ -80,7 +82,7 @@ void HardwareSerial::clearOutput() {
 	_printBuffer[0] = 0;
 }
 
-char* HardwareSerial::getOutput() {
+const char* HardwareSerial::getOutput() {
 	return _printBuffer;
 }
 
@@ -91,7 +93,7 @@ void HardwareSerial::print(const char* input) {
 void HardwareSerial::printf(const char* format, ...) {
 	va_list args;
   	va_start(args, format);
-  	vsprintf_s(_printBuffer, PRINTBUFFER_SIZE, format, args);
+  	vsprintf_s(_printBuffer + strlen(_printBuffer), PRINTBUFFER_SIZE - strlen(_printBuffer), format, args);
 	std::cout << _printBuffer;
   	va_end(args);
 }

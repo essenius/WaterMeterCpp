@@ -51,7 +51,7 @@ public:
     virtual const char* get(Topic topic, const char* defaultValue) { return defaultValue; }
     virtual long get(Topic topic, long defaultValue) { return defaultValue; }
     virtual void update(Topic topic, const char* payload) {}
-    virtual void update(Topic topic, long payload) {}
+    virtual void update(Topic topic, long payload);
     virtual void mute(bool muted) { _muted = muted; }
     virtual bool isMuted() { return _muted; }
 
@@ -64,8 +64,10 @@ protected:
 class EventServer {
 public:
     EventServer();
-    EventServer(LogLevel logLevel);
-    virtual ~EventServer();
+    // No need for a destructor. Clients clean up when destroyed, and do so before the server gets destroyed.
+    // Deleting the server before the client would cause an access violation when the client gets destroyed.
+        
+    explicit EventServer(LogLevel logLevel);
     void provides(EventClient* e, Topic topic);
     void cannotProvide(EventClient* e, Topic topic);
     void cannotProvide(EventClient* e);
@@ -73,18 +75,6 @@ public:
     void subscribe(EventClient* e, Topic topic);
     void unsubscribe(EventClient* e, Topic topic);
     void unsubscribe(EventClient* e);
-
-    // todo: refactor logging. Not so pretty right now
-
-    const char* toString(const char* input) { return input; }
-    const char* toString(long input);
-
-    /*template<class payloadType>
-    void log(const char* format, EventClient* client, Topic topic, payloadType payload) {
-        if (_logLevel == LogLevel::On) {
-            Serial.printf(format, client->getName(), static_cast<int>(topic), toString(payload));
-        }
-    }*/
 
     // Request a topic. There can be only one provider
     template<class payloadType> payloadType request(Topic topic, payloadType defaultValue) {

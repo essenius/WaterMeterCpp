@@ -58,7 +58,7 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
 
 class MqttGateway : public EventClient {
 public:
-    MqttGateway(EventServer* eventServer);
+    explicit MqttGateway(EventServer* eventServer);
     // initMqtt is intended for testing purposes, to force not connecting
     void begin(Client* client, const char* clientName, bool initMqtt = true);
     bool connect(const char* user = CONFIG_MQTT_USER, const char* password = CONFIG_MQTT_PASSWORD);
@@ -66,8 +66,7 @@ public:
 
     void handleQueue();
     bool initializeMqtt();
-    virtual void update(Topic topic, const char* payload);
-    virtual void update(Topic topic, long payload);
+    void update(Topic topic, const char* payload) override;
 
 protected:
     BinaryStatusPublisher _connectionStatus;
@@ -81,7 +80,6 @@ protected:
     void announceProperty(const char* baseTopic, const char* name, const char* dataType, const char* format, bool settable);
     void callback(const char* topic, byte* payload, unsigned int length);
     bool ensureConnection();
-    bool isConnected();
     bool publishEntity(const char* baseTopic, const char* entity, const char* payload);
     bool publishProperty(const char* node, const char* property, const char* payload);
     void subscribeToEventServer();

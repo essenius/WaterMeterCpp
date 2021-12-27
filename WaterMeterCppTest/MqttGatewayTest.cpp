@@ -149,7 +149,8 @@ public:
 		gateway.handleQueue();
 		Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called again");
 		Assert::AreEqual(0, infoListener.getCallCount(), L"Info not called again (i.e. no re-init");
-		shiftMicros(1000000);
+
+		delay(1000);
 		gateway.handleQueue();
 		Assert::AreEqual("MQTT: Connecting", infoListener.getPayload(), L"Re-init after one second");
 	    Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", errorListener.getPayload(), L"Reconnect failed");
@@ -157,7 +158,7 @@ public:
 		connectedListener.reset();
 		infoListener.reset();
 		errorListener.reset();
-		shiftMicros(2000000);
+		delay(1000);
 		gateway.handleQueue();
 		Assert::AreEqual(1, connectedListener.getCallCount(), L"reconnected");
 		Assert::AreEqual("MQTT: Announcement complete", infoListener.getPayload(), L"Re-initialized");

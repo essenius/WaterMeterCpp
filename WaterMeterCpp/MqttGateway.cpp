@@ -264,8 +264,9 @@ void MqttGateway::update(Topic topic, const char* payload) {
     }
 };
 
+/* handled by EventClient 
 void MqttGateway::update(Topic topic, long payload) {
     char numberBuffer[20];
     sprintf(numberBuffer, "%ld", payload);
     update(topic, numberBuffer);
-};
+}; */

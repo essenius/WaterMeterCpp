@@ -17,10 +17,17 @@ EventClient::EventClient(const char* name, EventServer* eventServer) : _name(nam
 
 EventClient::~EventClient() {
     _eventServer->unsubscribe(this);
+    _eventServer->cannotProvide(this);
 }
 
 const char* EventClient::getName() {
     return _name;
+}
+
+void EventClient::update(Topic topic, long payload) {
+    char numberBuffer[20];
+    sprintf(numberBuffer, "%ld", payload);
+    update(topic, numberBuffer);
 }
 
 EventServer::EventServer(LogLevel logLevel) : _logLevel(logLevel) {
@@ -28,16 +35,6 @@ EventServer::EventServer(LogLevel logLevel) : _logLevel(logLevel) {
 }
 
 EventServer::EventServer() : EventServer(LogLevel::Off) {}
-
-EventServer::~EventServer() {
-    // should never be necessary, safety net
-    auto iterator = _subscribers.begin();
-    while (iterator != _subscribers.end()) {
-        iterator->second.clear();
-        iterator = _subscribers.erase(iterator);
-    }
-    _providers.clear();
-}
 
 void EventServer::cannotProvide(EventClient* client, Topic topic) {
     if (_providers[topic] == client) {
@@ -93,11 +90,6 @@ void EventServer::subscribe(EventClient* client, Topic topic) {
     std::set<EventClient*> subscribers;
     subscribers.insert(client);
     _subscribers[topic] = subscribers;
-}
-
-const char* EventServer::toString(long input) {
-    sprintf(_numberBuffer, "%ld", input);
-    return _numberBuffer;
 }
 
 // unsubscribe the client from all subscribed topics

@@ -78,7 +78,12 @@ namespace WaterMeterCppTest {
 			std::wstring messageBase(L"Built-in led for ");
 			messageBase += std::wstring(description) + L" cycle " ;
 			std::wstring messageOn = messageBase + L"ON";
-			ledDriver->update(topic, payload);
+			// force using both char pointer and long
+			if (payload == 0) {
+				ledDriver->update(topic, "F");
+			} else {
+				ledDriver->update(topic, payload);
+			}
 			for (int i = 0; i < interval; i++) {
 				ledDriver->update(Topic::Sample, "");
 				AssertBuiltinLed(HIGH, messageOn.c_str(), i);

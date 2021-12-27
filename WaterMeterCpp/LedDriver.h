@@ -15,7 +15,7 @@
 
 class LedDriver : public EventClient {
 public:
-    LedDriver(EventServer* eventServer);
+    explicit LedDriver(EventServer* eventServer);
     void begin();
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;

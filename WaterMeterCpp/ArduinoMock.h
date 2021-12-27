@@ -44,14 +44,14 @@ public:
 	// test support, not in original Serial object (i.e. don't use in production code)
 	void clearInput();
 	void clearOutput();
-	char* getOutput();
+	const char* getOutput();
 	void setInput(const char* input);
 private:
-	static const int PRINTBUFFER_SIZE = 1024;
-	char _printBuffer[PRINTBUFFER_SIZE];
-	static const int INPUTBUFFER_SIZE = 80;
-	char _inputBuffer[INPUTBUFFER_SIZE];
-	char* _bufferPointer;
+	static constexpr int PRINTBUFFER_SIZE = 1024;
+	char _printBuffer[PRINTBUFFER_SIZE] = {};
+	static constexpr int INPUTBUFFER_SIZE = 80;
+	char _inputBuffer[INPUTBUFFER_SIZE] = {};
+	char* _bufferPointer = nullptr;
 
 };
 

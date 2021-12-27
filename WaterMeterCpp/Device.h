@@ -17,7 +17,7 @@
 
 class Device : public EventClient {
 public:
-    Device(EventServer* eventServer);
+    explicit Device(EventServer* eventServer);
 
     // Device does not subscribe, so no destructor needed
 

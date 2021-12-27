@@ -16,7 +16,4 @@ private:
     int _callCount = 0;
     Topic _topic = Topic::None;
     char _payload[255];
-
-
 };
-

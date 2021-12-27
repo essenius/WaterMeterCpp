@@ -16,7 +16,8 @@
 
 class Log : public EventClient{
    public:
-       Log(EventServer * eventServer);
+       using EventClient::update;
+       explicit Log(EventServer *eventServer);
        void begin();
        void update(Topic topic, const char* payload) override;
 private:

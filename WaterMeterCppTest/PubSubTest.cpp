@@ -14,10 +14,10 @@ public:
     TEST_METHOD(pubSubScriptTest) {
         EventServer server(LogLevel::On);
         TestEventClient
-          client1("Client1", &server),
-          client2("Client2", &server),
-          client3("Client3", &server),
-          logger("Logger", &server);
+            client1("Client1", &server),
+            client2("Client2", &server),
+            client3("Client3", &server),
+            logger("Logger", &server);
         server.subscribe(&logger, Topic::Info);
         Assert::AreEqual("", logger.getPayload(), L"No log just after subscribing");
 
@@ -112,6 +112,11 @@ public:
         Assert::AreEqual(1, client1.getCallCount(), L"one call to client1");
     }
 
+    TEST_METHOD(pubSubDefaultGetTest) {
+        EventServer server(LogLevel::Off);
+        EventClient client1("Client1", &server);
+        Assert::AreEqual("x", client1.get(Topic::Error, "x"), L"Default get char* OK");
+        Assert::AreEqual(25L, client1.get(Topic::Info, 25L), L"default get long ok");
+    }
     };
-
 }

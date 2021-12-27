@@ -16,7 +16,7 @@
 
 class TimeServer : public EventClient {
 public:
-    TimeServer(EventServer* eventServer);
+    explicit TimeServer(EventServer* eventServer);
     void begin();
     virtual bool setTime();
     virtual const char* getTime();
