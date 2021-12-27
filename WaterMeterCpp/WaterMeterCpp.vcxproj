@@ -155,7 +155,7 @@
     <ClCompile Include="MqttGateway.cpp" />
     <ClCompile Include="NetMock.cpp" />
     <ClCompile Include="PayloadBuilder.cpp" />
-    <ClCompile Include="PubSub.cpp" />
+    <ClCompile Include="EventServer.cpp" />
     <ClCompile Include="PubSubClientMock.cpp" />
     <ClCompile Include="QMC5883LCompassMock.cpp" />
     <ClCompile Include="ResultWriter.cpp" />
@@ -171,6 +171,7 @@
     <ClInclude Include="BinaryStatusPublisher.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="EventClient.h" />
+    <ClInclude Include="EventServer.h" />
     <ClInclude Include="FirmwareManager.h" />
     <ClInclude Include="FlowMeter.h" />
     <ClInclude Include="LedDriver.h" />
@@ -180,7 +181,6 @@
     <ClInclude Include="MqttGateway.h" />
     <ClInclude Include="NetMock.h" />
     <ClInclude Include="PayloadBuilder.h" />
-    <ClInclude Include="PubSub.h" />
     <ClInclude Include="PubSubClientMock.h" />
     <ClInclude Include="QMC5883LCompassMock.h" />
     <ClInclude Include="ResultWriter.h" />

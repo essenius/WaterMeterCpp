@@ -13,7 +13,7 @@
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/LedDriver.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
-#include "../WaterMeterCpp/PubSub.h"
+#include "../WaterMeterCpp/EventServer.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

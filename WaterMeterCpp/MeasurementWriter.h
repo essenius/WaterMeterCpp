@@ -13,7 +13,7 @@
 #define HEADER_MEASUREMENTWRITER
 
 #include "BatchWriter.h"
-#include "PubSub.h"
+#include "EventServer.h"
 
 class MeasurementWriter : public BatchWriter {
 public:

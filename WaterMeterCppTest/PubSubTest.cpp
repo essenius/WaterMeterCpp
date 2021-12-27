@@ -2,7 +2,7 @@
 
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
-#include "../WaterMeterCpp/PubSub.h"
+#include "../WaterMeterCpp/EventServer.h"
 #include "TopicHelper.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

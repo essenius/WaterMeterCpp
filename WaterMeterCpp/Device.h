@@ -13,7 +13,7 @@
 #define HEADER_DEVICE_H
 
 #include <stdint.h>
-#include "PubSub.h"
+#include "EventServer.h"
 
 class Device : public EventClient {
 public:

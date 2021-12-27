@@ -2,7 +2,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include <string>
-#include "../WaterMeterCpp/PubSub.h"
+#include "../WaterMeterCpp/EventServer.h"
 
 namespace Microsoft {
     namespace VisualStudio {

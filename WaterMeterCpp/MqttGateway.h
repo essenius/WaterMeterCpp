@@ -12,7 +12,7 @@
 #ifndef HEADER_MQTTGATEWAY
 #define HEADER_MQTTGATEWAY
 #include <map>
-#include "PubSub.h"
+#include "EventServer.h"
 #include "BinaryStatusPublisher.h"
 #include "secrets_mqtt.h"
 

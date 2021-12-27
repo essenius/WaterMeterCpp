@@ -4,7 +4,7 @@
 
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Log.h"
-#include "../WaterMeterCpp/PubSub.h"
+#include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/TimeServer.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
 

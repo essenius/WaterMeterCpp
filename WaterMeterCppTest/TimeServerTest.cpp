@@ -3,7 +3,7 @@
 #include "../WaterMeterCpp/TimeServer.h"
 #include <regex>
 #include "../WaterMeterCpp/ArduinoMock.h"
-#include "../WaterMeterCpp/PubSub.h"
+#include "../WaterMeterCpp/EventServer.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

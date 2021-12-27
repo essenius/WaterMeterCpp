@@ -14,7 +14,7 @@
 
 #include "BatchWriter.h"
 #include "FlowMeter.h"
-#include "PubSub.h"
+#include "EventServer.h"
 
 class ResultWriter : public BatchWriter {
 public:

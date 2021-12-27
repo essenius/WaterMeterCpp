@@ -1,5 +1,5 @@
 #pragma once
-#include "..\WaterMeterCpp\PubSub.h"
+#include "..\WaterMeterCpp\EventServer.h"
 class TestEventClient : public EventClient {
 public:
     TestEventClient(const char* name, EventServer* eventServer) : EventClient(name, eventServer) {

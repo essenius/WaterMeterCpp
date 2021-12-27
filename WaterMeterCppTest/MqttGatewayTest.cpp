@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/MqttGateway.h"
-#include "../WaterMeterCpp/PubSub.h"
+#include "../WaterMeterCpp/EventServer.h"
 #include "TopicHelper.h"
 #include "../WaterMeterCpp/secrets_mqtt.h"
 

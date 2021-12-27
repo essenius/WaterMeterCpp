@@ -23,7 +23,7 @@
 #include "MagnetoSensorReader.h"
 //#include "MeasurementWriter.h"
 #include "MqttGateway.h"
-#include "PubSub.h"
+#include "EventServer.h"
 //#include "ResultWriter.h"
 //#include "Scheduler.h"
 #include "TimeServer.h"

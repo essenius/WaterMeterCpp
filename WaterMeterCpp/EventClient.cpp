@@ -10,7 +10,7 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "EventClient.h"
-#include "PubSub.h"
+#include "EventServer.h"
 
 EventClient::EventClient(const char* name, EventServer* eventServer) : _name(name), _eventServer(eventServer) {}
 

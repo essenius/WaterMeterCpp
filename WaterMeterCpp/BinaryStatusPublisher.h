@@ -1,7 +1,7 @@
 #ifndef HEADER_CONNECTIONSTATUS
 #define HEADER_CONNECTIONSTATUS
 
-#include "PubSub.h"
+#include "EventServer.h"
 
 class BinaryStatusPublisher
 {

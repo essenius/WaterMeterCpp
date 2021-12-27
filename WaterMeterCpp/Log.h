@@ -12,7 +12,7 @@
 #define HEADER_LOG_H
 
 #include "ChangePublisher.h"
-#include "PubSub.h"
+#include "EventServer.h"
 
 class Log : public EventClient{
    public:

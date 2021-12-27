@@ -12,7 +12,7 @@
 #ifndef HEADER_TIME_H
 #define HEADER_TIME_H
 
-#include "PubSub.h"
+#include "EventServer.h"
 
 class TimeServer : public EventClient {
 public:

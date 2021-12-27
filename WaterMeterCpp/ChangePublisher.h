@@ -1,7 +1,7 @@
 #ifndef HEADER_CHANGEPUBLISHER
 #define HEADER_CHANGEPUBLISHER
 
-#include "PubSub.h"
+#include "EventServer.h"
 
 template<class payloadType>
 class ChangePublisher{

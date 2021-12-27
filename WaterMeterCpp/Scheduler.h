@@ -13,7 +13,7 @@
 #define HEADER_IOSCHEDULER
 
 #include "BatchWriter.h"
-#include "PubSub.h"
+#include "EventServer.h"
 
 class Scheduler : public EventClient {
 public:

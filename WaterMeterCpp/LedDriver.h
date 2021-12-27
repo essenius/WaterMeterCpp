@@ -11,7 +11,7 @@
 #ifndef HEADER_LEDDRIVER
 #define HEADER_LEDDRIVER
 
-#include "PubSub.h"
+#include "EventServer.h"
 
 class LedDriver : public EventClient {
 public:

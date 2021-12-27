@@ -12,7 +12,7 @@
 #ifndef HEADER_BATCHWRITER
 #define HEADER_BATCHWRITER
 
-#include "PubSub.h"
+#include "EventServer.h"
 #include "TimeServer.h"
 #include "PayloadBuilder.h"
 #include "ChangePublisher.h"
