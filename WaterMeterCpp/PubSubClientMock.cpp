@@ -1,4 +1,6 @@
 
+#ifndef ESP32
+
 #include "PubSubClientMock.h"
 PubSubClient& PubSubClient::setCallback(MQTT_CALLBACK_SIGNATURE) {
     _callback = callback;
@@ -39,3 +41,5 @@ void PubSubClient::reset() {
     _canPublish = true;
 
 }
+
+#endif
