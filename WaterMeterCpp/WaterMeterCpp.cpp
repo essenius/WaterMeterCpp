@@ -107,7 +107,7 @@ void loop() {
         //measurementWriter.addMeasurement(measure);
         //resultWriter.addMeasurement(measure.y, &flowMeter);
 
-        if (flowMeter.getPeak()) {
+        if (flowMeter.isPeak()) {
             eventServer.publish(Topic::Peak, LONG_TRUE);
             peaks++;
         }

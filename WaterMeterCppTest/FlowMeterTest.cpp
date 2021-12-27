@@ -25,7 +25,7 @@ namespace WaterMeterCppTest {
 	TEST_CLASS(FlowMeterTest) {
 	public:
 
-		TEST_METHOD(FlowMeterGoodFlowTest)
+		TEST_METHOD(flowMeterGoodFlowTest)
 		{
 			FlowMeter flowMeter;
 			int measurement;
@@ -45,14 +45,74 @@ namespace WaterMeterCppTest {
 				assertFloatAreEqual(derivative, flowMeter.getDerivative(), L"Derivative #" + index);
 				measurements >> smoothDerivative;
 				assertFloatAreEqual(smoothDerivative, flowMeter.getSmoothDerivative(), L"Smooth Derivative");
-				std::cout << measurement << "," << flowMeter.getSmoothValue() << "," << flowMeter.getDerivative() << "," << flowMeter.getSmoothDerivative() << "," << flowMeter.getPeak() << "," << flowMeter.isExcluded() << "\n";
-				totalPeaks += flowMeter.getPeak();
+				std::cout << measurement << "," << flowMeter.getSmoothValue() << "," << flowMeter.getDerivative() << "," << flowMeter.getSmoothDerivative() << "," << flowMeter.isPeak() << "," << flowMeter.isExcluded() << "\n";
+				totalPeaks += flowMeter.isPeak();
 				index++;
 			}
 			Assert::AreEqual(5, totalPeaks, L"Found 5 peaks");
 			measurements.close();
 		}
 
+		TEST_METHOD(flowMeterEarlyOutlierTest) {
+			FlowMeter actual;
+			actual.addMeasurement(5000);
+			AssertResult(&actual, L"Fist measurement", 5000.0f,  0.0f, 0.0f);
+
+			actual.addMeasurement(2500);
+			// an early outlier should result in a reset with the last value as seed.
+			AssertResult(&actual, L"Early first outlier",
+				2500.0f, 0.0f, 0.0f, false, true, true, true );
+
+			// we're starting from scratch using the next value
+			actual.addMeasurement(2510);
+			AssertResult(&actual, L"first after outlier reset",2510.0f, 0.0f, 0.0f);
+		}
+
+		TEST_METHOD(flowMeterSingleOutlierIgnoredTest) {
+			FlowMeter actual;
+			actual.addMeasurement(1001);
+			AssertResult(&actual, L"First", 1001.0f, 0.0f, 0.0f);
+			actual.addMeasurement(999);
+			AssertResult(&actual, L"Second", 1000.9f, -0.08f, -0.004f);
+			actual.addMeasurement(1001);
+			AssertResult(&actual, L"Third", 1000.905f, -0.06f, -0.0068f);
+
+			addMeasurementSeries(&actual, 7, [](int i) { return 999 + i % 2 * 2; });
+			AssertResult(&actual, L"7 more good samples" , 1000.5884f, -0.1547f, -0.043f);
+
+			// introduce an outlier
+			actual.addMeasurement(2000);
+			AssertResult(&actual, L"outlier ignored",
+				1000.5884f, -0.1547f, -0.043f, false, true, true);
+
+			// new good data
+			actual.addMeasurement(1001);
+			AssertResult(&actual, L"good value after outlier",
+				1000.6090f, -0.1073f, -0.046f);
+
+		}
+
+
+private:
+		void AssertResult(FlowMeter* meter, const wchar_t* description, float smoothValue, float derivative, float smoothDerivative,
+			bool peak = false, bool excluded = false, bool outlier = false, bool excludeAll = false ) {
+			std::wstring message(description);
+			message += std::wstring(L" @ ");
+
+			assertFloatAreEqual(smoothValue, meter->getSmoothValue(), (message + L"Smooth Value").c_str());
+			assertFloatAreEqual(derivative, meter->getDerivative(), (message + L"Derivative").c_str());
+			assertFloatAreEqual(smoothDerivative, meter->getSmoothDerivative(), (message + L"Smooth Derivative").c_str());
+			Assert::AreEqual(peak, meter->isPeak(), (message + L"Peak").c_str());
+			Assert::AreEqual(excluded, meter->isExcluded(), (message + L"Excluded").c_str());
+			Assert::AreEqual(outlier, meter->isOutlier(), (message + L"Outlier").c_str());
+			Assert::AreEqual(excludeAll, meter->areAllExcluded(), (message + L"All excluded").c_str());
+		}
+
+		static void addMeasurementSeries(FlowMeter* flowMeter, int count, int (*f)(int)) {
+			for (int i = 0; i < count; i++) {
+				flowMeter->addMeasurement(f(i));
+			}
+		}
 		/*
 		TEST_METHOD(FlowMeterDriftTest) {
 			FlowMeterDriver actual;
@@ -73,22 +133,6 @@ namespace WaterMeterCppTest {
 			assessAfterSeries(&expectedFirstNormal, &actual, 1, [](int i) { return 1000; }, L"No more drifting");
 		}
 
-		TEST_METHOD(FlowMeterEarlyOutlierTest) {
-			FlowMeterDriver actual;
-
-			actual.addMeasurement(5000);
-			actual.addMeasurement(2500);
-			FlowMeterDriver expectedFirstOutlier(2500.0f, true, true, 0.0f, 0.0f, false, 2500.0f, 2500.0f, 0.0f, 0.0f, false, true, true, false, 0);
-			assertResultsAreEqual(&expectedFirstOutlier, &actual, L"Early first outlier");
-
-			actual.addMeasurement(2510);
-			FlowMeterDriver expectedFirstAfterOutlierReset(0.0f, false, false, 0.0f, 0.0f, false, 2510.0f, 2510.0f, 0.0f, 0.0f, false, false, false, false, 0);
-			assertResultsAreEqual(&expectedFirstAfterOutlierReset, &actual, L"first after outlier reset");
-
-			actual.addMeasurement(2490);
-			FlowMeterDriver expectedSecondAfterOutlierReset(20.0f, false, false, -10.0f, 2.0f, false, 2509.4f, 2508.0f, 1.4f, 0.14f, false, false, false, false, 0);
-			assertResultsAreEqual(&expectedSecondAfterOutlierReset, &actual, L"first after outlier reset");
-		}
 
 		TEST_METHOD(FlowMeterManyOutliersAfterStartupTest) {
 			FlowMeterDriver actual;
@@ -133,27 +177,27 @@ namespace WaterMeterCppTest {
 
 			addMeasurementSeries(&actual, 1, [](int i) { return 2500; });
 			Assert::AreEqual(0, actual.hasCalculatedPeak(), L"Just after first peak");
-			Assert::AreEqual(0, actual.getPeak(), L"Just after first peak");
+			Assert::AreEqual(0, actual.isPeak(), L"Just after first peak");
 
 			addMeasurementSeries(&actual, 1, [](int i) { return 2690; });
 			Assert::AreEqual(-1, actual.hasCalculatedPeak(), L"Start second vibration - calculated peak suppressed");
-			Assert::AreEqual(0, actual.getPeak(), L"Start second vibration - calculated peak suppressed");
+			Assert::AreEqual(0, actual.isPeak(), L"Start second vibration - calculated peak suppressed");
 
 			addMeasurementSeries(&actual, 7, [](int i) { return 2310 + (i % 2) * 380; });
 			Assert::AreEqual(0, actual.hasCalculatedPeak(), L"End of second vibration - delayed peak of first");
-			Assert::AreEqual(-1, actual.getPeak(), L"End of second vibration - delayed peak of first");
+			Assert::AreEqual(-1, actual.isPeak(), L"End of second vibration - delayed peak of first");
 
 			addMeasurementSeries(&actual, 1, [](int i) { return 2500; });
 			Assert::AreEqual(0, actual.hasCalculatedPeak(), L"Just after second vibration");
-			Assert::AreEqual(0, actual.getPeak(), L"Just after first peak");
+			Assert::AreEqual(0, actual.isPeak(), L"Just after first peak");
 
 			addMeasurementSeries(&actual, 7, [](int i) { return 2500; });
 			Assert::AreEqual(1, actual.hasCalculatedPeak(), L"Calculated peak for second vibration");
-			Assert::AreEqual(1, actual.getPeak(), L"Calculated peak for second vibration");
+			Assert::AreEqual(1, actual.isPeak(), L"Calculated peak for second vibration");
 
 			addMeasurementSeries(&actual, 7, [](int i) { return 2500; });
 			Assert::AreEqual(0, actual.hasCalculatedPeak(), L"No peak after horizon for second vibration");
-			Assert::AreEqual(0, actual.getPeak(), L"No peak after horizon for second vibration");
+			Assert::AreEqual(0, actual.isPeak(), L"No peak after horizon for second vibration");
 		}
 
 	private:

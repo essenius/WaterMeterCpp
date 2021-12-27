@@ -38,7 +38,7 @@ void ResultWriter::addMeasurement(int value, FlowMeter* result) {
     if (_result->isOutlier()) {
         _outlierCount++;
     }
-    if (_result->getPeak() > 0) {
+    if (_result->isPeak()) {
         _peakCount++;
     }
     if (_result->areAllExcluded()) {

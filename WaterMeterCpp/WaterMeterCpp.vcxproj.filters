@@ -78,6 +78,9 @@
     <ClCompile Include="PubSub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EventClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BatchWriter.h">
@@ -150,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BinaryStatusPublisher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EventClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

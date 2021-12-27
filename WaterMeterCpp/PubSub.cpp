@@ -13,6 +13,7 @@
 
 #include "ArduinoMock.h"
 
+/*
 EventClient::EventClient(const char* name, EventServer* eventServer) : _name(name), _eventServer(eventServer) {}
 
 EventClient::~EventClient() {
@@ -29,6 +30,7 @@ void EventClient::update(Topic topic, long payload) {
     sprintf(numberBuffer, "%ld", payload);
     update(topic, numberBuffer);
 }
+*/
 
 EventServer::EventServer(LogLevel logLevel) : _logLevel(logLevel) {
     _numberBuffer[0] = '\0';

@@ -145,6 +145,7 @@
     <ClCompile Include="BatchWriter.cpp" />
     <ClCompile Include="BinaryStatusPublisher.cpp" />
     <ClCompile Include="Device.cpp" />
+    <ClCompile Include="EventClient.cpp" />
     <ClCompile Include="FirmwareManager.cpp" />
     <ClCompile Include="FlowMeter.cpp" />
     <ClCompile Include="LedDriver.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="ChangePublisher.h" />
     <ClInclude Include="BinaryStatusPublisher.h" />
     <ClInclude Include="Device.h" />
+    <ClInclude Include="EventClient.h" />
     <ClInclude Include="FirmwareManager.h" />
     <ClInclude Include="FlowMeter.h" />
     <ClInclude Include="LedDriver.h" />

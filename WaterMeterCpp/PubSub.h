@@ -12,17 +12,17 @@
 #ifndef HEADER_PUBSUB
 #define HEADER_PUBSUB
 
-#ifdef ESP32
-#include <ESP.h>
-#else
-#endif
+//#ifdef ESP32
+//#include <ESP.h>
+//#else
+//#endif
+#include "EventClient.h"
+
 #include <cstdarg>
 #include <map>
 #include <set>
 
-constexpr long LONG_TRUE = 1L;
-constexpr long LONG_FALSE = 0L;
-
+/*
 enum class Topic {
     None = 0,
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
@@ -60,6 +60,7 @@ protected:
     const char* _name;
     bool _muted = false;
 };
+*/
 
 class EventServer {
 public:

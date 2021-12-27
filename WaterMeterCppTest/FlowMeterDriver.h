@@ -7,6 +7,7 @@
 class FlowMeterDriver : public FlowMeter {
 public:
 	FlowMeterDriver();
+
 	FlowMeterDriver::FlowMeterDriver(int amplitude, int highPass, int lowPassFast, int lowPassSlow,
 		bool exclude, bool excludeAll, bool flow, int lowPassOnHighPass, bool outlier, bool drift, int peak);
 

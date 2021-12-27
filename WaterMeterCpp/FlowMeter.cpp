@@ -82,7 +82,7 @@ float FlowMeter::getSmoothDerivative() {
   return _smoothDerivative;
 }
 
-int FlowMeter::getPeak() {
+bool FlowMeter::isPeak() {
     return _peak;
 }
 

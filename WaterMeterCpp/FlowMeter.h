@@ -19,7 +19,7 @@ public:
     float getSmoothValue();
     float getDerivative();
     float getSmoothDerivative();
-    int getPeak();
+    bool isPeak();
     bool isExcluded();
     bool isOutlier();
 protected:
@@ -35,7 +35,7 @@ protected:
     float _previousSmoothDerivative = 0.0f;
     float _previousSmoothValue = 0.0f;
     bool _outlier = false;
-    int _peak = 0;
+    bool _peak = false;
     unsigned int _startupSamplesLeft = STARTUP_SAMPLES;
 
     void detectOutlier(int measurement);
