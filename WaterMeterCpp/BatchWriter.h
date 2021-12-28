@@ -26,7 +26,7 @@ public:
     virtual void flush();
     long getFlushRate();
     const char* getMessage();
-    virtual bool needsFlush(bool endOfFile = false);
+    virtual bool needsFlush(bool force = false);
     bool newMessage();
     virtual void prepareFlush();
     virtual void setDesiredFlushRate(long flushRate);

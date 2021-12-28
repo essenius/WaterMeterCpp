@@ -28,6 +28,7 @@ using namespace std::placeholders;
 
 const char* RATE_RANGE = "0:8640000";
 const char* TYPE_INTEGER = "integer";
+const char* LAST_WILL_MESSAGE = "disconnected";
 
 PubSubClient mqttClient;
 
@@ -149,11 +150,15 @@ void MqttGateway::callback(const char* topic, byte* payload, unsigned int length
 
 bool MqttGateway::connect(const char* user, const char* password) {
     _eventServer->publish(Topic::Info, "MQTT: Connecting");
+    char lastWillTopic[TOPIC_BUFFER_SIZE];
+    sprintf(lastWillTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_ERROR);
+
     if (strlen(user) == 0) {
-        _connectionStatus.setState(mqttClient.connect(_clientName));
+        _connectionStatus.setState(mqttClient.connect(_clientName, lastWillTopic, 0, false, LAST_WILL_MESSAGE));
     }
     else {
-        _connectionStatus.setState(mqttClient.connect(_clientName, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD));
+        _connectionStatus.setState(mqttClient.connect(_clientName, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD, 
+            lastWillTopic, 0, false, LAST_WILL_MESSAGE));
     }
 
     if (!_connectionStatus.getState()) {

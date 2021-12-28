@@ -117,7 +117,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>C:\Users\rikes\source\repos\essenius\WaterMeterCpp\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ArduinoMock.obj;BatchWriter.obj;BinaryStatusPublisher.obj;EventClient.obj;EventServer.obj;FlowMeter.obj;Log.obj;MqttGateway.obj;LedDriver.obj;PayloadBuilder.obj;PubSubClientMock.obj;TimeServer.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ArduinoMock.obj;BatchWriter.obj;BinaryStatusPublisher.obj;EventClient.obj;EventServer.obj;FlowMeter.obj;Log.obj;MeasurementWriter.obj;MqttGateway.obj;LedDriver.obj;PayloadBuilder.obj;PubSubClientMock.obj;TimeServer.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>

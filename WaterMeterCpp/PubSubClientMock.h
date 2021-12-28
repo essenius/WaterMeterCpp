@@ -27,8 +27,8 @@
         bool setBufferSize(int size) { return true; }
         PubSubClient& setServer(const char* broker, const int port) { return *this; }
         PubSubClient& setCallback(MQTT_CALLBACK_SIGNATURE);
-        bool connect(const char* id);
-        bool connect(const char* id, const char* user, const char* pass);
+        bool connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage);
+        bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage);
         bool connected() { return _canConnect;  }
         bool subscribe(const char* topic) { return _canSubscribe; }
         bool loop() { return true; }

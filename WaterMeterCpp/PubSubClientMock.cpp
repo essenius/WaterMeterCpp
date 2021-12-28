@@ -7,15 +7,16 @@ PubSubClient& PubSubClient::setCallback(MQTT_CALLBACK_SIGNATURE) {
     return *this;
 }
 
-bool PubSubClient::connect(const char* id) {
+bool PubSubClient::connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
     strcpy_s(_id, FIELD_SIZE, id);
     return _canConnect;
 }
 
-bool PubSubClient::connect(const char* id, const char* user, const char* pass) {
+bool PubSubClient::connect(const char* id, const char* user, const char* pass,
+    const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
     strcpy_s(_user, FIELD_SIZE,  user);
     strcpy_s(_pass, FIELD_SIZE, pass);
-    return connect(id);
+    return connect(id, willTopic, willQos, willRetain, willMessage);
 }
 
 bool PubSubClient::publish(const char* topic, const char* payload) {

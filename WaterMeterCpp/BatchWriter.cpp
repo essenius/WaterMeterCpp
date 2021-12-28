@@ -21,6 +21,8 @@ void BatchWriter::begin(long desiredFlushRate) {
     setDesiredFlushRate(desiredFlushRate);
     flush();
     resetCounters();
+    _eventServer->subscribe(this, Topic::Connected);
+    _eventServer->subscribe(this, Topic::Disconnected);
 }
 
 long BatchWriter::convertToLong(const char* stringParam, long defaultValue) {
@@ -54,14 +56,14 @@ long BatchWriter::limit(long input, long min, long max) {
 
 // We flush the log every nth time, n being the flush rate. This puts less strain on the receiving end.
 // Returns whether a write action took place, so we can ensure writes are in different loops.
-bool BatchWriter::needsFlush(bool endOfFile) {
+bool BatchWriter::needsFlush(bool force) {
     if (_flushWaiting) {
         return true;
     }
     if (_flushRatePublisher.value() == 0 || _messageCount == 0 || !_canFlush) {
         return false;
     }
-    if (_messageCount % _flushRatePublisher.value() != 0 && !endOfFile && !_payloadBuilder->isAlmostFull()) {
+    if (_messageCount % _flushRatePublisher.value() != 0 && !force && !_payloadBuilder->isAlmostFull()) {
         return false;
     }
     prepareFlush();
@@ -105,4 +107,16 @@ void BatchWriter::setDesiredFlushRate(long flushRate) {
 } */
 
 void BatchWriter::update(Topic topic, long payload) {
+    switch (topic) {
+    case Topic::Connected: 
+        _canFlush = true;
+        break;
+    case Topic::Disconnected: 
+        _canFlush = false;
+        break;
+    default: {}
+        // ignore
+    
+    }
+
 }

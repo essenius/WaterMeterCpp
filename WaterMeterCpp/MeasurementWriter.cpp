@@ -19,12 +19,12 @@ MeasurementWriter::MeasurementWriter(EventServer* eventServer, PayloadBuilder* p
 
 void MeasurementWriter::addMeasurement(int measure) {
     // Only record measurements if we need to
-    if (newMessage()) {
+    if (newMessage() && _canFlush) {
         _payloadBuilder->writeArrayValue(measure);
     }
     else {
         if (_messageCount > 0) {
-            // If we can't create a new message (flush rate 0) and we have messages already, discard them
+            // If we can't flush and we have messages already, discard them
             flush();
             resetCounters();
         }
