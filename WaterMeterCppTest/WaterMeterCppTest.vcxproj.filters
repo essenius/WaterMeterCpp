@@ -33,9 +33,6 @@
     <ClCompile Include="FlowMeterTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SerialSchedulerTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LedDriverTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,6 +52,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PayloadBuilderTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SchedulerTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

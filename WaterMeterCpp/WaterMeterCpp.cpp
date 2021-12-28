@@ -102,12 +102,8 @@ void loop() {
         measurementWriter.addMeasurement(measure.y);
         resultWriter.addMeasurement(measure.y, &flowMeter);
 
-        if (flowMeter.isPeak()) {
-            eventServer.publish(Topic::Peak, LONG_TRUE);
-            peaks++;
-        } else {
-            eventServer.publish(Topic::Peak, LONG_FALSE);
-        }
+        eventServer.publish(Topic::Peak, flowMeter.isPeak());
+
 
         scheduler.processOutput();
 

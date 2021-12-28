@@ -10,8 +10,9 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "Scheduler.h"
-#include "ResultWriter.h"
-#include "MeasurementWriter.h"
+#include "BatchWriter.h"
+//#include "ResultWriter.h"
+//#include "MeasurementWriter.h"
 
 Scheduler::Scheduler(EventServer* eventServer, BatchWriter* measureWriter, BatchWriter* resultWriter) : EventClient("Scheduler", eventServer) {
 	_writer[MEASURE_ID] = measureWriter;

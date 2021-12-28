@@ -34,22 +34,26 @@ void ResultWriter::addDuration(long duration) {
 void ResultWriter::addMeasurement(int value, FlowMeter* result) {
     newMessage();
     _measure = value;
-    _result = result;
-    if (_result->isOutlier()) {
+    //_result = result;
+    if (result->isOutlier()) {
         _outlierCount++;
     }
-    if (_result->isPeak()) {
+    if (result->isPeak()) {
         _peakCount++;
     }
-    if (_result->hasFlow()) {
+    if (result->hasFlow()) {
         _flowCount++;
     }
-    if (_result->areAllExcluded()) {
+    if (result->areAllExcluded()) {
         _excludeCount = _messageCount;
     }
     else if (result->isExcluded()) {
         _excludeCount++;
     }
+    _smoothValue = result->getSmoothValue();
+    _derivative = result->getDerivative();
+    _smoothDerivative = result ->getSmoothDerivative();
+    _smoothAbsDerivative = result->getSmoothAbsDerivative();
 }
 
 void ResultWriter::begin() {
@@ -98,10 +102,10 @@ void ResultWriter::prepareFlush() {
     _payloadBuilder->writeParam("max", _maxDuration);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("analysis");
-    _payloadBuilder->writeParam("smoothValue", _result->getSmoothValue());
-    _payloadBuilder->writeParam("derivative", _result->getDerivative());
-    _payloadBuilder->writeParam("smoothDerivative", _result->getSmoothDerivative());
-    _payloadBuilder->writeParam("smoothAbsDerivative", _result->getSmoothAbsDerivative());
+    _payloadBuilder->writeParam("smoothValue", _smoothValue);
+    _payloadBuilder->writeParam("derivative", _derivative);
+    _payloadBuilder->writeParam("smoothDerivative", _smoothDerivative);
+    _payloadBuilder->writeParam("smoothAbsDerivative", _smoothAbsDerivative);
     _payloadBuilder->writeGroupEnd();
     BatchWriter::prepareFlush();
 }

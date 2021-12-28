@@ -11,28 +11,100 @@
 
 #include "pch.h"
 
-/*
+
 #include "CppUnitTest.h"
-#include "../WaterMeterCpp/Serialscheduler.h"
-#include "MeasurementWriterDriver.h"
-#include "ResultWriterDriver.h"
-#include "FlowMeterDriver.h"
-#include "SerialDriverMock.h"
+#include "../WaterMeterCpp/Scheduler.h"
+#include "../WaterMeterCpp/MeasurementWriter.h"
+#include "../WaterMeterCpp/ResultWriter.h"
+
 #include <string.h>
-#include "../WaterMeterCpp/Arduino.h"
+
+#include "FlowMeterDriver.h"
+#include "TestEventClient.h"
+#include "../WaterMeterCpp/ArduinoMock.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-int freeMemory() {
-	return 3750;
-}
+constexpr  int MEASURE_INTERVAL_MICROS = 10000;
 
 namespace WaterMeterCppTest {
+	static EventServer eventServer;
+	static TestEventClient measurementListener("measure", &eventServer);
+    static TestEventClient resultListener("result", &eventServer);
+	static PayloadBuilder builder1, builder2;
+	static MeasurementWriter measurementWriter(&eventServer, &builder1);
+	static ResultWriter resultWriter(&eventServer, &builder2, MEASURE_INTERVAL_MICROS);
+	static Scheduler scheduler(&eventServer, &measurementWriter, &resultWriter);
 
-	TEST_CLASS(SerialSchedulerTest) {
+    TEST_CLASS(SchedulerTest) {
 public:
 
-	TEST_METHOD(SerialSchedulerScriptTest) {
+	TEST_CLASS_INITIALIZE(schedulerClassInitalize) {
+		eventServer.subscribe(&measurementListener, Topic::Measurement);
+		eventServer.subscribe(&resultListener, Topic::Result);
+	}
+
+	TEST_METHOD_INITIALIZE(schedulerMethodInitialize) {
+		measurementWriter.begin();
+		resultWriter.begin();
+		measurementListener.reset();
+		resultListener.reset();
+	}
+
+	TEST_METHOD(schedulerForcedDoubleWriteTest) {
+		eventServer.publish(Topic::BatchSizeDesired, 1);
+		eventServer.publish(Topic::IdleRate, 1);
+
+		registerMeasurement(1000, 350);
+		scheduler.processOutput();
+		Assert::AreEqual(1, measurementListener.getCallCount(), L"Measurement was sent");
+		Assert::AreEqual(R"({"timestamp":"","measurements":[1000]})", measurementListener.getPayload(), L"Payload OK");
+		Assert::AreEqual(1, resultListener.getCallCount(), L"Measurement was sent");
+		Assert::AreEqual(
+			R"({"timestamp":"","lastValue":1000,"summaryCount":{"samples":1,"peaks":0,"flows":0},)"
+			R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
+			R"("duration":{"total":350,"average":350,"max":350},)"
+			R"("analysis":{"smoothValue":1000,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})",
+			resultListener.getPayload(),
+			L"Payload OK");
+	}
+
+	TEST_METHOD(schedulerAlternateWriteTest) {
+		eventServer.publish(Topic::BatchSizeDesired, 2);
+		Assert::AreEqual(2L, measurementWriter.getFlushRate(), L"measurement flush rate is 2");
+		Assert::AreNotEqual(2L, resultWriter.getFlushRate(), L"result flush rate is not 2");
+
+		eventServer.publish(Topic::IdleRate, 2);
+		Assert::AreEqual(2L, resultWriter.getFlushRate(), L"result flush rate is 2");
+
+		eventServer.publish(Topic::NonIdleRate, 33);
+		Assert::AreEqual(2L, measurementWriter.getFlushRate(), L"measurement flush rate is still 2");
+		Assert::AreEqual(2L, resultWriter.getFlushRate(), L"result flush rate is still 2");
+
+		registerMeasurement(1100, 400);
+		scheduler.processOutput();
+		Assert::AreEqual(0, measurementListener.getCallCount(), L"Measurement was not sent");
+		Assert::AreEqual(0, resultListener.getCallCount(), L"Result was not sent");
+
+		registerMeasurement(1105, 405);
+		scheduler.processOutput();
+		Assert::AreEqual(1, measurementListener.getCallCount(), L"Measurement was sent");
+		Assert::AreEqual(0, resultListener.getCallCount(), L"Result was not sent");
+		Assert::AreEqual(R"({"timestamp":"","measurements":[1100,1105]})", measurementListener.getPayload(), "measurement ok");
+
+		registerMeasurement(1103, 410);
+		scheduler.processOutput();
+		Assert::AreEqual(1, measurementListener.getCallCount(), L"New measurement was not sent");
+		Assert::AreEqual(1, resultListener.getCallCount(), L"Result was sent");
+		Assert::AreEqual(R"({"timestamp":"","lastValue":1105,"summaryCount":{"samples":2,"peaks":0,"flows":0},)"
+			R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
+			R"("duration":{"total":805,"average":403,"max":405},)"
+			R"("analysis":{"smoothValue":1105,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})",
+			resultListener.getPayload(),
+			"measurement ok");
+
+
+		/*
 		SerialDriverMock serialDriver;
 		serialDriver.begin();
 		MeasurementWriterDriver measurementWriter;
@@ -401,9 +473,16 @@ public:
 				}
 			}
 			Assert::AreEqual(10L, resultWriter.getDesiredFlushRate(), L"Desired flush rate for result OK");
-			Assert::AreEqual(10L, resultWriter.getFlushRate(), L"Flush rate now OK");
+			Assert::AreEqual(10L, resultWriter.getFlushRate(), L"Flush rate now OK"); */
 		}
+private:
+    static void registerMeasurement(int measurement, int duration) {
+	    measurementWriter.addMeasurement(measurement);
+		FlowMeterDriver expected(measurement);
+		resultWriter.addMeasurement(measurement, &expected);
+		eventServer.publish(Topic::ProcessTime, duration);
+	}
 
 	};
+
 }
-*/

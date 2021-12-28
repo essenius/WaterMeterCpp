@@ -9,6 +9,7 @@ FlowMeterDriver::FlowMeterDriver(int smoothValue, int derivative, int smoothDeri
 	_smoothValue = static_cast<float>(smoothValue);
 	_derivative = static_cast<float>(derivative);
 	_smoothDerivative = static_cast<float>(smoothDerivative);
+	_smoothAbsDerivative = 0.0f;
 	_exclude = exclude;
 	_excludeAll = excludeAll;
 	_flow = flow;

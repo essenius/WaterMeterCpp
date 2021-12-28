@@ -46,7 +46,11 @@ protected:
     long _overrunCount = 0L;
     long _peakCount = 0L;
     long _processTime = 0L;
-    FlowMeter* _result = nullptr;
+    //FlowMeter* _result = nullptr;
+    float _smoothValue = 0.0f;
+    float _derivative = 0.0f;
+    float _smoothDerivative = 0.0f;
+    float _smoothAbsDerivative = 0.0f;
     long _sumDuration = 0L;
 
     void publishOverrun(bool overrun);

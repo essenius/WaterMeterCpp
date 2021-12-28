@@ -20,9 +20,9 @@ public:
     Scheduler(EventServer* eventServer, BatchWriter* measureWriter, BatchWriter* resultWriter);
     bool processOutput();
 private:
-    static const int MEASURE_ID = 0;
-    static const int RESULT_ID = 1;
-    static const int WRITER_COUNT = 2;
+    static constexpr int MEASURE_ID = 0;
+    static constexpr int RESULT_ID = 1;
+    static constexpr int WRITER_COUNT = 2;
 
     bool _delayedFlush = false;
     bool _resultWritten = false;
