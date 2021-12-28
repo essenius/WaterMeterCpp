@@ -33,7 +33,7 @@
 #include "secrets.h" // for CONFIG_BASE_FIRMWARE_URL
 
 
-constexpr int BUILD_NUMBER = 4;
+constexpr int BUILD_NUMBER = 6;
 
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 constexpr unsigned long MEASUREMENTS_PER_MINUTE = 60UL * 1000UL * 1000UL / MEASURE_INTERVAL_MICROS;

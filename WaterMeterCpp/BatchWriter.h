@@ -34,9 +34,10 @@ public:
 protected:
     virtual void initBuffer();
     long convertToLong(const char* stringParam, long defaultValue = 0L);
-    long limit(long input, long min, long max);
+    static long limit(long input, long min, long max);
     //void setFlushRate(long flushRate);
     virtual void update(Topic topic, long payload);
+    virtual void update(Topic topic, const char* payload);
     bool _canFlush = true;
     long _desiredFlushRate = 0;
     //long _flushRate = 0;

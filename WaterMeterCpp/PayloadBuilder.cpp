@@ -16,8 +16,8 @@
 // higher level functions. See also the template function writeParam in .h
 
 void PayloadBuilder::begin() {
-    _printBuffer[0] = 0;
-    _currentPosition = _printBuffer;
+    _resultBuffer[0] = 0;
+    _currentPosition = _resultBuffer;
 }
 
 void PayloadBuilder::initialize() {
@@ -61,21 +61,21 @@ void PayloadBuilder::writeLabel(const char* label) {
 }
 
 const char* PayloadBuilder::toString() {
-    return _printBuffer;
+    return _resultBuffer;
 }
 
 // low level functions 
 
 bool PayloadBuilder::isAlmostFull() {
-    return remainingSize() < PRINT_BUFFER_MARGIN;
+    return remainingSize() < RESULT_BUFFER_MARGIN;
 }
 
 int PayloadBuilder::remainingSize() {
-    return PRINT_BUFFER_SIZE - static_cast<int>(strlen(_printBuffer)) - 1;
+    return RESULT_BUFFER_SIZE - static_cast<int>(strlen(_resultBuffer)) - 1;
 }
 
 void PayloadBuilder::updatePosition() {
-    _currentPosition = _printBuffer + strlen(_printBuffer);
+    _currentPosition = _resultBuffer + strlen(_resultBuffer);
 }
 
 void PayloadBuilder::writeDelimiter(char delimiter) {
@@ -84,9 +84,9 @@ void PayloadBuilder::writeDelimiter(char delimiter) {
 }
 
 void PayloadBuilder::writeString(const char* input) {
-    strcat(_printBuffer, "\"");
-    strcat(_printBuffer, input);
-    strcat(_printBuffer, "\"");
+    strcat(_resultBuffer, "\"");
+    strcat(_resultBuffer, input);
+    strcat(_resultBuffer, "\"");
     updatePosition();
 }
 

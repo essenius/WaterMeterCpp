@@ -27,7 +27,7 @@ public:
 protected:
     void initBuffer() override;
     static constexpr unsigned char DEFAULT_FLUSH_RATE = 50;
-    static constexpr unsigned char MAX_FLUSH_RATE = 50;
+    static constexpr unsigned char MAX_FLUSH_RATE = 60;
 };
 
 #endif

@@ -76,7 +76,19 @@ namespace WaterMeterCppTest {
 			writer.addMeasurement(-3000);
 			Assert::AreEqual(R"({"timestamp":"","measurements":[)", writer.getMessage(), "buffer flushed since we can't write");
 
+			// reconnect
+			eventServer.publish(Topic::Connected, 1);
+			writer.addMeasurement(-4000);
+			Assert::AreEqual(R"({"timestamp":"","measurements":[-4000)", writer.getMessage(), "restarted filling buffer");
+			Assert::IsFalse(writer.needsFlush(), L"No flush needed after first");
 
+			// Switch to max buffer size 
+			batchSizeListener.reset();
+			eventServer.publish(Topic::BatchSizeDesired, 10000L);
+			writer.addMeasurement(-5000);
+			Assert::IsTrue(writer.needsFlush(), L"Needs flush after reconnect");
+			Assert::AreEqual(1, batchSizeListener.getCallCount());
+			Assert::AreEqual("60", batchSizeListener.getPayload());
 		}
 	};
 }

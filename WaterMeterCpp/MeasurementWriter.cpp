@@ -52,7 +52,8 @@ void MeasurementWriter::update(Topic topic, const char* payload) {
     if (topic == Topic::BatchSizeDesired) {
         auto desiredRate = convertToLong(payload, DEFAULT_FLUSH_RATE);
         return update(topic, desiredRate);
-    }
+    } 
+    BatchWriter::update(topic, payload);
 }
 
 void MeasurementWriter::update(Topic topic, long payload) {

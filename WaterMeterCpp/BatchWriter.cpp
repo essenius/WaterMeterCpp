@@ -29,7 +29,7 @@ long BatchWriter::convertToLong(const char* stringParam, long defaultValue) {
     if (strcmp(stringParam, "DEFAULT") == 0) {
         return defaultValue;
     }
-    return strtol(stringParam, 0, 10);
+    return strtol(stringParam, nullptr, 10);
 }
 
 void BatchWriter::flush() {
@@ -57,7 +57,7 @@ long BatchWriter::limit(long input, long min, long max) {
 // We flush the log every nth time, n being the flush rate. This puts less strain on the receiving end.
 // Returns whether a write action took place, so we can ensure writes are in different loops.
 bool BatchWriter::needsFlush(bool force) {
-    if (_flushWaiting) {
+    if (_flushWaiting && _canFlush) {
         return true;
     }
     if (_flushRatePublisher.value() == 0 || _messageCount == 0 || !_canFlush) {
@@ -97,26 +97,20 @@ void BatchWriter::setDesiredFlushRate(long flushRate) {
     }
 }
 
-/*void BatchWriter::setFlushRate(long flushRate) {
-    _flushRatePublisher.update(flushRate);
-    if (_flushRate == flushRate) {
-        return;
-    }
-    _flushRate = flushRate;
-    _eventServer->publish(_flushRateTopic, flushRate); 
-} */
-
-void BatchWriter::update(Topic topic, long payload) {
+void BatchWriter::update(Topic topic, const char* payload) {
     switch (topic) {
-    case Topic::Connected: 
+    case Topic::Connected:
         _canFlush = true;
         break;
-    case Topic::Disconnected: 
+    case Topic::Disconnected:
         _canFlush = false;
         break;
     default: {}
-        // ignore
-    
+           // ignore
     }
+}
 
+void BatchWriter::update(Topic topic, long payload) {
+    // shortcut, we don't use the payloads for the topics we're interested in
+    return BatchWriter::update(topic, "");
 }

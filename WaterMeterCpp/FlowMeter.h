@@ -18,8 +18,10 @@ public:
     bool areAllExcluded();
     float getSmoothValue();
     float getDerivative();
+    float getSmoothAbsDerivative();
     float getSmoothDerivative();
     bool isPeak();
+    bool hasFlow();
     bool isExcluded();
     bool isOutlier();
 protected:
@@ -31,9 +33,11 @@ protected:
     float _derivative = 0.0f;
     float _smoothValue = 0.0f;
     float _smoothDerivative = 0.0f;
+    float _smoothAbsDerivative = 0.0f;
     float _minDerivative = MIN_DERIVATIVE_PEAK;
     float _previousSmoothDerivative = 0.0f;
     float _previousSmoothValue = 0.0f;
+    bool _flow = false;
     bool _outlier = false;
     bool _peak = false;
     unsigned int _startupSamplesLeft = STARTUP_SAMPLES;

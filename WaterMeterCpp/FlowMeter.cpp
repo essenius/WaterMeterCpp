@@ -26,6 +26,10 @@ constexpr float OUTLIER_THRESHOLD = 200.0f;
 // The troughs are usually around -8. Take 25% of that for the zero check, to eliminate much of the noise
 constexpr float ZEROCHECK_THESHOLD = -2.0f;
 
+// if the smooth absolute of the derivative is larger than the threshold, we have flow.
+constexpr float FLOW_THRESHOLD = 1.0f;
+
+
 void FlowMeter::addMeasurement(int measurement) {
     bool firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
     if (_startupSamplesLeft > 0) {
@@ -66,6 +70,11 @@ void FlowMeter::detectPeaks(int measurement) {
     _smoothDerivative = lowPassFilter(_derivative, _smoothDerivative, LOW_PASS_ON_HIGH_PASS_ALPHA);
     // when the derivative moves from positive to negative (with a threshold to eliminate noise) we have a peak in the original signal
     _peak = _smoothDerivative <= ZEROCHECK_THESHOLD && _previousSmoothDerivative > ZEROCHECK_THESHOLD ? 1 : 0;
+
+    // we use the smooth abs derivative to check for flow
+    _smoothAbsDerivative = lowPassFilter(fabsf(_derivative), _smoothAbsDerivative, LOW_PASS_ON_HIGH_PASS_ALPHA);
+    _flow = _smoothAbsDerivative > FLOW_THRESHOLD;
+
     _previousSmoothValue = _smoothValue;
     _previousSmoothDerivative = _smoothDerivative;
 }
@@ -78,12 +87,20 @@ float FlowMeter::getDerivative() {
   return _derivative;
 }
 
+float FlowMeter::getSmoothAbsDerivative() {
+    return _smoothAbsDerivative;
+}
+
 float FlowMeter::getSmoothDerivative() {
   return _smoothDerivative;
 }
 
 bool FlowMeter::isPeak() {
     return _peak;
+}
+
+bool FlowMeter::hasFlow() {
+    return _flow;
 }
 
 float FlowMeter::highPassFilter(float measure, float previous, float filterValue, float alpha) {
@@ -122,6 +139,7 @@ void FlowMeter::markAnomalies(int measurement) {
 void FlowMeter::resetAnomalies() {
     _outlier = false;
     _firstOutlier = false;
+    _flow = false;
     _exclude = false;  
     _excludeAll = false;
 }
@@ -130,6 +148,7 @@ void FlowMeter::resetFilters(int initialMeasurement) {
     _smoothValue = (float)initialMeasurement;
     _derivative = 0.0f;
     _smoothDerivative = 0.0f;
+    _smoothAbsDerivative = 0.0f;
     _minDerivative = MIN_DERIVATIVE_PEAK;
     _previousSmoothValue = _smoothValue;
 }

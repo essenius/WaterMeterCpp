@@ -41,6 +41,9 @@ void ResultWriter::addMeasurement(int value, FlowMeter* result) {
     if (_result->isPeak()) {
         _peakCount++;
     }
+    if (_result->hasFlow()) {
+        _flowCount++;
+    }
     if (_result->areAllExcluded()) {
         _excludeCount = _messageCount;
     }
@@ -50,13 +53,11 @@ void ResultWriter::addMeasurement(int value, FlowMeter* result) {
 }
 
 void ResultWriter::begin() {
-    _eventServer->subscribe(this, Topic::Connected);
-    _eventServer->subscribe(this, Topic::Disconnected);
     _eventServer->subscribe(this, Topic::IdleRate);
     _eventServer->subscribe(this, Topic::NonIdleRate);
     _eventServer->subscribe(this, Topic::ProcessTime);
-    _eventServer->subscribe(this, Topic::Peak);
     BatchWriter::begin(FLUSH_RATE_IDLE);
+
     // This is the only time the desired rates get published from here.
     _eventServer->publish(this, Topic::IdleRate, _idleFlushRate);
     _eventServer->publish(this, Topic::NonIdleRate, _nonIdleFlushRate);
@@ -84,6 +85,7 @@ void ResultWriter::prepareFlush() {
     _payloadBuilder->writeGroupStart("summaryCount");
     _payloadBuilder->writeParam("samples", _messageCount);
     _payloadBuilder->writeParam("peaks", _peakCount);
+    _payloadBuilder->writeParam("flows", _flowCount);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("exceptionCount");
     _payloadBuilder->writeParam("outliers", _outlierCount);
@@ -99,6 +101,7 @@ void ResultWriter::prepareFlush() {
     _payloadBuilder->writeParam("smoothValue", _result->getSmoothValue());
     _payloadBuilder->writeParam("derivative", _result->getDerivative());
     _payloadBuilder->writeParam("smoothDerivative", _result->getSmoothDerivative());
+    _payloadBuilder->writeParam("smoothAbsDerivative", _result->getSmoothAbsDerivative());
     _payloadBuilder->writeGroupEnd();
     BatchWriter::prepareFlush();
 }
@@ -130,8 +133,17 @@ void ResultWriter::setNonIdleFlushRate(long rate) {
 }
 
 void ResultWriter::update(Topic topic, const char* payload) {
-    // The only string payloads are for new flush rates
-    update(topic, convertToLong(payload, topic == Topic::IdleRate ? FLUSH_RATE_IDLE : FLUSH_RATE_INTERESTING));
+    // we only listen to topics with numerical values, so conversion should work
+    switch (topic) {
+    case Topic::IdleRate:
+        update(topic, convertToLong(payload, FLUSH_RATE_IDLE));
+        return;
+    case Topic::NonIdleRate:
+        update(topic, convertToLong(payload, FLUSH_RATE_INTERESTING));
+        return;
+    default:
+        update(topic, convertToLong(payload, 0));
+    }
 }
 
 void ResultWriter::update(Topic topic, long payload) {
@@ -139,18 +151,13 @@ void ResultWriter::update(Topic topic, long payload) {
     switch (topic) {
     case Topic::IdleRate:
         setIdleFlushRate(rate);
-        break;
+        return;
     case Topic::NonIdleRate:
         setNonIdleFlushRate(rate);
-        break;
-    case Topic::Connected:
-        _canFlush = true;
-        break;
-    case Topic::Disconnected:
-        _canFlush = false;
-        break;
+        return;
     case Topic::ProcessTime:
         addDuration(payload);
+        return;
     default:
         BatchWriter::update(topic, payload);
     }

@@ -29,7 +29,6 @@ public:
     void writeGroupStart(const char* label);
     void writeLabel(const char* label);
 
-    static constexpr int PRINT_BUFFER_SIZE = 512;
 
     template <class T>
     void writeArrayValue(T value) {
@@ -50,8 +49,9 @@ public:
     }
 
 private:
+    static constexpr int RESULT_BUFFER_SIZE = 512;
     static constexpr int NUMBER_BUFFER_SIZE = 16;
-    static constexpr int PRINT_BUFFER_MARGIN = 20;
+    static constexpr int RESULT_BUFFER_MARGIN = 20;
 
     void writeString(const char* input);
     void writeString(float input);
@@ -59,10 +59,10 @@ private:
     void writeString(long input);
     void writeString(unsigned long input);
 
-    char* _currentPosition = _printBuffer;
+    char* _currentPosition = _resultBuffer;
     bool _needsDelimiter = false;
     char _numberBuffer[NUMBER_BUFFER_SIZE] = { 0 };
-    char _printBuffer[PRINT_BUFFER_SIZE] = { 0 };
+    char _resultBuffer[RESULT_BUFFER_SIZE] = { 0 };
 };
 
 #endif
