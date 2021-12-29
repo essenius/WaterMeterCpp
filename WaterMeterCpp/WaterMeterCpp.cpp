@@ -41,7 +41,7 @@ constexpr unsigned long MEASUREMENTS_PER_MINUTE = 60UL * 1000UL * 1000UL / MEASU
 EventServer eventServer(LogLevel::Off);
 LedDriver ledDriver(&eventServer);
 
-Wifi wifi;
+Wifi wifi(&eventServer);
 TimeServer timeServer(&eventServer);
 Device device(&eventServer);
 MagnetoSensorReader sensorReader;
@@ -52,11 +52,10 @@ PayloadBuilder resultPayloadBuilder;
 ResultWriter resultWriter(&eventServer, &resultPayloadBuilder, MEASURE_INTERVAL_MICROS);
 MqttGateway mqttGateway(&eventServer);
 Scheduler scheduler(&eventServer, &measurementWriter, &resultWriter);
-FirmwareManager firmwareManager;
+FirmwareManager firmwareManager(&eventServer);
 Log logger(&eventServer);
 
 unsigned long nextMeasureTime;
-//unsigned long startLoopTimestamp;
 
 bool clearedToGo = false;
 
@@ -71,6 +70,7 @@ void setup() {
 
     if (timeServer.timeWasSet()) {
         firmwareManager.tryUpdateFrom(BUILD_NUMBER);
+        eventServer.publish(Topic::Build, BUILD_NUMBER);
         eventServer.publish(Topic::TimeOverrun, LONG_FALSE);
         mqttGateway.begin(wifi.getClient(), wifi.getHostName());
         // the writers need the time, so can't do this earlier. This means connected is true by default
@@ -98,26 +98,14 @@ void loop() {
         eventServer.publish(Topic::Sample, LONG_TRUE);
         eventServer.publish(Topic::Processing, LONG_TRUE);
         SensorReading measure = sensorReader.read();
-        flowMeter.addMeasurement(measure.y);
-        measurementWriter.addMeasurement(measure.y);
-        resultWriter.addMeasurement(measure.y, &flowMeter);
+        flowMeter.addMeasurement(measure.Y);
+        measurementWriter.addMeasurement(measure.Y);
+        resultWriter.addMeasurement(measure.Y, &flowMeter);
 
         eventServer.publish(Topic::Peak, flowMeter.isPeak());
 
 
         scheduler.processOutput();
-
-        // Do everything we can before the timing moment. Only the reporting of the timing itself is not counted.
-        loopCount++;
-        if (loopCount >= 10) {
-            payloadBuilder.initialize();
-            payloadBuilder.writeParam("time", timeServer.getTime());
-            payloadBuilder.writeParam("x", measure.x);
-            payloadBuilder.writeParam("y", flowMeter.getSmoothValue());
-            payloadBuilder.writeParam("z", measure.z);
-            payloadBuilder.writeParam("dy", flowMeter.getSmoothDerivative());
-            payloadBuilder.writeParam("peaks", peaks);
-        }
 
         eventServer.publish(Topic::ProcessTime, micros() - startLoopTimestamp);
         eventServer.publish(Topic::Processing, LONG_FALSE);
@@ -132,19 +120,6 @@ void loop() {
 
             totalUsedTime += usedTime;
             maxUsedTime = usedTime > maxUsedTime ? usedTime : maxUsedTime;
-
-            // If we need to write out, complete the message and do it
-            // TODO: eliminate
-            if (loopCount >= 10) {
-                payloadBuilder.writeParam("used", totalUsedTime);
-                payloadBuilder.writeParam("max", maxUsedTime);
-                payloadBuilder.writeGroupEnd();
-                eventServer.publish(Topic::Measurement, payloadBuilder.toString());
-                loopCount = 0;
-                totalUsedTime = 0;
-                maxUsedTime = 0;
-                peaks = 0;
-            }
 
             // fill the remaining time with checking for messages and validating connection
             while (micros() < nextMeasureTime) {

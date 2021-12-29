@@ -13,9 +13,9 @@
 #define HEADER_MAGNETOSENSORREADER
 
 struct SensorReading {
-  int x;
-  int y;
-  int z;
+  int X;
+  int Y;
+  int Z;
 };
 
 class MagnetoSensorReader {
@@ -23,7 +23,7 @@ public:
     void begin();
     SensorReading read();
 private:
-    SensorReading sensorReading;
+    SensorReading sensorReading = {};
 };
 
 #endif

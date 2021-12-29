@@ -9,22 +9,24 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#pragma once
-#include "..\WaterMeterCpp\EventServer.h"
-class TestEventClient : public EventClient {
-public:
-    TestEventClient(const char* name, EventServer* eventServer) : EventClient(name, eventServer) {
-        _payload[0] = 0;
-    }
+#ifndef HEADER_LEDFLASHER
+#define HEADER_LEDFLASHER
 
-    void reset();
-    virtual void update(Topic topic, const char* payload);
-    virtual void update(Topic topic, long payload);
-    Topic getTopic();
-    char* getPayload();
-    int getCallCount();
+#ifdef ESP32
+#include <ESP.h>
+#else 
+#include "ArduinoMock.h"
+#endif
+
+class LedFlasher
+{
+public:
+    LedFlasher(uint8_t led, unsigned int interval);
+    void setInterval(unsigned int interval);
+    void signal();
 private:
-    int _callCount = 0;
-    Topic _topic = Topic::None;
-    char _payload[512];
+    unsigned int _interval = 1;
+    uint8_t _led = LED_BUILTIN;
+    unsigned int _ledCounter = 0;
 };
+#endif

@@ -19,10 +19,13 @@
 #include <stdint.h>
 #include <string.h>
 
-LedDriver::LedDriver(EventServer* eventServer) : EventClient("LedDriver", eventServer) {}
+LedDriver::LedDriver(EventServer* eventServer) : EventClient("LedDriver", eventServer),
+    _connectingFlasher(GREEN_LED, 1),
+    _sampleFlasher(LED_BUILTIN, IDLE_INTERVAL) {}
 
 void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Connected);
+    _eventServer->subscribe(this, Topic::Connecting);
     _eventServer->subscribe(this, Topic::Disconnected);
     _eventServer->subscribe(this, Topic::Error);
     _eventServer->subscribe(this, Topic::Exclude);
@@ -72,22 +75,6 @@ uint8_t LedDriver::convertToState(const char* state) {
 }
 
 /// <summary>
-/// Signal that a measurement happened. This is done by flashing at a certain rate.
-/// The rate is set via publishing to Exclude
-/// </summary>
-void LedDriver::signalMeasurement() {
-    if (_interval != _newInterval) {
-        _ledCounter = _newInterval;
-        _interval = _newInterval;
-    }
-    if (_ledCounter == 0) {
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-        _ledCounter = _newInterval;
-    }
-    _ledCounter--;
-}
-
-/// <summary>
 /// Event listener, switching leds / updating flash rate
 /// </summary>
 /// <param name="topic"></param>
@@ -96,16 +83,20 @@ void LedDriver::update(Topic topic, const char* payload) {
     uint8_t state = convertToState(payload);
     unsigned char led;
     switch (topic) {
+    case Topic::Exclude:
+    case Topic::Flow:
+        update(topic, state);
+        return;
     case Topic::Error:
         led = RED_LED;
         break;
-    case Topic::Exclude:
-        update(topic, state);
-        return;
     case Topic::Connected:
         led = GREEN_LED;
         state = true;
         break;
+    case Topic::Connecting:
+        _connectingFlasher.signal();
+        return;
     case Topic::Disconnected:
         led = GREEN_LED;
         state = false;
@@ -116,11 +107,12 @@ void LedDriver::update(Topic topic, const char* payload) {
     case Topic::TimeOverrun:
         led = RED_LED;
         break;
+
     case Topic::Peak:
         led = BLUE_LED;
         break;
     case Topic::Sample:
-        signalMeasurement();
+        _sampleFlasher.signal();
         // fall through to default
     default:
         return;
@@ -129,10 +121,13 @@ void LedDriver::update(Topic topic, const char* payload) {
 }
 
 void LedDriver::update(Topic topic, long payload) {
-    if (topic == Topic::Exclude) {
-        _newInterval = payload ? EXCLUDE_INTERVAL : WAIT_INTERVAL;
+    if (topic == Topic::Flow || topic == Topic::Exclude) {
+        unsigned int interval = IDLE_INTERVAL;
+        if (payload) {
+            interval = topic == Topic::Flow ? FLOW_INTERVAL : EXCLUDE_INTERVAL;
+        }
+        _sampleFlasher.setInterval(interval);
+        return;
     }
-    else {
-        update(topic, payload ? "1" : "0");
-    }
+    update(topic, payload ? "1" : "0");
 }

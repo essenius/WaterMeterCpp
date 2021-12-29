@@ -9,22 +9,23 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#pragma once
-#include "..\WaterMeterCpp\EventServer.h"
-class TestEventClient : public EventClient {
-public:
-    TestEventClient(const char* name, EventServer* eventServer) : EventClient(name, eventServer) {
-        _payload[0] = 0;
-    }
+#include "LedFlasher.h"
 
-    void reset();
-    virtual void update(Topic topic, const char* payload);
-    virtual void update(Topic topic, long payload);
-    Topic getTopic();
-    char* getPayload();
-    int getCallCount();
-private:
-    int _callCount = 0;
-    Topic _topic = Topic::None;
-    char _payload[512];
-};
+LedFlasher::LedFlasher(uint8_t led, unsigned int interval) {
+    _led = led;
+    _interval = interval;
+}
+
+void LedFlasher::setInterval(unsigned int interval) {
+    _interval = interval;
+    _ledCounter = 0;
+}
+
+void LedFlasher::signal() {
+    if (_ledCounter == 0) {
+        digitalWrite(_led, !digitalRead(_led));
+        _ledCounter = _interval;
+    }
+    _ledCounter--;
+}
+

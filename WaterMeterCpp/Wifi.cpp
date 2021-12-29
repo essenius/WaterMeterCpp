@@ -16,10 +16,16 @@
 #endif
 
 #include "Wifi.h"
+
+#include "EventServer.h"
 #include "secrets_wifi.h"
 
 WiFiClientSecure* Wifi::getClient() {
     return &_wifiClient;
+}
+
+Wifi::Wifi(EventServer* eventServer) : EventClient("Wifi", eventServer) {
+    _macAddress[0] = 0;
 }
 
 void Wifi::begin() {
@@ -36,7 +42,7 @@ void Wifi::begin() {
     IPAddress subnet(255, 255, 255, 0);
 #endif     
     if (!WiFi.config(localIP, gateway, subnet, primaryDNS)) {
-        Serial.println("Could not configure Wifi with static IP");
+        _eventServer->publish(Topic::Error, "Could not configure Wifi with static IP");
     }
 #endif
     // if a specific access point was specified, honor that
@@ -47,29 +53,24 @@ void Wifi::begin() {
     WiFi.begin(CONFIG_SSID, CONFIG_PASSWORD);
 #endif
 
-    Serial.print("Connecting");
     while (!WiFi.isConnected()) {
         delay(100);
-        Serial.print(".");
+        _eventServer->publish(Topic::Connecting, LONG_TRUE);
     }
-    Serial.println("\nConnected to Wifi");
+    _eventServer->publish(Topic::Info, "Connected to Wifi");
     _wifiClient.setCACert(CONFIG_ROOTCA_CERTIFICATE);
     _wifiClient.setCertificate(CONFIG_DEVICE_CERTIFICATE);
     _wifiClient.setPrivateKey(CONFIG_DEVICE_PRIVATE_KEY);
 
     if (!WiFi.setHostname(CONFIG_DEVICE_NAME)) {
-        Serial.println("Could not set host name");
+        _eventServer->publish(Topic::Info, "Could not set host name");
     }
-    else {
-        Serial.printf("Set hostname to '%s'\n", WiFi.getHostname());
-    }
+
     strcpy(_hostName, WiFi.getHostname());
-    Serial.println(statusSummary());
+    _eventServer->publish(Topic::Info, statusSummary());
 }
 
-const char* Wifi::getHostName() {
-    return _hostName;
-}
+const char* Wifi::getHostName() { return _hostName; }
 
 const char* Wifi::statusSummary() {
     _payloadBuilder.initialize();

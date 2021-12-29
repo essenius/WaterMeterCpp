@@ -47,7 +47,7 @@ void Log::update(Topic topic, const char* payload) {
         Serial.println("Disconnected");
         break;
     default:
-        Serial.printf("Upexpected topic '%d', payload '%s'\n", static_cast<int>(topic), payload);
+        Serial.printf("Topic '%d': %s\n", static_cast<int>(topic), payload);
     }
 }
 

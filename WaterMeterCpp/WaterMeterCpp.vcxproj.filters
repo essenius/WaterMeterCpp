@@ -81,6 +81,9 @@
     <ClCompile Include="EventServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LedFlasher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BatchWriter.h">
@@ -156,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EventServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LedFlasher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

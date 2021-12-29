@@ -30,13 +30,16 @@ const char* RATE_RANGE = "0:8640000";
 const char* TYPE_INTEGER = "integer";
 const char* LAST_WILL_MESSAGE = "disconnected";
 
+// TODO: inject via constructor
+
 PubSubClient mqttClient;
 
 const char* BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
 MqttGateway::MqttGateway(EventServer* eventServer) : 
     EventClient("MqttGateway", eventServer), 
-    _connectionStatus(eventServer, this, Topic::Disconnected, Topic::Connected) {}
+    _connectionStatus(eventServer, this, Topic::Disconnected, Topic::Connected) {
+}
 
 bool MqttGateway::announceDevice() {
     char baseTopic[50];
@@ -75,7 +78,7 @@ bool MqttGateway::announceDevice() {
     announceProperty(baseTopic, "PULSE", TYPE_INTEGER, "", false);
     
     sprintf(baseTopic, "%s/%s", _clientName, DEVICE);
-    sprintf(payload, "%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO);
+    sprintf(payload, "%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD);
     announceNode(baseTopic, "Device", "1", payload);
     strcat(baseTopic, "/");
     strcat(baseTopic, DEVICE_FREE_HEAP);
@@ -86,6 +89,8 @@ bool MqttGateway::announceDevice() {
     announceProperty(baseTopic, "Error message", "string", "", false);
     sprintf(baseTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_INFO);
     announceProperty(baseTopic, "Info message", "string", "", false);
+    sprintf(baseTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_BUILD);
+    announceProperty(baseTopic, "Build", "integer", "", false);
 
     publishEntity(_clientName, "$state", "ready");
     _eventServer->publish(Topic::Info, "MQTT: Announcement complete");
@@ -214,7 +219,6 @@ bool MqttGateway::initializeMqtt() {
     if (connect()) {
         if (announceDevice()) {
             subscribeToEventServer();
-            //_eventServer->publish(Topic::Error, "");
             return true;
         }
         publishError("Could not announce device");
@@ -243,7 +247,7 @@ bool MqttGateway::publishProperty(const char* node, const char* property, const 
 
 void MqttGateway::subscribeToEventServer() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
-    _eventServer->subscribe(this, Topic::Peak);             // long
+    _eventServer->subscribe(this, Topic::Peak);             // long -- remove
     _eventServer->subscribe(this, Topic::BatchSize);        // long
     _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
     _eventServer->subscribe(this, Topic::FreeHeap);         // long
@@ -255,6 +259,7 @@ void MqttGateway::subscribeToEventServer() {
     _eventServer->subscribe(this, Topic::Result);           // string
     _eventServer->subscribe(this, Topic::Error);            // string 
     _eventServer->subscribe(this, Topic::Info);             // string
+    _eventServer->subscribe(this, Topic::Build);            // long
     // making sure we are listening. Mute is on after a disconnect.
     mute(false);
 }
@@ -268,10 +273,3 @@ void MqttGateway::update(Topic topic, const char* payload) {
         publishProperty(topicPair.first, topicPair.second, payload);
     }
 };
-
-/* handled by EventClient 
-void MqttGateway::update(Topic topic, long payload) {
-    char numberBuffer[20];
-    sprintf(numberBuffer, "%ld", payload);
-    update(topic, numberBuffer);
-}; */

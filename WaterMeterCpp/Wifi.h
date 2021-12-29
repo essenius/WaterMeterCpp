@@ -12,6 +12,7 @@
 #ifndef HEADER_WIFI_H
 #define HEADER_WIFI_H
 
+#include "EventClient.h"
 #include "PayloadBuilder.h"
 
 #ifdef ESP32
@@ -21,9 +22,10 @@
 #include "NetMock.h"
 #endif
 
-class Wifi {
+class Wifi: public EventClient {
 
 public:
+    Wifi(EventServer* eventServer);
     void begin();
     const char* getHostName();
     bool isConnected();

@@ -29,9 +29,9 @@ public:
 
 class WiFiClientSecure : public WiFiClient {
 public:
-	void setCACert(const char* cert) {};
-	void setCertificate(const char* cert) {};
-	void setPrivateKey(const char* cert) {};
+	void setCACert(const char* cert) {}
+	void setCertificate(const char* cert) {}
+	void setPrivateKey(const char* cert) {}
 };
 
 class String {
@@ -39,6 +39,7 @@ public:
 	String(const char* value) { strcpy(_value, value); }
 	int toInt() { return atoi(_value); }
 	const char* c_str() { return _value; }
+
 private:
 	char _value[30];
 };
@@ -47,17 +48,11 @@ class HTTPClient {
 public:
 	HTTPClient() {}
 	void end() {}
-	bool begin(WiFiClient& client, const char* url) {
-		return true;
-	}
-	int GET() {
-		return 200;
-	}
-
-	String getString() { return String("35"); }
+	bool begin(WiFiClient& client, const char* url) { return true; }
+	int GET() { return ReturnValue;  };
+    String getString() { return {"1"}; }
+	static int ReturnValue;
 };
-
-
 
 #define HTTP_UPDATE_FAILED 0
 #define HTTP_UPDATE_NO_UPDATES 1
@@ -67,9 +62,10 @@ typedef int t_httpUpdate_return;
 
 class HTTPUpdate {
 public:
-	t_httpUpdate_return update(WiFiClient& client, const char* url) { return HTTP_UPDATE_NO_UPDATES; }
+	t_httpUpdate_return update(WiFiClient& client, const char* url) { return ReturnValue; }
 	int getLastError() { return 0; }
 	String getLastErrorString() { return String("OK"); }
+	static int ReturnValue;
 };
 
 extern HTTPUpdate httpUpdate;

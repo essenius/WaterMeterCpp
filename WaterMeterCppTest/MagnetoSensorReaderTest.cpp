@@ -9,22 +9,29 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#pragma once
-#include "..\WaterMeterCpp\EventServer.h"
-class TestEventClient : public EventClient {
-public:
-    TestEventClient(const char* name, EventServer* eventServer) : EventClient(name, eventServer) {
-        _payload[0] = 0;
-    }
+#include "pch.h"
 
-    void reset();
-    virtual void update(Topic topic, const char* payload);
-    virtual void update(Topic topic, long payload);
-    Topic getTopic();
-    char* getPayload();
-    int getCallCount();
-private:
-    int _callCount = 0;
-    Topic _topic = Topic::None;
-    char _payload[512];
-};
+#include <regex>
+
+#include "CppUnitTest.h"
+#include "../WaterMeterCpp/MagnetoSensorReader.h"
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+
+// doesn't do much, just checking the interface works
+
+namespace WaterMeterCppTest {
+	TEST_CLASS(MagnetoSensorReaderTest) {
+public:
+
+	TEST_METHOD(magnetoSensorReaderTest1) {
+		MagnetoSensorReader reader;
+		reader.begin();
+        const auto result = reader.read();
+		Assert::AreEqual(0, result.X);
+		Assert::AreEqual(0, result.Y);
+		Assert::AreEqual(0, result.Z);
+	}
+	};
+}

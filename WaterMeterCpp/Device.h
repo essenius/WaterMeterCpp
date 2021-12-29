@@ -18,14 +18,8 @@
 class Device : public EventClient {
 public:
     explicit Device(EventServer* eventServer);
-
-    // Device does not subscribe, so no destructor needed
-
     void begin();
-    void log(Topic topic);
     void reportHealth();
-    void update(Topic topic, const char* payload);
-    void update(Topic topic, long payload);
 private:
     long _freeHeap = 0l;
     long _freeStack = 0L;

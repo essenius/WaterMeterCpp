@@ -8,10 +8,12 @@
 //    Unless required by applicable law or agreed to in writing, software distributed under the License
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
+
 #ifndef HEADER_LEDDRIVER
 #define HEADER_LEDDRIVER
 
 #include "EventServer.h"
+#include "LedFlasher.h"
 
 class LedDriver : public EventClient {
 public:
@@ -28,9 +30,11 @@ public:
     // number of samples for led blinking intervals
     static constexpr unsigned int EXCLUDE_INTERVAL = 25;
     static constexpr unsigned int FLOW_INTERVAL = 50;
-    static constexpr unsigned int WAIT_INTERVAL = 100;
+    static constexpr unsigned int IDLE_INTERVAL = 100;
 
 private:
+    LedFlasher _connectingFlasher;
+    LedFlasher _sampleFlasher;
     unsigned int _interval = 0;
     unsigned int _ledCounter = 0;
     unsigned int _newInterval = 0;

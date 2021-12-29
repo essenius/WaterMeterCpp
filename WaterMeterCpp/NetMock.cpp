@@ -20,6 +20,9 @@ WiFiClass::WiFiClass() {
     }
 }
 
+int HTTPClient::ReturnValue = 400;
+int HTTPUpdate::ReturnValue = HTTP_UPDATE_NO_UPDATES;
+
 HTTPUpdate httpUpdate;
 
 WiFiClass WiFi;

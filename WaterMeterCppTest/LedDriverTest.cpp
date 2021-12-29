@@ -54,10 +54,14 @@ namespace WaterMeterCppTest {
 			assertLeds(HIGH, LOW, LOW, LOW, L"Error");
 			eventServer.publish(Topic::Error, "");
 			assertLeds(LOW, LOW, LOW, LOW, L"No error");
-
+			eventServer.publish(Topic::Connecting, true);
+			assertLeds(LOW, HIGH, LOW, LOW, L"Connecting on");
+			eventServer.publish(Topic::Connecting, true);
+			assertLeds(LOW, LOW, LOW, LOW, L"Connecting off");
 
 			AssertLedCycle(&ledDriver, Topic::Exclude, true, LedDriver::EXCLUDE_INTERVAL, L"Exclude");
-			AssertLedCycle(&ledDriver, Topic::Exclude, false, LedDriver::WAIT_INTERVAL, L"Wait");
+			AssertLedCycle(&ledDriver, Topic::Flow, true, LedDriver::FLOW_INTERVAL, L"Flow");
+			AssertLedCycle(&ledDriver, Topic::Exclude, false, LedDriver::IDLE_INTERVAL, L"Wait");
 		}
 
 	private:
@@ -84,6 +88,8 @@ namespace WaterMeterCppTest {
 			} else {
 				ledDriver->update(topic, payload);
 			}
+			// force a known state
+			digitalWrite(LED_BUILTIN, LOW);
 			for (int i = 0; i < interval; i++) {
 				ledDriver->update(Topic::Sample, "");
 				AssertBuiltinLed(HIGH, messageOn.c_str(), i);

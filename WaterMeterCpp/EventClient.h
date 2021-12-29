@@ -23,8 +23,9 @@ enum class Topic {
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
     Sample, Measurement, Result,
     FreeHeap, FreeStack,
-    Connected, Disconnected, Processing, Sending, DelayedFlush, ResultWritten,
-    Error, Log, Info,
+    Connected, Connecting, Disconnected,
+    Processing, Sending, DelayedFlush, ResultWritten,
+    Error, Log, Info, Build,
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak,
     Time

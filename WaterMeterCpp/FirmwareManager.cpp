@@ -20,9 +20,10 @@
 
 #include <string.h>
 #include "FirmwareManager.h" 
+#include "EventServer.h"
 
-const char* VERSION_EXTENSION = ".version";
-const char* IMAGE_EXTENSION = ".bin";
+FirmwareManager::FirmwareManager(EventServer* eventServer) : EventClient("FirmwareManager", eventServer)
+{}
 
 void FirmwareManager::begin(WiFiClient* client, const char* baseUrl, const char* machineId) {
   _client = client;
@@ -31,57 +32,49 @@ void FirmwareManager::begin(WiFiClient* client, const char* baseUrl, const char*
 }
 
 bool FirmwareManager::updateAvailableFor(int currentVersion) {
-  char versionUrl[BASE_URL_SIZE];
-  strcpy(versionUrl, _baseUrl);
-  strcat(versionUrl, VERSION_EXTENSION);
-  Serial.printf("Firmware version URL: %s\n", versionUrl);
+    char versionUrl[BASE_URL_SIZE];
+    strcpy(versionUrl, _baseUrl);
+    strcat(versionUrl, VERSION_EXTENSION);
+    HTTPClient httpClient;
+    httpClient.begin(*_client, versionUrl);
+    bool newBuildAvailable = false;
+    char buffer[100];
 
-  HTTPClient httpClient;
-  Serial.printf("Starting httpClient");
-
-  httpClient.begin(*_client, versionUrl);
-  Serial.printf("Started httpClient");
-  bool returnValue = false;
-  int httpCode = httpClient.GET();
-  Serial.printf("Executed Get");
-  if (httpCode == 200) {
-    int newVersion = httpClient.getString().toInt();
-    Serial.printf("Current firmware version: %d; available version: %d\n", currentVersion, newVersion);
-    returnValue = newVersion > currentVersion;
-  } else {
-    Serial.printf("Firmware version check failed with response code %d\n", httpCode);
+    int httpCode = httpClient.GET();
+    if (httpCode == 200) {
+        int newVersion = httpClient.getString().toInt();
+        newBuildAvailable = newVersion != currentVersion;
+        if (newBuildAvailable) {
+            sprintf(buffer, "Current firmware version: %d; available version: %d\n", currentVersion, newVersion);
+            _eventServer->publish(Topic::Info, buffer);
+        }
+    } else {
+        sprintf(buffer,"Firmware version check failed with response code %d\n", httpCode);
+        _eventServer->publish(Topic::Error, buffer);
   }
   httpClient.end();
-  return returnValue;
+  return newBuildAvailable;
 }
 
 void FirmwareManager::update() {
-  Serial.println("Updating firmware");
-  char imageUrl[BASE_URL_SIZE];
-  strcpy(imageUrl, _baseUrl);
-  strcat(imageUrl, IMAGE_EXTENSION);
+    char buffer[BASE_URL_SIZE];
+    strcpy(buffer, _baseUrl);
+    strcat(buffer, IMAGE_EXTENSION);
 
-  t_httpUpdate_return returnValue = httpUpdate.update(*_client, imageUrl);
+    // This should normally result in a reboot.
+    t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
 
-  switch(returnValue) {
-    case HTTP_UPDATE_FAILED:
-      Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-      break;
-
-    case HTTP_UPDATE_NO_UPDATES:
-      Serial.println("HTTP_UPDATE_NO_UPDATES");
-      break;
-
-    case HTTP_UPDATE_OK:
-      Serial.println("HTTP_UPDATE_OK");
-      break;  
-  }
+    if (returnValue == HTTP_UPDATE_FAILED) {
+        sprintf(buffer, "Firmware update failed (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+        _eventServer->publish(Topic::Error, buffer);
+        return;
+    }
+    sprintf(buffer, "Firmware not updated (%d/%d): %s\n", returnValue, httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    _eventServer->publish(Topic::Info, buffer);
 }
 
 void FirmwareManager::tryUpdateFrom(int currentVersion) {
     if (updateAvailableFor(currentVersion)) {
-    update();
-  } else {
-    Serial.println("No updates available");
-  }
+        update();
+    }
 }

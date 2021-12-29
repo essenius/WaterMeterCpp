@@ -23,16 +23,20 @@
 #else
 #include "NetMock.h"
 #endif
+#include "EventClient.h"
 
-class FirmwareManager {
+class FirmwareManager : public EventClient {
 public:
-  void begin(WiFiClient* client, const char* baseUrl, const char* machineId);
-  bool updateAvailableFor(int currentVersion);
-  void update();
-  void tryUpdateFrom(int currentVersion);  
+    explicit FirmwareManager(EventServer* eventServer);
+    void begin(WiFiClient* client, const char* baseUrl, const char* machineId);
+    bool updateAvailableFor(int currentVersion);
+    void update();
+    void tryUpdateFrom(int currentVersion);  
 private:
-  static const int BASE_URL_SIZE = 100;
-  WiFiClient* _client;
-  char _baseUrl[BASE_URL_SIZE];
+    static constexpr const char* VERSION_EXTENSION = ".version";
+    static constexpr const char* IMAGE_EXTENSION = ".bin";
+    static constexpr int BASE_URL_SIZE = 100;
+    WiFiClient* _client = nullptr;
+    char _baseUrl[BASE_URL_SIZE] = {};
 };
 #endif

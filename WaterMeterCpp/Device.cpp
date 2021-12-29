@@ -47,10 +47,6 @@ long  Device::freeStack() {
 }
 #endif
 
-void Device::log(Topic topic) {
-    _eventServer->subscribe(this, topic);
-}
-
 void Device::reportFreeHeap() {
     long newFreeHeap = freeHeap(); // it is an uint32 but we need a sign.
     // Only catch larger variations to avoid very frequent updates
@@ -72,23 +68,4 @@ void Device::reportFreeStack() {
 void Device::reportHealth() {
     reportFreeHeap();
     reportFreeStack();
-}
-
-void Device::update(Topic topic, const char* payload) {
-    switch (topic) {
-    case Topic::Error:
-        Serial.printf("Error: %s\n", payload);
-        break;
-    case Topic::Info:
-        Serial.printf("Info: %s\n", payload);
-        break;
-    default:
-        Serial.printf("Topic %d: %s\n", static_cast<int>(topic), payload);
-    }
-}
-
-void Device::update(Topic topic, long payload) {
-    char buffer[20];
-    sprintf(buffer, "%ld", payload);
-    update(topic, buffer);
 }

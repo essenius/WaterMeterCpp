@@ -149,6 +149,7 @@
     <ClCompile Include="FirmwareManager.cpp" />
     <ClCompile Include="FlowMeter.cpp" />
     <ClCompile Include="LedDriver.cpp" />
+    <ClCompile Include="LedFlasher.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MagnetoSensorReader.cpp" />
     <ClCompile Include="MeasurementWriter.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="FirmwareManager.h" />
     <ClInclude Include="FlowMeter.h" />
     <ClInclude Include="LedDriver.h" />
+    <ClInclude Include="LedFlasher.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MagnetoSensorReader.h" />
     <ClInclude Include="MeasurementWriter.h" />

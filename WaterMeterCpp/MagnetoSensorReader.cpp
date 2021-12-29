@@ -23,8 +23,6 @@
 QMC5883LCompass compass;
 
 void MagnetoSensorReader::begin() {
-    //pinMode(SDA, INPUT_PULLUP);
-    //pinMode(SCL, INPUT_PULLUP);
     compass.setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
     compass.init();
     // ignore the first measurements, often outliers
@@ -37,8 +35,8 @@ void MagnetoSensorReader::begin() {
 
 SensorReading MagnetoSensorReader::read() {
     compass.read();
-    sensorReading.x = compass.getX();
-    sensorReading.y = compass.getY();
-    sensorReading.z = compass.getZ();
+    sensorReading.X = compass.getX();
+    sensorReading.Y = compass.getY();
+    sensorReading.Z = compass.getZ();
     return sensorReading;
 }

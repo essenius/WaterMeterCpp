@@ -25,21 +25,22 @@
 
 #define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 
-const char* const DEVICE = "device";
-const char* const DEVICE_ERROR = "error";
-const char* const DEVICE_FREE_HEAP = "free-heap";
-const char* const DEVICE_FREE_STACK = "free-stack";
-const char* const DEVICE_INFO = "info";
-const char* const MEASUREMENT = "measurement";
-const char* const MEASUREMENT_BATCH_SIZE = "batch-size";
-const char* const MEASUREMENT_BATCH_SIZE_DESIRED = "batch-size-desired";
-const char* const MEASUREMENT_VALUES = "values";
-const char* const RESULT = "result";
-const char* const RESULT_IDLE_RATE = "idle-rate";
-const char* const RESULT_NON_IDLE_RATE = "non-idle-rate";
-const char* const RESULT_RATE = "rate";
-const char* const RESULT_VALUES = "values";
-const char* const RESULT_PULSE = "pulse";
+constexpr const char* const DEVICE = "device";
+constexpr const char* const DEVICE_ERROR = "error";
+constexpr const char* const DEVICE_FREE_HEAP = "free-heap";
+constexpr const char* const DEVICE_FREE_STACK = "free-stack";
+constexpr const char* const DEVICE_INFO = "info";
+constexpr const char* const DEVICE_BUILD = "build";
+constexpr const char* const MEASUREMENT = "measurement";
+constexpr const char* const MEASUREMENT_BATCH_SIZE = "batch-size";
+constexpr const char* const MEASUREMENT_BATCH_SIZE_DESIRED = "batch-size-desired";
+constexpr const char* const MEASUREMENT_VALUES = "values";
+constexpr const char* const RESULT = "result";
+constexpr const char* const RESULT_IDLE_RATE = "idle-rate";
+constexpr const char* const RESULT_NON_IDLE_RATE = "non-idle-rate";
+constexpr const char* const RESULT_RATE = "rate";
+constexpr const char* const RESULT_VALUES = "values";
+constexpr const char* const RESULT_PULSE = "pulse";
 
 static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     { Topic::BatchSize, { MEASUREMENT, MEASUREMENT_BATCH_SIZE }},
@@ -54,12 +55,12 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     { Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK }},
     { Topic::Error, {DEVICE, DEVICE_ERROR }},
     { Topic::Info, {DEVICE, DEVICE_INFO }},
+    { Topic::Build, {DEVICE, DEVICE_BUILD }},
 };
 
 class MqttGateway : public EventClient {
 public:
     explicit MqttGateway(EventServer* eventServer);
-    // initMqtt is intended for testing purposes, to force not connecting
     void begin(Client* client, const char* clientName, bool initMqtt = true);
     bool connect(const char* user = CONFIG_MQTT_USER, const char* password = CONFIG_MQTT_PASSWORD);
     void publishError(const char* message);
@@ -72,7 +73,7 @@ protected:
     BinaryStatusPublisher _connectionStatus;
     const char* _clientName = 0;
     unsigned long _reconnectTimestamp = 0UL;
-    static const int TOPIC_BUFFER_SIZE = 255;
+    static constexpr int TOPIC_BUFFER_SIZE = 255;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = { 0 };
 
     bool announceDevice();
