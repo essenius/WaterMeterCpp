@@ -14,7 +14,7 @@
 #include <map>
 #include "EventServer.h"
 #include "BinaryStatusPublisher.h"
-#include "secrets_mqtt.h"
+#include "secrets.h"
 
 #ifdef ESP32
 #include "Client.h"
@@ -60,9 +60,9 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
 
 class MqttGateway : public EventClient {
 public:
-    explicit MqttGateway(EventServer* eventServer);
+    MqttGateway(EventServer* eventServer, const char* broker, int port, const char* user, const char* password);
     void begin(Client* client, const char* clientName, bool initMqtt = true);
-    bool connect(const char* user = CONFIG_MQTT_USER, const char* password = CONFIG_MQTT_PASSWORD);
+    bool connect();
     void publishError(const char* message);
 
     void handleQueue();
@@ -73,6 +73,10 @@ protected:
     BinaryStatusPublisher _connectionStatus;
     const char* _clientName = 0;
     unsigned long _reconnectTimestamp = 0UL;
+    const char* _broker = 0;
+    const char* _user;
+    const char* _password;;
+    int _port = 1883;
     static constexpr int TOPIC_BUFFER_SIZE = 255;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = { 0 };
 

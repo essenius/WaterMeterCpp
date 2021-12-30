@@ -188,8 +188,6 @@
     <ClInclude Include="ResultWriter.h" />
     <ClInclude Include="Scheduler.h" />
     <ClInclude Include="secrets.h" />
-    <ClInclude Include="secrets_mqtt.h" />
-    <ClInclude Include="secrets_wifi.h" />
     <ClInclude Include="TimeServer.h" />
     <ClInclude Include="Wifi.h" />
   </ItemGroup>

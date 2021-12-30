@@ -41,7 +41,7 @@ constexpr unsigned long MEASUREMENTS_PER_MINUTE = 60UL * 1000UL * 1000UL / MEASU
 EventServer eventServer(LogLevel::Off);
 LedDriver ledDriver(&eventServer);
 
-Wifi wifi(&eventServer);
+Wifi wifi(&eventServer, CONFIG_SSID, CONFIG_PASSWORD, CONFIG_DEVICE_NAME);
 TimeServer timeServer(&eventServer);
 Device device(&eventServer);
 MagnetoSensorReader sensorReader;
@@ -50,7 +50,7 @@ MeasurementWriter measurementWriter(&eventServer, &measurementPayloadBuilder);
 FlowMeter flowMeter;
 PayloadBuilder resultPayloadBuilder;
 ResultWriter resultWriter(&eventServer, &resultPayloadBuilder, MEASURE_INTERVAL_MICROS);
-MqttGateway mqttGateway(&eventServer);
+MqttGateway mqttGateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
 Scheduler scheduler(&eventServer, &measurementWriter, &resultWriter);
 FirmwareManager firmwareManager(&eventServer);
 Log logger(&eventServer);
@@ -65,6 +65,11 @@ void setup() {
     sensorReader.begin();
     eventServer.publish(Topic::Processing, LONG_TRUE);
     wifi.begin();
+
+#ifdef USE_TLS
+    wifi.setCertificates(CONFIG_ROOTCA_CERTIFICATE, CONFIG_DEVICE_CERTIFICATE, CONFIG_DEVICE_PRIVATE_KEY);
+#endif
+
     timeServer.begin();
     firmwareManager.begin(wifi.getClient(), CONFIG_BASE_FIRMWARE_URL, wifi.macAddress());
 

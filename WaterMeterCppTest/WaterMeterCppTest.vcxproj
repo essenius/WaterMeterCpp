@@ -184,6 +184,7 @@
     <ClCompile Include="SchedulerTest.cpp" />
     <ClCompile Include="TestEventClient.cpp" />
     <ClCompile Include="TimeServerTest.cpp" />
+    <ClCompile Include="WifiTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FlowMeterDriver.h" />

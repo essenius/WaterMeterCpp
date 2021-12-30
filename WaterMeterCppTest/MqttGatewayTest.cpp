@@ -15,7 +15,7 @@
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "TopicHelper.h"
-#include "../WaterMeterCpp/secrets_mqtt.h"
+#include "../WaterMeterCpp/secrets.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -35,8 +35,8 @@ namespace WaterMeterCppTest {
 public:
 
 	TEST_CLASS_INITIALIZE(mqttGatewayClassInitialize) {
-		eventServer.subscribe(&disconnectedListener, Topic::Disconnected);
 		eventServer.subscribe(&connectedListener, Topic::Connected);
+		eventServer.subscribe(&disconnectedListener, Topic::Disconnected);
 		eventServer.subscribe(&errorListener, Topic::Error);
 		eventServer.subscribe(&infoListener, Topic::Info);
 		mqttClient.reset();
@@ -49,11 +49,17 @@ public:
 		errorListener.reset();
 		infoListener.reset();
 	}
+	TEST_CLASS_CLEANUP(wifiTestClassCleanup) {
+		eventServer.unsubscribe(&connectedListener);
+		eventServer.unsubscribe(&disconnectedListener);
+		eventServer.unsubscribe(&infoListener);
+		eventServer.unsubscribe(&errorListener);
+	}
 	TEST_METHOD(mqttGatewayScriptTest) {
 		// We need to make this a longer test since the init needs to be done for the rest to work
 		
 		// Init part
-		MqttGateway gateway(&eventServer);
+		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
 
 		gateway.begin(&client, "client1");
 		// first check if the connection event was sent (no disconnects, one connect - no more)
@@ -103,15 +109,15 @@ public:
 		Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
 	}
 	TEST_METHOD(mqttGatewayNoUserTest) {
-		MqttGateway gateway(&eventServer);
+		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, nullptr, "");
 		gateway.begin(&client, "client1", false);
-		gateway.connect("", "");
+		gateway.connect();
 		Assert::AreEqual("", mqttClient.user(), "User not set");
 	}
 
 	TEST_METHOD(mqttGatewayCannotConnectTest) {
 		mqttClient.setCanConnect(false);
-	    MqttGateway gateway(&eventServer);
+	    MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
 		gateway.begin(&client, "client1");
 		Assert::AreEqual(0, disconnectedListener.getCallCount(), L"Disconnected published");
 		Assert::AreEqual(0, connectedListener.getCallCount(), L"Connected not published");
@@ -121,7 +127,7 @@ public:
 
 	TEST_METHOD(mqttGatewayCannotSubscribeTest) {
 		mqttClient.setCanSubscribe(false);
-		MqttGateway gateway(&eventServer);
+		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
 		gateway.begin(&client, "client1");
 		Assert::AreEqual(1, disconnectedListener.getCallCount(), L"Disconnected published");
 		Assert::AreEqual(1, connectedListener.getCallCount(), L"Connected published");
@@ -131,7 +137,7 @@ public:
 
 	TEST_METHOD(mqttGatewayCannotAnnounceTest) {
 		mqttClient.setCanPublish(false);
-		MqttGateway gateway(&eventServer);
+		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
 		gateway.begin(&client, "client1");
 		Assert::AreEqual(1, disconnectedListener.getCallCount(), L"Disconnected published");
 		Assert::AreEqual(1, connectedListener.getCallCount(), L"Connected published");
@@ -140,7 +146,7 @@ public:
 	}
 
 	TEST_METHOD(mqttGatewayConnectionLossTest) {
-		MqttGateway gateway(&eventServer);
+		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
 		gateway.begin(&client, "client1");
 		Assert::AreEqual(0, disconnectedListener.getCallCount(), L"No disconnect published");
 		Assert::AreEqual(1, connectedListener.getCallCount(), L"Connected published");

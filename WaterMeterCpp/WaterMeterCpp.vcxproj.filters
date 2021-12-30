@@ -131,12 +131,6 @@
     <ClInclude Include="secrets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="secrets_mqtt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="secrets_wifi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TimeServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

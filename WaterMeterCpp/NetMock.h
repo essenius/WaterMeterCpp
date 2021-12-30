@@ -70,21 +70,37 @@ public:
 
 extern HTTPUpdate httpUpdate;
 
+
 class IPAddress {
 public:
+	IPAddress();
 	IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4);
-	String toString() { return _value; }
+	IPAddress(const uint8_t* address);
+    IPAddress& operator=(uint32_t address);
+	IPAddress& operator=(const uint8_t* address);
+    String toString() const;
+
+    operator uint32_t() const { return _address.dword; }
+	uint8_t operator[](int index) const { return _address.bytes[index]; }
+	uint8_t& operator[](int index) 	{ return _address.bytes[index]; }
+
 private:
-	char _value[20];
+	char _value[20]{};
+	union {
+		uint8_t bytes[4];  
+		uint32_t dword;
+	} _address{};
+	uint8_t* raw_address() { return _address.bytes; }
 };
 
 class WiFiClass {
 public:
 	WiFiClass();
 	void mode(int i) {}
-	void begin(const char* ssid, const char* password) { strcpy(_ssid, ssid); }
-	bool config(IPAddress localIP, IPAddress gateway, IPAddress subnet, IPAddress primaryDNS) { return true; }
-	bool isConnected() { return true; }
+	void begin(const char* ssid, const char* password, int ignore = 0, const uint8_t* _bssid = nullptr) { strcpy(_ssid, ssid); }
+
+	bool config(IPAddress localIP, IPAddress gateway, IPAddress subnet, IPAddress dns1 = IPAddress(), IPAddress dns2 = IPAddress());
+	bool isConnected();
 	bool setHostname(const char* name);
 	const char* getHostname() { return _name; }
 	String SSID() { return String(_ssid); }
@@ -93,16 +109,25 @@ public:
 	int RSSI() { return 1; }
 	int channel() { return 13; }
 	IPAddress networkID() { return IPAddress(192,168, 1, 0); }
-	IPAddress localIP() { return IPAddress(127, 0, 0, 1); }
-	IPAddress gatewayIP() { return IPAddress(192, 168, 1, 1); }
-	IPAddress dnsIP() { return IPAddress(1, 1, 1, 1); }
-	IPAddress subnetMask() { return IPAddress(255, 255, 255, 0); }
+	IPAddress localIP() { return _localIP; }
+	IPAddress gatewayIP() { return _gatewayIP; }
+	IPAddress dnsIP(int i = 0) { return i==0? _primaryDNSIP : _secondaryDNSIP; }
+	IPAddress subnetMask() { return _subnetIP; }
 	String BSSIDstr() { return String("55:44:33:22:11:00"); }
+    void disconnect() {}
+	// testing
+	void reset();
 
 private:
-	char _name[20];
-	char _ssid[20];
+	char _name[20] = {0};
+	char _ssid[20] = {0};
 	byte _mac[6];
+	IPAddress _localIP;
+	IPAddress _gatewayIP;
+	IPAddress _subnetIP;
+	IPAddress _primaryDNSIP;
+	IPAddress _secondaryDNSIP;
+    int _connectCountdown = 10;
 };
 
 #define WIFI_STA 1

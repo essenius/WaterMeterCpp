@@ -26,20 +26,23 @@
 
 using namespace std::placeholders;
 
-const char* RATE_RANGE = "0:8640000";
-const char* TYPE_INTEGER = "integer";
-const char* LAST_WILL_MESSAGE = "disconnected";
+const char* const RATE_RANGE = "0:8640000";
+const char* const TYPE_INTEGER = "integer";
+const char* const LAST_WILL_MESSAGE = "disconnected";
 
 // TODO: inject via constructor
 
 PubSubClient mqttClient;
 
-const char* BASE_TOPIC_TEMPLATE = "homie/%s/%s";
+const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
-MqttGateway::MqttGateway(EventServer* eventServer) : 
-    EventClient("MqttGateway", eventServer), 
-    _connectionStatus(eventServer, this, Topic::Disconnected, Topic::Connected) {
-}
+MqttGateway::MqttGateway(EventServer* eventServer, const char* broker, int port, const char* user, const char* password) : 
+    EventClient("MqttGateway", eventServer),
+    _connectionStatus(eventServer, this, Topic::Disconnected, Topic::Connected),
+    _broker(broker),
+    _user(user),
+    _password(password),
+    _port(port) {}
 
 bool MqttGateway::announceDevice() {
     char baseTopic[50];
@@ -119,7 +122,7 @@ void MqttGateway::begin(Client* client, const char* clientName, bool initMqtt) {
     mqttClient.setClient(*client);
     _clientName = clientName;
     mqttClient.setBufferSize(512);
-    mqttClient.setServer(CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT);
+    mqttClient.setServer(_broker, _port);
     mqttClient.setCallback(std::bind(&MqttGateway::callback, this, _1, _2, _3));
     if (initMqtt && initializeMqtt()) {
         _connectionStatus.setState(true);
@@ -153,16 +156,16 @@ void MqttGateway::callback(const char* topic, byte* payload, unsigned int length
     free(copyTopic);
 }
 
-bool MqttGateway::connect(const char* user, const char* password) {
+bool MqttGateway::connect() {
     _eventServer->publish(Topic::Info, "MQTT: Connecting");
     char lastWillTopic[TOPIC_BUFFER_SIZE];
     sprintf(lastWillTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_ERROR);
 
-    if (strlen(user) == 0) {
+    if (_user == nullptr || strlen(_user) == 0) {
         _connectionStatus.setState(mqttClient.connect(_clientName, lastWillTopic, 0, false, LAST_WILL_MESSAGE));
     }
     else {
-        _connectionStatus.setState(mqttClient.connect(_clientName, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD, 
+        _connectionStatus.setState(mqttClient.connect(_clientName, _user, _password, 
             lastWillTopic, 0, false, LAST_WILL_MESSAGE));
     }
 

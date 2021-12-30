@@ -25,19 +25,36 @@
 class Wifi: public EventClient {
 
 public:
-    Wifi(EventServer* eventServer);
+    Wifi(EventServer* eventServer, const char* ssid, const char* password,
+        const char* hostName = nullptr, const uint8_t* bssid = nullptr);
     void begin();
+    void begin(IPAddress localIP, IPAddress gatewayIP = NO_IP, IPAddress subnetIP = NO_IP, IPAddress dns1IP = NO_IP, IPAddress dns2IP = NO_IP);
     const char* getHostName();
+    void init();
     bool isConnected();
-    const char* macAddress();
+    const char* macAddress(); 
+    void setCertificates(const char* rootCaCert, const char* deviceCert, const char* devicePrivateKey);
     const char* statusSummary();
     WiFiClientSecure* getClient();
+    static const IPAddress NO_IP;
+
 private:
-    static const int HOSTNAME_LENGTH = 30;
-    char _hostName[HOSTNAME_LENGTH] = { 0 };
+    void completeConnection();
+
+    static constexpr int HOSTNAME_LENGTH = 64;
+    char _hostNameBuffer[HOSTNAME_LENGTH] = { 0 };
+    const char* _ssid;     // not volatile
+    const char* _password; // not volatile
+    const uint8_t* _bssid; // not volatile
     PayloadBuilder _payloadBuilder;
     WiFiClientSecure _wifiClient;
-    static const int MAC_ADDRESS_SIZE = 14;
-    char _macAddress[MAC_ADDRESS_SIZE];
+    IPAddress _gatewayIP;
+    IPAddress _netmaskIP;
+    IPAddress _dns1IP;
+    IPAddress _dns2IP;
+    char* _hostName = _hostNameBuffer;
+    static constexpr int MAC_ADDRESS_SIZE = 14;
+    char _macAddress[MAC_ADDRESS_SIZE] = "";
+    IPAddress _localIP = NO_IP;
 };
 #endif
