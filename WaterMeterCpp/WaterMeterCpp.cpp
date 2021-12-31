@@ -33,7 +33,7 @@
 #include "secrets.h" // for CONFIG_BASE_FIRMWARE_URL
 
 
-constexpr int BUILD_NUMBER = 6;
+constexpr const char* const BUILD_VERSION = "7";
 
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 constexpr unsigned long MEASUREMENTS_PER_MINUTE = 60UL * 1000UL * 1000UL / MEASURE_INTERVAL_MICROS;
@@ -50,7 +50,7 @@ MeasurementWriter measurementWriter(&eventServer, &measurementPayloadBuilder);
 FlowMeter flowMeter;
 PayloadBuilder resultPayloadBuilder;
 ResultWriter resultWriter(&eventServer, &resultPayloadBuilder, MEASURE_INTERVAL_MICROS);
-MqttGateway mqttGateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
+MqttGateway mqttGateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD, BUILD_VERSION);
 Scheduler scheduler(&eventServer, &measurementWriter, &resultWriter);
 FirmwareManager firmwareManager(&eventServer);
 Log logger(&eventServer);
@@ -71,11 +71,10 @@ void setup() {
 #endif
 
     timeServer.begin();
-    firmwareManager.begin(wifi.getClient(), CONFIG_BASE_FIRMWARE_URL, wifi.macAddress());
+    firmwareManager.begin(wifi.getClient(), CONFIG_BASE_FIRMWARE_URL, eventServer.request(Topic::MacRaw, "mac-not-found"));
 
     if (timeServer.timeWasSet()) {
-        firmwareManager.tryUpdateFrom(BUILD_NUMBER);
-        eventServer.publish(Topic::Build, BUILD_NUMBER);
+        firmwareManager.tryUpdateFrom(BUILD_VERSION);
         eventServer.publish(Topic::TimeOverrun, LONG_FALSE);
         mqttGateway.begin(wifi.getClient(), wifi.getHostName());
         // the writers need the time, so can't do this earlier. This means connected is true by default
@@ -106,9 +105,6 @@ void loop() {
         flowMeter.addMeasurement(measure.Y);
         measurementWriter.addMeasurement(measure.Y);
         resultWriter.addMeasurement(measure.Y, &flowMeter);
-
-        eventServer.publish(Topic::Peak, flowMeter.isPeak());
-
 
         scheduler.processOutput();
 

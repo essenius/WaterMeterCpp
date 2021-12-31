@@ -25,10 +25,10 @@ enum class Topic {
     FreeHeap, FreeStack,
     Connected, Connecting, Disconnected,
     Processing, Sending, DelayedFlush, ResultWritten,
-    Error, Log, Info, Build,
+    Error, Log, Info, 
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak,
-    Time
+    Time, IpAddress, MacRaw, MacFormatted
 };
 
 enum class LogLevel { Off = 0, On = 1 };

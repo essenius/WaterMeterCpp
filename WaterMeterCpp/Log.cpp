@@ -35,7 +35,12 @@ void Log::update(Topic topic, const char* payload) {
     Serial.printf("[%s] ", timestamp);
     switch (topic) {
     case Topic::Error:
-        Serial.printf("Error: %s\n", payload);
+        if (payload == "") {
+            Serial.println("Cleared error");
+        }
+        else {
+            Serial.printf("Error: %s\n", payload);
+        }
         break;
     case Topic::Info:
         Serial.printf("Info: %s\n", payload);

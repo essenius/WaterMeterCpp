@@ -32,7 +32,7 @@
         bool connected() { return _canConnect;  }
         bool subscribe(const char* topic) { return _canSubscribe; }
         bool loop() { return true; }
-        bool publish(const char* topic, const char* payload);
+        bool publish(const char* topic, const char* payload, bool retain = false);
         int state() { return 3; }
 
         // test assitance functions

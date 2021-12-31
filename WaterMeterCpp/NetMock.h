@@ -36,7 +36,9 @@ public:
 
 class String {
 public:
-	String(const char* value) { strcpy(_value, value); }
+	String(const char* value) {
+		strcpy(_value, value);
+	}
 	int toInt() { return atoi(_value); }
 	const char* c_str() { return _value; }
 
@@ -85,7 +87,7 @@ public:
 	uint8_t& operator[](int index) 	{ return _address.bytes[index]; }
 
 private:
-	char _value[20]{};
+	//char _value[20]{};
 	union {
 		uint8_t bytes[4];  
 		uint32_t dword;
@@ -112,7 +114,7 @@ public:
 	IPAddress localIP() { return _localIP; }
 	IPAddress gatewayIP() { return _gatewayIP; }
 	IPAddress dnsIP(int i = 0) { return i==0? _primaryDNSIP : _secondaryDNSIP; }
-	IPAddress subnetMask() { return _subnetIP; }
+	IPAddress subnetMask() const { return _subnetIP; }
 	String BSSIDstr() { return String("55:44:33:22:11:00"); }
     void disconnect() {}
 	// testing

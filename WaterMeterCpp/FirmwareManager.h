@@ -29,9 +29,9 @@ class FirmwareManager : public EventClient {
 public:
     explicit FirmwareManager(EventServer* eventServer);
     void begin(WiFiClient* client, const char* baseUrl, const char* machineId);
-    bool updateAvailableFor(int currentVersion);
+    bool updateAvailableFor(const char* currentVersion);
     void update();
-    void tryUpdateFrom(int currentVersion);  
+    void tryUpdateFrom(const char* currentVersion);  
 private:
     static constexpr const char* VERSION_EXTENSION = ".version";
     static constexpr const char* IMAGE_EXTENSION = ".bin";

@@ -31,7 +31,7 @@ void FirmwareManager::begin(WiFiClient* client, const char* baseUrl, const char*
   strcat(_baseUrl, machineId);
 }
 
-bool FirmwareManager::updateAvailableFor(int currentVersion) {
+bool FirmwareManager::updateAvailableFor(const char* currentVersion) {
     char versionUrl[BASE_URL_SIZE];
     strcpy(versionUrl, _baseUrl);
     strcat(versionUrl, VERSION_EXTENSION);
@@ -42,10 +42,10 @@ bool FirmwareManager::updateAvailableFor(int currentVersion) {
 
     int httpCode = httpClient.GET();
     if (httpCode == 200) {
-        int newVersion = httpClient.getString().toInt();
-        newBuildAvailable = newVersion != currentVersion;
+        const char* newVersion = httpClient.getString().c_str();
+        newBuildAvailable = strcmp(newVersion, currentVersion) !=0;
         if (newBuildAvailable) {
-            sprintf(buffer, "Current firmware version: %d; available version: %d\n", currentVersion, newVersion);
+            sprintf(buffer, "Current firmware version: %s; available version: %s\n", currentVersion, newVersion);
             _eventServer->publish(Topic::Info, buffer);
         }
     } else {
@@ -73,7 +73,7 @@ void FirmwareManager::update() {
     _eventServer->publish(Topic::Info, buffer);
 }
 
-void FirmwareManager::tryUpdateFrom(int currentVersion) {
+void FirmwareManager::tryUpdateFrom(const char* currentVersion) {
     if (updateAvailableFor(currentVersion)) {
         update();
     }

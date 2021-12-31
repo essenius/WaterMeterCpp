@@ -25,6 +25,12 @@ extern PubSubClient mqttClient;
 namespace WaterMeterCppTest {
 
 
+    constexpr const char* const BROKER = "broker";
+    constexpr const char* const PASSWORD = "password";
+    const int PORT = 1883;
+    constexpr const char* const USER = "user";
+    constexpr const char* const BUILD = "1";
+
     TEST_CLASS(MqttGatewayTest) {
     public:
         static Client Client;
@@ -62,8 +68,7 @@ namespace WaterMeterCppTest {
             // We need to make this a longer test since the init needs to be done for the rest to work
 
             // Init part
-            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
-                                CONFIG_MQTT_PASSWORD);
+            MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
 
             gateway.begin(&Client, "client1");
             // first check if the connection event was sent (no disconnects, one connect - no more)
@@ -74,15 +79,22 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(3, InfoListener.getCallCount(), L"Info called three times");
             Assert::AreEqual("MQTT: Announcement complete", InfoListener.getPayload(), L"Info last message correct");
 
-            Assert::AreEqual(CONFIG_MQTT_USER, mqttClient.user());
+            Assert::AreEqual(USER, mqttClient.user());
             Assert::AreEqual("client1", mqttClient.id());
             // check if the homie init events were sent 1586 1613
-            Assert::AreEqual(static_cast<size_t>(1656), strlen(mqttClient.getTopics()), L"Topic lenght OK");
-            Assert::AreEqual(static_cast<size_t>(473), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
-            Assert::AreEqual(46, mqttClient.getCallCount());
+            Assert::AreEqual(static_cast<size_t>(1835), strlen(mqttClient.getTopics()), L"Topic lenght OK");
+            Assert::AreEqual(static_cast<size_t>(536), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
+            Assert::AreEqual(50, mqttClient.getCallCount());
             mqttClient.reset();
 
-            // Valid callback test
+            // Incoming event from event server hould get published
+
+            EventServer.publish(Topic::Rate, 7);
+            Assert::AreEqual("homie/client1/result/rate\n", mqttClient.getTopics(), L"Payload OK");
+            Assert::AreEqual("7\n", mqttClient.getPayloads(), L"Payload OK");
+
+            // Incoming valid callback from MQTT should get passed on to the event server
+
             TestEventClient callBackListener("disconnectedListener", &EventServer);
             EventServer.subscribe(&callBackListener, Topic::BatchSizeDesired);
             char topic[100];
@@ -93,28 +105,33 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(1, callBackListener.getCallCount(), L"callBackListener called");
             Assert::AreEqual("20", callBackListener.getPayload(), L"callBackListener got right payload");
 
+            // Invalid callback should get ignored
+
             callBackListener.reset();
             strcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
             mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
             Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
             callBackListener.reset();
 
-            // empty topic callback test. Should not do anything, just checking nothing breaks
+            // Empty topic should get ignored, just checking nothing breaks
+
             topic[0] = 0;
             mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
 
             // same with a payload not having a device id
+
             strcpy(topic, "bogus");
             mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
 
             // a topic we don't know should be ignored
+
             strcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
             mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
             Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
         }
 
         TEST_METHOD(mqttGatewayNoUserTest) {
-            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, nullptr, "");
+            MqttGateway gateway(&EventServer, BROKER, PORT, nullptr, "", BUILD);
             gateway.begin(&Client, "client1", false);
             gateway.connect();
             Assert::AreEqual("", mqttClient.user(), "User not set");
@@ -122,8 +139,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(mqttGatewayCannotConnectTest) {
             mqttClient.setCanConnect(false);
-            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
-                                CONFIG_MQTT_PASSWORD);
+            MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
             gateway.begin(&Client, "client1");
             Assert::AreEqual(0, DisconnectedListener.getCallCount(), L"Disconnected published");
             Assert::AreEqual(0, ConnectedListener.getCallCount(), L"Connected not published");
@@ -134,8 +150,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(mqttGatewayCannotSubscribeTest) {
             mqttClient.setCanSubscribe(false);
-            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
-                                CONFIG_MQTT_PASSWORD);
+            MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
             gateway.begin(&Client, "client1");
             Assert::AreEqual(1, DisconnectedListener.getCallCount(), L"Disconnected published");
             Assert::AreEqual(1, ConnectedListener.getCallCount(), L"Connected published");
@@ -146,8 +161,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(mqttGatewayCannotAnnounceTest) {
             mqttClient.setCanPublish(false);
-            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
-                                CONFIG_MQTT_PASSWORD);
+            MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
             gateway.begin(&Client, "client1");
             Assert::AreEqual(1, DisconnectedListener.getCallCount(), L"Disconnected published");
             Assert::AreEqual(1, ConnectedListener.getCallCount(), L"Connected published");
@@ -158,8 +172,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(mqttGatewayConnectionLossTest) {
-            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
-                                CONFIG_MQTT_PASSWORD);
+            MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
             gateway.begin(&Client, "client1");
             Assert::AreEqual(0, DisconnectedListener.getCallCount(), L"No disconnect published");
             Assert::AreEqual(1, ConnectedListener.getCallCount(), L"Connected published");

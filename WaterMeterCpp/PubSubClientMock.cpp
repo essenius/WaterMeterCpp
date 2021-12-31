@@ -19,12 +19,13 @@ bool PubSubClient::connect(const char* id, const char* user, const char* pass,
     return connect(id, willTopic, willQos, willRetain, willMessage);
 }
 
-bool PubSubClient::publish(const char* topic, const char* payload) {
+bool PubSubClient::publish(const char* topic, const char* payload, bool retain) {
     if (strlen(topic) + strlen(_topic) > TOPIC_SIZE - 1) return false;
     strcat_s(_topic, TOPIC_SIZE, topic);
     strcat_s (_topic, TOPIC_SIZE, "\n");
     if (strlen(payload) + strlen(_payload) > PAYLOAD_SIZE - 1) return false;
     strcat_s(_payload, PAYLOAD_SIZE, payload);
+    if (!retain) strcat_s(_payload, PAYLOAD_SIZE, "[x]");
     strcat_s(_payload, PAYLOAD_SIZE, "\n");
     _callCount++;
     return _canPublish;

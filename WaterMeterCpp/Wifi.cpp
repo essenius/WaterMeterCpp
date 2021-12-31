@@ -114,9 +114,33 @@ void Wifi::setCertificates(const char* rootCACertificate, const char* deviceCert
 
 void Wifi::completeConnection() {
     _eventServer->publish(Topic::Info, statusSummary());
+    _eventServer->provides(this, Topic::IpAddress);
+    _eventServer->provides(this, Topic::MacFormatted);
+    _eventServer->provides(this, Topic::MacRaw);
 }
 
 const char* Wifi::getHostName() { return _hostName; }
+
+const char* Wifi::get(Topic topic, const char* defaultValue) {
+    switch(topic) {
+    case Topic::IpAddress: {
+        char buffer[30];
+        strcpy( buffer, WiFi.localIP().toString().c_str());
+        return buffer;
+    }
+    case Topic::MacRaw:
+    case Topic::MacFormatted:
+        uint8_t mac[6];
+        WiFi.macAddress(mac);
+        if (topic == Topic::MacRaw)
+            sprintf(_macAddress, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        else
+            sprintf(_macAddress, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        return _macAddress;
+    default:
+        return defaultValue;
+    }
+}
 
 const char* Wifi::statusSummary() {
     _payloadBuilder.initialize();
@@ -138,13 +162,5 @@ const char* Wifi::statusSummary() {
 
 bool Wifi::isConnected() {
     return WiFi.isConnected();
-}
-
-
-const char* Wifi::macAddress() {
-  uint8_t mac[6];
-  WiFi.macAddress(mac);
-  sprintf(_macAddress, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]); 
-  return _macAddress; 
 }
 

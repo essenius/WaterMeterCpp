@@ -67,7 +67,13 @@ namespace WaterMeterCppTest {
                 R"("subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"})",
                 InfoListener.getPayload(),
                 L"Info OK");
-            Assert::AreEqual("001122334455", wifi.macAddress(), "Mac address for URL ok");
+            Assert::AreEqual("001122334455", wifi.get(Topic::MacRaw, ""), L"Mac address for URL ok");
+            Assert::AreEqual(
+                "00:11:22:33:44:55", EventServer.request(Topic::MacFormatted, ""),
+                L"Mac address formatted ok");
+            Assert::AreEqual("192.168.1.2", WiFi.localIP().toString().c_str(), L"IP address ok1");
+            auto result = wifi.get(Topic::IpAddress, "");
+            Assert::AreEqual<const char*>("192.168.1.2", result, L"IP address ok2");
 
         }
 

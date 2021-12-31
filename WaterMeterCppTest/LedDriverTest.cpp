@@ -57,6 +57,10 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::Connecting, true);
             assertLeds(LOW, HIGH, LOW, LOW, L"Connecting on");
             eventServer.publish(Topic::Connecting, true);
+            assertLeds(LOW, HIGH, LOW, LOW, L"Connecting on");
+            eventServer.publish(Topic::Connecting, true);
+            assertLeds(LOW, LOW, LOW, LOW, L"Connecting off");
+            eventServer.publish(Topic::Connecting, true);
             assertLeds(LOW, LOW, LOW, LOW, L"Connecting off");
 
             assertLedCycle(&ledDriver, Topic::Exclude, true, LedDriver::EXCLUDE_INTERVAL, L"Exclude");

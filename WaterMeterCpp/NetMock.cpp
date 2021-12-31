@@ -29,7 +29,7 @@ HTTPUpdate httpUpdate;
 WiFiClass WiFi;
 
 IPAddress::IPAddress() {
-    _value[0] = 0;
+    //_value[0] = 0;
 }
 
 IPAddress::IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4) {
@@ -59,7 +59,7 @@ String IPAddress::toString() const
 {
     char buffer[16];
     sprintf(buffer, "%u.%u.%u.%u", _address.bytes[0], _address.bytes[1], _address.bytes[2], _address.bytes[3]);
-    return {buffer};
+    return String(buffer);
 }
 
 

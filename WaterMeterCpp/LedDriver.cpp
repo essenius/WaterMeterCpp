@@ -20,7 +20,7 @@
 #include <string.h>
 
 LedDriver::LedDriver(EventServer* eventServer) : EventClient("LedDriver", eventServer),
-    _connectingFlasher(GREEN_LED, 1),
+    _connectingFlasher(GREEN_LED, 2),
     _sampleFlasher(LED_BUILTIN, IDLE_INTERVAL) {}
 
 void LedDriver::begin() {

@@ -25,12 +25,14 @@
 
 #define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 
+constexpr const char* const EMPTY = "";
 constexpr const char* const DEVICE = "device";
 constexpr const char* const DEVICE_ERROR = "error";
 constexpr const char* const DEVICE_FREE_HEAP = "free-heap";
 constexpr const char* const DEVICE_FREE_STACK = "free-stack";
 constexpr const char* const DEVICE_INFO = "info";
-constexpr const char* const DEVICE_BUILD = "build";
+constexpr const char* const DEVICE_BUILD = "firmware-version";
+constexpr const char* const DEVICE_MAC = "mac-address";
 constexpr const char* const MEASUREMENT = "measurement";
 constexpr const char* const MEASUREMENT_BATCH_SIZE = "batch-size";
 constexpr const char* const MEASUREMENT_BATCH_SIZE_DESIRED = "batch-size-desired";
@@ -40,7 +42,6 @@ constexpr const char* const RESULT_IDLE_RATE = "idle-rate";
 constexpr const char* const RESULT_NON_IDLE_RATE = "non-idle-rate";
 constexpr const char* const RESULT_RATE = "rate";
 constexpr const char* const RESULT_VALUES = "values";
-constexpr const char* const RESULT_PULSE = "pulse";
 
 static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     { Topic::BatchSize, { MEASUREMENT, MEASUREMENT_BATCH_SIZE }},
@@ -50,17 +51,15 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     { Topic::Result, {RESULT, RESULT_VALUES }},
     { Topic::IdleRate, {RESULT, RESULT_IDLE_RATE }},
     { Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE }},
-    { Topic::Peak, {RESULT, RESULT_PULSE}},
     { Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP }},
     { Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK }},
     { Topic::Error, {DEVICE, DEVICE_ERROR }},
-    { Topic::Info, {DEVICE, DEVICE_INFO }},
-    { Topic::Build, {DEVICE, DEVICE_BUILD }},
+    { Topic::Info, {DEVICE, DEVICE_INFO }}
 };
 
 class MqttGateway : public EventClient {
 public:
-    MqttGateway(EventServer* eventServer, const char* broker, int port, const char* user, const char* password);
+    MqttGateway(EventServer* eventServer, const char* broker, int port, const char* user, const char* password, const char* buildVersion);
     void begin(Client* client, const char* clientName, bool initMqtt = true);
     bool connect();
     void publishError(const char* message);
@@ -71,22 +70,23 @@ public:
 
 protected:
     BinaryStatusPublisher _connectionStatus;
-    const char* _clientName = 0;
+    const char* _clientName = nullptr;
     unsigned long _reconnectTimestamp = 0UL;
-    const char* _broker = 0;
+    const char* _broker = nullptr;
     const char* _user;
-    const char* _password;;
+    const char* _password;
+    const char* _buildVersion;
     int _port = 1883;
     static constexpr int TOPIC_BUFFER_SIZE = 255;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = { 0 };
 
     bool announceDevice();
     void announceNode(const char* baseTopic, const char* name, const char* type, const char* properties);
-    void announceProperty(const char* baseTopic, const char* name, const char* dataType, const char* format, bool settable);
+    void announceProperty(const char* baseTopic, const char* name, const char* dataType, const char* format = EMPTY, bool settable = false);
     void callback(const char* topic, byte* payload, unsigned int length);
     bool ensureConnection();
-    bool publishEntity(const char* baseTopic, const char* entity, const char* payload);
-    bool publishProperty(const char* node, const char* property, const char* payload);
+    bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
+    bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);
     void subscribeToEventServer();
 };
 
