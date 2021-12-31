@@ -94,22 +94,16 @@ namespace WaterMeterCppTest {
 
         // TODO: this is a bit weird as it fails two times. One time should be enough
         TEST_METHOD(wifiFailSetNameTest) {
-            const IPAddress local(10, 0, 0, 2);
-            const IPAddress gateway(10, 0, 0, 1);
-            const IPAddress dns1(8, 8, 8, 8);
-            const IPAddress dns2(8, 8, 4, 4);
             Wifi wifi(&EventServer, "ssid", "password", "");
             wifi.begin();
             // just showing intended usage
             wifi.setCertificates("", "", "");
             Assert::AreEqual(2, ErrorListener.getCallCount(), L"Error called 2 times");
             Assert::AreEqual("Could not set host name", ErrorListener.getPayload(), L"Error message OK");
-
         }
 
         TEST_METHOD(wifiNullNameTest) {
             WiFi.setHostname("esp32_001122334455");
-
             Wifi wifi(&EventServer, "ssid", "password", nullptr);
             wifi.begin();
             Assert::AreEqual(0, ErrorListener.getCallCount(), L"Error not called");
@@ -157,7 +151,6 @@ namespace WaterMeterCppTest {
                 InfoListener.getPayload(),
                 L"Info OK");
         }
-
     };
 
     EventServer WifiTest::EventServer;
