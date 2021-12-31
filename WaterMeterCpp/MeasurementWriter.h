@@ -13,21 +13,21 @@
 #define HEADER_MEASUREMENTWRITER
 
 #include "BatchWriter.h"
-#include "SerialDriver.h"
-#include "Storage.h"
+#include "EventServer.h"
 
 class MeasurementWriter : public BatchWriter {
 public:
-    MeasurementWriter(Storage *storage);
-    void addMeasurement(int measure, int duration);
-    virtual char* getHeader();
-    virtual void setDesiredFlushRate(long rate); 
-    virtual void setDesiredFlushRate(char* desiredFlushRate);
-private:
-    static const unsigned char DEFAULT_FLUSH_RATE = 10;
-    static const unsigned char MAX_FLUSH_RATE = 20;
-    Storage *_storage;
-
+    MeasurementWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder);
+    using BatchWriter::begin;
+    virtual void begin();
+    void addMeasurement(int measure);
+    void prepareFlush() override;
+    void update(Topic topic, const char* payload) override;
+    void update(Topic topic, long payload) override;
+protected:
+    void initBuffer() override;
+    static constexpr unsigned char DEFAULT_FLUSH_RATE = 50;
+    static constexpr unsigned char MAX_FLUSH_RATE = 60;
 };
 
 #endif

@@ -12,10 +12,18 @@
 #ifndef HEADER_MAGNETOSENSORREADER
 #define HEADER_MAGNETOSENSORREADER
 
+struct SensorReading {
+  int X;
+  int Y;
+  int Z;
+};
+
 class MagnetoSensorReader {
-	public:
+public:
     void begin();
-		virtual int read();
+    SensorReading read();
+private:
+    SensorReading sensorReading = {};
 };
 
 #endif

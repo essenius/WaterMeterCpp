@@ -79,7 +79,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -110,13 +110,17 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UseFullPaths>true</UseFullPaths>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\rikes\source\repos\essenius\WaterMeterCpp\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ArduinoMock.obj;BatchWriter.obj;BinaryStatusPublisher.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;LedDriver.obj;LedFlasher.obj;Log.obj;MagnetoSensorReader.obj;MeasurementWriter.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;QMC5883LCompassMock;ResultWriter.obj;Scheduler.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>false</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -158,12 +162,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BatchWriterDriver.cpp" />
     <ClCompile Include="BatchWriterTest.cpp" />
+    <ClCompile Include="DeviceTest.cpp" />
+    <ClCompile Include="FirmwareManagerTest.cpp" />
     <ClCompile Include="FlowMeterDriver.cpp" />
     <ClCompile Include="FlowMeterTest.cpp" />
     <ClCompile Include="LedDriverTest.cpp" />
-    <ClCompile Include="MeasurementWriterDriver.cpp" />
+    <ClCompile Include="LogTest.cpp" />
+    <ClCompile Include="MagnetoSensorReaderTest.cpp" />
+    <ClCompile Include="MqttGatewayTest.cpp" />
+    <ClCompile Include="PayloadBuilderTest.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -171,26 +179,28 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="MeasurementWriterTest.cpp" />
-    <ClCompile Include="ResultWriterDriver.cpp" />
+    <ClCompile Include="PubSubTest.cpp" />
     <ClCompile Include="ResultWriterTest.cpp" />
-    <ClCompile Include="SerialDriverMock.cpp" />
-    <ClCompile Include="SerialDriverTest.cpp" />
-    <ClCompile Include="SerialSchedulerTest.cpp" />
-    <ClCompile Include="StorageTest.cpp" />
-    <ClCompile Include="WaterMeterCppTest.cpp" />
+    <ClCompile Include="SchedulerTest.cpp" />
+    <ClCompile Include="TestEventClient.cpp" />
+    <ClCompile Include="TimeServerTest.cpp" />
+    <ClCompile Include="WifiTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BatchWriterDriver.h" />
     <ClInclude Include="FlowMeterDriver.h" />
-    <ClInclude Include="MeasurementWriterDriver.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="ResultWriterDriver.h" />
-    <ClInclude Include="SerialDriverMock.h" />
+    <ClInclude Include="TestEventClient.h" />
+    <ClInclude Include="TopicHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WaterMeterCpp\WaterMeterCpp.vcxproj">
       <Project>{260f3be9-4567-4acc-8f1e-01b48e9fbdc9}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="R:\home\flow_test.csv">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

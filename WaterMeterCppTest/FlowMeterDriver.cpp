@@ -1,64 +1,32 @@
+// Copyright 2021 Rik Essenius
+// 
+//   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//   except in compliance with the License. You may obtain a copy of the License at
+// 
+//       http://www.apache.org/licenses/LICENSE-2.0
+// 
+//    Unless required by applicable law or agreed to in writing, software distributed under the License
+//    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and limitations under the License.
+
 #include "pch.h"
+
 #include "FlowMeterDriver.h"
 
-FlowMeterDriver::FlowMeterDriver() {
-}
-
 // constructor for ResultWriterTest. Uses fields that are used for reporting
-FlowMeterDriver::FlowMeterDriver(int amplitude, int highPass, int lowPassFast, int lowPassSlow, bool exclude, bool excludeAll, bool flow, int lowPassOnHighPass, bool outlier, bool drift, int peak) {
-	_amplitude = (float)amplitude;
-	_highPass = (float)highPass;
-	_lowPassFast = (float)lowPassFast;
-	_lowPassSlow = (float)lowPassSlow;
-	_exclude = exclude;
-	_excludeAll = excludeAll;
-	_flow = flow;
-	_lowPassOnHighPass = (float)lowPassOnHighPass;
-	_outlier = outlier;
-	_drift = drift;
-	_peak = peak;
+FlowMeterDriver::FlowMeterDriver(const int smoothValue, const int derivative, const int smoothDerivative,
+                                 const bool flow, const bool peak, const bool outlier, const bool exclude, const bool excludeAll) {
+    _smoothValue = static_cast<float>(smoothValue);
+    _derivative = static_cast<float>(derivative);
+    _smoothDerivative = static_cast<float>(smoothDerivative);
+    _smoothAbsDerivative = 0.0f;
+    _exclude = exclude;
+    _excludeAll = excludeAll;
+    _flow = flow;
+    _outlier = outlier;
+    _peak = peak;
 }
 
-// constructor for FlowMeterTest. Uses order in which the items are calculated
-FlowMeterDriver::FlowMeterDriver(float amplitude, bool outlier, bool firstOutlier, float highPass, float lowPassOnHighPass, bool calulatedFlow, 
-	float lowPassSlow, float lowPassFast, float lowPassDifference, float lowPassOnDifference, bool drift, bool exclude, bool excludeAll, bool flow, int peak) {
-	_amplitude = amplitude;
-	_outlier = outlier;
-	_firstOutlier = firstOutlier;
-	_highPass = highPass;
-	_lowPassOnHighPass = lowPassOnHighPass;
-	_calculatedFlow = calulatedFlow;
-	_lowPassSlow = lowPassSlow;
-	_lowPassFast = lowPassFast;
-	_lowPassDifference = lowPassDifference;
-	_lowPassOnDifference = lowPassOnDifference;
-	_drift = drift;
-	_exclude = exclude;
-	_excludeAll = excludeAll;
-	_flow = flow;
-	_peak = peak;
-}
-
-float FlowMeterDriver::getHighPass() {
-	return _highPass;
-}
-
-float FlowMeterDriver::getLowPassDifference() {
-	return _lowPassDifference;
-}
-
-float FlowMeterDriver::getLowPassOnDifference() {
-	return _lowPassOnDifference;
-}
-
-float FlowMeterDriver::isFirstOutlier() {
-	return _firstOutlier;
-}
-
-float FlowMeterDriver::hasCalculatedFlow() {
-	return _calculatedFlow;
-}
-
-int FlowMeterDriver::hasCalculatedPeak() {
-	return _calculatedPeak;
+float FlowMeterDriver::isFirstOutlier() const {
+    return _firstOutlier;
 }

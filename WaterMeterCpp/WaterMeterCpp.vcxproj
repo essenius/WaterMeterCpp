@@ -114,12 +114,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <Profile>false</Profile>
+      <OptimizeReferences>false</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,31 +141,55 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Arduino.cpp" />
+    <ClCompile Include="ArduinoMock.cpp" />
     <ClCompile Include="BatchWriter.cpp" />
+    <ClCompile Include="BinaryStatusPublisher.cpp" />
+    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="EventClient.cpp" />
+    <ClCompile Include="FirmwareManager.cpp" />
     <ClCompile Include="FlowMeter.cpp" />
     <ClCompile Include="LedDriver.cpp" />
+    <ClCompile Include="LedFlasher.cpp" />
+    <ClCompile Include="Log.cpp" />
     <ClCompile Include="MagnetoSensorReader.cpp" />
     <ClCompile Include="MeasurementWriter.cpp" />
-    <ClCompile Include="QMC5883LCompass.cpp" />
+    <ClCompile Include="MqttGateway.cpp" />
+    <ClCompile Include="NetMock.cpp" />
+    <ClCompile Include="PayloadBuilder.cpp" />
+    <ClCompile Include="EventServer.cpp" />
+    <ClCompile Include="PubSubClientMock.cpp" />
+    <ClCompile Include="QMC5883LCompassMock.cpp" />
     <ClCompile Include="ResultWriter.cpp" />
-    <ClCompile Include="SerialDriver.cpp" />
-    <ClCompile Include="SerialScheduler.cpp" />
-    <ClCompile Include="Storage.cpp" />
+    <ClCompile Include="Scheduler.cpp" />
+    <ClCompile Include="TimeServer.cpp" />
     <ClCompile Include="WaterMeterCpp.cpp" />
+    <ClCompile Include="Wifi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Arduino.h" />
+    <ClInclude Include="ArduinoMock.h" />
     <ClInclude Include="BatchWriter.h" />
+    <ClInclude Include="ChangePublisher.h" />
+    <ClInclude Include="BinaryStatusPublisher.h" />
+    <ClInclude Include="Device.h" />
+    <ClInclude Include="EventClient.h" />
+    <ClInclude Include="EventServer.h" />
+    <ClInclude Include="FirmwareManager.h" />
     <ClInclude Include="FlowMeter.h" />
     <ClInclude Include="LedDriver.h" />
+    <ClInclude Include="LedFlasher.h" />
+    <ClInclude Include="Log.h" />
     <ClInclude Include="MagnetoSensorReader.h" />
     <ClInclude Include="MeasurementWriter.h" />
-    <ClInclude Include="QMC5883LCompass.h" />
+    <ClInclude Include="MqttGateway.h" />
+    <ClInclude Include="NetMock.h" />
+    <ClInclude Include="PayloadBuilder.h" />
+    <ClInclude Include="PubSubClientMock.h" />
+    <ClInclude Include="QMC5883LCompassMock.h" />
     <ClInclude Include="ResultWriter.h" />
-    <ClInclude Include="SerialDriver.h" />
-    <ClInclude Include="SerialScheduler.h" />
-    <ClInclude Include="Storage.h" />
+    <ClInclude Include="Scheduler.h" />
+    <ClInclude Include="secrets.h" />
+    <ClInclude Include="TimeServer.h" />
+    <ClInclude Include="Wifi.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

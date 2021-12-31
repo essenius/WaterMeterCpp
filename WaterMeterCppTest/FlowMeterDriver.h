@@ -1,3 +1,14 @@
+// Copyright 2021 Rik Essenius
+// 
+//   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//   except in compliance with the License. You may obtain a copy of the License at
+// 
+//       http://www.apache.org/licenses/LICENSE-2.0
+// 
+//    Unless required by applicable law or agreed to in writing, software distributed under the License
+//    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and limitations under the License.
+
 #ifndef HEADER_FLOWMETERDRIVER
 #define HEADER_FLOWMETERDRIVER
 
@@ -5,18 +16,11 @@
 
 class FlowMeterDriver : public FlowMeter {
 public:
-	FlowMeterDriver();
-	FlowMeterDriver::FlowMeterDriver(int amplitude, int highPass, int lowPassFast, int lowPassSlow,
-		bool exclude, bool excludeAll, bool flow, int lowPassOnHighPass, bool outlier, bool drift, int peak);
+    explicit FlowMeterDriver(int smoothValue, int derivative = 0, int smoothDerivative = 0,
+                             bool flow = false, bool peak = false,
+                             bool outlier = false, bool exclude = false, bool excludeAll = false);
 
-	FlowMeterDriver::FlowMeterDriver(float amplitude, bool outlier, bool firstOutlier, float highPass, float lowPassOnHighPass, bool calulatedFlow,
-		float lowPassSlow, float lowPassFast, float lowPassDifference, float lowPassOnDifference, bool drift, bool exclude, bool excludeAll, bool flow, int peak);
-	int hasCalculatedPeak();
-	float getHighPass();
-	float getLowPassDifference();
-	float getLowPassOnDifference();
-	float isFirstOutlier();
-	float hasCalculatedFlow();
+    float isFirstOutlier() const;
 };
 
 #endif
