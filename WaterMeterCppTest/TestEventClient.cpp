@@ -12,7 +12,6 @@
 #include "pch.h"
 #include "TestEventClient.h"
 
-
 void TestEventClient::reset() {
     _callCount = 0;
     _topic = Topic::None;
@@ -31,9 +30,8 @@ void TestEventClient::update(Topic topic, long payload) {
     sprintf(_payload, "%ld", payload);
 }
 
-Topic TestEventClient::getTopic() { return _topic; }
+Topic TestEventClient::getTopic() const { return _topic; }
 
 char* TestEventClient::getPayload() { return _payload; }
 
-int TestEventClient::getCallCount() { return _callCount; }
-
+int TestEventClient::getCallCount() const { return _callCount; }

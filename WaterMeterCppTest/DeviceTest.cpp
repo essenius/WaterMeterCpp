@@ -20,35 +20,34 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WaterMeterCppTest {
-	TEST_CLASS(DeviceTest) {
-public:
+    TEST_CLASS(DeviceTest) {
+    public:
+        TEST_METHOD(deviceTest1) {
+            EventServer eventServer;
+            TestEventClient stackListener("stack", &eventServer), heapListener("heap", &eventServer);
+            eventServer.subscribe(&heapListener, Topic::FreeHeap);
+            eventServer.subscribe(&stackListener, Topic::FreeStack);
 
-	TEST_METHOD(deviceTest1) {
-		EventServer eventServer;
-		TestEventClient stackListener("stack", &eventServer), heapListener("heap", &eventServer);
-		eventServer.subscribe(&heapListener, Topic::FreeHeap);
-		eventServer.subscribe(&stackListener, Topic::FreeStack);
-
-		Device device(&eventServer);
-		device.begin();
-		Assert::AreEqual(1, stackListener.getCallCount(), L"Stack called once");
-		Assert::AreEqual(1, heapListener.getCallCount(), L"Heap called once");
-		Assert::AreEqual("1500", stackListener.getPayload(), L"Free stack is 1500");
-		Assert::AreEqual("25000", heapListener.getPayload(), L"Free heap is 25000");
-		device.reportHealth();
-		Assert::AreEqual(2, stackListener.getCallCount(), L"Stack called again");
-		Assert::AreEqual(1, heapListener.getCallCount(), L"Heap not called again");
-		Assert::AreEqual("1564", stackListener.getPayload(), L"Free stack is 1564");
-		device.reportHealth();
-		Assert::AreEqual(3, stackListener.getCallCount(), L"Stack called third time");
-		Assert::AreEqual(2, heapListener.getCallCount(), L"Heap called second time");
-		Assert::AreEqual("1628", stackListener.getPayload(), L"Free stack is 1638");
-		Assert::AreEqual("30000", heapListener.getPayload(), L"Free heap is 30000");
-		device.reportHealth();
-		Assert::AreEqual(4, stackListener.getCallCount(), L"Stack called third time");
-		Assert::AreEqual(3, heapListener.getCallCount(), L"Heap called second time");
-		Assert::AreEqual("1500", stackListener.getPayload(), L"Free stack is 1500");
-		Assert::AreEqual("25000", heapListener.getPayload(), L"Free heap is 25000");
-	}
-	};
+            Device device(&eventServer);
+            device.begin();
+            Assert::AreEqual(1, stackListener.getCallCount(), L"Stack called once");
+            Assert::AreEqual(1, heapListener.getCallCount(), L"Heap called once");
+            Assert::AreEqual("1500", stackListener.getPayload(), L"Free stack is 1500");
+            Assert::AreEqual("25000", heapListener.getPayload(), L"Free heap is 25000");
+            device.reportHealth();
+            Assert::AreEqual(2, stackListener.getCallCount(), L"Stack called again");
+            Assert::AreEqual(1, heapListener.getCallCount(), L"Heap not called again");
+            Assert::AreEqual("1564", stackListener.getPayload(), L"Free stack is 1564");
+            device.reportHealth();
+            Assert::AreEqual(3, stackListener.getCallCount(), L"Stack called third time");
+            Assert::AreEqual(2, heapListener.getCallCount(), L"Heap called second time");
+            Assert::AreEqual("1628", stackListener.getPayload(), L"Free stack is 1638");
+            Assert::AreEqual("30000", heapListener.getPayload(), L"Free heap is 30000");
+            device.reportHealth();
+            Assert::AreEqual(4, stackListener.getCallCount(), L"Stack called third time");
+            Assert::AreEqual(3, heapListener.getCallCount(), L"Heap called second time");
+            Assert::AreEqual("1500", stackListener.getPayload(), L"Free stack is 1500");
+            Assert::AreEqual("25000", heapListener.getPayload(), L"Free heap is 25000");
+        }
+    };
 }

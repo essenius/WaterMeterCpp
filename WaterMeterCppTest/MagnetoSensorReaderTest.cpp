@@ -18,20 +18,18 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-
 // doesn't do much, just checking the interface works
 
 namespace WaterMeterCppTest {
-	TEST_CLASS(MagnetoSensorReaderTest) {
-public:
-
-	TEST_METHOD(magnetoSensorReaderTest1) {
-		MagnetoSensorReader reader;
-		reader.begin();
-        const auto result = reader.read();
-		Assert::AreEqual(0, result.X);
-		Assert::AreEqual(0, result.Y);
-		Assert::AreEqual(0, result.Z);
-	}
-	};
+    TEST_CLASS(MagnetoSensorReaderTest) {
+    public:
+        TEST_METHOD(magnetoSensorReaderTest1) {
+            MagnetoSensorReader reader;
+            reader.begin();
+            const auto result = reader.read();
+            Assert::AreEqual(0, result.X);
+            Assert::AreEqual(0, result.Y);
+            Assert::AreEqual(0, result.Z);
+        }
+    };
 }

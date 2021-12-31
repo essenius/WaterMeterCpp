@@ -10,7 +10,8 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
-#include "..\WaterMeterCpp\EventServer.h"
+#include "../WaterMeterCpp/EventServer.h"
+
 class TestEventClient : public EventClient {
 public:
     TestEventClient(const char* name, EventServer* eventServer) : EventClient(name, eventServer) {
@@ -18,13 +19,13 @@ public:
     }
 
     void reset();
-    virtual void update(Topic topic, const char* payload);
-    virtual void update(Topic topic, long payload);
-    Topic getTopic();
+    void update(Topic topic, const char* payload) override;
+    void update(Topic topic, long payload) override;
+    Topic getTopic() const;
     char* getPayload();
-    int getCallCount();
+    int getCallCount() const;
 private:
     int _callCount = 0;
     Topic _topic = Topic::None;
-    char _payload[512];
+    char _payload[512]{};
 };

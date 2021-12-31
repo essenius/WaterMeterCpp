@@ -22,54 +22,54 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WaterMeterCppTest {
-	TEST_CLASS(LogTest) {
-public:
-	EventServer eventServer;
+    TEST_CLASS(LogTest) {
+    public:
+        EventServer eventServer;
 
-	TEST_METHOD(LogScriptTest) {
-		Log log(&eventServer);
-		TimeServer timeServer(&eventServer);
-		timeServer.begin();
-		log.begin();
-		Serial.begin(9600);
-		eventServer.publish(Topic::Connected, 0);
+        TEST_METHOD(LogScriptTest) {
+            Log log(&eventServer);
+            TimeServer timeServer(&eventServer);
+            timeServer.begin();
+            log.begin();
+            Serial.begin(9600);
+            eventServer.publish(Topic::Connected, 0);
 
-		Assert::IsTrue(std::regex_match(
-			Serial.getOutput(),
-			std::regex(R"(\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\]\sConnected\n)")),
-			L"Connected logs OK");
+            Assert::IsTrue(std::regex_match(
+                               Serial.getOutput(),
+                               std::regex(R"(\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\]\sConnected\n)")),
+                           L"Connected logs OK");
 
-		Serial.clearOutput();
-		eventServer.publish(Topic::Error, "My Message");
-		Assert::IsTrue(std::regex_match(
-			Serial.getOutput(),
-			std::regex(R"(\[.*\]\sError:\sMy\sMessage\n)")), 
-			L"Error logs OK");
-		Serial.clearOutput();
+            Serial.clearOutput();
+            eventServer.publish(Topic::Error, "My Message");
+            Assert::IsTrue(std::regex_match(
+                               Serial.getOutput(),
+                               std::regex(R"(\[.*\]\sError:\sMy\sMessage\n)")),
+                           L"Error logs OK");
+            Serial.clearOutput();
 
-	    eventServer.publish(Topic::Disconnected, 24);
-		Assert::IsTrue(std::regex_match(
-			Serial.getOutput(),
-			std::regex(R"(\[.*\]\sDisconnected\n)")), 
-			L"Disconnected logs OK");
+            eventServer.publish(Topic::Disconnected, 24);
+            Assert::IsTrue(std::regex_match(
+                               Serial.getOutput(),
+                               std::regex(R"(\[.*\]\sDisconnected\n)")),
+                           L"Disconnected logs OK");
 
-		Serial.clearOutput();
+            Serial.clearOutput();
 
-		Assert::AreEqual("", Serial.getOutput());
+            Assert::AreEqual("", Serial.getOutput());
 
-		eventServer.publish(Topic::Info, 24);
-		Assert::IsTrue(std::regex_match(
-			Serial.getOutput(),
-			std::regex(R"(\[.*\]\sInfo:\s24\n)")), 
-			L"Info logs long OK");
-		Serial.clearOutput();
+            eventServer.publish(Topic::Info, 24);
+            Assert::IsTrue(std::regex_match(
+                               Serial.getOutput(),
+                               std::regex(R"(\[.*\]\sInfo:\s24\n)")),
+                           L"Info logs long OK");
+            Serial.clearOutput();
 
-		log.update(Topic::BatchSize, 24L);
+            log.update(Topic::BatchSize, 24L);
 
-		Assert::IsTrue(std::regex_match(
-			Serial.getOutput(),
-			std::regex(R"(\[.*\]\sTopic\s'1':\s24\n)")), L"Unexpected topic handled OK");
-		Serial.clearOutput();
-	}
-	};
+            Assert::IsTrue(std::regex_match(
+                               Serial.getOutput(),
+                               std::regex(R"(\[.*\]\sTopic\s'1':\s24\n)")), L"Unexpected topic handled OK");
+            Serial.clearOutput();
+        }
+    };
 }

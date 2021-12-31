@@ -9,25 +9,24 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
- #include "pch.h"
+#include "pch.h"
 
 #include "FlowMeterDriver.h"
 
 // constructor for ResultWriterTest. Uses fields that are used for reporting
-FlowMeterDriver::FlowMeterDriver(int smoothValue, int derivative, int smoothDerivative,
-	bool flow, bool peak, bool outlier, bool exclude, bool excludeAll) {
-	_smoothValue = static_cast<float>(smoothValue);
-	_derivative = static_cast<float>(derivative);
-	_smoothDerivative = static_cast<float>(smoothDerivative);
-	_smoothAbsDerivative = 0.0f;
-	_exclude = exclude;
-	_excludeAll = excludeAll;
-	_flow = flow;
-	_outlier = outlier;
-	_peak = peak;
+FlowMeterDriver::FlowMeterDriver(const int smoothValue, const int derivative, const int smoothDerivative,
+                                 const bool flow, const bool peak, const bool outlier, const bool exclude, const bool excludeAll) {
+    _smoothValue = static_cast<float>(smoothValue);
+    _derivative = static_cast<float>(derivative);
+    _smoothDerivative = static_cast<float>(smoothDerivative);
+    _smoothAbsDerivative = 0.0f;
+    _exclude = exclude;
+    _excludeAll = excludeAll;
+    _flow = flow;
+    _outlier = outlier;
+    _peak = peak;
 }
 
-
-float FlowMeterDriver::isFirstOutlier() {
-	return _firstOutlier;
+float FlowMeterDriver::isFirstOutlier() const {
+    return _firstOutlier;
 }

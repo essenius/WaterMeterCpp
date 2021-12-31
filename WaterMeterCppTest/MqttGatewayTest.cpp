@@ -14,7 +14,7 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "TopicHelper.h"
+//#include "TopicHelper.h"
 #include "../WaterMeterCpp/secrets.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -24,165 +24,188 @@ extern PubSubClient mqttClient;
 
 namespace WaterMeterCppTest {
 
-	Client client;
-	EventServer eventServer(LogLevel::Off);
-	TestEventClient disconnectedListener("disconnectedListener", &eventServer);
-	TestEventClient connectedListener("connectedListener", &eventServer);
-	TestEventClient errorListener("errorListener", &eventServer);
-	TestEventClient infoListener("infoListener", &eventServer);
 
-	TEST_CLASS(MqttGatewayTest) {
-public:
+    TEST_CLASS(MqttGatewayTest) {
+    public:
+        static Client Client;
 
-	TEST_CLASS_INITIALIZE(mqttGatewayClassInitialize) {
-		eventServer.subscribe(&connectedListener, Topic::Connected);
-		eventServer.subscribe(&disconnectedListener, Topic::Disconnected);
-		eventServer.subscribe(&errorListener, Topic::Error);
-		eventServer.subscribe(&infoListener, Topic::Info);
-		mqttClient.reset();
-	}
+        static EventServer EventServer;
+        static TestEventClient DisconnectedListener;
+        static TestEventClient ConnectedListener;
+        static TestEventClient ErrorListener;
+        static TestEventClient InfoListener;
 
-	TEST_METHOD_INITIALIZE(mqttGatewayMethodInitialize) {
-		mqttClient.reset();
-		disconnectedListener.reset();
-		connectedListener.reset();
-		errorListener.reset();
-		infoListener.reset();
-	}
-	TEST_CLASS_CLEANUP(wifiTestClassCleanup) {
-		eventServer.unsubscribe(&connectedListener);
-		eventServer.unsubscribe(&disconnectedListener);
-		eventServer.unsubscribe(&infoListener);
-		eventServer.unsubscribe(&errorListener);
-	}
-	TEST_METHOD(mqttGatewayScriptTest) {
-		// We need to make this a longer test since the init needs to be done for the rest to work
-		
-		// Init part
-		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
+        TEST_CLASS_INITIALIZE(mqttGatewayClassInitialize) {
+            EventServer.subscribe(&ConnectedListener, Topic::Connected);
+            EventServer.subscribe(&DisconnectedListener, Topic::Disconnected);
+            EventServer.subscribe(&ErrorListener, Topic::Error);
+            EventServer.subscribe(&InfoListener, Topic::Info);
+            mqttClient.reset();
+        }
 
-		gateway.begin(&client, "client1");
-		// first check if the connection event was sent (no disconnects, one connect - no more)
-		Assert::AreEqual(0, disconnectedListener.getCallCount(), L"no disconnected event");
-		Assert::AreEqual(1, connectedListener.getCallCount(), L"connected event");
-		Assert::AreEqual(1, errorListener.getCallCount(), L"Error called once");
-		Assert::AreEqual("", errorListener.getPayload(), L"Error empty");
-		Assert::AreEqual(3, infoListener.getCallCount(), L"Info called three times");
-		Assert::AreEqual("MQTT: Announcement complete", infoListener.getPayload(), L"Info last message correct");
+        TEST_METHOD_INITIALIZE(mqttGatewayMethodInitialize) {
+            mqttClient.reset();
+            DisconnectedListener.reset();
+            ConnectedListener.reset();
+            ErrorListener.reset();
+            InfoListener.reset();
+        }
 
-		Assert::AreEqual(CONFIG_MQTT_USER, mqttClient.user());
-		Assert::AreEqual("client1", mqttClient.id());
-		// check if the homie init events were sent 1586 1613
-		Assert::AreEqual(static_cast<size_t>(1656), strlen(mqttClient.getTopics()), L"Topic lenght OK");
-		Assert::AreEqual(static_cast<size_t>(473), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
-		Assert::AreEqual(46, mqttClient.getCallCount());
-		mqttClient.reset();
+        TEST_CLASS_CLEANUP(wifiTestClassCleanup) {
+            EventServer.unsubscribe(&ConnectedListener);
+            EventServer.unsubscribe(&DisconnectedListener);
+            EventServer.unsubscribe(&InfoListener);
+            EventServer.unsubscribe(&ErrorListener);
+        }
 
-		// Valid callback test
-		TestEventClient callBackListener("disconnectedListener", &eventServer);
-		eventServer.subscribe(&callBackListener, Topic::BatchSizeDesired);
-		char topic[100];
-		constexpr int PAYLOAD_SIZE = 2;
-		uint8_t payload[PAYLOAD_SIZE] = { '2', '0' };
-		strcpy(topic, "homie/device_id/measurement/batch-size-desired/set");
-		mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
-		Assert::AreEqual(1, callBackListener.getCallCount(), L"callBackListener called");
-		Assert::AreEqual("20", callBackListener.getPayload(), L"callBackListener got right payload");
+        TEST_METHOD(mqttGatewayScriptTest) {
+            // We need to make this a longer test since the init needs to be done for the rest to work
 
-		callBackListener.reset();
-		strcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
-		mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
-		Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
-		callBackListener.reset();
+            // Init part
+            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
+                                CONFIG_MQTT_PASSWORD);
 
-		// empty topic callback test. Should not do anything, just checking nothing breaks
-		topic[0] = 0;
-		mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            gateway.begin(&Client, "client1");
+            // first check if the connection event was sent (no disconnects, one connect - no more)
+            Assert::AreEqual(0, DisconnectedListener.getCallCount(), L"no disconnected event");
+            Assert::AreEqual(1, ConnectedListener.getCallCount(), L"connected event");
+            Assert::AreEqual(1, ErrorListener.getCallCount(), L"Error called once");
+            Assert::AreEqual("", ErrorListener.getPayload(), L"Error empty");
+            Assert::AreEqual(3, InfoListener.getCallCount(), L"Info called three times");
+            Assert::AreEqual("MQTT: Announcement complete", InfoListener.getPayload(), L"Info last message correct");
 
-		// same with a payload not having a device id
-		strcpy(topic, "bogus");
-		mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            Assert::AreEqual(CONFIG_MQTT_USER, mqttClient.user());
+            Assert::AreEqual("client1", mqttClient.id());
+            // check if the homie init events were sent 1586 1613
+            Assert::AreEqual(static_cast<size_t>(1656), strlen(mqttClient.getTopics()), L"Topic lenght OK");
+            Assert::AreEqual(static_cast<size_t>(473), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
+            Assert::AreEqual(46, mqttClient.getCallCount());
+            mqttClient.reset();
 
-		// a topic we don't know should be ignored
-		strcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
-		mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
-		Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
-	}
-	TEST_METHOD(mqttGatewayNoUserTest) {
-		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, nullptr, "");
-		gateway.begin(&client, "client1", false);
-		gateway.connect();
-		Assert::AreEqual("", mqttClient.user(), "User not set");
-	}
+            // Valid callback test
+            TestEventClient callBackListener("disconnectedListener", &EventServer);
+            EventServer.subscribe(&callBackListener, Topic::BatchSizeDesired);
+            char topic[100];
+            constexpr int PAYLOAD_SIZE = 2;
+            uint8_t payload[PAYLOAD_SIZE] = {'2', '0'};
+            strcpy(topic, "homie/device_id/measurement/batch-size-desired/set");
+            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            Assert::AreEqual(1, callBackListener.getCallCount(), L"callBackListener called");
+            Assert::AreEqual("20", callBackListener.getPayload(), L"callBackListener got right payload");
 
-	TEST_METHOD(mqttGatewayCannotConnectTest) {
-		mqttClient.setCanConnect(false);
-	    MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
-		gateway.begin(&client, "client1");
-		Assert::AreEqual(0, disconnectedListener.getCallCount(), L"Disconnected published");
-		Assert::AreEqual(0, connectedListener.getCallCount(), L"Connected not published");
-		Assert::AreEqual("MQTT: Connecting", infoListener.getPayload(), "tried to connect");
-		Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", errorListener.getPayload(), "Error happened");
-	}
+            callBackListener.reset();
+            strcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
+            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
+            callBackListener.reset();
 
-	TEST_METHOD(mqttGatewayCannotSubscribeTest) {
-		mqttClient.setCanSubscribe(false);
-		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
-		gateway.begin(&client, "client1");
-		Assert::AreEqual(1, disconnectedListener.getCallCount(), L"Disconnected published");
-		Assert::AreEqual(1, connectedListener.getCallCount(), L"Connected published");
-		Assert::AreEqual("MQTT: Connecting", infoListener.getPayload(), "tried to connect");
-		Assert::AreEqual("MQTT: Could not subscribe to setters [state = 3]", errorListener.getPayload(), "Error happened");
-	}
+            // empty topic callback test. Should not do anything, just checking nothing breaks
+            topic[0] = 0;
+            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
 
-	TEST_METHOD(mqttGatewayCannotAnnounceTest) {
-		mqttClient.setCanPublish(false);
-		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
-		gateway.begin(&client, "client1");
-		Assert::AreEqual(1, disconnectedListener.getCallCount(), L"Disconnected published");
-		Assert::AreEqual(1, connectedListener.getCallCount(), L"Connected published");
-		Assert::AreEqual("MQTT: Connected and subscribed to setters", infoListener.getPayload(), "tried to connect");
-		Assert::AreEqual("MQTT: Could not announce device [state = 3]", errorListener.getPayload(), "Error happened");
-	}
+            // same with a payload not having a device id
+            strcpy(topic, "bogus");
+            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
 
-	TEST_METHOD(mqttGatewayConnectionLossTest) {
-		MqttGateway gateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD);
-		gateway.begin(&client, "client1");
-		Assert::AreEqual(0, disconnectedListener.getCallCount(), L"No disconnect published");
-		Assert::AreEqual(1, connectedListener.getCallCount(), L"Connected published");
+            // a topic we don't know should be ignored
+            strcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
+            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
+        }
 
-		mqttClient.setCanConnect(false);
-		disconnectedListener.reset();
-		connectedListener.reset();
-		errorListener.reset();
-		// force an evaluation of the connection state
-		eventServer.publish(Topic::FreeHeap, 1000);
-		Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", errorListener.getPayload(), "Error happened");
-		Assert::AreEqual(1, disconnectedListener.getCallCount(), L"Disconnected published");
+        TEST_METHOD(mqttGatewayNoUserTest) {
+            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, nullptr, "");
+            gateway.begin(&Client, "client1", false);
+            gateway.connect();
+            Assert::AreEqual("", mqttClient.user(), "User not set");
+        }
 
-	    infoListener.reset();
-		errorListener.reset();
-		// try connecting again
-		gateway.handleQueue();
-		Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called again");
-		Assert::AreEqual(0, infoListener.getCallCount(), L"Info not called again (i.e. no re-init");
+        TEST_METHOD(mqttGatewayCannotConnectTest) {
+            mqttClient.setCanConnect(false);
+            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
+                                CONFIG_MQTT_PASSWORD);
+            gateway.begin(&Client, "client1");
+            Assert::AreEqual(0, DisconnectedListener.getCallCount(), L"Disconnected published");
+            Assert::AreEqual(0, ConnectedListener.getCallCount(), L"Connected not published");
+            Assert::AreEqual("MQTT: Connecting", InfoListener.getPayload(), "tried to connect");
+            Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", ErrorListener.getPayload(),
+                             "Error happened");
+        }
 
-		delay(1000);
-		gateway.handleQueue();
-		Assert::AreEqual("MQTT: Connecting", infoListener.getPayload(), L"Re-init after one second");
-	    Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", errorListener.getPayload(), L"Reconnect failed");
-		mqttClient.setCanConnect(true);
-		connectedListener.reset();
-		infoListener.reset();
-		errorListener.reset();
-		delay(1000);
-		gateway.handleQueue();
-		Assert::AreEqual(1, connectedListener.getCallCount(), L"reconnected");
-		Assert::AreEqual("MQTT: Announcement complete", infoListener.getPayload(), L"Re-initialized");
-		Assert::AreEqual("", errorListener.getPayload(), L"Error reset after reconnect");
+        TEST_METHOD(mqttGatewayCannotSubscribeTest) {
+            mqttClient.setCanSubscribe(false);
+            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
+                                CONFIG_MQTT_PASSWORD);
+            gateway.begin(&Client, "client1");
+            Assert::AreEqual(1, DisconnectedListener.getCallCount(), L"Disconnected published");
+            Assert::AreEqual(1, ConnectedListener.getCallCount(), L"Connected published");
+            Assert::AreEqual("MQTT: Connecting", InfoListener.getPayload(), "tried to connect");
+            Assert::AreEqual("MQTT: Could not subscribe to setters [state = 3]", ErrorListener.getPayload(),
+                             "Error happened");
+        }
+
+        TEST_METHOD(mqttGatewayCannotAnnounceTest) {
+            mqttClient.setCanPublish(false);
+            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
+                                CONFIG_MQTT_PASSWORD);
+            gateway.begin(&Client, "client1");
+            Assert::AreEqual(1, DisconnectedListener.getCallCount(), L"Disconnected published");
+            Assert::AreEqual(1, ConnectedListener.getCallCount(), L"Connected published");
+            Assert::AreEqual("MQTT: Connected and subscribed to setters", InfoListener.getPayload(),
+                             "tried to connect");
+            Assert::AreEqual("MQTT: Could not announce device [state = 3]", ErrorListener.getPayload(),
+                             "Error happened");
+        }
+
+        TEST_METHOD(mqttGatewayConnectionLossTest) {
+            MqttGateway gateway(&EventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
+                                CONFIG_MQTT_PASSWORD);
+            gateway.begin(&Client, "client1");
+            Assert::AreEqual(0, DisconnectedListener.getCallCount(), L"No disconnect published");
+            Assert::AreEqual(1, ConnectedListener.getCallCount(), L"Connected published");
+
+            mqttClient.setCanConnect(false);
+            DisconnectedListener.reset();
+            ConnectedListener.reset();
+            ErrorListener.reset();
+            // force an evaluation of the connection state
+            EventServer.publish(Topic::FreeHeap, 1000);
+            Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", ErrorListener.getPayload(),
+                             "Error happened");
+            Assert::AreEqual(1, DisconnectedListener.getCallCount(), L"Disconnected published");
+
+            InfoListener.reset();
+            ErrorListener.reset();
+            // try connecting again
+            gateway.handleQueue();
+            Assert::AreEqual(0, ErrorListener.getCallCount(), L"Error not called again");
+            Assert::AreEqual(0, InfoListener.getCallCount(), L"Info not called again (i.e. no re-init");
+
+            delay(1000);
+            gateway.handleQueue();
+            Assert::AreEqual("MQTT: Connecting", InfoListener.getPayload(), L"Re-init after one second");
+            Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", ErrorListener.getPayload(),
+                             L"Reconnect failed");
+            mqttClient.setCanConnect(true);
+            ConnectedListener.reset();
+            InfoListener.reset();
+            ErrorListener.reset();
+            delay(1000);
+            gateway.handleQueue();
+            Assert::AreEqual(1, ConnectedListener.getCallCount(), L"reconnected");
+            Assert::AreEqual("MQTT: Announcement complete", InfoListener.getPayload(), L"Re-initialized");
+            Assert::AreEqual("", ErrorListener.getPayload(), L"Error reset after reconnect");
 
 
-	}
+        }
 
-	};
+
+    };
+
+    Client MqttGatewayTest::Client;
+    EventServer MqttGatewayTest::EventServer(LogLevel::Off);
+    TestEventClient MqttGatewayTest::DisconnectedListener("disconnectedListener", &EventServer);
+    TestEventClient MqttGatewayTest::ConnectedListener("connectedListener", &EventServer);
+    TestEventClient MqttGatewayTest::ErrorListener("errorListener", &EventServer);
+    TestEventClient MqttGatewayTest::InfoListener("infoListener", &EventServer);
 }

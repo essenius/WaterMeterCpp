@@ -19,7 +19,7 @@ namespace Microsoft {
     namespace VisualStudio {
         namespace CppUnitTestFramework {
 
-            template<>
+            template <>
             static std::wstring ToString<Topic>(const Topic& topic) {
                 return std::to_wstring(static_cast<int>(topic));
             }
