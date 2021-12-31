@@ -29,7 +29,6 @@ private:
     BatchWriter* _writer[WRITER_COUNT];
 
     int optimalWriteCount(int round);
-
 };
 
 #endif
