@@ -73,7 +73,7 @@ namespace WaterMeterCppTest {
                 L"Mac address formatted ok");
             Assert::AreEqual("192.168.1.2", WiFi.localIP().toString().c_str(), L"IP address ok1");
             auto result = wifi.get(Topic::IpAddress, "");
-            Assert::AreEqual<const char*>("192.168.1.2", result, L"IP address ok2");
+            Assert::AreEqual("192.168.1.2", result, L"IP address ok2");
 
         }
 

@@ -55,11 +55,10 @@ IPAddress& IPAddress::operator=(const uint8_t* address)
     return *this;
 }
 
-String IPAddress::toString() const
-{
+String IPAddress::toString() const {
     char buffer[16];
     sprintf(buffer, "%u.%u.%u.%u", _address.bytes[0], _address.bytes[1], _address.bytes[2], _address.bytes[3]);
-    return String(buffer);
+    return {buffer};
 }
 
 

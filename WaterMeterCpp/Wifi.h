@@ -56,6 +56,8 @@ private:
     char* _hostName = _hostNameBuffer;
     static constexpr int MAC_ADDRESS_SIZE = 20;
     char _macAddress[MAC_ADDRESS_SIZE] = "";
+    static constexpr int IP_ADDRESS_SIZE = 16;
+    char _ipAddress[IP_ADDRESS_SIZE] = "";
     IPAddress _localIP = NO_IP;
 };
 #endif

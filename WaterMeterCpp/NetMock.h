@@ -87,7 +87,6 @@ public:
 	uint8_t& operator[](int index) 	{ return _address.bytes[index]; }
 
 private:
-	//char _value[20]{};
 	union {
 		uint8_t bytes[4];  
 		uint32_t dword;

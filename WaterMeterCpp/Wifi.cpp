@@ -124,9 +124,8 @@ const char* Wifi::getHostName() { return _hostName; }
 const char* Wifi::get(Topic topic, const char* defaultValue) {
     switch(topic) {
     case Topic::IpAddress: {
-        char buffer[30];
-        strcpy( buffer, WiFi.localIP().toString().c_str());
-        return buffer;
+        strcpy(_ipAddress,WiFi.localIP().toString().c_str());
+        return _ipAddress;
     }
     case Topic::MacRaw:
     case Topic::MacFormatted:
