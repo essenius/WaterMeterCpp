@@ -33,7 +33,7 @@
 #include "secrets.h" // for all CONFIG constants
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "7";
+constexpr const char* const BUILD_VERSION = "0.99.0";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle takes about 8ms max, so that is also within the limit.

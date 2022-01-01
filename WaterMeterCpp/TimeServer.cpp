@@ -36,7 +36,6 @@ void TimeServer::begin() {
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-//#include <cstdint>
 
 struct timeval {
     time_t tv_sec; // seconds 

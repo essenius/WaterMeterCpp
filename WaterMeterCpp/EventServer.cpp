@@ -46,7 +46,7 @@ void EventServer::publishLog(
     const char* const format, EventClient* client, const Topic topic, const char* const payload) {
     if (_logLevel == LogLevel::On) {
         char buffer[255] = {0};
-        sprintf(buffer, format, client->getName(), topic, payload); 
+        sprintf(buffer, format, client->getName(), topic, payload);
         publish(nullptr, Topic::Info, buffer, false);
     }
 }
