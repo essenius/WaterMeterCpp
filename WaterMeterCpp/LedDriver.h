@@ -38,7 +38,7 @@ private:
     unsigned int _interval = 0;
     unsigned int _ledCounter = 0;
     unsigned int _newInterval = 0;
-    uint8_t convertToState(const char* state);
+    static uint8_t convertToState(const char* state);
     void signalMeasurement();
 };
 

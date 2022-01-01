@@ -11,13 +11,14 @@
 
 #include "LongChangePublisher.h"
 
-LongChangePublisher::LongChangePublisher(EventServer* eventServer, EventClient* eventClient, Topic topic, long epsilon, long lowThreshold) :
+LongChangePublisher::LongChangePublisher(
+    EventServer* eventServer, EventClient* eventClient, const Topic topic, const long epsilon, const long lowThreshold) :
     ChangePublisher(eventServer, eventClient, topic), _epsilon(epsilon), _lowThreshold(lowThreshold) {}
 
 void LongChangePublisher::set(long payload) {
     // Only catch larger variations to avoid very frequent updates
     if (abs(_payload - payload) >= _epsilon || payload < _lowThreshold) {
         _eventServer->publish(_topic, payload);
-            _payload = payload;
+        _payload = payload;
     }
 }

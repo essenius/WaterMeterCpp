@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -15,18 +15,18 @@
 class FlowMeter {
 public:
     void addMeasurement(int measurement);
-    bool areAllExcluded();
-    float getSmoothValue();
-    float getDerivative();
-    float getSmoothAbsDerivative();
-    float getSmoothDerivative();
-    bool isPeak();
-    bool hasFlow();
-    bool isExcluded();
-    bool isOutlier();
+    bool areAllExcluded() const;
+    float getSmoothValue() const;
+    float getDerivative() const;
+    float getSmoothAbsDerivative() const;
+    float getSmoothDerivative() const;
+    bool isPeak() const;
+    bool hasFlow() const;
+    bool isExcluded() const;
+    bool isOutlier() const;
 protected:
-    static const int STARTUP_SAMPLES = 10;
-    static const int MIN_DERIVATIVE_PEAK = -9;
+    static constexpr int STARTUP_SAMPLES = 10;
+    static constexpr int MIN_DERIVATIVE_PEAK = -9;
     bool _exclude = false;
     bool _excludeAll = false;
     bool _firstOutlier = false;
@@ -44,8 +44,8 @@ protected:
 
     void detectOutlier(int measurement);
     void detectPeaks(int measurement);
-    float highPassFilter(float measure, float previous, float filterValue, float alpha);
-    float lowPassFilter(float measure, float filterValue, float alpha);
+    static float highPassFilter(float measure, float previous, float filterValue, float alpha);
+    static float lowPassFilter(float measure, float filterValue, float alpha);
     void markAnomalies(int measurement);
     void resetAnomalies();
     void resetFilters(int initialMeasurement);

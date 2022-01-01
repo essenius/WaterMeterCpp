@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -14,12 +14,12 @@
 #include "ChangePublisher.h"
 #include "EventServer.h"
 
-class Log : public EventClient{
-   public:
-       using EventClient::update;
-       explicit Log(EventServer *eventServer);
-       void begin();
-       void update(Topic topic, const char* payload) override;
+class Log : public EventClient {
+public:
+    using EventClient::update;
+    explicit Log(EventServer* eventServer);
+    void begin();
+    void update(Topic topic, const char* payload) override;
 private:
     // We want to log changes to the connection status only
     ChangePublisher<const char*> _disconnectedPublisher;

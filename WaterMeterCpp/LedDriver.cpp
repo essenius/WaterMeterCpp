@@ -11,15 +11,16 @@
 
 #ifdef ESP32
 #include <ESP.h>
-#else 
+#else
 #include "ArduinoMock.h"
 #endif
 
 #include "LedDriver.h"
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
-LedDriver::LedDriver(EventServer* eventServer) : EventClient("LedDriver", eventServer),
+LedDriver::LedDriver(EventServer* eventServer) :
+    EventClient("LedDriver", eventServer),
     _connectingFlasher(GREEN_LED, 2),
     _sampleFlasher(LED_BUILTIN, IDLE_INTERVAL) {}
 
@@ -39,7 +40,7 @@ void LedDriver::begin() {
     pinMode(RED_LED, OUTPUT);
     pinMode(GREEN_LED, OUTPUT);
     pinMode(BLUE_LED, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);;
+    digitalWrite(LED_BUILTIN, HIGH);
     digitalWrite(AUX_LED, LOW);
     digitalWrite(RED_LED, LOW);
     digitalWrite(GREEN_LED, LOW);
@@ -48,7 +49,7 @@ void LedDriver::begin() {
 
 /// <summary>
 /// If input is empty, return LOW. If it is more than one character, return HIGH.
-/// this allows for using empty string vs message to switch leds.
+/// this allows for using empty string vs message to switch LEDs.
 /// If the input is one character, then return HIGH if it is one of 1,H,h,T,t and LOW otherwise.
 /// </summary>
 /// <param name="state">input string</param>
@@ -75,11 +76,11 @@ uint8_t LedDriver::convertToState(const char* state) {
 }
 
 /// <summary>
-/// Event listener, switching leds / updating flash rate
+/// Event listener, switching LEDs / updating flash rate
 /// </summary>
 /// <param name="topic"></param>
 /// <param name="payload"></param>
-void LedDriver::update(Topic topic, const char* payload) {
+void LedDriver::update(const Topic topic, const char* payload) {
     uint8_t state = convertToState(payload);
     unsigned char led;
     switch (topic) {

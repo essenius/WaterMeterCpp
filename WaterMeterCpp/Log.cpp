@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -35,7 +35,7 @@ void Log::update(Topic topic, const char* payload) {
     Serial.printf("[%s] ", timestamp);
     switch (topic) {
     case Topic::Error:
-        if (payload == "") {
+        if (strlen(payload) == 0) {
             Serial.println("Cleared error");
         }
         else {

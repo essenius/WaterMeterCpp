@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -12,6 +12,12 @@
 #ifndef HEADER_MAGNETOSENSORREADER
 #define HEADER_MAGNETOSENSORREADER
 
+#ifdef ESP32
+#include <QMC5883LCompass.h>
+#else
+#include "QMC5883LCompassMock.h"
+#endif
+
 struct SensorReading {
   int X;
   int Y;
@@ -23,7 +29,8 @@ public:
     void begin();
     SensorReading read();
 private:
-    SensorReading sensorReading = {};
+    QMC5883LCompass _compass;
+    SensorReading _sensorReading = {};
 };
 
 #endif
