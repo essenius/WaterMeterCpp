@@ -9,23 +9,21 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_LEDFLASHER
-#define HEADER_LEDFLASHER
+#ifndef HEADER_LONGCHANGEPUBLISHER
+#define HEADER_LONGCHANGEPUBLISHER
 
-#ifdef ESP32
-#include <ESP.h>
-#else
-#include "ArduinoMock.h"
-#endif
+#include "EventServer.h"
+#include "ChangePublisher.h"
 
-class LedFlasher {
+class LongChangePublisher : public ChangePublisher<long>
+{
 public:
-    LedFlasher(uint8_t led, unsigned int interval);
-    void setInterval(unsigned int interval);
-    void signal();
-private:
-    unsigned int _interval = 1;
-    uint8_t _led = LED_BUILTIN;
-    unsigned int _ledCounter = 0;
+    LongChangePublisher(EventServer* eventServer, EventClient* eventClient, Topic topic, long epsilon, long lowThreshold);
+    void set(long payload) override;
+
+protected:
+    long _epsilon;
+    long _lowThreshold;
 };
+
 #endif

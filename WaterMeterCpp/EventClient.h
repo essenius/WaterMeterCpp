@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -24,8 +24,8 @@ enum class Topic {
     Sample, Measurement, Result,
     FreeHeap, FreeStack,
     Connected, Connecting, Disconnected,
-    Processing, Sending, DelayedFlush, ResultWritten,
-    Error, Log, Info, 
+    Processing, DelayedFlush, ResultWritten,
+    Error, Log, Info,
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak,
     Time, IpAddress, MacRaw, MacFormatted
@@ -39,7 +39,7 @@ class EventClient {
 public:
     EventClient(const char* name, EventServer* eventServer);
     virtual ~EventClient();
-    const char* getName();
+    const char* getName() const;
 
     // can't use generics on virtual functions, which we would need here.
     // Since we use only a limited set of types, type erasure seems overkill 
@@ -56,6 +56,5 @@ protected:
     const char* _name;
     bool _muted = false;
 };
-
 
 #endif

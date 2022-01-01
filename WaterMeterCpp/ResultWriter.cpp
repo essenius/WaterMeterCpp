@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#include <string.h>
-#include <limits.h>
+#include <cstring>
+#include <climits>
 #include "ResultWriter.h"
 
 ResultWriter::ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros) :
@@ -31,7 +31,7 @@ void ResultWriter::addDuration(long duration) {
     }
 }
 
-void ResultWriter::addMeasurement(int value, FlowMeter* result) {
+void ResultWriter::addMeasurement(const int value, FlowMeter* result) {
     newMessage();
     _measure = value;
     //_result = result;
@@ -50,9 +50,10 @@ void ResultWriter::addMeasurement(int value, FlowMeter* result) {
     else if (result->isExcluded()) {
         _excludeCount++;
     }
+    // we only need these at the end but we don't know when that is
     _smoothValue = result->getSmoothValue();
     _derivative = result->getDerivative();
-    _smoothDerivative = result ->getSmoothDerivative();
+    _smoothDerivative = result->getSmoothDerivative();
     _smoothAbsDerivative = result->getSmoothAbsDerivative();
 }
 
@@ -69,9 +70,9 @@ void ResultWriter::begin() {
 
 bool ResultWriter::needsFlush(bool endOfFile) {
     // We set the flush rate regardless of whether we still need to write something. This can end an idle batch early.
-    bool isInteresting = _flowCount > 0 || _excludeCount > 0;
+    const bool isInteresting = _flowCount > 0 || _excludeCount > 0;
     if (isInteresting) {
-        _flushRatePublisher.update(_nonIdleFlushRate);
+        _flushRatePublisher.set(_nonIdleFlushRate);
     }
     return BatchWriter::needsFlush(endOfFile);
 }
@@ -84,7 +85,7 @@ void ResultWriter::publishOverrun(bool overrun) {
 }
 
 void ResultWriter::prepareFlush() {
-    int averageDuration = (int)((_sumDuration * 10 / _messageCount + 5) / 10);
+    const int averageDuration = static_cast<int>((_sumDuration * 10 / _messageCount + 5) / 10);
     _payloadBuilder->writeParam("lastValue", _measure);
     _payloadBuilder->writeGroupStart("summaryCount");
     _payloadBuilder->writeParam("samples", _messageCount);
@@ -151,7 +152,7 @@ void ResultWriter::update(Topic topic, const char* payload) {
 }
 
 void ResultWriter::update(Topic topic, long payload) {
-    long rate = limit(payload, 0L, LONG_MAX);
+    const long rate = limit(payload, 0L, LONG_MAX);
     switch (topic) {
     case Topic::IdleRate:
         setIdleFlushRate(rate);

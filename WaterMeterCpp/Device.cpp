@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -10,17 +10,20 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "Device.h"
-#include <cstdlib>
 
-Device::Device(EventServer* eventServer) : EventClient("Device", eventServer) {}
+Device::Device(EventServer* eventServer) :
+    EventClient("Device", eventServer),
+    // Only catch larger variations or alarmingly low values to avoid very frequent updates
+    _freeHeap(eventServer, this, Topic::FreeHeap, 5000L, 25000L),
+    // catch all changes as this is not expected to change
+    _freeStack(eventServer, this, Topic::FreeStack, 0L, 0L) {}
 
 void Device::begin() {
-    _eventServer->subscribe(this, Topic::Error);
-    _eventServer->subscribe(this, Topic::Info);
     reportHealth();
 }
 
 #ifdef ESP32
+// running on the device
 #include <ESP.h>
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
 
@@ -32,40 +35,22 @@ long  Device::freeStack() {
     return uxTaskGetStackHighWaterMark(nullptr);
 }
 #else
-#include "ArduinoMock.h"
+// mock implementation for testing
 
-long  Device::freeHeap() {
+long Device::freeHeap() {
     static int count = 0;
     if (count > 2) count = 0;
     return 25000L + (count++) * 2500L;
 }
 
-long  Device::freeStack() {
+long Device::freeStack() {
     static int count = 0;
     if (count > 2) count = 0;
     return 1500L + (count++) * 64L;
 }
 #endif
 
-void Device::reportFreeHeap() {
-    long newFreeHeap = freeHeap(); // it is an uint32 but we need a sign.
-    // Only catch larger variations to avoid very frequent updates
-    if (abs(_freeHeap - newFreeHeap) >= 5000 || newFreeHeap < 25000) {
-        _eventServer->publish(Topic::FreeHeap, newFreeHeap);
-        _freeHeap = newFreeHeap;
-    }
-}
-
-void Device::reportFreeStack() {
-    auto newFreeStack = freeStack();
-    // Not expected to change, so report any variations
-    if (_freeStack != newFreeStack) {
-        _eventServer->publish(Topic::FreeStack, newFreeStack);
-        _freeStack = newFreeStack;
-    }
-}
-
 void Device::reportHealth() {
-    reportFreeHeap();
-    reportFreeStack();
+    _freeHeap.set(freeHeap());
+    _freeStack.set(freeStack());
 }

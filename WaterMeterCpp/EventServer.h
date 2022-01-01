@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -24,19 +24,20 @@ public:
     // Deleting the server before the client would cause an access violation when the client gets destroyed.
 
     explicit EventServer(LogLevel logLevel);
-    void provides(EventClient* e, Topic topic);
-    void cannotProvide(EventClient* e, Topic topic);
-    void cannotProvide(EventClient* e);
+    void provides(EventClient* client, Topic topic);
+    void cannotProvide(EventClient* client, Topic topic);
+    void cannotProvide(EventClient* client);
     void setLogLevel(LogLevel logLevel);
-    void subscribe(EventClient* e, Topic topic);
-    void unsubscribe(EventClient* e, Topic topic);
-    void unsubscribe(EventClient* e);
+    void subscribe(EventClient* client, Topic topic);
+    void unsubscribe(EventClient* client, Topic topic);
+    void unsubscribe(EventClient* client);
 
     // Request a topic. There can be only one provider
-    template<class payloadType> payloadType request(Topic topic, payloadType defaultValue) {
-        auto provider = _providers.find(topic);
+    template <class payloadType>
+    payloadType request(Topic topic, payloadType defaultValue) {
+        const auto provider = _providers.find(topic);
         if (provider != _providers.end()) {
-            auto eventClient = provider->second;
+            const auto eventClient = provider->second;
             publishLog("%s provides %d\n", eventClient, topic, 0L);
             return eventClient->get(topic, defaultValue);
         }
@@ -44,8 +45,9 @@ public:
     }
 
     // Publish to all subscribers except the sender
-    template<class payloadType> void publish(EventClient* client, Topic topic, payloadType payload, bool log = true) {
-        auto subscribers = _subscribers.find(topic);
+    template <class payloadType>
+    void publish(EventClient* client, Topic topic, payloadType payload, bool log = true) {
+        const auto subscribers = _subscribers.find(topic);
         if (subscribers != _subscribers.end()) {
             for (auto eventClient : subscribers->second) {
                 if (client != eventClient && !eventClient->isMuted()) {
@@ -59,7 +61,8 @@ public:
     }
 
     // Publish to all subscribers including the sender
-    template<class payloadType> void publish(Topic topic, payloadType payload) {
+    template <class payloadType>
+    void publish(Topic topic, payloadType payload) {
         publish(NULL, topic, payload);
     }
 

@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -26,7 +26,7 @@ namespace WaterMeterCppTest {
     public:
         EventServer eventServer;
 
-        TEST_METHOD(LogScriptTest) {
+        TEST_METHOD(logScriptTest) {
             Log log(&eventServer);
             TimeServer timeServer(&eventServer);
             timeServer.begin();

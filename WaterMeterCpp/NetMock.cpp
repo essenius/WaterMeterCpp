@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -13,11 +13,10 @@
 
 #include "NetMock.h"
 
-WiFiClass::WiFiClass() {
+WiFiClass::WiFiClass(): _name("esp32_001122334455") {
     reset();
-    strcpy(_name, "esp32_001122334455");
-    for (int i = 0; i < 6; i++) {
-        _mac[i] =  i * 17;
+    for (byte i = 0; i < 6; i++) {
+        _mac[i] = i * 17;  
     }
 }
 
@@ -27,10 +26,6 @@ int HTTPUpdate::ReturnValue = HTTP_UPDATE_NO_UPDATES;
 HTTPUpdate httpUpdate;
 
 WiFiClass WiFi;
-
-IPAddress::IPAddress() {
-    //_value[0] = 0;
-}
 
 IPAddress::IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4) {
     _address.bytes[0] = oct1;
@@ -43,14 +38,12 @@ IPAddress::IPAddress(const uint8_t* address) {
     memcpy(_address.bytes, address, sizeof(_address.bytes));
 }
 
-IPAddress& IPAddress::operator=(uint32_t address)
-{
+IPAddress& IPAddress::operator=(uint32_t address) {
     _address.dword = address;
     return *this;
 }
 
-IPAddress& IPAddress::operator=(const uint8_t* address)
-{
+IPAddress& IPAddress::operator=(const uint8_t* address) {
     memcpy(_address.bytes, address, sizeof(_address.bytes));
     return *this;
 }
@@ -78,13 +71,14 @@ void WiFiClass::reset() {
 
 const IPAddress NO_IP = IPAddress(0, 0, 0, 0);
 
-bool WiFiClass::config(IPAddress local, IPAddress gateway, IPAddress subnet, IPAddress primaryDNS, IPAddress secondaryDNS) {
+bool WiFiClass::config(IPAddress local, IPAddress gateway, IPAddress subnet, IPAddress primaryDNS,
+                       IPAddress secondaryDNS) {
     _localIP = local;
     _gatewayIP = gateway;
     _subnetIP = subnet;
     _primaryDNSIP = primaryDNS == NO_IP ? _gatewayIP : primaryDNS;
     _secondaryDNSIP = secondaryDNS == NO_IP ? _primaryDNSIP : secondaryDNS;
-     return true; 
+    return true;
 }
 
 bool WiFiClass::isConnected() {
@@ -96,8 +90,8 @@ bool WiFiClass::isConnected() {
     return false;
 }
 
-bool WiFiClass::setHostname(const char* name) { 
-    strcpy(_name, name); 
+bool WiFiClass::setHostname(const char* name) {
+    strcpy(_name, name);
     return strlen(name) > 0;
 }
 

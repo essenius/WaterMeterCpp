@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -12,14 +12,14 @@
 #include "EventClient.h"
 #include "EventServer.h"
 
-EventClient::EventClient(const char* name, EventServer* eventServer) : _name(name), _eventServer(eventServer) {}
+EventClient::EventClient(const char* name, EventServer* eventServer) : _eventServer(eventServer), _name(name) {}
 
 EventClient::~EventClient() {
     _eventServer->unsubscribe(this);
     _eventServer->cannotProvide(this);
 }
 
-const char* EventClient::getName() {
+const char* EventClient::getName() const {
     return _name;
 }
 

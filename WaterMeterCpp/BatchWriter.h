@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -13,7 +13,6 @@
 #define HEADER_BATCHWRITER
 
 #include "EventServer.h"
-#include "TimeServer.h"
 #include "PayloadBuilder.h"
 #include "ChangePublisher.h"
 
@@ -25,7 +24,7 @@ public:
     virtual void begin(long desiredFlushRate);
     virtual void flush();
     long getFlushRate();
-    const char* getMessage();
+    const char* getMessage() const;
     virtual bool needsFlush(bool force = false);
     bool newMessage();
     virtual void prepareFlush();
@@ -33,18 +32,14 @@ public:
 
 protected:
     virtual void initBuffer();
-    long convertToLong(const char* stringParam, long defaultValue = 0L);
+    static long convertToLong(const char* stringParam, long defaultValue = 0L);
     static long limit(long input, long min, long max);
-    //void setFlushRate(long flushRate);
-    virtual void update(Topic topic, long payload);
-    virtual void update(Topic topic, const char* payload);
+    void update(Topic topic, long payload) override;
+    void update(Topic topic, const char* payload) override;
     bool _canFlush = true;
     long _desiredFlushRate = 0;
-    //long _flushRate = 0;
-    //Topic _flushRateTopic = Topic::Rate;
     bool _flushWaiting = false;
     virtual void resetCounters();
-
     PayloadBuilder* _payloadBuilder;
     long _messageCount = 0;
     ChangePublisher<long> _flushRatePublisher;

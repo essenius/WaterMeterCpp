@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -83,7 +83,7 @@ protected:
     bool announceDevice();
     void announceNode(const char* baseTopic, const char* name, const char* type, const char* properties);
     void announceProperty(const char* baseTopic, const char* name, const char* dataType, const char* format = EMPTY, bool settable = false);
-    void callback(const char* topic, byte* payload, unsigned int length);
+    void callback(const char* topic, const byte* payload, unsigned length);
     bool ensureConnection();
     bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
     bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);

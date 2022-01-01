@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -20,10 +20,9 @@
 #include "TimeServer.h"
 #include <cstring>
 
-char TimeServer::_buffer[TimeServer::BUFFER_SIZE] = { '0' };
+char TimeServer::_buffer[BUFFER_SIZE] = {'0'};
 
-TimeServer::TimeServer(EventServer* eventServer) : EventClient("TimeServer", eventServer) {
-}
+TimeServer::TimeServer(EventServer* eventServer) : EventClient("TimeServer", eventServer) {}
 
 void TimeServer::begin() {
     if (setTime()) {
@@ -37,11 +36,10 @@ void TimeServer::begin() {
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <cstdint>
 
 struct timeval {
-    time_t  tv_sec;   // seconds 
-    long    tv_usec;  // microseconds
+    time_t tv_sec; // seconds 
+    long tv_usec; // microseconds
 };
 
 bool TimeServer::setTime() {
@@ -54,7 +52,8 @@ int gettimeofday(struct timeval* timeVal, void* ignore) {
         FILETIME filetime; // 0.1 microsecond intervals since January 1, 1601 00:00 UTC 
         ULARGE_INTEGER x = {{0, 0}};
         ULONGLONG usec;
-        static constexpr ULONGLONG EPOCH_OFFSET_MICROS = 11644473600000000ULL; // microseconds betweeen Jan 1,1601 and Jan 1,1970 
+        static constexpr ULONGLONG EPOCH_OFFSET_MICROS = 11644473600000000ULL;
+        // microseconds betweeen Jan 1,1601 and Jan 1,1970 
 
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN8
         GetSystemTimePreciseAsFileTime(&filetime);

@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -119,9 +119,9 @@ void Wifi::completeConnection() {
     _eventServer->provides(this, Topic::MacRaw);
 }
 
-const char* Wifi::getHostName() { return _hostName; }
+const char* Wifi::getHostName() const { return _hostName; }
 
-const char* Wifi::get(Topic topic, const char* defaultValue) {
+const char* Wifi::get(const Topic topic, const char* defaultValue) {
     switch(topic) {
     case Topic::IpAddress: {
         strcpy(_ipAddress,WiFi.localIP().toString().c_str());
@@ -162,4 +162,3 @@ const char* Wifi::statusSummary() {
 bool Wifi::isConnected() {
     return WiFi.isConnected();
 }
-

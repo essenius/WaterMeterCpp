@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -12,8 +12,8 @@
 #ifndef HEADER_DEVICE_H
 #define HEADER_DEVICE_H
 
-#include <stdint.h>
 #include "EventServer.h"
+#include "LongChangePublisher.h"
 
 class Device : public EventClient {
 public:
@@ -21,11 +21,10 @@ public:
     void begin();
     void reportHealth();
 private:
-    long _freeHeap = 0l;
-    long _freeStack = 0L;
+    LongChangePublisher _freeHeap;
+    LongChangePublisher _freeStack;
+
     long freeHeap();
     long freeStack();
-    void reportFreeHeap();
-    void reportFreeStack();
 };
 #endif

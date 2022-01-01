@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -46,7 +46,6 @@ protected:
     long _overrunCount = 0L;
     long _peakCount = 0L;
     long _processTime = 0L;
-    //FlowMeter* _result = nullptr;
     float _smoothValue = 0.0f;
     float _derivative = 0.0f;
     float _smoothDerivative = 0.0f;

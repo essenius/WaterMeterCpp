@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -10,8 +10,8 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "PayloadBuilder.h"
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 
 // higher level functions. See also the template function writeParam in .h
 
@@ -60,17 +60,17 @@ void PayloadBuilder::writeLabel(const char* label) {
     writeDelimiter(':');
 }
 
-const char* PayloadBuilder::toString() {
+const char* PayloadBuilder::toString() const {
     return _resultBuffer;
 }
 
 // low level functions 
 
-bool PayloadBuilder::isAlmostFull() {
+bool PayloadBuilder::isAlmostFull() const {
     return remainingSize() < RESULT_BUFFER_MARGIN;
 }
 
-int PayloadBuilder::remainingSize() {
+int PayloadBuilder::remainingSize() const {
     return RESULT_BUFFER_SIZE - static_cast<int>(strlen(_resultBuffer)) - 1;
 }
 
@@ -78,7 +78,7 @@ void PayloadBuilder::updatePosition() {
     _currentPosition = _resultBuffer + strlen(_resultBuffer);
 }
 
-void PayloadBuilder::writeDelimiter(char delimiter) {
+void PayloadBuilder::writeDelimiter(const char delimiter) {
     *(_currentPosition++) = delimiter;
     *_currentPosition = 0;
 }
@@ -90,11 +90,11 @@ void PayloadBuilder::writeString(const char* input) {
     updatePosition();
 }
 
-void PayloadBuilder::writeString(float input) {
+void PayloadBuilder::writeString(const float input) {
     sprintf(_currentPosition, "%.2f", input);
     updatePosition();
     // clean up any overprecision
-    while (*(--_currentPosition) == '0');
+    while (*(--_currentPosition) == '0') {}
     if (*_currentPosition != '.') {
         _currentPosition++;
     }

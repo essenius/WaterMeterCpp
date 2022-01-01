@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -10,7 +10,7 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "FlowMeter.h"
-#include <math.h>
+#include <cmath>
 
 // Wee need the line smooth enough to eliminate noise. Averaging over 20 seems to work OK
 constexpr float LOW_PASS_ALPHA = 0.05f;
@@ -31,7 +31,7 @@ constexpr float FLOW_THRESHOLD = 1.0f;
 
 
 void FlowMeter::addMeasurement(int measurement) {
-    bool firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
+    const bool firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
     if (_startupSamplesLeft > 0) {
         _startupSamplesLeft--;
     }
@@ -47,29 +47,29 @@ void FlowMeter::addMeasurement(int measurement) {
     detectPeaks(measurement);
 }
 
-bool FlowMeter::areAllExcluded() {
+bool FlowMeter::areAllExcluded() const {
     return _excludeAll;
 }
 
-void FlowMeter::detectOutlier(int measurement) {
-    float amplitude = fabsf(_smoothValue - measurement);
-    bool previousIsOutlier = _outlier;
+void FlowMeter::detectOutlier(const int measurement) {
+    const float amplitude = fabsf(_smoothValue - static_cast<float>(measurement));
+    const bool previousIsOutlier = _outlier;
     _outlier = amplitude > OUTLIER_THRESHOLD;
     _firstOutlier = _outlier && !previousIsOutlier;
 }
 
-void FlowMeter::detectPeaks(int measurement) {
+void FlowMeter::detectPeaks(const int measurement) {
     if (_outlier) {
-      return;
+        return;
     }
     // smoothen the measurement
-    _smoothValue = lowPassFilter((float)measurement, _smoothValue, LOW_PASS_ALPHA);
+    _smoothValue = lowPassFilter(static_cast<float>(measurement), _smoothValue, LOW_PASS_ALPHA);
     // from this we want the peaks. Approximate the derivative via a high pass filter
     _derivative = highPassFilter(_smoothValue, _previousSmoothValue, _derivative, HIGH_PASS_ALPHA);
     // smoothen the derivative to minimize noise
     _smoothDerivative = lowPassFilter(_derivative, _smoothDerivative, LOW_PASS_ON_HIGH_PASS_ALPHA);
     // when the derivative moves from positive to negative (with a threshold to eliminate noise) we have a peak in the original signal
-    _peak = _smoothDerivative <= ZEROCHECK_THESHOLD && _previousSmoothDerivative > ZEROCHECK_THESHOLD ? 1 : 0;
+    _peak = _smoothDerivative <= ZEROCHECK_THESHOLD && _previousSmoothDerivative > ZEROCHECK_THESHOLD;
 
     // we use the smooth abs derivative to check for flow
     _smoothAbsDerivative = lowPassFilter(fabsf(_derivative), _smoothAbsDerivative, LOW_PASS_ON_HIGH_PASS_ALPHA);
@@ -79,39 +79,39 @@ void FlowMeter::detectPeaks(int measurement) {
     _previousSmoothDerivative = _smoothDerivative;
 }
 
-float FlowMeter::getSmoothValue() {
-  return _smoothValue;
+float FlowMeter::getSmoothValue() const {
+    return _smoothValue;
 }
 
-float FlowMeter::getDerivative() {
-  return _derivative;
+float FlowMeter::getDerivative() const {
+    return _derivative;
 }
 
-float FlowMeter::getSmoothAbsDerivative() {
+float FlowMeter::getSmoothAbsDerivative() const {
     return _smoothAbsDerivative;
 }
 
-float FlowMeter::getSmoothDerivative() {
-  return _smoothDerivative;
+float FlowMeter::getSmoothDerivative() const {
+    return _smoothDerivative;
 }
 
-bool FlowMeter::isPeak() {
+bool FlowMeter::isPeak() const {
     return _peak;
 }
 
-bool FlowMeter::hasFlow() {
+bool FlowMeter::hasFlow() const {
     return _flow;
 }
 
 float FlowMeter::highPassFilter(float measure, float previous, float filterValue, float alpha) {
-    return  alpha * (filterValue + measure - previous);
+    return alpha * (filterValue + measure - previous);
 }
 
-bool FlowMeter::isExcluded() {
+bool FlowMeter::isExcluded() const {
     return _exclude;
 }
 
-bool FlowMeter::isOutlier() {
+bool FlowMeter::isOutlier() const {
     return _outlier;
 }
 
@@ -140,12 +140,12 @@ void FlowMeter::resetAnomalies() {
     _outlier = false;
     _firstOutlier = false;
     _flow = false;
-    _exclude = false;  
+    _exclude = false;
     _excludeAll = false;
 }
 
 void FlowMeter::resetFilters(int initialMeasurement) {
-    _smoothValue = (float)initialMeasurement;
+    _smoothValue = static_cast<float>(initialMeasurement);
     _derivative = 0.0f;
     _smoothDerivative = 0.0f;
     _smoothAbsDerivative = 0.0f;

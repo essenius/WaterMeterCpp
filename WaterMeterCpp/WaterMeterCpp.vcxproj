@@ -114,7 +114,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -148,6 +148,7 @@
     <ClCompile Include="EventClient.cpp" />
     <ClCompile Include="FirmwareManager.cpp" />
     <ClCompile Include="FlowMeter.cpp" />
+    <ClCompile Include="LongChangePublisher.cpp" />
     <ClCompile Include="LedDriver.cpp" />
     <ClCompile Include="LedFlasher.cpp" />
     <ClCompile Include="Log.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="EventServer.h" />
     <ClInclude Include="FirmwareManager.h" />
     <ClInclude Include="FlowMeter.h" />
+    <ClInclude Include="LongChangePublisher.h" />
     <ClInclude Include="LedDriver.h" />
     <ClInclude Include="LedFlasher.h" />
     <ClInclude Include="Log.h" />

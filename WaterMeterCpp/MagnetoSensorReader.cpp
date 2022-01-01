@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -11,32 +11,29 @@
 
 #ifdef ESP32
 #include <Wire.h>
-#include <QMC5883LCompass.h>
 #include <ESP.h>
 #else
-#include "QMC5883LCompassMock.h"
 #include "ArduinoMock.h"
 #endif
 
 #include "MagnetoSensorReader.h"
 
-QMC5883LCompass compass;
 
 void MagnetoSensorReader::begin() {
-    compass.setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
-    compass.init();
+    _compass.setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
+    _compass.init();
     // ignore the first measurements, often outliers
-    compass.read();
+    _compass.read();
     delay(10);
-    compass.read();
+    _compass.read();
     delay(10);
-    compass.read();
+    _compass.read();
 }
 
 SensorReading MagnetoSensorReader::read() {
-    compass.read();
-    sensorReading.X = compass.getX();
-    sensorReading.Y = compass.getY();
-    sensorReading.Z = compass.getZ();
-    return sensorReading;
+    _compass.read();
+    _sensorReading.X = _compass.getX();
+    _sensorReading.Y = _compass.getY();
+    _sensorReading.Z = _compass.getZ();
+    return _sensorReading;
 }

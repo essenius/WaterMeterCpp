@@ -18,7 +18,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(PayloadBuilderTest) {
     public:
-        TEST_METHOD(PayloadBuilderParamTest) {
+        TEST_METHOD(payloadBuilderParamTest) {
             PayloadBuilder builder;
             builder.initialize();
             builder.writeArrayStart("array");
@@ -35,7 +35,7 @@ namespace WaterMeterCppTest {
                              builder.toString());
         }
 
-        TEST_METHOD(PayloadBuilderAlmostFullTest) {
+        TEST_METHOD(payloadBuilderAlmostFullTest) {
             PayloadBuilder builder;
             builder.initialize();
             // fill with just under the limit of 492 characters

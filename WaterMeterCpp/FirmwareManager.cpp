@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -18,7 +18,7 @@
 #include "ArduinoMock.h"
 #endif
 
-#include <string.h>
+#include <cstring>
 #include "FirmwareManager.h" 
 #include "EventServer.h"
 
@@ -31,7 +31,7 @@ void FirmwareManager::begin(WiFiClient* client, const char* baseUrl, const char*
   strcat(_baseUrl, machineId);
 }
 
-bool FirmwareManager::updateAvailableFor(const char* currentVersion) {
+bool FirmwareManager::updateAvailableFor(const char* currentVersion) const {
     char versionUrl[BASE_URL_SIZE];
     strcpy(versionUrl, _baseUrl);
     strcat(versionUrl, VERSION_EXTENSION);
@@ -40,7 +40,7 @@ bool FirmwareManager::updateAvailableFor(const char* currentVersion) {
     bool newBuildAvailable = false;
     char buffer[100];
 
-    int httpCode = httpClient.GET();
+    const int httpCode = httpClient.GET();
     if (httpCode == 200) {
         const char* newVersion = httpClient.getString().c_str();
         newBuildAvailable = strcmp(newVersion, currentVersion) !=0;
@@ -56,13 +56,13 @@ bool FirmwareManager::updateAvailableFor(const char* currentVersion) {
   return newBuildAvailable;
 }
 
-void FirmwareManager::update() {
+void FirmwareManager::loadUpdate() const {
     char buffer[BASE_URL_SIZE];
     strcpy(buffer, _baseUrl);
     strcat(buffer, IMAGE_EXTENSION);
 
     // This should normally result in a reboot.
-    t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
+    const t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
 
     if (returnValue == HTTP_UPDATE_FAILED) {
         sprintf(buffer, "Firmware update failed (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
@@ -73,8 +73,8 @@ void FirmwareManager::update() {
     _eventServer->publish(Topic::Info, buffer);
 }
 
-void FirmwareManager::tryUpdateFrom(const char* currentVersion) {
+void FirmwareManager::tryUpdateFrom(const char* currentVersion) const {
     if (updateAvailableFor(currentVersion)) {
-        update();
+        loadUpdate();
     }
 }
