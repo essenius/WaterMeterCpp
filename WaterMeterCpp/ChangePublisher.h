@@ -14,10 +14,9 @@
 
 #include "EventServer.h"
 
-template<class payloadType>
-class ChangePublisher{
+template <class payloadType>
+class ChangePublisher {
 public:
-
     ChangePublisher(EventServer* eventServer, EventClient* eventClient, Topic topic) {
         _eventServer = eventServer;
         _eventClient = eventClient;
@@ -33,7 +32,7 @@ public:
         }
     }
 
-    void reset() { _payload = payloadType();  }
+    void reset() { _payload = payloadType(); }
     void setTopic(Topic topic) { _topic = topic; }
 
 protected:

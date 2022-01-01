@@ -33,7 +33,8 @@ public:
     void unsubscribe(EventClient* client);
 
     // Request a topic. There can be only one provider
-    template<class payloadType> payloadType request(Topic topic, payloadType defaultValue) {
+    template <class payloadType>
+    payloadType request(Topic topic, payloadType defaultValue) {
         const auto provider = _providers.find(topic);
         if (provider != _providers.end()) {
             const auto eventClient = provider->second;
@@ -44,7 +45,8 @@ public:
     }
 
     // Publish to all subscribers except the sender
-    template<class payloadType> void publish(EventClient* client, Topic topic, payloadType payload, bool log = true) {
+    template <class payloadType>
+    void publish(EventClient* client, Topic topic, payloadType payload, bool log = true) {
         const auto subscribers = _subscribers.find(topic);
         if (subscribers != _subscribers.end()) {
             for (auto eventClient : subscribers->second) {
@@ -59,7 +61,8 @@ public:
     }
 
     // Publish to all subscribers including the sender
-    template<class payloadType> void publish(Topic topic, payloadType payload) {
+    template <class payloadType>
+    void publish(Topic topic, payloadType payload) {
         publish(NULL, topic, payload);
     }
 

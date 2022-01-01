@@ -28,7 +28,7 @@ void EventServer::cannotProvide(EventClient* client, Topic topic) {
 }
 
 void EventServer::cannotProvide(EventClient* client) {
-    for (auto iterator = _providers.begin(); iterator != _providers.end(); ) {
+    for (auto iterator = _providers.begin(); iterator != _providers.end();) {
         if (iterator->second == client) {
             iterator = _providers.erase(iterator);
         }
@@ -42,9 +42,10 @@ void EventServer::provides(EventClient* client, Topic topic) {
     _providers[topic] = client;
 }
 
-void EventServer::publishLog(const char* const format, const EventClient* client, const Topic topic, const char* const payload) {
+void EventServer::publishLog(const char* const format, const EventClient* client, const Topic topic,
+                             const char* const payload) {
     if (_logLevel == LogLevel::On) {
-        char buffer[255] = { 0 };
+        char buffer[255] = {0};
         sprintf(buffer, format, client->getName(), topic, payload);
         publish(nullptr, Topic::Info, buffer, false);
     }
@@ -52,7 +53,7 @@ void EventServer::publishLog(const char* const format, const EventClient* client
 
 void EventServer::publishLog(const char* format, const EventClient* client, const Topic topic, const long payload) {
     if (_logLevel == LogLevel::On) {
-        char buffer[20] = { 0 };
+        char buffer[20] = {0};
         sprintf(buffer, "%ld", payload);
         publishLog(format, client, topic, buffer);
     }
@@ -81,7 +82,7 @@ void EventServer::subscribe(EventClient* client, const Topic topic) {
 // Note this is tricky as it could happen when another event is still being handled
 void EventServer::unsubscribe(EventClient* client) {
     publishLog("%s unsubscribes\n", client, Topic::None, 0L);
-    for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); ) {
+    for (auto iterator = _subscribers.begin(); iterator != _subscribers.end();) {
         iterator->second.erase(client);
         if (iterator->second.empty()) {
             iterator = _subscribers.erase(iterator);

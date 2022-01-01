@@ -11,7 +11,8 @@
 
 #include "BinaryStatusPublisher.h"
 
-BinaryStatusPublisher::BinaryStatusPublisher(EventServer* eventServer, EventClient* eventClient, Topic offTopic, Topic onTopic) :
+BinaryStatusPublisher::BinaryStatusPublisher(
+    EventServer* eventServer, EventClient* eventClient, Topic offTopic, Topic onTopic) :
     ChangePublisher(eventServer, eventClient, onTopic), _offTopic(offTopic), _onTopic(onTopic) {}
 
 void BinaryStatusPublisher::set(bool payload) {

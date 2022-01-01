@@ -14,8 +14,8 @@
 #include "BatchWriter.h"
 
 BatchWriter::BatchWriter(const char* name, EventServer* eventServer, PayloadBuilder* payloadBuilder) :
-    EventClient(name, eventServer), _payloadBuilder(payloadBuilder), _flushRatePublisher(eventServer, this, Topic::Rate) {
-}
+    EventClient(name, eventServer), _payloadBuilder(payloadBuilder),
+    _flushRatePublisher(eventServer, this, Topic::Rate) {}
 
 void BatchWriter::begin(long desiredFlushRate) {
     setDesiredFlushRate(desiredFlushRate);
@@ -107,7 +107,7 @@ void BatchWriter::update(Topic topic, const char* payload) {
         _canFlush = false;
         break;
     default: {}
-           // ignore
+        // ignore
     }
 }
 

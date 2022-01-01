@@ -26,6 +26,5 @@ private:
 
     long freeHeap();
     long freeStack();
-;
 };
 #endif

@@ -12,7 +12,7 @@
 #include "EventClient.h"
 #include "EventServer.h"
 
-EventClient::EventClient(const char* name, EventServer* eventServer) : _name(name), _eventServer(eventServer) {}
+EventClient::EventClient(const char* name, EventServer* eventServer) : _eventServer(eventServer), _name(name) {}
 
 EventClient::~EventClient() {
     _eventServer->unsubscribe(this);

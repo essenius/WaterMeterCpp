@@ -15,8 +15,7 @@
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
-class BinaryStatusPublisher : public ChangePublisher<bool>
-{
+class BinaryStatusPublisher : public ChangePublisher<bool> {
 public:
     BinaryStatusPublisher(EventServer* eventServer, EventClient* eventClient, Topic offTopic, Topic onTopic);
     void set(bool payload) override;

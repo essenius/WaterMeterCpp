@@ -31,7 +31,7 @@ public:
     void begin(WiFiClient* client, const char* baseUrl, const char* machineId);
     bool updateAvailableFor(const char* currentVersion) const;
     void loadUpdate() const;
-    void tryUpdateFrom(const char* currentVersion) const;  
+    void tryUpdateFrom(const char* currentVersion) const;
 private:
     static constexpr const char* VERSION_EXTENSION = ".version";
     static constexpr const char* IMAGE_EXTENSION = ".bin";

@@ -37,13 +37,13 @@ long  Device::freeStack() {
 #else
 // mock implementation for testing
 
-long  Device::freeHeap() {
+long Device::freeHeap() {
     static int count = 0;
     if (count > 2) count = 0;
     return 25000L + (count++) * 2500L;
 }
 
-long  Device::freeStack() {
+long Device::freeStack() {
     static int count = 0;
     if (count > 2) count = 0;
     return 1500L + (count++) * 64L;
