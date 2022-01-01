@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -20,8 +20,9 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
 
     TEST_CLASS(LedDriverTest) {
+
     public:
-        TEST_METHOD(LedDriverTest1) {
+        TEST_METHOD(ledDriverTestEvents) {
             EventServer eventServer;
             LedDriver ledDriver(&eventServer);
             ledDriver.begin();
@@ -36,13 +37,13 @@ namespace WaterMeterCppTest {
 
             eventServer.publish(Topic::Connected, true);
             assertLeds(LOW, HIGH, LOW, LOW, L"Connected");
-            eventServer.publish(Topic::Sending, true);
+            eventServer.publish(Topic::ResultWritten, true);
             assertLeds(LOW, HIGH, LOW, HIGH, L"Sending");
             eventServer.publish(Topic::TimeOverrun, true);
             assertLeds(HIGH, HIGH, LOW, HIGH, L"Overrun");
             eventServer.publish(Topic::Peak, true);
             assertLeds(HIGH, HIGH, HIGH, HIGH, L"Peak");
-            eventServer.publish(Topic::Sending, false);
+            eventServer.publish(Topic::ResultWritten, false);
             assertLeds(HIGH, HIGH, HIGH, LOW, L"Stopped sending");
             eventServer.publish(Topic::TimeOverrun, false);
             assertLeds(LOW, HIGH, HIGH, LOW, L"No overrun");
@@ -62,10 +63,51 @@ namespace WaterMeterCppTest {
             assertLeds(LOW, LOW, LOW, LOW, L"Connecting off");
             eventServer.publish(Topic::Connecting, true);
             assertLeds(LOW, LOW, LOW, LOW, L"Connecting off");
+        }
 
+        TEST_METHOD(ledDriverCycleTest) {
+            EventServer eventServer;
+            LedDriver ledDriver(&eventServer);
+            ledDriver.begin();
             assertLedCycle(&ledDriver, Topic::Exclude, true, LedDriver::EXCLUDE_INTERVAL, L"Exclude");
             assertLedCycle(&ledDriver, Topic::Flow, true, LedDriver::FLOW_INTERVAL, L"Flow");
             assertLedCycle(&ledDriver, Topic::Exclude, false, LedDriver::IDLE_INTERVAL, L"Wait");
+        }
+
+        TEST_METHOD(ledDriverCycleInterruptTest) {
+            EventServer eventServer;
+            LedDriver ledDriver(&eventServer);
+            ledDriver.begin();
+            digitalWrite(LED_BUILTIN, LOW);
+            // go partway into a cycle
+            for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL / 5; i++) {
+                eventServer.publish(Topic::Sample, LONG_TRUE);
+                assertBuiltinLed(HIGH, L"In first part", i);
+            }
+            // set a new state. Check whether it kicks in right away
+            eventServer.publish(Topic::Flow, true);
+            for (unsigned int i = 0; i < LedDriver::FLOW_INTERVAL; i++) {
+                eventServer.publish(Topic::Sample, LONG_TRUE);
+                assertBuiltinLed(LOW, L"Started new cycle low", i);
+            }
+            for (unsigned int i = 0; i < LedDriver::FLOW_INTERVAL; i++) {
+                eventServer.publish(Topic::Sample, LONG_TRUE);
+                assertBuiltinLed(HIGH, L"Started new cycle high", i);
+            }
+            // just into new cycle
+            eventServer.publish(Topic::Sample, LONG_TRUE);
+            assertBuiltinLed(LOW, L"Started second cycle low", 1);
+
+            // ending flow. Check whether the cycle reverts
+            eventServer.publish(Topic::Flow, false);
+            for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
+                eventServer.publish(Topic::Sample, LONG_TRUE);
+                assertBuiltinLed(HIGH, L"Started new idle cycle high", i);
+            }
+            for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
+                eventServer.publish(Topic::Sample, LONG_TRUE);
+                assertBuiltinLed(LOW, L"Started new idle cycle high", i);
+            }
         }
 
     private:

@@ -9,21 +9,21 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_CONNECTIONSTATUS
-#define HEADER_CONNECTIONSTATUS
+#ifndef HEADER_INTCHANGEPUBLISHER
+#define HEADER_INTCHANGEPUBLISHER
 
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
-class BinaryStatusPublisher : public ChangePublisher<bool>
+class LongChangePublisher : public ChangePublisher<long>
 {
 public:
-    BinaryStatusPublisher(EventServer* eventServer, EventClient* eventClient, Topic offTopic, Topic onTopic);
-    void set(bool payload) override;
+    LongChangePublisher(EventServer* eventServer, EventClient* eventClient, Topic topic, long epsilon, long lowThreshold);
+    void set(long payload) override;
 
 protected:
-    Topic _offTopic;
-    Topic _onTopic;
+    long _epsilon;
+    long _lowThreshold;
 };
 
 #endif

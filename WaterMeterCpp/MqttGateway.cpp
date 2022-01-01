@@ -128,14 +128,14 @@ void MqttGateway::announceProperty(const char* baseTopic, const char* name, cons
 }
 
 void MqttGateway::begin(Client* client, const char* clientName, bool initMqtt) {
-    _connectionStatus.setState(false);
+    _connectionStatus.set(false);
     mqttClient.setClient(*client);
     _clientName = clientName;
     mqttClient.setBufferSize(512);
     mqttClient.setServer(_broker, _port);
     mqttClient.setCallback(std::bind(&MqttGateway::callback, this, _1, _2, _3));
     if (initMqtt && initializeMqtt()) {
-        _connectionStatus.setState(true);
+        _connectionStatus.set(true);
     }
 }
 
@@ -172,14 +172,14 @@ bool MqttGateway::connect() {
     sprintf(lastWillTopic, BASE_TOPIC_TEMPLATE, _clientName, "$state");
 
     if (_user == nullptr || strlen(_user) == 0) {
-        _connectionStatus.setState(mqttClient.connect(_clientName, lastWillTopic, 0, false, LAST_WILL_MESSAGE));
+        _connectionStatus.set(mqttClient.connect(_clientName, lastWillTopic, 0, false, LAST_WILL_MESSAGE));
     }
     else {
-        _connectionStatus.setState(mqttClient.connect(_clientName, _user, _password, 
+        _connectionStatus.set(mqttClient.connect(_clientName, _user, _password, 
             lastWillTopic, 0, false, LAST_WILL_MESSAGE));
     }
 
-    if (!_connectionStatus.getState()) {
+    if (!_connectionStatus.get()) {
         publishError("Could not connect to broker");
         return false;
     }
@@ -187,7 +187,7 @@ bool MqttGateway::connect() {
     sprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, "+/+/set");
     if (!mqttClient.subscribe(_topicBuffer)) {
         publishError("Could not subscribe to setters");
-        _connectionStatus.setState(false);
+        _connectionStatus.set(false);
         return false;
     }
     _eventServer->publish(Topic::Info, "MQTT: Connected and subscribed to setters");
@@ -198,8 +198,8 @@ bool MqttGateway::connect() {
 /// <summary>Ensure we still have a connection. If not, re-initialize try reconnecting</summary>
 /// <returns>whether or not we are connected</returns>
 bool MqttGateway::ensureConnection() {
-    if (!mqttClient.connected()) _connectionStatus.setState(false);
-    if (_connectionStatus.getState()) return true;
+    if (!mqttClient.connected()) _connectionStatus.set(false);
+    if (_connectionStatus.get()) return true;
     mute(true);
 
     // don't reconnect more than once every second
@@ -225,7 +225,7 @@ void MqttGateway::handleQueue() {
 /// <returns>whether successful</returns>
 /// <remarks>
 /// Requires: Not already subscribed to event server
-/// Guarantees: _connectionStatus is set to the return value
+/// Guarantees: _connectionStatus is set to the return get
 /// </remarks>
 bool MqttGateway::initializeMqtt() {
 
@@ -235,7 +235,7 @@ bool MqttGateway::initializeMqtt() {
             return true;
         }
         publishError("Could not announce device");
-        _connectionStatus.setState(false);
+        _connectionStatus.set(false);
         return false;
     }
     return false;
@@ -244,7 +244,8 @@ bool MqttGateway::initializeMqtt() {
 bool MqttGateway::publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain) {
     if (!ensureConnection()) return false;
     sprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, baseTopic, entity);
-    return _connectionStatus.setState(mqttClient.publish(_topicBuffer, payload, retain));
+    _connectionStatus.set(mqttClient.publish(_topicBuffer, payload, retain));
+    return _connectionStatus.get();
 }
 
 void MqttGateway::publishError(const char* message) {

@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -30,11 +30,13 @@
 #include "FirmwareManager.h"
 #include "Log.h"
 #include "MeasurementWriter.h"
-#include "secrets.h" // for CONFIG_BASE_FIRMWARE_URL
+#include "secrets.h" // for all CONFIG constants
 
-
+// For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "7";
 
+// We measure every 10 ms. That is about the fastest that the sensor can do reliably
+// Processing one cycle takes about 8ms max, so that is also within the limit.
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 constexpr unsigned long MEASUREMENTS_PER_MINUTE = 60UL * 1000UL * 1000UL / MEASURE_INTERVAL_MICROS;
 
@@ -66,7 +68,7 @@ void setup() {
     eventServer.publish(Topic::Processing, LONG_TRUE);
     wifi.begin();
 
-#ifdef USE_TLS
+#ifdef CONFIG_USE_TLS
     wifi.setCertificates(CONFIG_ROOTCA_CERTIFICATE, CONFIG_DEVICE_CERTIFICATE, CONFIG_DEVICE_PRIVATE_KEY);
 #endif
 
@@ -80,7 +82,6 @@ void setup() {
         // the writers need the time, so can't do this earlier. This means connected is true by default
         measurementWriter.begin();
         resultWriter.begin();
-
         nextMeasureTime = micros();
         clearedToGo = true;
     } else {

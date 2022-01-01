@@ -9,21 +9,15 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_CONNECTIONSTATUS
-#define HEADER_CONNECTIONSTATUS
+#include "LongChangePublisher.h"
 
-#include "EventServer.h"
-#include "ChangePublisher.h"
+LongChangePublisher::LongChangePublisher(EventServer* eventServer, EventClient* eventClient, Topic topic, long epsilon, long lowThreshold) :
+    ChangePublisher(eventServer, eventClient, topic), _epsilon(epsilon), _lowThreshold(lowThreshold) {}
 
-class BinaryStatusPublisher : public ChangePublisher<bool>
-{
-public:
-    BinaryStatusPublisher(EventServer* eventServer, EventClient* eventClient, Topic offTopic, Topic onTopic);
-    void set(bool payload) override;
-
-protected:
-    Topic _offTopic;
-    Topic _onTopic;
-};
-
-#endif
+void LongChangePublisher::set(long payload) {
+    // Only catch larger variations to avoid very frequent updates
+    if (abs(_payload - payload) >= _epsilon || payload < _lowThreshold) {
+        _eventServer->publish(_topic, payload);
+            _payload = payload;
+    }
+}

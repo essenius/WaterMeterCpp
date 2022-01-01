@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -50,6 +50,7 @@ void ResultWriter::addMeasurement(int value, FlowMeter* result) {
     else if (result->isExcluded()) {
         _excludeCount++;
     }
+    // we only need these at the end but we don't know when that is
     _smoothValue = result->getSmoothValue();
     _derivative = result->getDerivative();
     _smoothDerivative = result ->getSmoothDerivative();
@@ -71,7 +72,7 @@ bool ResultWriter::needsFlush(bool endOfFile) {
     // We set the flush rate regardless of whether we still need to write something. This can end an idle batch early.
     bool isInteresting = _flowCount > 0 || _excludeCount > 0;
     if (isInteresting) {
-        _flushRatePublisher.update(_nonIdleFlushRate);
+        _flushRatePublisher.set(_nonIdleFlushRate);
     }
     return BatchWriter::needsFlush(endOfFile);
 }
@@ -84,7 +85,7 @@ void ResultWriter::publishOverrun(bool overrun) {
 }
 
 void ResultWriter::prepareFlush() {
-    int averageDuration = (int)((_sumDuration * 10 / _messageCount + 5) / 10);
+    int averageDuration = static_cast<int>((_sumDuration * 10 / _messageCount + 5) / 10);
     _payloadBuilder->writeParam("lastValue", _measure);
     _payloadBuilder->writeGroupStart("summaryCount");
     _payloadBuilder->writeParam("samples", _messageCount);

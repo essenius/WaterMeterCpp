@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -32,7 +32,7 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Flow);
     _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::Peak);
-    _eventServer->subscribe(this, Topic::Sending);
+    _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::TimeOverrun);
     pinMode(LED_BUILTIN, OUTPUT);
     pinMode(AUX_LED, OUTPUT);
@@ -101,7 +101,7 @@ void LedDriver::update(Topic topic, const char* payload) {
         led = GREEN_LED;
         state = false;
         break;
-    case Topic::Sending:
+    case Topic::ResultWritten:
         led = AUX_LED;
         break;
     case Topic::TimeOverrun:

@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -38,7 +38,7 @@ void BatchWriter::flush() {
 }
 
 long BatchWriter::getFlushRate() {
-    return _flushRatePublisher.value();
+    return _flushRatePublisher.get();
 }
 
 const char* BatchWriter::getMessage() {
@@ -54,16 +54,17 @@ long BatchWriter::limit(long input, long min, long max) {
     return (input < min) ? min : (input > max) ? max : input;
 }
 
+// Returns whether a write action should take place.
 // We flush the log every nth time, n being the flush rate. This puts less strain on the receiving end.
-// Returns whether a write action took place, so we can ensure writes are in different loops.
+// The scheduler could decide to postpone the write if another writer has priority.
 bool BatchWriter::needsFlush(bool force) {
     if (_flushWaiting && _canFlush) {
         return true;
     }
-    if (_flushRatePublisher.value() == 0 || _messageCount == 0 || !_canFlush) {
+    if (_flushRatePublisher.get() == 0 || _messageCount == 0 || !_canFlush) {
         return false;
     }
-    if (_messageCount % _flushRatePublisher.value() != 0 && !force && !_payloadBuilder->isAlmostFull()) {
+    if (_messageCount % _flushRatePublisher.get() != 0 && !force && !_payloadBuilder->isAlmostFull()) {
         return false;
     }
     prepareFlush();
@@ -71,7 +72,7 @@ bool BatchWriter::needsFlush(bool force) {
 }
 
 bool BatchWriter::newMessage() {
-    if (_flushRatePublisher.value() == 0) return false;
+    if (_flushRatePublisher.get() == 0) return false;
     _messageCount++;
     return true;
 }
@@ -85,15 +86,15 @@ void BatchWriter::prepareFlush() {
 
 void BatchWriter::resetCounters() {
     _messageCount = 0;
-    _flushRatePublisher.update(_desiredFlushRate);
+    _flushRatePublisher.set(_desiredFlushRate);
 }
 
 void BatchWriter::setDesiredFlushRate(long flushRate) {
     _desiredFlushRate = flushRate;
     // Immediately apply if we are starting a new round, or aren't logging
     // Otherwise it will be done at the next reset.
-    if (_messageCount == 0 || _flushRatePublisher.value() == 0) {
-        _flushRatePublisher.update(_desiredFlushRate);
+    if (_messageCount == 0 || _flushRatePublisher.get() == 0) {
+        _flushRatePublisher.set(_desiredFlushRate);
     }
 }
 

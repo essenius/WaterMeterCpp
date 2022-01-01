@@ -21,7 +21,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(TimeServerTest) {
     public:
-        TEST_METHOD(TimeServerScriptTest) {
+        TEST_METHOD(timeServerScriptTest) {
             EventServer eventServer;
             TimeServer timeServer(&eventServer);
 

@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -116,7 +116,7 @@ namespace WaterMeterCppTest {
             server.subscribe(&client1, Topic::Error);
             server.setLogLevel(LogLevel::On);
             server.publish(nullptr, Topic::Error, "My Error");
-            Assert::AreEqual("Updating Client1 on 18 with 'My Error'\n", logger.getPayload(), L"error received");
+            Assert::AreEqual("Updating Client1 on 17 with 'My Error'\n", logger.getPayload(), L"error received");
             Assert::AreEqual("My Error", client1.getPayload(), L"error received");
             Assert::AreEqual(1, logger.getCallCount(), L"one call to logger");
             Assert::AreEqual(1, client1.getCallCount(), L"one call to client1");

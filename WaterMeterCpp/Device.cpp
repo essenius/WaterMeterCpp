@@ -12,15 +12,19 @@
 #include "Device.h"
 #include <cstdlib>
 
-Device::Device(EventServer* eventServer) : EventClient("Device", eventServer) {}
+Device::Device(EventServer* eventServer) :
+    EventClient("Device", eventServer),
+    // Only catch larger variations or alarmingly low values to avoid very frequent updates
+    _freeHeap(eventServer, this, Topic::FreeHeap, 5000L, 25000L),
+    // catch all changes as this is not expected to change
+    _freeStack(eventServer, this, Topic::FreeStack, 0L, 0L) {}
 
 void Device::begin() {
-    _eventServer->subscribe(this, Topic::Error);
-    _eventServer->subscribe(this, Topic::Info);
     reportHealth();
 }
 
 #ifdef ESP32
+// running on the device
 #include <ESP.h>
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
 
@@ -32,7 +36,7 @@ long  Device::freeStack() {
     return uxTaskGetStackHighWaterMark(nullptr);
 }
 #else
-#include "ArduinoMock.h"
+// mock implementation for testing
 
 long  Device::freeHeap() {
     static int count = 0;
@@ -47,25 +51,7 @@ long  Device::freeStack() {
 }
 #endif
 
-void Device::reportFreeHeap() {
-    long newFreeHeap = freeHeap(); // it is an uint32 but we need a sign.
-    // Only catch larger variations to avoid very frequent updates
-    if (abs(_freeHeap - newFreeHeap) >= 5000 || newFreeHeap < 25000) {
-        _eventServer->publish(Topic::FreeHeap, newFreeHeap);
-        _freeHeap = newFreeHeap;
-    }
-}
-
-void Device::reportFreeStack() {
-    auto newFreeStack = freeStack();
-    // Not expected to change, so report any variations
-    if (_freeStack != newFreeStack) {
-        _eventServer->publish(Topic::FreeStack, newFreeStack);
-        _freeStack = newFreeStack;
-    }
-}
-
 void Device::reportHealth() {
-    reportFreeHeap();
-    reportFreeStack();
+    _freeHeap.set(freeHeap());
+    _freeStack.set(freeStack());
 }

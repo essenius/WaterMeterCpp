@@ -163,12 +163,12 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(7L, measurementWriter.getDesiredFlushRate(), L"measurement desired flush rate is still 7");
             Assert::AreEqual(11L, resultWriter.getIdleFlushRate(), L"Idle rate is still 11");
     
-            // update idle flush rate
+            // set idle flush rate
             serialDriver.setNextReadResponse("I 2\n");
             scheduler.processInput();
             Assert::AreEqual(2L, resultWriter.getIdleFlushRate(), L"Idle flush rate is 2");
     
-            // update measurement log rate
+            // set measurement log rate
             serialDriver.setNextReadResponse("L 2\n");
             scheduler.processInput();
             Assert::AreEqual(2L, measurementWriter.getDesiredFlushRate(), L"Desired log flush rate is 2");
