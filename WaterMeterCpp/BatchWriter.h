@@ -24,7 +24,7 @@ public:
     virtual void begin(long desiredFlushRate);
     virtual void flush();
     long getFlushRate();
-    const char* getMessage();
+    const char* getMessage() const;
     virtual bool needsFlush(bool force = false);
     bool newMessage();
     virtual void prepareFlush();
@@ -32,7 +32,7 @@ public:
 
 protected:
     virtual void initBuffer();
-    long convertToLong(const char* stringParam, long defaultValue = 0L);
+    static long convertToLong(const char* stringParam, long defaultValue = 0L);
     static long limit(long input, long min, long max);
     void update(Topic topic, long payload) override;
     void update(Topic topic, const char* payload) override;

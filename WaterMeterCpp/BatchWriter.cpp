@@ -9,8 +9,8 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include "BatchWriter.h"
 
 BatchWriter::BatchWriter(const char* name, EventServer* eventServer, PayloadBuilder* payloadBuilder) :
@@ -25,7 +25,7 @@ void BatchWriter::begin(long desiredFlushRate) {
     _eventServer->subscribe(this, Topic::Disconnected);
 }
 
-long BatchWriter::convertToLong(const char* stringParam, long defaultValue) {
+long BatchWriter::convertToLong(const char* stringParam, const long defaultValue) {
     if (strcmp(stringParam, "DEFAULT") == 0) {
         return defaultValue;
     }
@@ -41,7 +41,7 @@ long BatchWriter::getFlushRate() {
     return _flushRatePublisher.get();
 }
 
-const char* BatchWriter::getMessage() {
+const char* BatchWriter::getMessage() const {
     return _payloadBuilder->toString();
 }
 

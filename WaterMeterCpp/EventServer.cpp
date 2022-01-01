@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -17,9 +17,7 @@
 #include "ArduinoMock.h"
 #endif
 
-EventServer::EventServer(LogLevel logLevel) : _logLevel(logLevel) {
-    _numberBuffer[0] = '\0';
-}
+EventServer::EventServer(const LogLevel logLevel) : _logLevel(logLevel), _numberBuffer{0} {}
 
 EventServer::EventServer() : EventServer(LogLevel::Off) {}
 
@@ -35,7 +33,7 @@ void EventServer::cannotProvide(EventClient* client) {
             iterator = _providers.erase(iterator);
         }
         else {
-            iterator++;
+            ++iterator;
         }
     }
 }
@@ -44,7 +42,7 @@ void EventServer::provides(EventClient* client, Topic topic) {
     _providers[topic] = client;
 }
 
-void EventServer::publishLog(const char* format, EventClient* client, Topic topic, const char* payload) {
+void EventServer::publishLog(const char* const format, const EventClient* client, const Topic topic, const char* const payload) {
     if (_logLevel == LogLevel::On) {
         char buffer[255] = { 0 };
         sprintf(buffer, format, client->getName(), topic, payload);
@@ -52,7 +50,7 @@ void EventServer::publishLog(const char* format, EventClient* client, Topic topi
     }
 }
 
-void EventServer::publishLog(const char* format, EventClient* client, Topic topic, long payload) {
+void EventServer::publishLog(const char* format, const EventClient* client, const Topic topic, const long payload) {
     if (_logLevel == LogLevel::On) {
         char buffer[20] = { 0 };
         sprintf(buffer, "%ld", payload);
@@ -60,11 +58,11 @@ void EventServer::publishLog(const char* format, EventClient* client, Topic topi
     }
 }
 
-void EventServer::setLogLevel(LogLevel logLevel) {
+void EventServer::setLogLevel(const LogLevel logLevel) {
     _logLevel = logLevel;
 }
 
-void EventServer::subscribe(EventClient* client, Topic topic) {
+void EventServer::subscribe(EventClient* client, const Topic topic) {
     publishLog("%s subscribes to %d\n", client, topic, 0L);
     for (auto& item : _subscribers) {
         if (item.first == topic) {
@@ -85,11 +83,11 @@ void EventServer::unsubscribe(EventClient* client) {
     publishLog("%s unsubscribes\n", client, Topic::None, 0L);
     for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); ) {
         iterator->second.erase(client);
-        if (iterator->second.size() == 0) {
+        if (iterator->second.empty()) {
             iterator = _subscribers.erase(iterator);
         }
         else {
-            iterator++;
+            ++iterator;
         }
     }
 }
@@ -97,10 +95,10 @@ void EventServer::unsubscribe(EventClient* client) {
 // unsubscribe the subscriber from the topic
 void EventServer::unsubscribe(EventClient* client, Topic topic) {
     publishLog("%s unsubscribes from %d\n", client, topic, 0L);
-    for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); iterator++) {
+    for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); ++iterator) {
         if (iterator->first == topic) {
             iterator->second.erase(client);
-            if (iterator->second.size() == 0) {
+            if (iterator->second.empty()) {
                 // safe because we exit the loop (interator no longer valid after erase).
                 _subscribers.erase(iterator);
             }

@@ -39,7 +39,7 @@ class EventClient {
 public:
     EventClient(const char* name, EventServer* eventServer);
     virtual ~EventClient();
-    const char* getName();
+    const char* getName() const;
 
     // can't use generics on virtual functions, which we would need here.
     // Since we use only a limited set of types, type erasure seems overkill 
