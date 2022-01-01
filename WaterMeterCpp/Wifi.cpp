@@ -119,9 +119,9 @@ void Wifi::completeConnection() {
     _eventServer->provides(this, Topic::MacRaw);
 }
 
-const char* Wifi::getHostName() { return _hostName; }
+const char* Wifi::getHostName() const { return _hostName; }
 
-const char* Wifi::get(Topic topic, const char* defaultValue) {
+const char* Wifi::get(const Topic topic, const char* defaultValue) {
     switch(topic) {
     case Topic::IpAddress: {
         strcpy(_ipAddress,WiFi.localIP().toString().c_str());

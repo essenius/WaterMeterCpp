@@ -98,11 +98,11 @@ long peaks = 0;
 
 void loop() {
     if (clearedToGo) {
-        unsigned long startLoopTimestamp = micros();
+        const unsigned long startLoopTimestamp = micros();
         nextMeasureTime += MEASURE_INTERVAL_MICROS;
         eventServer.publish(Topic::Sample, LONG_TRUE);
         eventServer.publish(Topic::Processing, LONG_TRUE);
-        SensorReading measure = sensorReader.read();
+        const SensorReading measure = sensorReader.read();
         flowMeter.addMeasurement(measure.Y);
         measurementWriter.addMeasurement(measure.Y);
         resultWriter.addMeasurement(measure.Y, &flowMeter);
@@ -113,7 +113,7 @@ void loop() {
         eventServer.publish(Topic::Processing, LONG_FALSE);
 
         // not using delayMicroseconds() as that is less accurate. Sometimes up to 300 us too much wait time.
-        unsigned long usedTime = micros() - startLoopTimestamp;
+        const unsigned long usedTime = micros() - startLoopTimestamp;
         if (usedTime > MEASURE_INTERVAL_MICROS) {
             // It took too long. We might be able to catch up, but intervene if the difference gets too big
             eventServer.publish(Topic::TimeOverrun, usedTime - MEASURE_INTERVAL_MICROS);

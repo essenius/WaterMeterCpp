@@ -29,7 +29,7 @@ public:
         const char* hostName = nullptr, const uint8_t* bssid = nullptr);
     void begin();
     void begin(IPAddress localIP, IPAddress gatewayIP = NO_IP, IPAddress subnetIP = NO_IP, IPAddress dns1IP = NO_IP, IPAddress dns2IP = NO_IP);
-    const char* getHostName();
+    const char* getHostName() const;
     const char* get(Topic topic, const char* defaultValue) override;
     void init();
     bool isConnected();

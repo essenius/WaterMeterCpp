@@ -11,27 +11,24 @@
 
 #ifndef ESP32
 
-	#include "QMC5883LCompassMock.h"
+#include "QMC5883LCompassMock.h"
 
-	void QMC5883LCompass::init() {
-	}
+void QMC5883LCompass::init() {}
 
-	void QMC5883LCompass::read() {
-	}
+void QMC5883LCompass::read() {}
 
-	void QMC5883LCompass::setCalibration(int a, int b, int c, int d, int e, int f) {
-	}
+void QMC5883LCompass::setCalibration(int a, int b, int c, int d, int e, int f) { }
 
-	int QMC5883LCompass::getX() {
-		return 0;
-	}
+int QMC5883LCompass::getX() {
+    return 0;
+}
 
-	int QMC5883LCompass::getY() {
-		return 0;
-	}
+int QMC5883LCompass::getY() {
+    return 0;
+}
 
-	int QMC5883LCompass::getZ() {
-		return 0;
-	}
+int QMC5883LCompass::getZ() {
+    return 0;
+}
 
 #endif
