@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -15,40 +15,39 @@
 #include <ESP.h>
 #include <PubSubClient.h>
 #else
-// ignore use of deprecated strdup 
-#define _CRT_NONSTDC_NO_WARNINGS
-
 #include "ArduinoMock.h"
 #include "PubSubClientMock.h"
 #endif
 
-#include <string.h>
+#include <cstring>
 
 #include "MqttGateway.h"
 
 using namespace std::placeholders;
 
-const char* const RATE_RANGE = "0:8640000";
-const char* const TYPE_INTEGER = "integer";
-const char* const TYPE_STRING = "string";
-const char* const LAST_WILL_MESSAGE = "lost";
+constexpr const char* const RATE_RANGE = "0:8640000";
+constexpr const char* const TYPE_INTEGER = "integer";
+constexpr const char* const TYPE_STRING = "string";
+constexpr const char* const LAST_WILL_MESSAGE = "lost";
 constexpr bool NO_RETAIN = false;
 constexpr bool SETTABLE = true;
 
-// TODO: inject via constructor
+// TODO: make property (and potentially inject via constructor)
 
 PubSubClient mqttClient;
 
-const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
+constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
-MqttGateway::MqttGateway(EventServer* eventServer, const char* broker, int port, const char* user, const char* password, const char* buildVersion) : 
+MqttGateway::MqttGateway(
+    EventServer* eventServer, const char* broker, const int port, const char* user, const char* password,
+    const char* buildVersion) :
     EventClient("MqttGateway", eventServer),
     _connectionStatus(eventServer, this, Topic::Disconnected, Topic::Connected),
     _broker(broker),
     _user(user),
     _password(password),
-    _port(port),
-    _buildVersion(buildVersion){}
+    _buildVersion(buildVersion),
+    _port(port) {}
 
 bool MqttGateway::announceDevice() {
     char baseTopic[50];
@@ -87,7 +86,8 @@ bool MqttGateway::announceDevice() {
     announceProperty(baseTopic, "Values", TYPE_STRING);
 
     sprintf(baseTopic, "%s/%s", _clientName, DEVICE);
-    sprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD, DEVICE_MAC);
+    sprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD,
+            DEVICE_MAC);
     announceNode(baseTopic, "Device", "1", payload);
     strcat(baseTopic, "/");
     strcat(baseTopic, DEVICE_FREE_HEAP);
@@ -116,7 +116,8 @@ void MqttGateway::announceNode(const char* baseTopic, const char* name, const ch
     publishEntity(baseTopic, "$properties", properties);
 }
 
-void MqttGateway::announceProperty(const char* baseTopic, const char* name, const char* dataType, const char* format, bool settable) {
+void MqttGateway::announceProperty(const char* baseTopic, const char* name, const char* dataType, const char* format,
+                                   const bool settable) {
     publishEntity(baseTopic, "$name", name);
     publishEntity(baseTopic, "$dataType", dataType);
     if (strlen(format) > 0) {
@@ -127,35 +128,37 @@ void MqttGateway::announceProperty(const char* baseTopic, const char* name, cons
     }
 }
 
-void MqttGateway::begin(Client* client, const char* clientName, bool initMqtt) {
+void MqttGateway::begin(Client* client, const char* clientName, const bool initMqtt) {
     _connectionStatus.set(false);
     mqttClient.setClient(*client);
     _clientName = clientName;
     mqttClient.setBufferSize(512);
     mqttClient.setServer(_broker, _port);
+    // TODO: optimize in a way that works on Arduino
     mqttClient.setCallback(std::bind(&MqttGateway::callback, this, _1, _2, _3));
     if (initMqtt && initializeMqtt()) {
         _connectionStatus.set(true);
     }
 }
 
-void MqttGateway::callback(const char* topic, byte* payload, unsigned int length) {
+void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
     char* copyTopic = strdup(topic);
+    // TODO find alternative for strtok (which is a bit tricky)
     // if the topic is invalid, ignore the message
-    if (strtok(copyTopic, "/") == NULL) return;  // homie, ignore
-    if (strtok(NULL, "/") == NULL) return;      //device ID, ignore
-    char* node = strtok(NULL, "/");
-    char* property = strtok(NULL, "/");
-    char* set = strtok(NULL, "/");
+    if (strtok(copyTopic, "/") == nullptr) return; // homie, ignore
+    if (strtok(nullptr, "/") == nullptr) return; //device ID, ignore
+    const char* node = strtok(nullptr, "/");
+    const char* property = strtok(nullptr, "/");
+    const char* set = strtok(nullptr, "/");
     if (strcmp(set, "set") == 0) {
         // 1ULL is a trick to avoid C26451
-        char* payloadStr = new char[1ULL + length];
+        const auto payloadStr = new char[1ULL + length];
         for (unsigned int i = 0; i < length; i++) {
-            payloadStr[i] = payload[i];
+            payloadStr[i] = static_cast<char>(payload[i]);
         }
         payloadStr[length] = 0;
-        for (auto const& entry : TOPIC_MAP) {
-            auto topicPair = entry.second;
+        for (const auto& entry : TOPIC_MAP) {
+            const auto topicPair = entry.second;
             if (strcmp(topicPair.first, node) == 0 && strcmp(topicPair.second, property) == 0) {
                 _eventServer->publish<const char*>(this, entry.first, payloadStr);
                 break;
@@ -175,8 +178,8 @@ bool MqttGateway::connect() {
         _connectionStatus.set(mqttClient.connect(_clientName, lastWillTopic, 0, false, LAST_WILL_MESSAGE));
     }
     else {
-        _connectionStatus.set(mqttClient.connect(_clientName, _user, _password, 
-            lastWillTopic, 0, false, LAST_WILL_MESSAGE));
+        _connectionStatus.set(mqttClient.connect(_clientName, _user, _password,
+                                                 lastWillTopic, 0, false, LAST_WILL_MESSAGE));
     }
 
     if (!_connectionStatus.get()) {
@@ -261,28 +264,28 @@ bool MqttGateway::publishProperty(const char* node, const char* property, const 
 
 void MqttGateway::subscribeToEventServer() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
-    _eventServer->subscribe(this, Topic::Peak);             // long -- remove
-    _eventServer->subscribe(this, Topic::BatchSize);        // long
+    _eventServer->subscribe(this, Topic::Peak); // long -- remove
+    _eventServer->subscribe(this, Topic::BatchSize); // long
     _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
-    _eventServer->subscribe(this, Topic::FreeHeap);         // long
-    _eventServer->subscribe(this, Topic::FreeStack);        // long
-    _eventServer->subscribe(this, Topic::IdleRate);         // long
-    _eventServer->subscribe(this, Topic::Measurement);      // string
-    _eventServer->subscribe(this, Topic::NonIdleRate);      // long
-    _eventServer->subscribe(this, Topic::Rate);             // long  
-    _eventServer->subscribe(this, Topic::Result);           // string
-    _eventServer->subscribe(this, Topic::Error);            // string 
-    _eventServer->subscribe(this, Topic::Info);             // string
+    _eventServer->subscribe(this, Topic::FreeHeap); // long
+    _eventServer->subscribe(this, Topic::FreeStack); // long
+    _eventServer->subscribe(this, Topic::IdleRate); // long
+    _eventServer->subscribe(this, Topic::Measurement); // string
+    _eventServer->subscribe(this, Topic::NonIdleRate); // long
+    _eventServer->subscribe(this, Topic::Rate); // long  
+    _eventServer->subscribe(this, Topic::Result); // string
+    _eventServer->subscribe(this, Topic::Error); // string 
+    _eventServer->subscribe(this, Topic::Info); // string
     // making sure we are listening. Mute is on after a disconnect.
     mute(false);
 }
 
 // incoming event from EventServer
 // TODO: this gets lost when we get this during a disconnect. Fix that.
-void MqttGateway::update(Topic topic, const char* payload) {
-    auto entry = TOPIC_MAP.find(topic);
+void MqttGateway::update(const Topic topic, const char* payload) {
+    const auto entry = TOPIC_MAP.find(topic);
     if (entry != TOPIC_MAP.end()) {
-        auto topicPair = entry->second;
+        const auto topicPair = entry->second;
         publishProperty(topicPair.first, topicPair.second, payload);
     }
 };

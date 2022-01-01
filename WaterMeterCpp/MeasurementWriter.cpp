@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -10,7 +10,6 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "MeasurementWriter.h"
-#include <string.h>
 
 MeasurementWriter::MeasurementWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder) :
     BatchWriter("MeasurementWriter", eventServer, payloadBuilder) {
@@ -50,15 +49,15 @@ void MeasurementWriter::prepareFlush() {
 
 void MeasurementWriter::update(Topic topic, const char* payload) {
     if (topic == Topic::BatchSizeDesired) {
-        auto desiredRate = convertToLong(payload, DEFAULT_FLUSH_RATE);
+        const auto desiredRate = convertToLong(payload, DEFAULT_FLUSH_RATE);
         return update(topic, desiredRate);
-    } 
+    }
     BatchWriter::update(topic, payload);
 }
 
 void MeasurementWriter::update(Topic topic, long payload) {
     if (topic == Topic::BatchSizeDesired) {
-        unsigned char desiredRate = (unsigned char)limit(payload, 0L, MAX_FLUSH_RATE);
+        const auto desiredRate = static_cast<unsigned char>(limit(payload, 0L, MAX_FLUSH_RATE));
         setDesiredFlushRate(desiredRate);
         return;
     }
