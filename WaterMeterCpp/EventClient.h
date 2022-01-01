@@ -24,9 +24,8 @@ enum class Topic {
     Sample, Measurement, Result,
     FreeHeap, FreeStack,
     Connected, Connecting, Disconnected,
-    Processing, DelayedFlush,
-    ResultWritten,
-    Error, Log, Info, 
+    Processing, DelayedFlush, ResultWritten,
+    Error, Log, Info,
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak,
     Time, IpAddress, MacRaw, MacFormatted
@@ -57,6 +56,5 @@ protected:
     const char* _name;
     bool _muted = false;
 };
-
 
 #endif

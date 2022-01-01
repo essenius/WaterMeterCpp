@@ -42,16 +42,16 @@ void EventServer::provides(EventClient* client, Topic topic) {
     _providers[topic] = client;
 }
 
-void EventServer::publishLog(const char* const format, const EventClient* client, const Topic topic,
-                             const char* const payload) {
+void EventServer::publishLog(
+    const char* const format, EventClient* client, const Topic topic, const char* const payload) {
     if (_logLevel == LogLevel::On) {
         char buffer[255] = {0};
-        sprintf(buffer, format, client->getName(), topic, payload);
+        sprintf(buffer, format, client->getName(), topic, payload); 
         publish(nullptr, Topic::Info, buffer, false);
     }
 }
 
-void EventServer::publishLog(const char* format, const EventClient* client, const Topic topic, const long payload) {
+void EventServer::publishLog(const char* const format, EventClient* client, const Topic topic, const long payload) {
     if (_logLevel == LogLevel::On) {
         char buffer[20] = {0};
         sprintf(buffer, "%ld", payload);

@@ -67,8 +67,8 @@ public:
     }
 
 private:
-    void publishLog(const char* format, const EventClient* client, Topic topic, const char* payload);
-    void publishLog(const char* format, const EventClient* client, Topic topic, long payload);
+    void publishLog(const char* format, EventClient* client, Topic topic, const char* payload);
+    void publishLog(const char* format, EventClient* client, Topic topic, long payload);
 
     std::map<Topic, std::set<EventClient*>> _subscribers;
     std::map<Topic, EventClient*> _providers;
