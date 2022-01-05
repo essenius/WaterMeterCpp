@@ -10,6 +10,9 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "LongChangePublisher.h"
+#ifdef ESP32
+#include <ESP.h>
+#endif
 
 LongChangePublisher::LongChangePublisher(
     EventServer* eventServer, EventClient* eventClient, const Topic topic, const long epsilon, const long lowThreshold) :
@@ -17,7 +20,7 @@ LongChangePublisher::LongChangePublisher(
 
 void LongChangePublisher::set(long payload) {
     // Only catch larger variations to avoid very frequent updates
-    if (abs(_payload - payload) >= _epsilon || payload < _lowThreshold) {
+    if (abs(_payload - payload) > _epsilon || payload < _lowThreshold) {
         _eventServer->publish(_topic, payload);
         _payload = payload;
     }

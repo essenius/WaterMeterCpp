@@ -17,9 +17,10 @@
 #include "Log.h"
 
 Log::Log(EventServer* eventServer) :
-    EventClient("Log", eventServer),
-    _disconnectedPublisher(eventServer, this, Topic::Error),
-    _connectedPublisher(eventServer, this, Topic::Info) {}
+    EventClient("Log", eventServer) {}
+    //_disconnectedPublisher(eventServer, this, Topic::Error),
+    //_connectedPublisher(eventServer, this, Topic::Info)
+
 
 void Log::begin() {
     Serial.begin(115200);
@@ -28,6 +29,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::Disconnected);
     _eventServer->subscribe(this, Topic::Error);
     _eventServer->subscribe(this, Topic::Info);
+    _eventServer->subscribe(this, Topic::TimeOverrun);
 }
 
 void Log::update(Topic topic, const char* payload) {
@@ -50,6 +52,9 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::Disconnected:
         Serial.println("Disconnected");
+        break;
+    case Topic::TimeOverrun:
+        Serial.printf("Time overrun: %s\n", payload);
         break;
     default:
         Serial.printf("Topic '%d': %s\n", static_cast<int>(topic), payload);

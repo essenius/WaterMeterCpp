@@ -143,7 +143,7 @@
   <ItemGroup>
     <ClCompile Include="ArduinoMock.cpp" />
     <ClCompile Include="BatchWriter.cpp" />
-    <ClCompile Include="BinaryStatusPublisher.cpp" />
+    <ClCompile Include="Connection.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="EventClient.cpp" />
     <ClCompile Include="FirmwareManager.cpp" />
@@ -159,7 +159,6 @@
     <ClCompile Include="PayloadBuilder.cpp" />
     <ClCompile Include="EventServer.cpp" />
     <ClCompile Include="PubSubClientMock.cpp" />
-    <ClCompile Include="QMC5883LCompassMock.cpp" />
     <ClCompile Include="ResultWriter.cpp" />
     <ClCompile Include="Scheduler.cpp" />
     <ClCompile Include="TimeServer.cpp" />
@@ -170,7 +169,7 @@
     <ClInclude Include="ArduinoMock.h" />
     <ClInclude Include="BatchWriter.h" />
     <ClInclude Include="ChangePublisher.h" />
-    <ClInclude Include="BinaryStatusPublisher.h" />
+    <ClInclude Include="Connection.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="EventClient.h" />
     <ClInclude Include="EventServer.h" />

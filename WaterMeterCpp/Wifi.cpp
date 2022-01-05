@@ -33,7 +33,62 @@ Wifi::Wifi(EventServer* eventServer, const char* ssid, const char* password, con
     _macAddress[0] = 0;
 }
 
+
+// TODO refactor for Connection
 WiFiClientSecure* Wifi::getClient() { return &_wifiClient; }
+
+// moved to Connection state machine
+/*
+void Wifi::checkConnection() {
+    if (!isConnected()) {
+        _eventServer->publish(Topic::Disconnected, LONG_TRUE);
+        WiFi.reconnect();
+    }
+    if (isConnected()) {
+        _eventServer->publish(Topic::Connected, LONG_TRUE);
+    }
+}
+*/
+void Wifi::configure(
+    const IPAddress localIp, const IPAddress gatewayIp, const IPAddress subnetMaskIp, 
+    const IPAddress dns1Ip, const IPAddress dns2Ip) {
+    _localIp = localIp;
+    if (gatewayIp == NO_IP && localIp != NO_IP) {
+        _gatewayIp = localIp;
+        _gatewayIp[3] = 1;
+    }
+    else {
+        _gatewayIp = gatewayIp;
+    }
+    _subnetMaskIp = subnetMaskIp == NO_IP ? IPAddress(255, 255, 255, 0) : subnetMaskIp;
+
+    bool result;
+    if (dns1Ip == NO_IP) {
+        result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp);
+    }
+    else {
+        if (dns2Ip == NO_IP) {
+            result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, dns1Ip);
+        }
+        else {
+            result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, dns1Ip, dns2Ip);
+        }
+    }
+    if (!result) {
+        _eventServer->publish(Topic::Error, "Could not configure Wifi with static IP");
+    }
+}
+
+bool Wifi::needsReinit() {
+    if (!isConnected()) return false;
+    _needsReconnect = _localIp == NO_IP;
+    if (_needsReconnect) _localIp = WiFi.localIP();
+    if (_gatewayIp == NO_IP) _gatewayIp = WiFi.gatewayIP();
+    if (_subnetMaskIp == NO_IP) _subnetMaskIp = WiFi.subnetMask();
+    if (_dns1Ip == NO_IP) _dns1Ip = WiFi.dnsIP(0);
+    if (_dns2Ip == NO_IP) _dns2Ip = WiFi.dnsIP(1);
+    return _needsReconnect;
+}
 
 void Wifi::begin() {
     init();
@@ -43,49 +98,49 @@ void Wifi::begin() {
     // So we first connect without config to get valid addresses, and then we
     // disconnect and reconnect using fixed addresses.
 
-    const bool disconnect = _localIP == NO_IP;
-    if (disconnect) _localIP = WiFi.localIP();
-    if (_gatewayIP == NO_IP) _gatewayIP = WiFi.gatewayIP();
-    if (_netmaskIP == NO_IP) _netmaskIP = WiFi.subnetMask();
-    if (_dns1IP == NO_IP) _dns1IP = WiFi.dnsIP(0);
-    if (_dns2IP == NO_IP) _dns2IP = WiFi.dnsIP(1);
+    /*_needsReconnect = _localIp == NO_IP;
+    if (_needsReconnect) _localIp = WiFi.localIP();
+    if (_gatewayIp == NO_IP) _gatewayIp = WiFi.gatewayIP();
+    if (_subnetMaskIp == NO_IP) _subnetMaskIp = WiFi.subnetMask();
+    if (_dns1Ip == NO_IP) _dns1Ip = WiFi.dnsIP(0);
+    if (_dns2Ip == NO_IP) _dns2Ip = WiFi.dnsIP(1);
     if (disconnect) {
         WiFi.disconnect();
         begin();
     } else {
-        completeConnection();
-    }
+        announceReady();
+    } */
 }
 
-void Wifi::begin(IPAddress localIP, IPAddress gatewayIP, IPAddress subnetIP, IPAddress dns1IP, IPAddress dns2IP) {
-    // There is an issue on ESP32 with DHCP, timing out after 12032 seconds.
-    // Workaround is setting a fixed IP address so we don't need DHCP
+/*void Wifi::begin(IPAddress localIp, IPAddress gatewayIp, IPAddress subnetIp, IPAddress dns1Ip, IPAddress dns2Ip) {
 
-    _localIP = localIP;
-    if (gatewayIP == NO_IP) {
-        gatewayIP = localIP;
-        gatewayIP[3] = 1;
+
+    _localIp = localIp;
+    if (gatewayIp == NO_IP && localIp != NO_IP) {
+        _gatewayIp = localIp;
+        _gatewayIp[3] = 1;
+    } else {
+        _gatewayIp = gatewayIp;
     }
-    if (subnetIP == NO_IP) {
-        subnetIP = IPAddress(255, 255, 255, 0);
-    }
+    _subnetMaskIp = subnetIp == NO_IP ? IPAddress(255, 255, 255, 0) : subnetIp;
+
     bool result = false;
-    if (dns1IP == NO_IP) {
-        result = WiFi.config(localIP, gatewayIP, subnetIP);
+    if (dns1Ip == NO_IP) {
+        result = WiFi.config(localIp, gatewayIp, subnetIp);
     }
     else {
-        if (dns2IP == NO_IP) {
-            result = WiFi.config(localIP, gatewayIP, subnetIP, dns1IP);
+        if (dns2Ip == NO_IP) {
+            result = WiFi.config(localIp, gatewayIp, subnetIp, dns1Ip);
         }
         else {
-            result = WiFi.config(localIP, gatewayIP, subnetIP, dns1IP, dns2IP);
+            result = WiFi.config(localIp, gatewayIp, subnetIp, dns1Ip, dns2Ip);
         }
     }
     if (!result) {
         _eventServer->publish(Topic::Error, "Could not configure Wifi with static IP");
     }
     begin();
-}
+} */
 
 void Wifi::init() {
     // need to set the host name before setting the mode
@@ -96,14 +151,13 @@ void Wifi::init() {
     _hostName = _hostNameBuffer;
 
     WiFi.mode(WIFI_STA);
-    // if a specific access point was specified, honor that
-
     WiFi.begin(_ssid, _password, 0, _bssid);
 
-    while (!isConnected()) {
+    // this is now done in the Connection state machine.
+    /* while (!isConnected()) {
         delay(100);
-        _eventServer->publish(Topic::Connecting, LONG_TRUE);
-    }
+        _eventServer->publish(Topic::ConnectingWifi, LONG_TRUE);
+    } */
 }
 
 void Wifi::setCertificates(const char* rootCACertificate, const char* deviceCertificate, const char* devicePrivateKey) {
@@ -112,7 +166,7 @@ void Wifi::setCertificates(const char* rootCACertificate, const char* deviceCert
     _wifiClient.setPrivateKey(devicePrivateKey);
 }
 
-void Wifi::completeConnection() {
+void Wifi::announceReady() {
     _eventServer->publish(Topic::Info, statusSummary());
     _eventServer->provides(this, Topic::IpAddress);
     _eventServer->provides(this, Topic::MacFormatted);
@@ -139,6 +193,14 @@ const char* Wifi::get(const Topic topic, const char* defaultValue) {
     default:
         return defaultValue;
     }
+}
+
+void Wifi::reconnect() {
+    WiFi.reconnect();
+}
+
+void Wifi::disconnect() {
+    WiFi.disconnect();
 }
 
 const char* Wifi::statusSummary() {

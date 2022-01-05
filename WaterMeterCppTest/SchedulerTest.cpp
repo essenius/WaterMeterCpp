@@ -61,7 +61,7 @@ namespace WaterMeterCppTest {
                              L"Payload OK");
             Assert::AreEqual(1, ResultListener.getCallCount(), L"Measurement was sent");
             Assert::AreEqual(
-                R"({"timestamp":"","lastValue":1000,"summaryCount":{"samples":1,"peaks":0,"flows":0},)"
+                R"({"timestamp":"","lastValue":1000,"summaryCount":{"samples":1,"peaks":0,"flows":0,"maxStreak":1},)"
                 R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
                 R"("duration":{"total":350,"average":350,"max":350},)"
                 R"("analysis":{"smoothValue":1000,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})",
@@ -97,12 +97,13 @@ namespace WaterMeterCppTest {
             Scheduler.processOutput();
             Assert::AreEqual(1, MeasurementListener.getCallCount(), L"New measurement was not sent");
             Assert::AreEqual(1, ResultListener.getCallCount(), L"Result was sent");
-            Assert::AreEqual(R"({"timestamp":"","lastValue":1105,"summaryCount":{"samples":2,"peaks":0,"flows":0},)"
-                             R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
-                             R"("duration":{"total":805,"average":403,"max":405},)"
-                             R"("analysis":{"smoothValue":1105,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})",
-                             ResultListener.getPayload(),
-                             "measurement ok");
+            Assert::AreEqual(
+                R"({"timestamp":"","lastValue":1105,"summaryCount":{"samples":2,"peaks":0,"flows":0,"maxStreak":1},)"
+                R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
+                R"("duration":{"total":805,"average":403,"max":405},)"
+                R"("analysis":{"smoothValue":1105,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})",
+                ResultListener.getPayload(),
+                "measurement ok");
 
 
             /*

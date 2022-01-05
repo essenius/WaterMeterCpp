@@ -27,6 +27,8 @@ HTTPUpdate httpUpdate;
 
 WiFiClass WiFi;
 
+WiFiClientSecure testWifiClientSecure;
+
 IPAddress::IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4) {
     _address.bytes[0] = oct1;
     _address.bytes[1] = oct2;
@@ -81,12 +83,11 @@ bool WiFiClass::config(IPAddress local, IPAddress gateway, IPAddress subnet, IPA
     return true;
 }
 
+WiFiClientSecure* getClient() { return &testWifiClientSecure; }
+
 bool WiFiClass::isConnected() {
+    if (_connectCountdown <= 0) return true;
     _connectCountdown--;
-    if (_connectCountdown == 0) {
-        _connectCountdown = 10;
-        return true;
-    }
     return false;
 }
 

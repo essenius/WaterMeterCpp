@@ -11,7 +11,7 @@
 #ifndef HEADER_LOG_H
 #define HEADER_LOG_H
 
-#include "ChangePublisher.h"
+// #include "ChangePublisher.h"
 #include "EventServer.h"
 
 class Log : public EventClient {
@@ -22,8 +22,8 @@ public:
     void update(Topic topic, const char* payload) override;
 private:
     // We want to log changes to the connection status only
-    ChangePublisher<const char*> _disconnectedPublisher;
-    ChangePublisher<const char*> _connectedPublisher;
+    // ChangePublisher<const char*> _disconnectedPublisher;
+    // ChangePublisher<const char*> _connectedPublisher;
 
 };
 #endif

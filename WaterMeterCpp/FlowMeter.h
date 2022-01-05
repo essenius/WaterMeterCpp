@@ -29,7 +29,7 @@ protected:
     static constexpr int MIN_DERIVATIVE_PEAK = -9;
     bool _exclude = false;
     bool _excludeAll = false;
-    bool _firstOutlier = false;
+    //bool _firstOutlier = false;
     float _derivative = 0.0f;
     float _smoothValue = 0.0f;
     float _smoothDerivative = 0.0f;

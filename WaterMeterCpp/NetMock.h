@@ -54,7 +54,7 @@ public:
     void end() {}
     bool begin(WiFiClient& client, const char* url) { return true; }
     int GET() { return ReturnValue; };
-    String getString() { return {"1"}; }
+    String getString() { return {"0.1.1"}; }
     static int ReturnValue;
 };
 
@@ -96,6 +96,7 @@ private:
     uint8_t* raw_address() { return _address.bytes; }
 };
 
+
 class WiFiClass {
 public:
     WiFiClass();
@@ -106,9 +107,10 @@ public:
     }
 
     bool config(IPAddress localIP, IPAddress gateway, IPAddress subnet, IPAddress dns1 = IPAddress(),
-                IPAddress dns2 = IPAddress());
+        IPAddress dns2 = IPAddress());
     bool isConnected();
     bool setHostname(const char* name);
+    void reconnect() { _connectCountdown = 10; }
     const char* getHostname() { return _name; }
     String SSID() { return String(_ssid); }
     String macAddress();
@@ -121,7 +123,7 @@ public:
     IPAddress dnsIP(int i = 0) { return i == 0 ? _primaryDNSIP : _secondaryDNSIP; }
     IPAddress subnetMask() const { return _subnetIP; }
     String BSSIDstr() { return String("55:44:33:22:11:00"); }
-    void disconnect() {}
+    void disconnect() { _connectCountdown = 10; }
     // testing
     void reset();
 
@@ -140,6 +142,7 @@ private:
 #define WIFI_STA 1
 
 extern WiFiClass WiFi;
+
 
 #endif
 

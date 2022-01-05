@@ -26,7 +26,7 @@ LedDriver::LedDriver(EventServer* eventServer) :
 
 void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Connected);
-    _eventServer->subscribe(this, Topic::Connecting);
+    _eventServer->subscribe(this, Topic::ConnectingWifi);
     _eventServer->subscribe(this, Topic::Disconnected);
     _eventServer->subscribe(this, Topic::Error);
     _eventServer->subscribe(this, Topic::Exclude);
@@ -95,7 +95,7 @@ void LedDriver::update(const Topic topic, const char* payload) {
         led = GREEN_LED;
         state = true;
         break;
-    case Topic::Connecting:
+    case Topic::ConnectingWifi:
         _connectingFlasher.signal();
         return;
     case Topic::Disconnected:

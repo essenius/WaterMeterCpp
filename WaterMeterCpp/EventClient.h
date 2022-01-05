@@ -23,11 +23,11 @@ enum class Topic {
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
     Sample, Measurement, Result,
     FreeHeap, FreeStack,
-    Connected, Connecting, Disconnected,
+    Connected, ConnectingWifi, ConnectingMqtt, Disconnected,
     Processing, DelayedFlush, ResultWritten,
     Error, Log, Info,
     ProcessTime, TimeOverrun,
-    Flow, Exclude, Peak,
+    Flow, Exclude, Peak, Flatline,
     Time, IpAddress, MacRaw, MacFormatted
 };
 

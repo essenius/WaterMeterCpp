@@ -27,6 +27,6 @@ FlowMeterDriver::FlowMeterDriver(const int smoothValue, const int derivative, co
     _peak = peak;
 }
 
-float FlowMeterDriver::isFirstOutlier() const {
-    return _firstOutlier;
-}
+//float FlowMeterDriver::isFirstOutlier() const {
+//    return _firstOutlier;
+//}

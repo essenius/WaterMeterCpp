@@ -29,7 +29,7 @@ namespace WaterMeterCppTest {
         static TestEventClient InfoListener;
 
         TEST_CLASS_INITIALIZE(wifiTestClassInitialize) {
-            EventServer.subscribe(&ConnectingListener, Topic::Connecting);
+            EventServer.subscribe(&ConnectingListener, Topic::ConnectingWifi);
             EventServer.subscribe(&ErrorListener, Topic::Error);
             EventServer.subscribe(&InfoListener, Topic::Info);
 
@@ -52,8 +52,10 @@ namespace WaterMeterCppTest {
             const IPAddress local(192, 168, 1, 2);
             const IPAddress gateway(192, 168, 1, 1);
             Wifi wifi(&EventServer, "ssid", "password", "hostname");
-            wifi.begin(local);
-            Assert::AreEqual(9, ConnectingListener.getCallCount(), L"Connecting called 9 times");
+            wifi.configure(local, Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP);
+            wifi.begin();
+            Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit");
+            wifi.announceReady();
             Assert::AreEqual(local.toString().c_str(), WiFi.localIP().toString().c_str(), L"Local IP OK");
             Assert::AreEqual(gateway.toString().c_str(), WiFi.gatewayIP().toString().c_str(), L"Gateway IP OK");
             Assert::AreEqual<uint32_t>(IPAddress(255, 255, 255, 0), WiFi.subnetMask(), L"Subnet mask IP OK");
@@ -82,6 +84,10 @@ namespace WaterMeterCppTest {
             const IPAddress dns2(8, 8, 4, 4);
             Wifi wifi(&EventServer, "ssid", "password", "hostname");
             wifi.begin();
+            while (!wifi.isConnected()) {}
+            Assert::IsTrue(wifi.needsReinit(), L"Needs reinit");
+            wifi.begin();
+            wifi.announceReady();
             Assert::AreEqual<uint32_t>(local, WiFi.localIP(), L"Local IP OK");
             Assert::AreEqual<uint32_t>(gateway, WiFi.gatewayIP(), L"Gateway IP OK");
             Assert::AreEqual<uint32_t>(IPAddress(255, 255, 0, 0), WiFi.subnetMask(), L"Subnet mask IP OK");
@@ -102,7 +108,7 @@ namespace WaterMeterCppTest {
             wifi.begin();
             // just showing intended usage
             wifi.setCertificates("", "", "");
-            Assert::AreEqual(2, ErrorListener.getCallCount(), L"Error called 2 times");
+            Assert::AreEqual(1, ErrorListener.getCallCount(), L"Error called 2 times");
             Assert::AreEqual("Could not set host name", ErrorListener.getPayload(), L"Error message OK");
         }
 
@@ -117,19 +123,22 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(wifiPredefinedPrimaryDnsTest) {
             const IPAddress local(192, 168, 1, 2);
-            const IPAddress gateway(192, 168, 1, 1);
+            const IPAddress gateway(192, 168, 1, 253);
             const IPAddress dns(9, 9, 9, 9);
             Wifi wifi(&EventServer, "ssid", "password", "hostname");
-            wifi.begin(local, Wifi::NO_IP, Wifi::NO_IP, dns);
-            Assert::AreEqual(local.toString().c_str(), WiFi.localIP().toString().c_str(), L"Local IP OK");
-            Assert::AreEqual(gateway.toString().c_str(), WiFi.gatewayIP().toString().c_str(), L"Gateway IP OK");
+            wifi.configure(local, gateway, Wifi::NO_IP, dns, Wifi::NO_IP);
+            wifi.begin();
+            Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit");
+            wifi.announceReady();
+            Assert::AreEqual<uint32_t>(local, WiFi.localIP(), L"Local IP OK");
+            Assert::AreEqual<uint32_t>(gateway, WiFi.gatewayIP(), L"Gateway IP OK");
             Assert::AreEqual<uint32_t>(dns, WiFi.dnsIP(), L"Primary DNS OK");
             Assert::AreEqual<uint32_t>(dns, WiFi.dnsIP(1), L"Secondary DNS OK");
             Assert::AreEqual(1, InfoListener.getCallCount(), L"Info called 1 time");
             Assert::AreEqual(
                 R"({"ssid":"ssid","hostname":"hostname","mac-address":"00:11:22:33:44:55",)"
                 R"("rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"192.168.1.2",)"
-                R"("gateway-ip":"192.168.1.1","dns1-ip":"9.9.9.9","dns2-ip":"9.9.9.9",)"
+                R"("gateway-ip":"192.168.1.253","dns1-ip":"9.9.9.9","dns2-ip":"9.9.9.9",)"
                 R"("subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"})",
                 InfoListener.getPayload(),
                 L"Info OK");
@@ -142,10 +151,13 @@ namespace WaterMeterCppTest {
             const IPAddress dns2(1, 1, 1, 1);
 
             Wifi wifi(&EventServer, "ssid", "password", "hostname");
-            wifi.begin(local, Wifi::NO_IP, Wifi::NO_IP, dns1, dns2);
+            wifi.configure(local, Wifi::NO_IP, Wifi::NO_IP, dns1, dns2);
+            wifi.begin();
+            Assert::IsFalse(wifi.needsReinit(), L"does not need reinit");
             Assert::AreEqual(gateway.toString().c_str(), WiFi.gatewayIP().toString().c_str(), L"Gateway IP OK");
             Assert::AreEqual<uint32_t>(dns1, WiFi.dnsIP(), L"Primary DNS OK");
             Assert::AreEqual<uint32_t>(dns2, WiFi.dnsIP(1), L"Secondary DNS OK");
+            wifi.announceReady();
             Assert::AreEqual(1, InfoListener.getCallCount(), L"Info called 1 time");
             Assert::AreEqual(
                 R"({"ssid":"ssid","hostname":"hostname","mac-address":"00:11:22:33:44:55",)"

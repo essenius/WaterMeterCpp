@@ -39,9 +39,6 @@
     <ClCompile Include="ArduinoMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QMC5883LCompassMock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -72,9 +69,6 @@
     <ClCompile Include="PubSubClientMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BinaryStatusPublisher.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EventClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -85,6 +79,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LongChangePublisher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -149,9 +146,6 @@
     <ClInclude Include="Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BinaryStatusPublisher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EventClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -162,6 +156,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LongChangePublisher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
