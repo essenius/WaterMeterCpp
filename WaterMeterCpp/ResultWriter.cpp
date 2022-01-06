@@ -16,8 +16,7 @@
 constexpr int FLATLINE_STREAK = 20;
 
 ResultWriter::ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, const int measureIntervalMicros) :
-    BatchWriter("ResultWriter", eventServer, payloadBuilder), _measureIntervalMicros(measureIntervalMicros)
-{
+    BatchWriter("ResultWriter", eventServer, payloadBuilder), _measureIntervalMicros(measureIntervalMicros) {
     _desiredFlushRate = _idleFlushRate;
 }
 
@@ -42,13 +41,14 @@ void ResultWriter::addMeasurement(const int value, const FlowMeter* result) {
             //_eventServer->publish(Topic::Flatline, value);
             _streak = 1;
         }
-    } else {
+    }
+    else {
         _streak = 1;
         _previousMeasure = value;
     }
     if (result->isOutlier()) {
         _outlierCount++;
-    } 
+    }
     if (result->isPeak()) {
         _peakCount++;
     }
@@ -60,7 +60,8 @@ void ResultWriter::addMeasurement(const int value, const FlowMeter* result) {
     }
     else if (result->isExcluded()) {
         _excludeCount++;
-    } else {
+    }
+    else {
         // we only need these at the end but we don't know when that is
         _smoothValue = result->getSmoothValue();
         _derivative = result->getDerivative();
