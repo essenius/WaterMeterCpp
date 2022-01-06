@@ -15,9 +15,9 @@
 
 constexpr int FLATLINE_STREAK = 20;
 
-ResultWriter::ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros) :
-    BatchWriter("ResultWriter", eventServer, payloadBuilder) {
-    _measureIntervalMicros = measureIntervalMicros;
+ResultWriter::ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, const int measureIntervalMicros) :
+    BatchWriter("ResultWriter", eventServer, payloadBuilder), _measureIntervalMicros(measureIntervalMicros)
+{
     _desiredFlushRate = _idleFlushRate;
 }
 
@@ -32,14 +32,14 @@ void ResultWriter::addDuration(long duration) {
     }
 }
 
-void ResultWriter::addMeasurement(const int value, FlowMeter* result) {
+void ResultWriter::addMeasurement(const int value, const FlowMeter* result) {
     newMessage();
     _measure = value;
     if (_previousMeasure == value) {
         _streak++;
         if (_streak > _maxStreak) _maxStreak = _streak;
         if (_streak > FLATLINE_STREAK) {
-            _eventServer->publish(Topic::Flatline, value);
+            //_eventServer->publish(Topic::Flatline, value);
             _streak = 1;
         }
     } else {

@@ -139,7 +139,7 @@ namespace WaterMeterCppTest {
             writer.begin();
             EventServer.publish(Topic::IdleRate, 1);
             EventServer.publish(Topic::NonIdleRate, 1);
-            FlowMeterDriver fmd(2400, 0, 1);
+            const FlowMeterDriver fmd(2400, 0, 1);
             writer.addMeasurement(2398, &fmd);
             EventServer.publish(Topic::ProcessTime, 10125L);
             Assert::IsTrue(writer.needsFlush(), L"Needs flush");
@@ -158,7 +158,7 @@ namespace WaterMeterCppTest {
             EventServer.publish(Topic::IdleRate, 10);
             EventServer.publish(Topic::NonIdleRate, 5);
             for (int i = 0; i < 10; i++) {
-                int measurement = 2400 + (i % 2) * 50;
+                const int measurement = 2400 + (i % 2) * 50;
                 FlowMeterDriver fmd(measurement, (i % 2) * 50, 1, i > 7, i == 5);
 
                 writer.addMeasurement(measurement, &fmd);
@@ -217,7 +217,7 @@ namespace WaterMeterCppTest {
             writer.begin();
             EventServer.publish(Topic::IdleRate, 5);
             EventServer.publish(Topic::NonIdleRate, 5);
-            FlowMeterDriver fmd(500);
+            const FlowMeterDriver fmd(500);
             for (int i = 0; i < 3; i++) {
                 writer.addMeasurement(500, &fmd);
                 EventServer.publish(Topic::ProcessTime, 2500 + 10 * i);

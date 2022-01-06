@@ -11,12 +11,9 @@
 
 #include "LedFlasher.h"
 
-LedFlasher::LedFlasher(uint8_t led, unsigned int interval) {
-    _led = led;
-    _interval = interval;
-}
+LedFlasher::LedFlasher(const uint8_t led, const unsigned int interval) :_interval(interval), _led(led) {}
 
-void LedFlasher::setInterval(unsigned int interval) {
+void LedFlasher::setInterval(const unsigned int interval) {
     _interval = interval;
     _ledCounter = 0;
 }

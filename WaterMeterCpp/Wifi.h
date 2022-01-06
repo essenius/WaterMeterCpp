@@ -28,8 +28,6 @@ public:
     Wifi(EventServer* eventServer, const char* ssid, const char* password,
          const char* hostName = nullptr, const uint8_t* bssid = nullptr);
     virtual void begin();
-    /* void begin(IPAddress localIp, IPAddress gatewayIp = NO_IP, IPAddress subnetIp = NO_IP, IPAddress dns1Ip = NO_IP,
-               IPAddress dns2Ip = NO_IP); */
     const char* getHostName() const;
     const char* get(Topic topic, const char* defaultValue) override;
     void init();
@@ -39,8 +37,7 @@ public:
     virtual void disconnect();
     void setCertificates(const char* rootCaCert, const char* deviceCert, const char* devicePrivateKey);
     const char* statusSummary();
-    WiFiClientSecure* getClient();
-    //void checkConnection();
+    WiFiClient* getClient();
     void configure(IPAddress localIp, IPAddress gatewayIp, IPAddress subnetMaskIp, IPAddress dns1, IPAddress dns2);
     virtual bool needsReinit();
     static const IPAddress NO_IP;
@@ -66,6 +63,5 @@ private:
     char _macAddress[MAC_ADDRESS_SIZE] = "";
     static constexpr int IP_ADDRESS_SIZE = 16;
     char _ipAddress[IP_ADDRESS_SIZE] = "";
-    long _reconnectCountdown = 0L;
 };
 #endif

@@ -25,6 +25,8 @@ public:
 
     payloadType get() { return _payload; }
 
+    virtual ~ChangePublisher() = default;
+
     virtual void set(payloadType payload) {
         if (payload != _payload) {
             _payload = payload;

@@ -10,6 +10,8 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 // Mock implementation for if we are not targeting the Arduino
+// ReSharper disable CppMemberFunctionMayBeStatic -- need to mimic existing interface
+// ReSharper disable CppMemberFunctionMayBeConst -- same here
 
 #ifndef ESP32
 

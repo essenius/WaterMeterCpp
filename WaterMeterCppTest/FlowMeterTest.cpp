@@ -51,7 +51,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(flowMeterOutlierTest) {
             std::streambuf* backup = std::cout.rdbuf();
-            std::stringstream ss;
+            const std::stringstream ss;
             std::cout.rdbuf(ss.rdbuf());
 
             FlowMeter flowMeter;
@@ -114,7 +114,7 @@ namespace WaterMeterCppTest {
         }
 
     private:
-        void assertResult(FlowMeter* meter, const wchar_t* description,
+        void assertResult(const FlowMeter* meter, const wchar_t* description,
                           const float smoothValue, const float derivative, const float smoothDerivative,
                           const bool peak = false, const bool excluded = false, const bool outlier = false,
                           const bool excludeAll = false) const {

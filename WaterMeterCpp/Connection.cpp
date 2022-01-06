@@ -13,6 +13,7 @@
 
 constexpr const char* LOST_WIFI_CONNECTION = "lost Wifi connection";
 constexpr const char* LOST_BROKER_CONNECTION = "Lost MQTT broker connection";
+constexpr const char* LOST_BROKER_CONNECTION_ANNOUNCING = "Lost MQTT broker connection while announcing";
 constexpr const char* FAILED_BROKER_CONNECTION = "Failed to connect to MQTT broker";
 constexpr const char* FAILED_WIFI_CONNECTION = "Could not connect to wifi. Reconnecting";
 constexpr const char* REINIT_WIFI_CONNECTION = "Max wifi reconnect attempts reached. Initializing";
@@ -63,6 +64,9 @@ ConnectionState Connection::connectMqtt() {
         break;
     case ConnectionState::MqttConnecting:
         handleMqttConnecting();
+        break;
+    case ConnectionState::WaitingForMqttReconnect:
+        handleWaitingForMqttReconnect();
         break;
     case ConnectionState::MqttConnected:
         handleMqttConnected();
@@ -143,16 +147,19 @@ void Connection::handleMqttConnecting() {
         return;
     }
     _eventServer->publish(Topic::Error, FAILED_BROKER_CONNECTION);
-    // don't reconnect right away if the first time failed.
+    _state = ConnectionState::WaitingForMqttReconnect;
+}
+
+void Connection::handleWaitingForMqttReconnect() {
     const unsigned long mqttWaitDuration = micros() - _mqttConnectTimestamp;
-    if (mqttWaitDuration > MQTT_RECONNECT_WAIT_DURATION) {
+    if (mqttWaitDuration >= MQTT_RECONNECT_WAIT_DURATION) {
         _state = ConnectionState::WifiReady;
     }
 }
 
 void Connection::handleMqttConnected() {
     if (!_mqttGateway->isConnected()) {
-        _eventServer->publish(Topic::Error, LOST_BROKER_CONNECTION);
+        _eventServer->publish(Topic::Error, LOST_BROKER_CONNECTION_ANNOUNCING);
         _state = ConnectionState::WifiReady;
     }
     // The connection is ready when we are done with the announcements

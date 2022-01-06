@@ -114,8 +114,9 @@ void LedDriver::update(const Topic topic, const char* payload) {
         break;
     case Topic::Sample:
         _sampleFlasher.signal();
-        // fall through to default
+        return;
     default:
+        // ignore anything else
         return;
     }
     digitalWrite(led, state);

@@ -13,7 +13,6 @@
 #define HEADER_MQTTGATEWAY
 #include <map>
 #include "EventServer.h"
-#include "secrets.h"
 
 #ifdef ESP32
 #include "Client.h"
@@ -95,7 +94,7 @@ protected:
     void prepareItem(const char* item);
     void prepareNode(const char* node, const char* name, const char* type, const char* properties);
     void prepareProperty(const char* node, const char* property, const char* attribute,
-        const char* dataType, const char* format = EMPTY, const bool settable = false);
+        const char* dataType, const char* format = EMPTY, bool settable = false);
 
     bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
     bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);

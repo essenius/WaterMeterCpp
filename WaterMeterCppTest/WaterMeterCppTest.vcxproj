@@ -79,7 +79,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -116,9 +116,9 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\rikes\source\repos\essenius\WaterMeterCpp\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>ArduinoMock.obj;BatchWriter.obj;Connection.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MeasurementWriter.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;ResultWriter.obj;Scheduler.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <Profile>true</Profile>
+      <Profile>false</Profile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>
     </Link>
@@ -204,14 +204,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="flow_test.csv">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
+    <CopyFileToFolders Include="flow_test.csv">
+      <DeploymentContent>false</DeploymentContent>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="outliertest.txt">
+    <CopyFileToFolders Include="outliertest.txt">
       <DeploymentContent>true</DeploymentContent>
-    </Text>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -153,7 +153,7 @@ namespace WaterMeterCppTest {
             assertBuiltinLed(HIGH, messageOn.c_str(), 255);
         }
 
-        void assertBuiltinLed(uint8_t expected, const wchar_t* description, int index) const {
+        void assertBuiltinLed(uint8_t expected, const wchar_t* description, const unsigned int index) const {
             std::wstring message(description);
             message += std::wstring(L" # ") + std::to_wstring(index);
             Assert::AreEqual(expected, digitalRead(LED_BUILTIN), message.c_str());

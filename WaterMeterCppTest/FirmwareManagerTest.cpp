@@ -54,7 +54,7 @@ namespace WaterMeterCppTest {
             Assert::IsFalse(manager.updateAvailableFor("0.1.1"), L"No update for version 0.1.1");
             Assert::AreEqual(0, InfoListener.getCallCount(), L"No info");
             Assert::AreEqual(1, ErrorListener.getCallCount(), L"Error");
-            Assert::AreEqual("Firmware version check failed with response code 400\n", ErrorListener.getPayload(),
+            Assert::AreEqual("Firmware version check to 'http://localhost/images001122334455.version' failed with response code 400\n", ErrorListener.getPayload(),
                              L"Error correct");
 
             // Successful check, other version
@@ -83,7 +83,7 @@ namespace WaterMeterCppTest {
             manager.tryUpdateFrom("0.1.2");
             Assert::AreEqual(2, InfoListener.getCallCount(), L"no info on check failure");
             Assert::AreEqual(1, ErrorListener.getCallCount(), L"Erro on check failure");
-            Assert::AreEqual("Firmware version check failed with response code 400\n", ErrorListener.getPayload(),
+            Assert::AreEqual("Firmware version check to 'http://localhost/images/001122334455.version' failed with response code 400\n", ErrorListener.getPayload(),
                              L"Error correct");
 
             // check succeeds and update fails

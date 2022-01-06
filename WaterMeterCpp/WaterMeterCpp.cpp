@@ -37,12 +37,11 @@
 // TODO: this main part is way too big. Fix that.
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.99.1";
+constexpr const char* const BUILD_VERSION = "0.99.3";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle takes about 8ms max, so that is also within the limit.
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
-constexpr unsigned long MEASUREMENTS_PER_MINUTE = 60UL * 1000UL * 1000UL / MEASURE_INTERVAL_MICROS;
 constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
 
 EventServer eventServer(LogLevel::Off);
@@ -72,12 +71,15 @@ void setup() {
     ledDriver.begin();
     sensorReader.begin();
     eventServer.publish(Topic::Processing, LONG_TRUE);
+    
 #ifdef CONFIG_USE_STATIC_IP
     wifi.configure(CONFIG_LOCAL_IP, CONFIG_GATEWAY, CONFIG_SUBNETMASK, CONFIG_DNS_1, CONFIG_DNS_2);
+#else 
+    wifi.configure(Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP);
 #endif
 
     // run the state machine until connected to wifi
-    while (connection.connectWifi() != ConnectionState::WifiConnected) {}
+    while (connection.connectWifi() != ConnectionState::WifiReady) {}
 
 #ifdef CONFIG_USE_TLS
     wifi.setCertificates(CONFIG_ROOTCA_CERTIFICATE, CONFIG_DEVICE_CERTIFICATE, CONFIG_DEVICE_PRIVATE_KEY);
@@ -89,8 +91,8 @@ void setup() {
     if (timeServer.timeWasSet()) {
         firmwareManager.tryUpdateFrom(BUILD_VERSION);
         eventServer.publish(Topic::TimeOverrun, LONG_FALSE);
-        //mqttGateway.begin(wifi.getClient(), wifi.getHostName());
 
+        // run the state machine till MQTT is fully up and running
         while (connection.connectMqtt() != ConnectionState::MqttReady) {}
 
         measurementWriter.begin();

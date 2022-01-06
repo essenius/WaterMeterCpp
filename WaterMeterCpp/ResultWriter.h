@@ -20,7 +20,7 @@ class ResultWriter : public BatchWriter {
 public:
     ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros);
     void addDuration(long duration);
-    void addMeasurement(int value, FlowMeter* result);
+    void addMeasurement(int value, const FlowMeter* result);
     using BatchWriter::begin;
     virtual void begin();
     bool needsFlush(bool endOfFile = false) override;

@@ -46,6 +46,8 @@ SensorReading MagnetoSensorReader::read() {
 void MagnetoSensorReader::update(Topic topic, long payload) {
     if (topic == Topic::Flatline) {
         _compass.setReset();
+        // reset puts the sensor into standby mode, so set it back to continuous
+        _compass.setMode(0x01,0x0C,0x10,0X00);
     }
 }
 

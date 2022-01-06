@@ -14,8 +14,6 @@
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #include <WiFiClient.h>
-#else
-#include "ArduinoMock.h"
 #endif
 
 #include <cstring>
@@ -38,7 +36,7 @@ bool FirmwareManager::updateAvailableFor(const char* currentVersion) const {
     HTTPClient httpClient;
     httpClient.begin(*_client, versionUrl);
     bool newBuildAvailable = false;
-    char buffer[100];
+    char buffer[255];
 
     const int httpCode = httpClient.GET();
     if (httpCode == 200) {
@@ -49,7 +47,7 @@ bool FirmwareManager::updateAvailableFor(const char* currentVersion) const {
             _eventServer->publish(Topic::Info, buffer);
         }
     } else {
-        sprintf(buffer,"Firmware version check failed with response code %d\n", httpCode);
+        sprintf(buffer,"Firmware version check to '%s' failed with response code %d\n", versionUrl, httpCode);
         _eventServer->publish(Topic::Error, buffer);
   }
   httpClient.end();

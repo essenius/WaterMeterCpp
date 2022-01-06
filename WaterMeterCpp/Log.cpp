@@ -29,6 +29,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::Disconnected);
     _eventServer->subscribe(this, Topic::Error);
     _eventServer->subscribe(this, Topic::Info);
+    _eventServer->subscribe(this, Topic::Flatline);    
     _eventServer->subscribe(this, Topic::TimeOverrun);
 }
 
@@ -47,6 +48,9 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Info:
         Serial.printf("Info: %s\n", payload);
         break;
+    case Topic::Flatline:
+        Serial.printf("Flatline: %s\n", payload);
+        break;
     case Topic::Connected:
         Serial.println("Connected");
         break;
@@ -60,5 +64,3 @@ void Log::update(Topic topic, const char* payload) {
         Serial.printf("Topic '%d': %s\n", static_cast<int>(topic), payload);
     }
 }
-
-

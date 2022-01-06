@@ -35,11 +35,7 @@ public:
 private:
     LedFlasher _connectingFlasher;
     LedFlasher _sampleFlasher;
-    unsigned int _interval = 0;
-    unsigned int _ledCounter = 0;
-    unsigned int _newInterval = 0;
     static uint8_t convertToState(const char* state);
-    void signalMeasurement();
 };
 
 #endif

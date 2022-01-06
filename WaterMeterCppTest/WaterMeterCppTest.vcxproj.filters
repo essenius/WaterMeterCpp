@@ -103,9 +103,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="flow_test.csv" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="outliertest.txt" />
+    <CopyFileToFolders Include="flow_test.csv">
+      <Filter>Source Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="outliertest.txt">
+      <Filter>Source Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

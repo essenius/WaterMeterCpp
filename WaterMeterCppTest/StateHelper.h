@@ -23,7 +23,7 @@ namespace Microsoft {
     namespace VisualStudio {
         namespace CppUnitTestFramework {
 
-            template <>
+            template <> 
             static std::wstring ToString<ConnectionState>(const ConnectionState& state) {
                 return std::to_wstring(static_cast<int>(state));
             }

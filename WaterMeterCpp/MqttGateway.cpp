@@ -29,7 +29,6 @@ constexpr const char* const RATE_RANGE = "0:8640000";
 constexpr const char* const TYPE_INTEGER = "integer";
 constexpr const char* const TYPE_STRING = "string";
 constexpr const char* const LAST_WILL_MESSAGE = "lost";
-constexpr bool NO_RETAIN = false;
 constexpr bool SETTABLE = true;
 
 // TODO: make property (and potentially inject via constructor)

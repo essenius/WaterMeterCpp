@@ -23,7 +23,7 @@ constexpr unsigned long MQTT_RECONNECT_WAIT_DURATION = 2UL * SECONDS;
 enum class ConnectionState {
     Init = 0, Disconnected,
     WifiConnecting, WifiConnected, WifiReady,
-    MqttConnecting, MqttConnected, MqttReady
+    MqttConnecting, WaitingForMqttReconnect, MqttConnected, MqttReady
 };
 
 class Connection
@@ -42,7 +42,6 @@ private:
     Wifi* _wifi;
     MqttGateway* _mqttGateway;
     unsigned long _waitDuration = WIFI_INITIAL_WAIT_DURATION;
-    unsigned long _mqttWaitDuration = MQTT_RECONNECT_WAIT_DURATION;
     unsigned int _wifiConnectionFailureCount = 0;
 
     void handleInit();
@@ -51,6 +50,7 @@ private:
     void handleWifiReadyForSetup();
     void handleWifiReady();
     void handleMqttConnecting();
+    void handleWaitingForMqttReconnect();
     void handleMqttConnected();
     void handleMqttReady();
     void handleDisconnected();
@@ -58,4 +58,3 @@ private:
 };
 
 #endif
-

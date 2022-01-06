@@ -14,15 +14,11 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
-//#include "TopicHelper.h"
-#include <iostream>
-
-#include "../WaterMeterCpp/secrets.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+// TODO: make private field
 extern PubSubClient mqttClient;
-
 
 namespace WaterMeterCppTest {
 
@@ -58,22 +54,6 @@ namespace WaterMeterCppTest {
             EventServer.unsubscribe(&ErrorListener);
         }
 
-        /*TEST_METHOD(mqttGatewayCannotAnnounceTest) {
-            mqttClient.setCanPublish(false);
-            MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
-            gateway.begin(&Client, "client1");
-            Assert::AreEqual("MQTT: Could not announce device [state = 3]", ErrorListener.getPayload(),
-                "Error happened");
-        }*/
-
-        /*TEST_METHOD(mqttGatewayCannotConnectTest) {
-            mqttClient.setCanConnect(false);
-            MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
-            gateway.begin(&Client, "client1");
-            Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", ErrorListener.getPayload(),
-                "Error happened");
-        }*/
-
         TEST_METHOD(mqttGatewayCannotSubscribeTest) {
             mqttClient.setCanSubscribe(false);
             MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
@@ -82,38 +62,11 @@ namespace WaterMeterCppTest {
                 "Error happened");
         }
 
-        /*TEST_METHOD(mqttGatewayConnectionLossTest) {
-            MqttGateway gateway(&EventServer, BROKER, PORT, USER, PASSWORD, BUILD);
-            gateway.begin(&Client, "client1");
-
-            mqttClient.setCanConnect(false);
-            ErrorListener.reset();
-            // force an evaluation of the connection state
-            EventServer.publish(Topic::FreeHeap, 1000);
-
-            ErrorListener.reset();
-            // try connecting again
-            gateway.handleQueue();
-            Assert::AreEqual(0, ErrorListener.getCallCount(), L"Error not called again");
-
-            delay(1000);
-            gateway.handleQueue();
-            Assert::AreEqual("MQTT: Could not connect to broker [state = 3]", ErrorListener.getPayload(),
-                L"Reconnect failed");
-            mqttClient.setCanConnect(true);
-            InfoListener.reset();
-            ErrorListener.reset();
-            delay(1000);
-            gateway.handleQueue();
-            Assert::AreEqual("", ErrorListener.getPayload(), L"Error reset after reconnect");
-        }*/
-
         TEST_METHOD(mqttGatewayNoUserTest) {
             MqttGateway gateway(&EventServer, BROKER, PORT, nullptr, "", BUILD);
             gateway.begin(&Client, "client1");
             Assert::AreEqual("", mqttClient.user(), "User not set");
         }
-
 
         TEST_METHOD(mqttGatewayScriptTest) {
             // We need to make this a longer test since the init needs to be done for the rest to work
@@ -125,7 +78,7 @@ namespace WaterMeterCppTest {
             // first check if the connection event was sent (no disconnects, one connect - no more)
             int count = 0;
             while (gateway.hasAnnouncement()) {
-                Assert::IsTrue(gateway.publishNextAnnouncement(), (wchar_t *)(mqttClient.getPayloads()));
+                Assert::IsTrue(gateway.publishNextAnnouncement(), (L"Announcement #" + std::to_wstring(count)).c_str());
                 count++;
             }
             Assert::AreEqual(54, count, L"announcement count");
@@ -191,9 +144,7 @@ namespace WaterMeterCppTest {
             mqttClient.setCanConnect(false);
             gateway.handleQueue();
             Assert::AreEqual(1, mqttClient.getLoopCount(), L"Loop count still 1 after disconnect");
-
         }
-
     };
 
     Client MqttGatewayTest::Client;

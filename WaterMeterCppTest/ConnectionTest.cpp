@@ -57,7 +57,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(ConnectionState::WifiConnecting, Connection.connectMqtt(), L"Connecting");
             delay(WIFI_INITIAL_WAIT_DURATION / 1000);
 
-            for (int i = 0; i < MAX_RECONNECT_FAILURES; i++) {
+            for (unsigned int i = 0; i < MAX_RECONNECT_FAILURES; i++) {
                 Assert::AreEqual(ConnectionState::Disconnected, Connection.connectMqtt(), L"Disconnected");
                 Assert::AreEqual(ConnectionState::WifiConnecting, Connection.connectMqtt(), L"Connecting 2");
                 delay(WIFI_RECONNECT_WAIT_DURATION / 1000);
@@ -107,9 +107,9 @@ namespace WaterMeterCppTest {
             MqttGatewayMock.setIsConnected(false);
             Assert::AreEqual(ConnectionState::WifiReady, Connection.connectMqtt(), L"back to Wifi Ready");
             Assert::AreEqual(ConnectionState::MqttConnecting, Connection.connectMqtt(), L"Connecting to MQTT 3");
-            Assert::AreEqual(ConnectionState::MqttConnecting, Connection.connectMqtt(), L"awaiting MQTT timeout");
+            Assert::AreEqual(ConnectionState::WaitingForMqttReconnect, Connection.connectMqtt(), L"awaiting MQTT timeout");
             delay(2000);
-            Assert::AreEqual(ConnectionState::WifiReady, Connection.connectMqtt(), L"failed, back to Wifi Ready");
+            Assert::AreEqual(ConnectionState::WifiReady, Connection.connectMqtt(), L"done waiting, back to Wifi Ready");
             WifiMock.setIsConnected(false);
             Assert::AreEqual(ConnectionState::Disconnected, Connection.connectMqtt(), L"Wifi disconnected too");
             WifiMock.setIsConnected(true);
