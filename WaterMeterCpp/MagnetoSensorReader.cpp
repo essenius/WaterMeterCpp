@@ -19,6 +19,10 @@
 #include "MagnetoSensorReader.h"
 
 
+MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer): EventClient("Magneto", eventServer)
+{
+}
+
 void MagnetoSensorReader::begin() {
     _compass.setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
     _compass.init();
@@ -28,6 +32,7 @@ void MagnetoSensorReader::begin() {
     _compass.read();
     delay(10);
     _compass.read();
+    _eventServer->subscribe(this, Topic::Flatline);
 }
 
 SensorReading MagnetoSensorReader::read() {
@@ -36,4 +41,16 @@ SensorReading MagnetoSensorReader::read() {
     _sensorReading.Y = _compass.getY();
     _sensorReading.Z = _compass.getZ();
     return _sensorReading;
+}
+
+void MagnetoSensorReader::update(Topic topic, long payload) {
+    if (topic == Topic::Flatline) {
+        _compass.setReset();
+        // reset puts the sensor into standby mode, so set it back to continuous
+        _compass.setMode(0x01,0x0C,0x10,0X00);
+    }
+}
+
+void MagnetoSensorReader::update(Topic topic, const char* payload) {
+    update(topic, LONG_TRUE);
 }

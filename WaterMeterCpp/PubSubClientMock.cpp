@@ -11,6 +11,9 @@
 
 #ifndef ESP32
 
+// ReSharper disable CppMemberFunctionMayBeStatic -- need to mimic existing interface
+// ReSharper disable CppMemberFunctionMayBeConst -- same here
+
 #include "PubSubClientMock.h"
 PubSubClient& PubSubClient::setCallback(MQTT_CALLBACK_SIGNATURE) {
     _callback = callback;

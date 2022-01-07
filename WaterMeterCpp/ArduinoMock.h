@@ -16,19 +16,19 @@
 #ifndef HEADER_ARDUINOMOCK
 #define HEADER_ARDUINOMOCK
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 typedef uint8_t byte;
 
-const uint8_t INPUT = 0x0;
-const uint8_t OUTPUT = 0x1;
-const uint8_t INPUT_PULLUP = 0x2;
+constexpr uint8_t INPUT = 0x0;
+constexpr uint8_t OUTPUT = 0x1;
+constexpr uint8_t INPUT_PULLUP = 0x2;
 
-const uint8_t LOW = 0x0;
-const uint8_t HIGH = 0x1;
+constexpr uint8_t LOW = 0x0;
+constexpr uint8_t HIGH = 0x1;
 
-const uint8_t LED_BUILTIN = 13;
+constexpr uint8_t LED_BUILTIN = 13;
 
 // emulation of Arduino capabilities
 
@@ -61,7 +61,7 @@ char* dtostrf(float value, signed char width, unsigned char precision, char* buf
 void pinMode(uint8_t pin, uint8_t mode);
 void digitalWrite(uint8_t pin, uint8_t val);
 uint8_t digitalRead(uint8_t pin);
-unsigned long micros(void);
+unsigned long micros();
 void delay(int delay);
 
 // for testing only

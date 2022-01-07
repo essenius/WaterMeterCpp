@@ -9,6 +9,9 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
+
+// TODO: handle state in which sensor doesn't return new data anymore. Nuclear option is rebooting.
+
 #include "FlowMeter.h"
 #include <cmath>
 
@@ -53,9 +56,9 @@ bool FlowMeter::areAllExcluded() const {
 
 void FlowMeter::detectOutlier(const int measurement) {
     const float amplitude = fabsf(_smoothValue - static_cast<float>(measurement));
-    const bool previousIsOutlier = _outlier;
+    //const bool previousIsOutlier = _outlier;
     _outlier = amplitude > OUTLIER_THRESHOLD;
-    _firstOutlier = _outlier && !previousIsOutlier;
+    //_firstOutlier = _outlier && !previousIsOutlier;
 }
 
 void FlowMeter::detectPeaks(const int measurement) {
@@ -138,7 +141,7 @@ void FlowMeter::markAnomalies(int measurement) {
 
 void FlowMeter::resetAnomalies() {
     _outlier = false;
-    _firstOutlier = false;
+    //_firstOutlier = false;
     _flow = false;
     _exclude = false;
     _excludeAll = false;

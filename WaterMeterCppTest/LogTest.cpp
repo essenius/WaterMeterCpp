@@ -68,8 +68,17 @@ namespace WaterMeterCppTest {
 
             Assert::IsTrue(std::regex_match(
                                Serial.getOutput(),
-                               std::regex(R"(\[.*\]\sTopic\s'1':\s24\n)")), L"Unexpected topic handled OK");
+                               std::regex(R"(\[.*\]\sTopic\s'1':\s24\n)")),
+                           L"Unexpected topic handled OK");
             Serial.clearOutput();
+
+            eventServer.publish(Topic::Error, "");
+            //Assert::AreEqual("x", Serial.getOutput());
+            Assert::IsTrue(std::regex_match(
+                               Serial.getOutput(),
+                               std::regex(R"(\[.*\]\sCleared\serror\n)")),
+                           L"Cleared error");
+
         }
     };
 }

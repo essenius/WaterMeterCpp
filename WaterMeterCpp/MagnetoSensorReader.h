@@ -17,6 +17,7 @@
 #else
 #include "QMC5883LCompassMock.h"
 #endif
+#include "EventServer.h"
 
 struct SensorReading {
   int X;
@@ -24,10 +25,14 @@ struct SensorReading {
   int Z;
 };
 
-class MagnetoSensorReader {
+class MagnetoSensorReader : public EventClient {
 public:
+    explicit MagnetoSensorReader(EventServer* eventServer);
     void begin();
     SensorReading read();
+    void update(Topic topic, long payload) override;
+    void update(Topic topic, const char* payload) override;
+
 private:
     QMC5883LCompass _compass;
     SensorReading _sensorReading = {};

@@ -10,6 +10,8 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 // Mock implementation for if we are not targeting the Arduino
+// ReSharper disable CppMemberFunctionMayBeStatic -- need to mimic existing interface
+// ReSharper disable CppMemberFunctionMayBeConst -- same here
 
 #ifndef ESP32
 
@@ -31,7 +33,7 @@
         bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage);
         bool connected() { return _canConnect;  }
         bool subscribe(const char* topic) { return _canSubscribe; }
-        bool loop() { return true; }
+        bool loop() { _loopCount++;  return true; }
         bool publish(const char* topic, const char* payload, bool retain = false);
         int state() { return 3; }
 
@@ -46,6 +48,7 @@
         void callBack(char* topic, uint8_t* payload, unsigned int size) { _callback(topic, payload, size);  }
         const char* id() const { return _id;  }
         const char* user() const { return _user; }
+        int getLoopCount() const { return _loopCount; }
 
     private:
         constexpr static int TOPIC_SIZE = 2048;
@@ -58,6 +61,7 @@
         char _topic[TOPIC_SIZE] = {};
         char _payload[PAYLOAD_SIZE] = {};
         int _callCount = 0;
+        int _loopCount = 0;
         char _user[FIELD_SIZE] = {};
         char _id[FIELD_SIZE] = {};
         char _pass[FIELD_SIZE] = {};

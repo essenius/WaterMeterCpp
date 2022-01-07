@@ -116,7 +116,7 @@ namespace WaterMeterCppTest {
             server.subscribe(&client1, Topic::Error);
             server.setLogLevel(LogLevel::On);
             server.publish(nullptr, Topic::Error, "My Error");
-            Assert::AreEqual("Updating Client1 on 17 with 'My Error'\n", logger.getPayload(), L"error received");
+            Assert::AreEqual("Updating Client1 on 18 with 'My Error'\n", logger.getPayload(), L"error received");
             Assert::AreEqual("My Error", client1.getPayload(), L"error received");
             Assert::AreEqual(1, logger.getCallCount(), L"one call to logger");
             Assert::AreEqual(1, client1.getCallCount(), L"one call to client1");

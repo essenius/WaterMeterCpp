@@ -45,24 +45,24 @@ namespace WaterMeterCppTest {
 
             // Successful check, same version
             HTTPClient::ReturnValue = 200;
-            Assert::IsFalse(manager.updateAvailableFor("1"), L"No update for version 1");
+            Assert::IsFalse(manager.updateAvailableFor("0.1.1"), L"No update for version 0.1.1");
             Assert::AreEqual(0, InfoListener.getCallCount(), L"No info");
             Assert::AreEqual(0, ErrorListener.getCallCount(), L"No error");
 
             // Failed check
             HTTPClient::ReturnValue = 400;
-            Assert::IsFalse(manager.updateAvailableFor("1"), L"No update for version 1");
+            Assert::IsFalse(manager.updateAvailableFor("0.1.1"), L"No update for version 0.1.1");
             Assert::AreEqual(0, InfoListener.getCallCount(), L"No info");
             Assert::AreEqual(1, ErrorListener.getCallCount(), L"Error");
-            Assert::AreEqual("Firmware version check failed with response code 400\n", ErrorListener.getPayload(),
+            Assert::AreEqual("Firmware version check to 'http://localhost/images001122334455.version' failed with response code 400\n", ErrorListener.getPayload(),
                              L"Error correct");
 
             // Successful check, other version
             HTTPClient::ReturnValue = 200;
-            Assert::IsTrue(manager.updateAvailableFor("2"), L"update for version 2 available");
+            Assert::IsTrue(manager.updateAvailableFor("0.1.2"), L"update for version 0.1.2 available");
             Assert::AreEqual(1, InfoListener.getCallCount(), L"Info called");
             Assert::AreEqual(1, ErrorListener.getCallCount(), L"No new error");
-            Assert::AreEqual("Current firmware version: 2; available version: 1\n", InfoListener.getPayload(),
+            Assert::AreEqual("Current firmware version: '0.1.2'; available version: '0.1.1'\n", InfoListener.getPayload(),
                              L"Info correct");
         }
 
@@ -73,25 +73,25 @@ namespace WaterMeterCppTest {
             // check succeeds, update succeeds (but doesn't reboot, obviously)
             HTTPClient::ReturnValue = 200;
             HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
-            manager.tryUpdateFrom("2");
+            manager.tryUpdateFrom("0.1.2");
             Assert::AreEqual(2, InfoListener.getCallCount(), L"info on success");
             Assert::AreEqual(0, ErrorListener.getCallCount(), L"No error on success");
             Assert::AreEqual("Firmware not updated (2/0): OK\n", InfoListener.getPayload(), L"warning message");
 
             // check fails
             HTTPClient::ReturnValue = 400;
-            manager.tryUpdateFrom("2");
+            manager.tryUpdateFrom("0.1.2");
             Assert::AreEqual(2, InfoListener.getCallCount(), L"no info on check failure");
             Assert::AreEqual(1, ErrorListener.getCallCount(), L"Erro on check failure");
-            Assert::AreEqual("Firmware version check failed with response code 400\n", ErrorListener.getPayload(),
+            Assert::AreEqual("Firmware version check to 'http://localhost/images/001122334455.version' failed with response code 400\n", ErrorListener.getPayload(),
                              L"Error correct");
 
             // check succeeds and update fails
             HTTPClient::ReturnValue = 200;
             HTTPUpdate::ReturnValue = HTTP_UPDATE_FAILED;
-            manager.tryUpdateFrom("2");
+            manager.tryUpdateFrom("0.1.2");
             Assert::AreEqual(3, InfoListener.getCallCount(), L"new info on update failure");
-            Assert::AreEqual("Current firmware version: 2; available version: 1\n", InfoListener.getPayload(),
+            Assert::AreEqual("Current firmware version: '0.1.2'; available version: '0.1.1'\n", InfoListener.getPayload(),
                              "info on update failure OK");
             Assert::AreEqual(2, ErrorListener.getCallCount(), L"error on update failure");
             Assert::AreEqual("Firmware update failed (0): OK\n", ErrorListener.getPayload(),
@@ -99,7 +99,7 @@ namespace WaterMeterCppTest {
 
             HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
             // check succeeds but no update needed
-            manager.tryUpdateFrom("1");
+            manager.tryUpdateFrom("0.1.1");
             Assert::AreEqual(3, InfoListener.getCallCount(), L"no info on check without update");
             Assert::AreEqual(2, ErrorListener.getCallCount(), L"no error on check without update");
 

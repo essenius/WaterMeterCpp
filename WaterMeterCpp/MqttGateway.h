@@ -13,8 +13,6 @@
 #define HEADER_MQTTGATEWAY
 #include <map>
 #include "EventServer.h"
-#include "BinaryStatusPublisher.h"
-#include "secrets.h"
 
 #ifdef ESP32
 #include "Client.h"
@@ -33,6 +31,7 @@ constexpr const char* const DEVICE_FREE_STACK = "free-stack";
 constexpr const char* const DEVICE_INFO = "info";
 constexpr const char* const DEVICE_BUILD = "firmware-version";
 constexpr const char* const DEVICE_MAC = "mac-address";
+constexpr const char* const DEVICE_RESET_SENSOR = "reset-sensor";
 constexpr const char* const MEASUREMENT = "measurement";
 constexpr const char* const MEASUREMENT_BATCH_SIZE = "batch-size";
 constexpr const char* const MEASUREMENT_BATCH_SIZE_DESIRED = "batch-size-desired";
@@ -44,50 +43,61 @@ constexpr const char* const RESULT_RATE = "rate";
 constexpr const char* const RESULT_VALUES = "values";
 
 static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
-    { Topic::BatchSize, { MEASUREMENT, MEASUREMENT_BATCH_SIZE }},
-    { Topic::BatchSizeDesired, { MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED }},
-    { Topic::Measurement, { MEASUREMENT, MEASUREMENT_VALUES }},
-    { Topic::Rate, {RESULT, RESULT_RATE }},
-    { Topic::Result, {RESULT, RESULT_VALUES }},
-    { Topic::IdleRate, {RESULT, RESULT_IDLE_RATE }},
-    { Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE }},
-    { Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP }},
-    { Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK }},
-    { Topic::Error, {DEVICE, DEVICE_ERROR }},
-    { Topic::Info, {DEVICE, DEVICE_INFO }}
+    {Topic::BatchSize, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}},
+    {Topic::BatchSizeDesired, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}},
+    {Topic::Measurement, {MEASUREMENT, MEASUREMENT_VALUES}},
+    {Topic::Rate, {RESULT, RESULT_RATE}},
+    {Topic::Result, {RESULT, RESULT_VALUES}},
+    {Topic::IdleRate, {RESULT, RESULT_IDLE_RATE}},
+    {Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE}},
+    {Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP}},
+    {Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK}},
+    {Topic::Error, {DEVICE, DEVICE_ERROR}},
+    {Topic::Info, {DEVICE, DEVICE_INFO}},
+    {Topic::Flatline, {DEVICE, DEVICE_RESET_SENSOR}}
 };
 
 class MqttGateway : public EventClient {
 public:
-    MqttGateway(EventServer* eventServer, const char* broker, int port, const char* user, const char* password, const char* buildVersion);
-    void begin(Client* client, const char* clientName, bool initMqtt = true);
-    bool connect();
-    void publishError(const char* message);
-
+    MqttGateway(EventServer* eventServer, const char* broker, int port, const char* user, const char* password,
+                const char* buildVersion);
+    virtual void announceReady();
+    virtual void begin(Client* client, const char* clientName);
+    virtual void connect();
     void handleQueue();
-    bool initializeMqtt();
+    virtual bool hasAnnouncement();
+    virtual bool isConnected();
+    void publishError(const char* message);
+    virtual bool publishNextAnnouncement();
     void update(Topic topic, const char* payload) override;
 
 protected:
-    BinaryStatusPublisher _connectionStatus;
     const char* _clientName = nullptr;
     unsigned long _reconnectTimestamp = 0UL;
     const char* _broker = nullptr;
     const char* _user;
     const char* _password;
-    const char* _buildVersion;
     int _port = 1883;
+    const char* _buildVersion;
+    int _announceIndex = 0;
     static constexpr int TOPIC_BUFFER_SIZE = 255;
-    char _topicBuffer[TOPIC_BUFFER_SIZE] = { 0 };
+    char _topicBuffer[TOPIC_BUFFER_SIZE] = {0};
+    static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2048; // using 1812 now.
+    char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = {0};
+    char* _announcementPointer = _announcementBuffer;
 
-    bool announceDevice();
-    void announceNode(const char* baseTopic, const char* name, const char* type, const char* properties);
-    void announceProperty(const char* baseTopic, const char* name, const char* dataType, const char* format = EMPTY, bool settable = false);
     void callback(const char* topic, const byte* payload, unsigned length);
-    bool ensureConnection();
+
+    void prepareAnnouncementBuffer();
+    void prepareEntity(const char* entity, const char* payload);
+    void prepareEntity(const char* baseTopic, const char* entity, const char* payload);
+    void prepareItem(const char* item);
+    void prepareNode(const char* node, const char* name, const char* type, const char* properties);
+    void prepareProperty(const char* node, const char* property, const char* attribute,
+        const char* dataType, const char* format = EMPTY, bool settable = false);
+
     bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
     bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);
-    void subscribeToEventServer();
 };
 
 #endif

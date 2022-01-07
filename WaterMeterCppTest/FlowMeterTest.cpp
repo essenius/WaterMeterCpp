@@ -49,6 +49,32 @@ namespace WaterMeterCppTest {
             measurements.close();
         }
 
+        TEST_METHOD(flowMeterOutlierTest) {
+            std::streambuf* backup = std::cout.rdbuf();
+            const std::stringstream ss;
+            std::cout.rdbuf(ss.rdbuf());
+
+            FlowMeter flowMeter;
+            int measurement;
+            int totalOutliers = 0;
+            std::ifstream measurements("outliertest.txt");
+            Assert::IsTrue(measurements.is_open(), L"File open");
+            long index = 0;
+            while (measurements >> measurement) {
+                std::cout << measurement << ",";
+                flowMeter.addMeasurement(measurement);
+                std::cout << flowMeter.getSmoothValue() << "," << flowMeter.getDerivative() << ","
+                    << flowMeter.getSmoothDerivative() << "," << flowMeter.isPeak() << "," << flowMeter.isExcluded() <<
+                    "\n";
+                Logger::WriteMessage(ss.str().c_str());
+                totalOutliers += flowMeter.isOutlier();
+                index++;
+                measurements.ignore(std::numeric_limits<std::streamsize>::max(), ',');
+            }
+            Assert::AreEqual(3, totalOutliers, L"Found 3 outliers");
+            measurements.close();
+            std::cout.rdbuf(backup);
+        }
         TEST_METHOD(flowMeterEarlyOutlierTest) {
             FlowMeter actual;
             actual.addMeasurement(5000);
@@ -88,7 +114,7 @@ namespace WaterMeterCppTest {
         }
 
     private:
-        void assertResult(FlowMeter* meter, const wchar_t* description,
+        void assertResult(const FlowMeter* meter, const wchar_t* description,
                           const float smoothValue, const float derivative, const float smoothDerivative,
                           const bool peak = false, const bool excluded = false, const bool outlier = false,
                           const bool excludeAll = false) const {

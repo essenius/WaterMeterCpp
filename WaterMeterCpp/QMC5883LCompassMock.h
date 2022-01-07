@@ -11,19 +11,26 @@
 
 // Mock implementation for if we are not targeting the Arduino
 
-#ifndef ARDUINO
+// ReSharper disable CppMemberFunctionMayBeStatic -- need to mimic existing interface
+// ReSharper disable CppMemberFunctionMayBeConst -- same here
+
+#ifndef ESP32
 
 	#ifndef HEADER_QMC5883LCOMPASS
 	#define HEADER_QMC5883LCOMPASS
 
 	class QMC5883LCompass {
 	public:
-		void init();
-		void read();
-		void setCalibration(int a, int b, int c, int d, int e, int f);
-		int getX();
-		int getY();
-		int getZ();
+		void init() {}
+		void read() {}
+		void setCalibration(int a, int b, int c, int d, int e, int f) {}
+		void setReset() { _y++; }
+		int getX() { return 0; }
+		int getY() { return _y; }
+		int getZ() { return 0; }
+        void setMode(int i, int i1, int i2, int i3) {}
+    private:
+		int _y = 0;
 	};
 	#endif
 

@@ -27,32 +27,37 @@
 #include "Scheduler.h"
 #include "TimeServer.h"
 #include "Wifi.h"
+#include "Connection.h"
 #include "FirmwareManager.h"
 #include "Log.h"
 #include "MeasurementWriter.h"
 #include "secrets.h" // for all CONFIG constants
 
+
+// TODO: this main part is way too big. Fix that.
+
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.99.0";
+constexpr const char* const BUILD_VERSION = "0.99.3";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle takes about 8ms max, so that is also within the limit.
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
-constexpr unsigned long MEASUREMENTS_PER_MINUTE = 60UL * 1000UL * 1000UL / MEASURE_INTERVAL_MICROS;
+constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
 
 EventServer eventServer(LogLevel::Off);
 LedDriver ledDriver(&eventServer);
 
-Wifi wifi(&eventServer, CONFIG_SSID, CONFIG_PASSWORD, CONFIG_DEVICE_NAME);
+Wifi wifi(&eventServer, CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, CONFIG_DEVICE_NAME, CONFIG_WIFI_BSSID);
 TimeServer timeServer(&eventServer);
 Device device(&eventServer);
-MagnetoSensorReader sensorReader;
+MagnetoSensorReader sensorReader(&eventServer);
 PayloadBuilder measurementPayloadBuilder;
 MeasurementWriter measurementWriter(&eventServer, &measurementPayloadBuilder);
 FlowMeter flowMeter;
 PayloadBuilder resultPayloadBuilder;
 ResultWriter resultWriter(&eventServer, &resultPayloadBuilder, MEASURE_INTERVAL_MICROS);
 MqttGateway mqttGateway(&eventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER, CONFIG_MQTT_PASSWORD, BUILD_VERSION);
+Connection connection(&eventServer, &wifi, &mqttGateway);
 Scheduler scheduler(&eventServer, &measurementWriter, &resultWriter);
 FirmwareManager firmwareManager(&eventServer);
 Log logger(&eventServer);
@@ -66,7 +71,15 @@ void setup() {
     ledDriver.begin();
     sensorReader.begin();
     eventServer.publish(Topic::Processing, LONG_TRUE);
-    wifi.begin();
+    
+#ifdef CONFIG_USE_STATIC_IP
+    wifi.configure(CONFIG_LOCAL_IP, CONFIG_GATEWAY, CONFIG_SUBNETMASK, CONFIG_DNS_1, CONFIG_DNS_2);
+#else 
+    wifi.configure(Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP);
+#endif
+
+    // run the state machine until connected to wifi
+    while (connection.connectWifi() != ConnectionState::WifiReady) {}
 
 #ifdef CONFIG_USE_TLS
     wifi.setCertificates(CONFIG_ROOTCA_CERTIFICATE, CONFIG_DEVICE_CERTIFICATE, CONFIG_DEVICE_PRIVATE_KEY);
@@ -78,8 +91,10 @@ void setup() {
     if (timeServer.timeWasSet()) {
         firmwareManager.tryUpdateFrom(BUILD_VERSION);
         eventServer.publish(Topic::TimeOverrun, LONG_FALSE);
-        mqttGateway.begin(wifi.getClient(), wifi.getHostName());
-        // the writers need the time, so can't do this earlier. This means connected is true by default
+
+        // run the state machine till MQTT is fully up and running
+        while (connection.connectMqtt() != ConnectionState::MqttReady) {}
+
         measurementWriter.begin();
         resultWriter.begin();
         nextMeasureTime = micros();
@@ -88,13 +103,6 @@ void setup() {
         eventServer.publish(Topic::Error, "Could not set time");
     }
 }
-unsigned int timeout = 0;
-unsigned int loopCount = 0;
-PayloadBuilder payloadBuilder;
-
-unsigned long maxUsedTime = 0;
-unsigned long totalUsedTime = 0;
-long peaks = 0;
 
 void loop() {
     if (clearedToGo) {
@@ -113,27 +121,33 @@ void loop() {
         eventServer.publish(Topic::Processing, LONG_FALSE);
 
         // not using delayMicroseconds() as that is less accurate. Sometimes up to 300 us too much wait time.
+        // make sure to use durations to compare, not timestamps -- to avoid overflow issues
+
         const unsigned long usedTime = micros() - startLoopTimestamp;
         if (usedTime > MEASURE_INTERVAL_MICROS) {
-            // It took too long. We might be able to catch up, but intervene if the difference gets too big
+            // It took too long. If we're still within one interval, we might be able to catch up
+            // Intervene if it gets more than that
             eventServer.publish(Topic::TimeOverrun, usedTime - MEASURE_INTERVAL_MICROS);
-            nextMeasureTime += static_cast<int>((micros() - nextMeasureTime) / MEASURE_INTERVAL_MICROS) * MEASURE_INTERVAL_MICROS;
+            const unsigned long extraTimeNeeded = micros() - nextMeasureTime;
+            nextMeasureTime += (extraTimeNeeded / MEASURE_INTERVAL_MICROS) * MEASURE_INTERVAL_MICROS;
         } else {
 
-            totalUsedTime += usedTime;
-            maxUsedTime = usedTime > maxUsedTime ? usedTime : maxUsedTime;
+            // fill remaining time with validating the connection, checking health and handling incoming messages,
+            // but only if we have a minimum amount of time left. We don't want overruns because of this.
+            // Interval overruns could happen if we get a disconnect, but not much we can do about that (mqtt connects synchronously).
 
-            // fill the remaining time with checking for messages and validating connection
-            while (micros() < nextMeasureTime) {
-                if (!wifi.isConnected()) {
-                    eventServer.publish(Topic::Connected, LONG_FALSE);
-                    wifi.begin();
-                    if (wifi.isConnected()) {
-                        eventServer.publish(Topic::Connected, LONG_TRUE);
-                    }
+            // We use a trick to avoid micros() overrun issues. Create a duration using unsigned long comparison, and then cast to a
+            // signed value. We will not pass LONG_MAX in the duration; ESP32 has 64 bit longs and micros() only uses 32 of those.
+            
+            auto remainingTime = static_cast<long>(nextMeasureTime - micros());
+            if (remainingTime >= MIN_MICROS_FOR_CHECKS) {
+                if (connection.connectMqtt() == ConnectionState::MqttReady) {
+                    device.reportHealth();
+                    mqttGateway.handleQueue();
                 }
-                device.reportHealth();
-                mqttGateway.handleQueue();
+                do {
+                    remainingTime = static_cast<long>(nextMeasureTime - micros());
+                } while (remainingTime > 0L);
             }
         }
     }

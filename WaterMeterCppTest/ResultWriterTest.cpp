@@ -66,7 +66,7 @@ namespace WaterMeterCppTest {
                 Assert::AreEqual(i == 9, writer.needsFlush());
                 if (i == 9) {
                     Assert::AreEqual(
-                        R"({"timestamp":"","lastValue":2409,"summaryCount":{"samples":10,"peaks":0,"flows":0},)"
+                        R"({"timestamp":"","lastValue":2409,"summaryCount":{"samples":10,"peaks":0,"flows":0,"maxStreak":1},)"
                         R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
                         R"("duration":{"total":10090,"average":1009,"max":1018},)"
                         R"("analysis":{"smoothValue":2409,"derivative":5,"smoothDerivative":7,"smoothAbsDerivative":0}})",
@@ -106,19 +106,19 @@ namespace WaterMeterCppTest {
 
                 if (i == 9 || i == 10) {
                     Assert::AreEqual(
-                        R"({"timestamp":"","lastValue":2600,"summaryCount":{"samples":10,"peaks":0,"flows":0},)"
+                        R"({"timestamp":"","lastValue":2600,"summaryCount":{"samples":10,"peaks":0,"flows":0,"maxStreak":8},)"
                         R"("exceptionCount":{"outliers":2,"excludes":2,"overruns":0},)"
                         R"("duration":{"total":79975,"average":7998,"max":8002},)"
-                        R"("analysis":{"smoothValue":2600,"derivative":-3,"smoothDerivative":1,"smoothAbsDerivative":0}})",
+                        R"("analysis":{"smoothValue":2400,"derivative":-3,"smoothDerivative":1,"smoothAbsDerivative":0}})",
                         writer.getMessage(),
                         "At 10 we get a summary with 2 outliers and 2 excludes");
                 }
                 else if (i == 14) {
                     Assert::AreEqual(
-                        R"({"timestamp":"","lastValue":2600,"summaryCount":{"samples":5,"peaks":0,"flows":0},)"
+                        R"({"timestamp":"","lastValue":2600,"summaryCount":{"samples":5,"peaks":0,"flows":0,"maxStreak":6},)"
                         R"("exceptionCount":{"outliers":5,"excludes":5,"overruns":0},)"
                         R"("duration":{"total":40025,"average":8005,"max":8007},)"
-                        R"("analysis":{"smoothValue":2600,"derivative":-3,"smoothDerivative":1,"smoothAbsDerivative":0}})",
+                        R"("analysis":{"smoothValue":2400,"derivative":-3,"smoothDerivative":1,"smoothAbsDerivative":0}})",
                         writer.getMessage(),
                         "At 15 we get the next batch with 5 outliers and excludes");
                 }
@@ -139,12 +139,12 @@ namespace WaterMeterCppTest {
             writer.begin();
             EventServer.publish(Topic::IdleRate, 1);
             EventServer.publish(Topic::NonIdleRate, 1);
-            FlowMeterDriver fmd(2400, 0, 1);
+            const FlowMeterDriver fmd(2400, 0, 1);
             writer.addMeasurement(2398, &fmd);
             EventServer.publish(Topic::ProcessTime, 10125L);
             Assert::IsTrue(writer.needsFlush(), L"Needs flush");
             Assert::AreEqual(
-                R"({"timestamp":"","lastValue":2398,"summaryCount":{"samples":1,"peaks":0,"flows":0},)"
+                R"({"timestamp":"","lastValue":2398,"summaryCount":{"samples":1,"peaks":0,"flows":0,"maxStreak":1},)"
                 R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":1},)"
                 R"("duration":{"total":10125,"average":10125,"max":10125},)"
                 R"("analysis":{"smoothValue":2400,"derivative":0,"smoothDerivative":1,"smoothAbsDerivative":0}})",
@@ -158,7 +158,7 @@ namespace WaterMeterCppTest {
             EventServer.publish(Topic::IdleRate, 10);
             EventServer.publish(Topic::NonIdleRate, 5);
             for (int i = 0; i < 10; i++) {
-                int measurement = 2400 + (i % 2) * 50;
+                const int measurement = 2400 + (i % 2) * 50;
                 FlowMeterDriver fmd(measurement, (i % 2) * 50, 1, i > 7, i == 5);
 
                 writer.addMeasurement(measurement, &fmd);
@@ -166,7 +166,7 @@ namespace WaterMeterCppTest {
                 Assert::AreEqual(i == 9, writer.needsFlush());
             }
             Assert::AreEqual(
-                R"({"timestamp":"","lastValue":2450,"summaryCount":{"samples":10,"peaks":1,"flows":2},)"
+                R"({"timestamp":"","lastValue":2450,"summaryCount":{"samples":10,"peaks":1,"flows":2,"maxStreak":1},)"
                 R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
                 R"("duration":{"total":80045,"average":8005,"max":8009},)"
                 R"("analysis":{"smoothValue":2450,"derivative":50,"smoothDerivative":1,"smoothAbsDerivative":0}})",
@@ -194,7 +194,7 @@ namespace WaterMeterCppTest {
                 }
                 else if (i == 4) {
                     Assert::AreEqual(
-                        R"({"timestamp":"","lastValue":2400,"summaryCount":{"samples":5,"peaks":0,"flows":0},)"
+                        R"({"timestamp":"","lastValue":2400,"summaryCount":{"samples":5,"peaks":0,"flows":0,"maxStreak":4},)"
                         R"("exceptionCount":{"outliers":1,"excludes":4,"overruns":0},)"
                         R"("duration":{"total":32550,"average":6510,"max":7520},)"
                         R"("analysis":{"smoothValue":2400,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})",
@@ -204,7 +204,7 @@ namespace WaterMeterCppTest {
                 }
             }
             Assert::AreEqual(
-                R"({"timestamp":"","lastValue":2600,"summaryCount":{"samples":10,"peaks":0,"flows":0},)"
+                R"({"timestamp":"","lastValue":2600,"summaryCount":{"samples":10,"peaks":0,"flows":0,"maxStreak":7},)"
                 R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
                 R"("duration":{"total":75475,"average":7548,"max":7570},)"
                 R"("analysis":{"smoothValue":2400,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})",
@@ -217,7 +217,7 @@ namespace WaterMeterCppTest {
             writer.begin();
             EventServer.publish(Topic::IdleRate, 5);
             EventServer.publish(Topic::NonIdleRate, 5);
-            FlowMeterDriver fmd(500);
+            const FlowMeterDriver fmd(500);
             for (int i = 0; i < 3; i++) {
                 writer.addMeasurement(500, &fmd);
                 EventServer.publish(Topic::ProcessTime, 2500 + 10 * i);
@@ -241,7 +241,7 @@ namespace WaterMeterCppTest {
             EventServer.publish(Topic::ProcessTime, 2500);
             Assert::IsTrue(writer.needsFlush(), L"next round, so needsFlush returns true");
             Assert::AreEqual(
-                R"({"timestamp":"","lastValue":500,"summaryCount":{"samples":10,"peaks":0,"flows":0},)"
+                R"({"timestamp":"","lastValue":500,"summaryCount":{"samples":10,"peaks":0,"flows":0,"maxStreak":10},)"
                 R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},)"
                 R"("duration":{"total":24980,"average":2498,"max":2520},)"
                 R"("analysis":{"smoothValue":500,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})",

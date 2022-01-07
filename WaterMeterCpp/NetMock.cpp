@@ -9,7 +9,10 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
+// ReSharper disable CppMemberFunctionMayBeConst -- mimic existing interface
+// ReSharper disable CppInconsistentNaming -- same here
 #ifndef ESP32
+
 
 #include "NetMock.h"
 
@@ -26,6 +29,8 @@ int HTTPUpdate::ReturnValue = HTTP_UPDATE_NO_UPDATES;
 HTTPUpdate httpUpdate;
 
 WiFiClass WiFi;
+
+WiFiClientSecure testWifiClientSecure;
 
 IPAddress::IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4) {
     _address.bytes[0] = oct1;
@@ -71,22 +76,20 @@ void WiFiClass::reset() {
 
 const IPAddress NO_IP = IPAddress(0, 0, 0, 0);
 
-bool WiFiClass::config(IPAddress local, IPAddress gateway, IPAddress subnet, IPAddress primaryDNS,
-                       IPAddress secondaryDNS) {
+bool WiFiClass::config(IPAddress local, IPAddress gateway, IPAddress subnet, IPAddress dns1, IPAddress dns2) {
     _localIP = local;
     _gatewayIP = gateway;
     _subnetIP = subnet;
-    _primaryDNSIP = primaryDNS == NO_IP ? _gatewayIP : primaryDNS;
-    _secondaryDNSIP = secondaryDNS == NO_IP ? _primaryDNSIP : secondaryDNS;
+    _primaryDNSIP = dns1 == NO_IP ? _gatewayIP : dns1;
+    _secondaryDNSIP = dns2 == NO_IP ? _primaryDNSIP : dns2;
     return true;
 }
 
+WiFiClientSecure* getClient() { return &testWifiClientSecure; }
+
 bool WiFiClass::isConnected() {
+    if (_connectCountdown <= 0) return true;
     _connectCountdown--;
-    if (_connectCountdown == 0) {
-        _connectCountdown = 10;
-        return true;
-    }
     return false;
 }
 

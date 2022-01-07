@@ -55,14 +55,14 @@ namespace WaterMeterCppTest {
             assertLeds(HIGH, LOW, LOW, LOW, L"Error");
             eventServer.publish(Topic::Error, "");
             assertLeds(LOW, LOW, LOW, LOW, L"No error");
-            eventServer.publish(Topic::Connecting, true);
-            assertLeds(LOW, HIGH, LOW, LOW, L"Connecting on");
-            eventServer.publish(Topic::Connecting, true);
-            assertLeds(LOW, HIGH, LOW, LOW, L"Connecting on");
-            eventServer.publish(Topic::Connecting, true);
-            assertLeds(LOW, LOW, LOW, LOW, L"Connecting off");
-            eventServer.publish(Topic::Connecting, true);
-            assertLeds(LOW, LOW, LOW, LOW, L"Connecting off");
+            eventServer.publish(Topic::ConnectingWifi, true);
+            assertLeds(LOW, HIGH, LOW, LOW, L"ConnectingWifi on");
+            eventServer.publish(Topic::ConnectingWifi, true);
+            assertLeds(LOW, HIGH, LOW, LOW, L"ConnectingWifi on");
+            eventServer.publish(Topic::ConnectingWifi, true);
+            assertLeds(LOW, LOW, LOW, LOW, L"ConnectingWifi off");
+            eventServer.publish(Topic::ConnectingWifi, true);
+            assertLeds(LOW, LOW, LOW, LOW, L"ConnectingWifi off");
         }
 
         TEST_METHOD(ledDriverCycleTest) {
@@ -153,7 +153,7 @@ namespace WaterMeterCppTest {
             assertBuiltinLed(HIGH, messageOn.c_str(), 255);
         }
 
-        void assertBuiltinLed(uint8_t expected, const wchar_t* description, int index) const {
+        void assertBuiltinLed(uint8_t expected, const wchar_t* description, const unsigned int index) const {
             std::wstring message(description);
             message += std::wstring(L" # ") + std::to_wstring(index);
             Assert::AreEqual(expected, digitalRead(LED_BUILTIN), message.c_str());

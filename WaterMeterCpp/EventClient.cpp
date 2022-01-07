@@ -12,6 +12,10 @@
 #include "EventClient.h"
 #include "EventServer.h"
 
+#ifdef ESP32
+#include <ESP.h>
+#endif
+
 EventClient::EventClient(const char* name, EventServer* eventServer) : _eventServer(eventServer), _name(name) {}
 
 EventClient::~EventClient() {

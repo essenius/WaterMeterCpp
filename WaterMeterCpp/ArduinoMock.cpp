@@ -9,6 +9,8 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
+// ReSharper disable CppInconsistentNaming -- mimic existing interface
+// ReSharper disable CppMemberFunctionMayBeStatic -- same here
 #ifndef ESP32
 
 #include "ArduinoMock.h"
@@ -28,7 +30,7 @@ char* dtostrf(float value, signed char width, unsigned char precision, char* buf
 		return buffer;
 }
 
-const uint8_t PIN_COUNT = 13;
+constexpr uint8_t PIN_COUNT = 13;
 uint8_t pinValue[PIN_COUNT];
 uint8_t pinModeValue[PIN_COUNT];
 
@@ -54,15 +56,15 @@ void shiftMicros(long long shift) {
 	microShift = shift;
 }
 
-unsigned long micros(void) {
-	auto now = std::chrono::high_resolution_clock::now() ;
-	return std::chrono::duration_cast<std::chrono::microseconds>(now - startTime).count() + microShift;
+unsigned long micros() {
+    const auto now = std::chrono::high_resolution_clock::now() ;
+	return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::microseconds>(now - startTime).count() + microShift);
 }
 
 
 void delayMicroseconds(int delay) { microShift += delay;  }
 
-void delay(int delay) { microShift += delay * 1000L;  }
+void delay(int delay) { microShift += delay * 1000LL;  }
 
 int HardwareSerial::available() {
 	return static_cast<int>(strlen(_bufferPointer));

@@ -13,9 +13,10 @@
 #include <climits>
 #include "ResultWriter.h"
 
-ResultWriter::ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros) :
-    BatchWriter("ResultWriter", eventServer, payloadBuilder) {
-    _measureIntervalMicros = measureIntervalMicros;
+constexpr int FLATLINE_STREAK = 20;
+
+ResultWriter::ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, const int measureIntervalMicros) :
+    BatchWriter("ResultWriter", eventServer, payloadBuilder), _measureIntervalMicros(measureIntervalMicros) {
     _desiredFlushRate = _idleFlushRate;
 }
 
@@ -26,15 +27,25 @@ void ResultWriter::addDuration(long duration) {
         _maxDuration = duration;
     }
     if (duration > _measureIntervalMicros) {
-        publishOverrun(true);
         _overrunCount++;
     }
 }
 
-void ResultWriter::addMeasurement(const int value, FlowMeter* result) {
+void ResultWriter::addMeasurement(const int value, const FlowMeter* result) {
     newMessage();
     _measure = value;
-    //_result = result;
+    if (_previousMeasure == value) {
+        _streak++;
+        if (_streak > _maxStreak) _maxStreak = _streak;
+        if (_streak > FLATLINE_STREAK) {
+            //_eventServer->publish(Topic::Flatline, value);
+            _streak = 1;
+        }
+    }
+    else {
+        _streak = 1;
+        _previousMeasure = value;
+    }
     if (result->isOutlier()) {
         _outlierCount++;
     }
@@ -50,11 +61,13 @@ void ResultWriter::addMeasurement(const int value, FlowMeter* result) {
     else if (result->isExcluded()) {
         _excludeCount++;
     }
-    // we only need these at the end but we don't know when that is
-    _smoothValue = result->getSmoothValue();
-    _derivative = result->getDerivative();
-    _smoothDerivative = result->getSmoothDerivative();
-    _smoothAbsDerivative = result->getSmoothAbsDerivative();
+    else {
+        // we only need these at the end but we don't know when that is
+        _smoothValue = result->getSmoothValue();
+        _derivative = result->getDerivative();
+        _smoothDerivative = result->getSmoothDerivative();
+        _smoothAbsDerivative = result->getSmoothAbsDerivative();
+    }
 }
 
 void ResultWriter::begin() {
@@ -77,13 +90,6 @@ bool ResultWriter::needsFlush(bool endOfFile) {
     return BatchWriter::needsFlush(endOfFile);
 }
 
-void ResultWriter::publishOverrun(bool overrun) {
-    if (_overrun != overrun) {
-        _eventServer->publish<long>(Topic::TimeOverrun, overrun);
-        _overrun = overrun;
-    }
-}
-
 void ResultWriter::prepareFlush() {
     const int averageDuration = static_cast<int>((_sumDuration * 10 / _messageCount + 5) / 10);
     _payloadBuilder->writeParam("lastValue", _measure);
@@ -91,6 +97,7 @@ void ResultWriter::prepareFlush() {
     _payloadBuilder->writeParam("samples", _messageCount);
     _payloadBuilder->writeParam("peaks", _peakCount);
     _payloadBuilder->writeParam("flows", _flowCount);
+    _payloadBuilder->writeParam("maxStreak", _maxStreak);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("exceptionCount");
     _payloadBuilder->writeParam("outliers", _outlierCount);
@@ -120,7 +127,8 @@ void ResultWriter::resetCounters() {
     _overrunCount = 0L;
     _peakCount = 0L;
     _sumDuration = 0L;
-    _eventServer->publish(this, Topic::TimeOverrun, LONG_FALSE);
+    _streak = 1;
+    _maxStreak = 1;
     _eventServer->publish(this, Topic::Exclude, LONG_FALSE);
 }
 

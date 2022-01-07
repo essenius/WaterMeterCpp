@@ -9,8 +9,7 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_FLOWMETERDRIVER
-#define HEADER_FLOWMETERDRIVER
+#pragma once
 
 #include "../WaterMeterCpp/FlowMeter.h"
 
@@ -19,8 +18,5 @@ public:
     explicit FlowMeterDriver(int smoothValue, int derivative = 0, int smoothDerivative = 0,
                              bool flow = false, bool peak = false,
                              bool outlier = false, bool exclude = false, bool excludeAll = false);
-
-    float isFirstOutlier() const;
 };
 
-#endif

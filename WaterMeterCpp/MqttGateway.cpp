@@ -29,7 +29,6 @@ constexpr const char* const RATE_RANGE = "0:8640000";
 constexpr const char* const TYPE_INTEGER = "integer";
 constexpr const char* const TYPE_STRING = "string";
 constexpr const char* const LAST_WILL_MESSAGE = "lost";
-constexpr bool NO_RETAIN = false;
 constexpr bool SETTABLE = true;
 
 // TODO: make property (and potentially inject via constructor)
@@ -39,106 +38,43 @@ PubSubClient mqttClient;
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
 MqttGateway::MqttGateway(
-    EventServer* eventServer, const char* broker, const int port, const char* user, const char* password,
+    EventServer* eventServer,
+    const char* broker, const int port, const char* user, const char* password,
     const char* buildVersion) :
     EventClient("MqttGateway", eventServer),
-    _connectionStatus(eventServer, this, Topic::Disconnected, Topic::Connected),
-    _broker(broker),
-    _user(user),
-    _password(password),
-    _buildVersion(buildVersion),
-    _port(port) {}
+    _broker(broker), _user(user), _password(password), _port(port), _buildVersion(buildVersion) {}
 
-bool MqttGateway::announceDevice() {
-    char baseTopic[50];
-    char payload[255];
-    if (!publishEntity(_clientName, "$homie", "4.0.0")) {
-        return false;
-    }
-    publishEntity(_clientName, "$state", "init");
-
-    publishEntity(_clientName, "$name", _clientName);
-    sprintf(payload, "%s,%s,%s", MEASUREMENT, RESULT, DEVICE);
-    publishEntity(_clientName, "$nodes", payload);
-    publishEntity(_clientName, "$implementation", "esp32");
-    publishEntity(_clientName, "$extensions", EMPTY);
-    sprintf(baseTopic, "%s/%s", _clientName, MEASUREMENT);
-    sprintf(payload, "%s,%s,%s", MEASUREMENT_BATCH_SIZE, MEASUREMENT_BATCH_SIZE_DESIRED, MEASUREMENT_VALUES);
-    announceNode(baseTopic, "Measurement", "1", payload);
-    strcat(baseTopic, "/");
-    strcat(baseTopic, MEASUREMENT_BATCH_SIZE);
-    announceProperty(baseTopic, "Batch Size", TYPE_INTEGER);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, MEASUREMENT, MEASUREMENT_VALUES);
-    announceProperty(baseTopic, "Values", TYPE_STRING);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED);
-    announceProperty(baseTopic, "Desired Batch Size", TYPE_INTEGER, "0-20", SETTABLE);
-    sprintf(baseTopic, "%s/%s", _clientName, RESULT);
-    sprintf(payload, "%s,%s,%s,%s", RESULT_RATE, RESULT_IDLE_RATE, RESULT_NON_IDLE_RATE, RESULT_VALUES);
-    announceNode(baseTopic, "Result", "1", payload);
-    strcat(baseTopic, "/");
-    strcat(baseTopic, RESULT_RATE);
-    announceProperty(baseTopic, "Rate", TYPE_INTEGER);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, RESULT, RESULT_IDLE_RATE);
-    announceProperty(baseTopic, "Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, RESULT, RESULT_NON_IDLE_RATE);
-    announceProperty(baseTopic, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, RESULT, RESULT_VALUES);
-    announceProperty(baseTopic, "Values", TYPE_STRING);
-
-    sprintf(baseTopic, "%s/%s", _clientName, DEVICE);
-    sprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD,
-            DEVICE_MAC);
-    announceNode(baseTopic, "Device", "1", payload);
-    strcat(baseTopic, "/");
-    strcat(baseTopic, DEVICE_FREE_HEAP);
-    announceProperty(baseTopic, "Free Heap Memory", TYPE_INTEGER);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_FREE_STACK);
-    announceProperty(baseTopic, "Free Stack Memory", TYPE_INTEGER);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_ERROR);
-    announceProperty(baseTopic, "Error message", TYPE_STRING);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_INFO);
-    announceProperty(baseTopic, "Info message", TYPE_STRING);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_BUILD);
-    announceProperty(baseTopic, "Firmware version", TYPE_STRING);
-    sprintf(baseTopic, "%s/%s/%s", _clientName, DEVICE, DEVICE_MAC);
-    announceProperty(baseTopic, "Mac address", TYPE_STRING);
-    publishProperty(DEVICE, DEVICE_BUILD, _buildVersion);
-    publishProperty(DEVICE, DEVICE_MAC, _eventServer->request(Topic::MacFormatted, "unknown"));
-
-    publishEntity(_clientName, "$state", "ready");
-    _eventServer->publish(Topic::Info, "MQTT: Announcement complete");
-    return true;
+void MqttGateway::announceReady() {
+    // this is safe to do more than once. So after a disconnect it doesn't hurt
+    _eventServer->subscribe(this, Topic::BatchSize); // long
+    _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
+    _eventServer->subscribe(this, Topic::FreeHeap); // long
+    _eventServer->subscribe(this, Topic::FreeStack); // long
+    _eventServer->subscribe(this, Topic::Flatline); // long
+    _eventServer->subscribe(this, Topic::IdleRate); // long
+    _eventServer->subscribe(this, Topic::Measurement); // string
+    _eventServer->subscribe(this, Topic::NonIdleRate); // long
+    _eventServer->subscribe(this, Topic::Rate); // long  
+    _eventServer->subscribe(this, Topic::Result); // string
+    _eventServer->subscribe(this, Topic::Error); // string 
+    _eventServer->subscribe(this, Topic::Info); // string
+    // making sure we are listening. Mute is on after a disconnect.
+    mute(false);
 }
 
-void MqttGateway::announceNode(const char* baseTopic, const char* name, const char* type, const char* properties) {
-    publishEntity(baseTopic, "$name", name);
-    publishEntity(baseTopic, "$type", type);
-    publishEntity(baseTopic, "$properties", properties);
-}
-
-void MqttGateway::announceProperty(const char* baseTopic, const char* name, const char* dataType, const char* format,
-                                   const bool settable) {
-    publishEntity(baseTopic, "$name", name);
-    publishEntity(baseTopic, "$dataType", dataType);
-    if (strlen(format) > 0) {
-        publishEntity(baseTopic, "$format", format);
-    }
-    if (settable) {
-        publishEntity(baseTopic, "$settable", "true");
-    }
-}
-
-void MqttGateway::begin(Client* client, const char* clientName, const bool initMqtt) {
-    _connectionStatus.set(false);
-    mqttClient.setClient(*client);
+void MqttGateway::begin(Client* client, const char* clientName) {
     _clientName = clientName;
+    _announcementPointer = _announcementBuffer;
+    // only do this if it hasn't been done before.
+    if (strlen(_announcementBuffer) == 0) {
+        prepareAnnouncementBuffer();
+    }
+    mqttClient.setClient(*client);
     mqttClient.setBufferSize(512);
     mqttClient.setServer(_broker, _port);
     // TODO: optimize in a way that works on Arduino
     mqttClient.setCallback(std::bind(&MqttGateway::callback, this, _1, _2, _3));
-    if (initMqtt && initializeMqtt()) {
-        _connectionStatus.set(true);
-    }
+    connect();
 }
 
 void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
@@ -169,86 +105,122 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
     free(copyTopic);
 }
 
-bool MqttGateway::connect() {
-    _eventServer->publish(Topic::Info, "MQTT: Connecting");
-    char lastWillTopic[TOPIC_BUFFER_SIZE];
-    sprintf(lastWillTopic, BASE_TOPIC_TEMPLATE, _clientName, "$state");
+void MqttGateway::connect() {
+    _announcementPointer = _announcementBuffer;
+    sprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, "$state");
 
+    bool success;
     if (_user == nullptr || strlen(_user) == 0) {
-        _connectionStatus.set(mqttClient.connect(_clientName, lastWillTopic, 0, false, LAST_WILL_MESSAGE));
+        success = mqttClient.connect(_clientName, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
     }
     else {
-        _connectionStatus.set(mqttClient.connect(_clientName, _user, _password,
-                                                 lastWillTopic, 0, false, LAST_WILL_MESSAGE));
+        success = mqttClient.connect(_clientName, _user, _password, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
     }
 
-    if (!_connectionStatus.get()) {
-        publishError("Could not connect to broker");
-        return false;
+    // shoudl get picked up by isConnected later
+    if (!success) {
+        return;
     }
 
+    // if this doesn't work but the connection is still up, we may still be able to run.
     sprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, "+/+/set");
     if (!mqttClient.subscribe(_topicBuffer)) {
         publishError("Could not subscribe to setters");
-        _connectionStatus.set(false);
-        return false;
     }
-    _eventServer->publish(Topic::Info, "MQTT: Connected and subscribed to setters");
-    _eventServer->publish(Topic::Error, EMPTY);
-    return true;
-}
-
-/// <summary>Ensure we still have a connection. If not, re-initialize try reconnecting</summary>
-/// <returns>whether or not we are connected</returns>
-bool MqttGateway::ensureConnection() {
-    if (!mqttClient.connected()) _connectionStatus.set(false);
-    if (_connectionStatus.get()) return true;
-    mute(true);
-
-    // don't reconnect more than once every second
-    if (_reconnectTimestamp == 0UL || micros() - _reconnectTimestamp > 1000000UL) {
-        _reconnectTimestamp = micros();
-        if (initializeMqtt()) {
-            // TODO: do we still need this? looks a bit kludgy
-            _eventServer->publish(Topic::Error, EMPTY);
-            _reconnectTimestamp = 0;
-            return true;
-        }
-    }
-    return false;
 }
 
 void MqttGateway::handleQueue() {
-    if (ensureConnection()) {
+    if (isConnected()) {
         mqttClient.loop();
     }
 }
 
-/// <summary>Connect to the broker, announce the device, and subscribe to the event server</summary>
-/// <returns>whether successful</returns>
-/// <remarks>
-/// Requires: Not already subscribed to event server
-/// Guarantees: _connectionStatus is set to the return get
-/// </remarks>
-bool MqttGateway::initializeMqtt() {
+bool MqttGateway::isConnected() {
+    return mqttClient.connected();
+}
 
-    if (connect()) {
-        if (announceDevice()) {
-            subscribeToEventServer();
-            return true;
-        }
-        publishError("Could not announce device");
-        _connectionStatus.set(false);
-        return false;
+bool MqttGateway::hasAnnouncement() {
+    return strlen(_announcementPointer) != 0;
+}
+
+void MqttGateway::prepareAnnouncementBuffer() {
+    char payload[TOPIC_BUFFER_SIZE];
+
+    prepareEntity("$homie", "4.0.0");
+    prepareEntity("$state", "init");
+    prepareEntity("$name", _clientName);
+    sprintf(payload, "%s,%s,%s", MEASUREMENT, RESULT, DEVICE);
+    prepareEntity("$nodes", payload);
+    prepareEntity("$implementation", "esp32");
+    prepareEntity("$extensions", EMPTY);
+
+    sprintf(payload, "%s,%s,%s", MEASUREMENT_BATCH_SIZE, MEASUREMENT_BATCH_SIZE_DESIRED, MEASUREMENT_VALUES);
+    prepareNode(MEASUREMENT, "Measurement", "1", payload);
+    prepareProperty(MEASUREMENT, MEASUREMENT_BATCH_SIZE, "Batch Size", TYPE_INTEGER);
+    prepareProperty(MEASUREMENT, MEASUREMENT_VALUES, "Values", TYPE_STRING);
+    prepareProperty(MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED, "Desired Batch Size", TYPE_INTEGER, "0-20", SETTABLE);
+
+    sprintf(payload, "%s,%s,%s,%s", RESULT_RATE, RESULT_IDLE_RATE, RESULT_NON_IDLE_RATE, RESULT_VALUES);
+    prepareNode(RESULT, "Result", "1", payload);
+    prepareProperty(RESULT, RESULT_RATE, "Rate", TYPE_INTEGER);
+    prepareProperty(RESULT, RESULT_IDLE_RATE, "Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
+    prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
+    prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
+
+    sprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD,
+            DEVICE_MAC);
+    prepareNode(DEVICE, "Device", "1", payload);
+    prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap Memory", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_FREE_STACK, "Free Stack Memory", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_ERROR, "Error message", TYPE_STRING);
+    prepareProperty(DEVICE, DEVICE_INFO, "Info message", TYPE_STRING);
+    prepareProperty(DEVICE, DEVICE_BUILD, "Firmware version", TYPE_STRING);
+    prepareProperty(DEVICE, DEVICE_MAC, "Mac address", TYPE_STRING);
+    prepareProperty(DEVICE, DEVICE_RESET_SENSOR, "Reset Sensor", TYPE_INTEGER, "1", SETTABLE);
+
+    prepareEntity(DEVICE, DEVICE_BUILD, _buildVersion);
+    prepareEntity(DEVICE, DEVICE_MAC, _eventServer->request(Topic::MacFormatted, "unknown"));
+    prepareEntity("$state", "ready");
+}
+
+void MqttGateway::prepareEntity(const char* entity, const char* payload) {
+    prepareItem(entity);
+    prepareItem(payload);
+}
+
+void MqttGateway::prepareEntity(const char* baseTopic, const char* entity, const char* payload) {
+    sprintf(_announcementPointer, "%s/%s", baseTopic, entity);
+    _announcementPointer += strlen(_announcementPointer) + 1;
+    prepareItem(payload);
+}
+
+void MqttGateway::prepareItem(const char* item) {
+    strcpy(_announcementPointer, item);
+    _announcementPointer += strlen(_announcementPointer) + 1;
+}
+
+void MqttGateway::prepareNode(const char* node, const char* name, const char* type, const char* properties) {
+    prepareEntity(node, "$name", name);
+    prepareEntity(node, "$type", type);
+    prepareEntity(node, "$properties", properties);
+}
+
+void MqttGateway::prepareProperty(
+    const char* node, const char* property, const char* attribute, const char* dataType, const char* format, const bool settable) {
+    sprintf(_topicBuffer, "%s/%s", node, property);
+    prepareEntity(_topicBuffer, "$name", attribute);
+    prepareEntity(_topicBuffer, "$dataType", dataType);
+    if (strlen(format) > 0) {
+        prepareEntity(_topicBuffer, "$format", format);
     }
-    return false;
+    if (settable) {
+        prepareEntity(_topicBuffer, "$settable", "true");
+    }
 }
 
 bool MqttGateway::publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain) {
-    if (!ensureConnection()) return false;
     sprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, baseTopic, entity);
-    _connectionStatus.set(mqttClient.publish(_topicBuffer, payload, retain));
-    return _connectionStatus.get();
+    return mqttClient.publish(_topicBuffer, payload, retain);
 }
 
 void MqttGateway::publishError(const char* message) {
@@ -256,28 +228,20 @@ void MqttGateway::publishError(const char* message) {
     _eventServer->publish<const char*>(Topic::Error, _topicBuffer);
 }
 
+bool MqttGateway::publishNextAnnouncement() {
+    const char* topic = _announcementPointer;
+    _announcementPointer += strlen(topic) + 1;
+    if (strlen(topic) == 0) return false;
+    const char* payload = _announcementPointer;
+    _announcementPointer += strlen(payload) + 1;
+    sprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, topic);
+    return mqttClient.publish(_topicBuffer, payload, true);
+}
+
 bool MqttGateway::publishProperty(const char* node, const char* property, const char* payload, bool retain) {
     char baseTopic[50];
     sprintf(baseTopic, "%s/%s", _clientName, node);
     return publishEntity(baseTopic, property, payload, retain);
-}
-
-void MqttGateway::subscribeToEventServer() {
-    // this is safe to do more than once. So after a disconnect it doesn't hurt
-    _eventServer->subscribe(this, Topic::Peak); // long -- remove
-    _eventServer->subscribe(this, Topic::BatchSize); // long
-    _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
-    _eventServer->subscribe(this, Topic::FreeHeap); // long
-    _eventServer->subscribe(this, Topic::FreeStack); // long
-    _eventServer->subscribe(this, Topic::IdleRate); // long
-    _eventServer->subscribe(this, Topic::Measurement); // string
-    _eventServer->subscribe(this, Topic::NonIdleRate); // long
-    _eventServer->subscribe(this, Topic::Rate); // long  
-    _eventServer->subscribe(this, Topic::Result); // string
-    _eventServer->subscribe(this, Topic::Error); // string 
-    _eventServer->subscribe(this, Topic::Info); // string
-    // making sure we are listening. Mute is on after a disconnect.
-    mute(false);
 }
 
 // incoming event from EventServer
@@ -288,4 +252,4 @@ void MqttGateway::update(const Topic topic, const char* payload) {
         const auto topicPair = entry->second;
         publishProperty(topicPair.first, topicPair.second, payload);
     }
-};
+}

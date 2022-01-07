@@ -79,7 +79,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -99,7 +99,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\Rik.Essenius\source\spikes\WaterMeterCpp\WaterMeterCpp\Debug;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>BatchWriter.obj;MeasurementWriter.obj;ResultWriter.obj;FlowMeter.obj;SerialDriver.obj;SerialScheduler.obj;Arduino.obj;LedDriver.obj;Storage.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
@@ -116,9 +116,9 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\rikes\source\repos\essenius\WaterMeterCpp\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ArduinoMock.obj;BatchWriter.obj;BinaryStatusPublisher.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MeasurementWriter.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;QMC5883LCompassMock;ResultWriter.obj;Scheduler.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <Profile>true</Profile>
+      <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ArduinoMock.obj;BatchWriter.obj;Connection.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MeasurementWriter.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;ResultWriter.obj;Scheduler.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>false</Profile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>
     </Link>
@@ -163,6 +163,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BatchWriterTest.cpp" />
+    <ClCompile Include="ConnectionTest.cpp" />
     <ClCompile Include="DeviceTest.cpp" />
     <ClCompile Include="FirmwareManagerTest.cpp" />
     <ClCompile Include="FlowMeterDriver.cpp" />
@@ -170,6 +171,7 @@
     <ClCompile Include="LedDriverTest.cpp" />
     <ClCompile Include="LogTest.cpp" />
     <ClCompile Include="MagnetoSensorReaderTest.cpp" />
+    <ClCompile Include="MqttGatewayMock.cpp" />
     <ClCompile Include="MqttGatewayTest.cpp" />
     <ClCompile Include="PayloadBuilderTest.cpp" />
     <ClCompile Include="pch.cpp">
@@ -184,13 +186,17 @@
     <ClCompile Include="SchedulerTest.cpp" />
     <ClCompile Include="TestEventClient.cpp" />
     <ClCompile Include="TimeServerTest.cpp" />
+    <ClCompile Include="WifiMock.cpp" />
     <ClCompile Include="WifiTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FlowMeterDriver.h" />
+    <ClInclude Include="MqttGatewayMock.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="StateHelper.h" />
     <ClInclude Include="TestEventClient.h" />
     <ClInclude Include="TopicHelper.h" />
+    <ClInclude Include="WifiMock.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WaterMeterCpp\WaterMeterCpp.vcxproj">
@@ -198,9 +204,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="R:\home\flow_test.csv">
+    <CopyFileToFolders Include="flow_test.csv">
+      <DeploymentContent>false</DeploymentContent>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="outliertest.txt">
       <DeploymentContent>true</DeploymentContent>
-    </None>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

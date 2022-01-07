@@ -20,7 +20,7 @@ class ResultWriter : public BatchWriter {
 public:
     ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros);
     void addDuration(long duration);
-    void addMeasurement(int value, FlowMeter* result);
+    void addMeasurement(int value, const FlowMeter* result);
     using BatchWriter::begin;
     virtual void begin();
     bool needsFlush(bool endOfFile = false) override;
@@ -32,12 +32,10 @@ protected:
     static constexpr long FLUSH_RATE_IDLE = 6000L;
     static constexpr long FLUSH_RATE_INTERESTING = 100L;
 
-    long _driftCount = 0L;
-    int _duration = 0;
     long _excludeCount = 0L;
     long _flowCount = 0L;
     long _idleFlushRate = FLUSH_RATE_IDLE;
-    int _maxDuration = 0;
+    long _maxDuration = 0L;
     int _measure = 0;
     int _measureIntervalMicros = 0;
     long _nonIdleFlushRate = FLUSH_RATE_INTERESTING;
@@ -51,8 +49,11 @@ protected:
     float _smoothDerivative = 0.0f;
     float _smoothAbsDerivative = 0.0f;
     long _sumDuration = 0L;
+    int _streak = 1;
+    int _maxStreak = 1;
+    int _previousMeasure = 0;
 
-    void publishOverrun(bool overrun);
+    //void publishOverrun(bool overrun);
     void resetCounters() override;
     void setIdleFlushRate(long rate);
     void setNonIdleFlushRate(long rate);

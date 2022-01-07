@@ -9,6 +9,8 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
+// ReSharper disable CppMemberFunctionMayBeStatic -- mimic existing interface
+
 #include "Device.h"
 
 Device::Device(EventServer* eventServer) :
@@ -35,18 +37,24 @@ long  Device::freeStack() {
     return uxTaskGetStackHighWaterMark(nullptr);
 }
 #else
-// mock implementation for testing
+// mock implementation for testing. Simulate changes as well as staying the same
 
 long Device::freeHeap() {
-    static int count = 0;
-    if (count > 2) count = 0;
-    return 25000L + (count++) * 2500L;
+    static int count = -1;
+    count++;
+    if (count <= 2) return 32000L - count * 3000L;
+    if (count <= 4) return 26000L;
+    count = -1;
+     return 23000L;
 }
 
 long Device::freeStack() {
-    static int count = 0;
-    if (count > 2) count = 0;
-    return 1500L + (count++) * 64L;
+    static int count = -1;
+    count++;
+    if (count <= 2) return 1500L + count * 64L;
+    if (count <= 4) return 1628L;
+    count = -1;
+    return 1500;
 }
 #endif
 

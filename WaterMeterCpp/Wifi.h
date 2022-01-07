@@ -22,42 +22,46 @@
 #include "NetMock.h"
 #endif
 
-class Wifi: public EventClient {
+class Wifi : public EventClient {
 
 public:
     Wifi(EventServer* eventServer, const char* ssid, const char* password,
-        const char* hostName = nullptr, const uint8_t* bssid = nullptr);
-    void begin();
-    void begin(IPAddress localIP, IPAddress gatewayIP = NO_IP, IPAddress subnetIP = NO_IP, IPAddress dns1IP = NO_IP, IPAddress dns2IP = NO_IP);
+         const char* hostName = nullptr, const uint8_t* bssid = nullptr);
+    virtual void begin();
     const char* getHostName() const;
     const char* get(Topic topic, const char* defaultValue) override;
     void init();
-    bool isConnected();
+    virtual void announceReady();
+    virtual bool isConnected();
+    virtual void reconnect();
+    virtual void disconnect();
     void setCertificates(const char* rootCaCert, const char* deviceCert, const char* devicePrivateKey);
     const char* statusSummary();
-    WiFiClientSecure* getClient();
+    WiFiClient* getClient();
+    void configure(IPAddress localIp, IPAddress gatewayIp, IPAddress subnetMaskIp, IPAddress dns1, IPAddress dns2);
+    virtual bool needsReinit();
     static const IPAddress NO_IP;
 
 
 private:
-    void completeConnection();
 
     static constexpr int HOSTNAME_LENGTH = 64;
-    char _hostNameBuffer[HOSTNAME_LENGTH] = { 0 };
-    const char* _ssid;     // not volatile
+    char _hostNameBuffer[HOSTNAME_LENGTH] = {0};
+    const char* _ssid; // not volatile
     const char* _password; // not volatile
     const uint8_t* _bssid; // not volatile
     PayloadBuilder _payloadBuilder;
     WiFiClientSecure _wifiClient;
-    IPAddress _gatewayIP;
-    IPAddress _netmaskIP;
-    IPAddress _dns1IP;
-    IPAddress _dns2IP;
+    IPAddress _localIp = NO_IP;
+    IPAddress _gatewayIp = NO_IP;
+    IPAddress _subnetMaskIp = NO_IP;
+    IPAddress _dns1Ip = NO_IP;
+    IPAddress _dns2Ip = NO_IP;
     char* _hostName = _hostNameBuffer;
+    bool _needsReconnect = true;
     static constexpr int MAC_ADDRESS_SIZE = 20;
     char _macAddress[MAC_ADDRESS_SIZE] = "";
     static constexpr int IP_ADDRESS_SIZE = 16;
     char _ipAddress[IP_ADDRESS_SIZE] = "";
-    IPAddress _localIP = NO_IP;
 };
 #endif
