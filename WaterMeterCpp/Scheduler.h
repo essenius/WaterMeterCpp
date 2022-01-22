@@ -11,13 +11,16 @@
 
 #ifndef HEADER_SCHEDULER
 #define HEADER_SCHEDULER
+/*
 
-#include "BatchWriter.h"
+#include "Aggregator.h"
+#include "DataQueue.h"
 #include "EventServer.h"
 
 class Scheduler final : public EventClient {
 public:
-    Scheduler(EventServer* eventServer, BatchWriter* measureWriter, BatchWriter* resultWriter);
+    Scheduler(EventServer* eventServer, DataQueue* dataQueue, Aggregator* measureWriter, Aggregator* resultWriter);
+    void processOutputSimple();
     bool processOutput();
 private:
     static constexpr int MEASURE_ID = 0;
@@ -26,9 +29,9 @@ private:
 
     bool _delayedFlush = false;
     bool _resultWritten = false;
-    BatchWriter* _writer[WRITER_COUNT];
-
+    Aggregator* _aggregator[WRITER_COUNT]{};
+    DataQueue* _dataQueue;
     int optimalWriteCount(int round);
 };
-
+*/
 #endif

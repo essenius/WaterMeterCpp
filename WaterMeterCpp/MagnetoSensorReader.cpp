@@ -19,7 +19,7 @@
 #include "MagnetoSensorReader.h"
 
 
-MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer): EventClient("Magneto", eventServer)
+MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer): EventClient(eventServer)
 {
 }
 
@@ -37,9 +37,9 @@ void MagnetoSensorReader::begin() {
 
 SensorReading MagnetoSensorReader::read() {
     _compass.read();
-    _sensorReading.X = _compass.getX();
-    _sensorReading.Y = _compass.getY();
-    _sensorReading.Z = _compass.getZ();
+    _sensorReading.x = static_cast<int16_t>(_compass.getX());
+    _sensorReading.y = static_cast<int16_t>(_compass.getY());
+    _sensorReading.z = static_cast<int16_t>(_compass.getZ());
     return _sensorReading;
 }
 

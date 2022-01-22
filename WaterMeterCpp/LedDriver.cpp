@@ -16,114 +16,46 @@
 #endif
 
 #include "LedDriver.h"
+#include "ConnectionState.h"
 #include <cstdint>
-#include <cstring>
+#include "Led.h"
 
 LedDriver::LedDriver(EventServer* eventServer) :
-    EventClient("LedDriver", eventServer),
-    _connectingFlasher(GREEN_LED, 2),
-    _sampleFlasher(LED_BUILTIN, IDLE_INTERVAL) {}
+    EventClient(eventServer),
+    _connectingFlasher(Led::GREEN, CONNECTING_INTERVAL),
+    _sampleFlasher(Led::RUNNING, IDLE_INTERVAL) {}
 
 void LedDriver::begin() {
-    _eventServer->subscribe(this, Topic::Connected);
-    _eventServer->subscribe(this, Topic::ConnectingWifi);
-    _eventServer->subscribe(this, Topic::Disconnected);
+    _eventServer->subscribe(this, Topic::Blocked);
+    _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::Error);
     _eventServer->subscribe(this, Topic::Exclude);
     _eventServer->subscribe(this, Topic::Flow);
-    _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::Peak);
     _eventServer->subscribe(this, Topic::ResultWritten);
+    _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::TimeOverrun);
-    pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(AUX_LED, OUTPUT);
-    pinMode(RED_LED, OUTPUT);
-    pinMode(GREEN_LED, OUTPUT);
-    pinMode(BLUE_LED, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);
-    digitalWrite(AUX_LED, LOW);
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(GREEN_LED, LOW);
-    digitalWrite(BLUE_LED, LOW);
+    Led::init(Led::RUNNING, Led::OFF);
+    Led::init(Led::AUX, Led::OFF);
+    Led::init(Led::YELLOW, Led::OFF);
+    Led::init(Led::RED, Led::OFF);
+    Led::init(Led::GREEN, Led::OFF);
+    Led::init(Led::BLUE, Led::OFF);
 }
 
-/// <summary>
-/// If input is empty, return LOW. If it is more than one character, return HIGH.
-/// this allows for using empty string vs message to switch LEDs.
-/// If the input is one character, then return HIGH if it is one of 1,H,h,T,t and LOW otherwise.
-/// </summary>
-/// <param name="state">input string</param>
-/// <returns>LOW or HIGH</returns>
-uint8_t LedDriver::convertToState(const char* state) {
-    if (strlen(state) == 0) return LOW;
-    if (strlen(state) > 1) return HIGH;
-    switch (state[0]) {
-    case '0':
-    case 'L':
-    case 'l':
-    case 'F':
-    case 'f':
-        return LOW;
-    case '1':
-    case 'H':
-    case 'h':
-    case 'T':
-    case 't':
-        return HIGH;
-    default:
-        return LOW;
-    }
-}
-
-/// <summary>
-/// Event listener, switching LEDs / updating flash rate
-/// </summary>
-/// <param name="topic"></param>
-/// <param name="payload"></param>
 void LedDriver::update(const Topic topic, const char* payload) {
-    uint8_t state = convertToState(payload);
-    unsigned char led;
-    switch (topic) {
-    case Topic::Exclude:
-    case Topic::Flow:
-        update(topic, state);
-        return;
-    case Topic::Error:
-        led = RED_LED;
-        break;
-    case Topic::Connected:
-        led = GREEN_LED;
-        state = true;
-        break;
-    case Topic::ConnectingWifi:
-        _connectingFlasher.signal();
-        return;
-    case Topic::Disconnected:
-        led = GREEN_LED;
-        state = false;
-        break;
-    case Topic::ResultWritten:
-        led = AUX_LED;
-        break;
-    case Topic::TimeOverrun:
-        led = RED_LED;
-        break;
-
-    case Topic::Peak:
-        led = BLUE_LED;
-        break;
-    case Topic::Sample:
-        _sampleFlasher.signal();
-        return;
-    default:
-        // ignore anything else
-        return;
+    // red led has two functions: error and overrun
+    if (topic == Topic::Error) {
+        Led::set(Led::RED, Led::ON);
     }
-    digitalWrite(led, state);
 }
 
 void LedDriver::update(Topic topic, long payload) {
-    if (topic == Topic::Flow || topic == Topic::Exclude) {
+    const uint8_t state = payload ? Led::ON : Led::OFF;
+    switch (topic) {
+    // flow and exclude change the flash rate 
+    case Topic::Flow:
+    case Topic::Exclude: {
         unsigned int interval = IDLE_INTERVAL;
         if (payload) {
             interval = topic == Topic::Flow ? FLOW_INTERVAL : EXCLUDE_INTERVAL;
@@ -131,5 +63,43 @@ void LedDriver::update(Topic topic, long payload) {
         _sampleFlasher.setInterval(interval);
         return;
     }
-    update(topic, payload ? "1" : "0");
+    // no connection causes a flashing green led, and blue while firmware is checked
+    case Topic::Connection:
+        switch (static_cast<ConnectionState>(payload)) {
+        case ConnectionState::Disconnected:
+            _connectingFlasher.reset();
+            Led::set(Led::GREEN, Led::OFF);
+            Led::set(Led::BLUE, Led::OFF);
+            return;
+        case ConnectionState::MqttReady:
+            _connectingFlasher.reset();
+            Led::set(Led::GREEN, Led::ON);
+            Led::set(Led::BLUE, Led::OFF);
+            return;
+        case ConnectionState::CheckFirmware:
+            Led::set(Led::BLUE, Led::ON);
+            _connectingFlasher.signal();
+            return;
+        default:
+            _connectingFlasher.signal();
+        }
+        return;
+    case Topic::Sample:
+        _sampleFlasher.signal();
+        return;
+    case Topic::Blocked:
+        Led::set(Led::RED, state);
+        return;
+    case Topic::ResultWritten:
+        Led::set(Led::AUX, state);
+        return;
+    case Topic::TimeOverrun:
+        Led::set(Led::YELLOW, state);
+        return;
+    case Topic::Peak:
+        Led::set(Led::BLUE, state);
+        break;
+    default:
+        break;
+    }
 }

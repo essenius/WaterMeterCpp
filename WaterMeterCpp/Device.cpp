@@ -14,7 +14,7 @@
 #include "Device.h"
 
 Device::Device(EventServer* eventServer) :
-    EventClient("Device", eventServer),
+    EventClient(eventServer),
     // Only catch larger variations or alarmingly low values to avoid very frequent updates
     _freeHeap(eventServer, this, Topic::FreeHeap, 5000L, 25000L),
     // catch all changes as this is not expected to change

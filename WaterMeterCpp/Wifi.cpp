@@ -16,18 +16,19 @@
 #endif
 
 #include "Wifi.h"
+#include "SafeCString.h"
 
 #include "EventServer.h"
 
 const IPAddress Wifi::NO_IP = IPAddress(0, 0, 0, 0);
 
 Wifi::Wifi(EventServer* eventServer, const char* ssid, const char* password, const char* hostName, const uint8_t* bssid) :
-    EventClient("Wifi", eventServer),  _ssid(ssid), _password(password), _bssid(bssid) {
+    EventClient(eventServer),  _ssid(ssid), _password(password), _bssid(bssid) {
     if (hostName == nullptr) {
         _hostName = nullptr;
     }
     else {
-        strcpy(_hostNameBuffer, hostName);
+        safeStrcpy(_hostNameBuffer, hostName);
         _hostName = _hostNameBuffer;
     }
     _macAddress[0] = 0;
@@ -89,7 +90,7 @@ void Wifi::init() {
     if (_hostName != nullptr && !WiFi.setHostname(_hostName)) {
         _eventServer->publish(Topic::Error, "Could not set host name");
     }
-    strcpy(_hostNameBuffer, WiFi.getHostname());
+    safeStrcpy(_hostNameBuffer, WiFi.getHostname());
     _hostName = _hostNameBuffer;
 
     WiFi.mode(WIFI_STA);
@@ -114,7 +115,7 @@ const char* Wifi::getHostName() const { return _hostName; }
 const char* Wifi::get(const Topic topic, const char* defaultValue) {
     switch(topic) {
     case Topic::IpAddress: {
-        strcpy(_ipAddress,WiFi.localIP().toString().c_str());
+        safeStrcpy(_ipAddress,WiFi.localIP().toString().c_str());
         return _ipAddress;
     }
     case Topic::MacRaw:
@@ -122,9 +123,9 @@ const char* Wifi::get(const Topic topic, const char* defaultValue) {
         uint8_t mac[6];
         WiFi.macAddress(mac);
         if (topic == Topic::MacRaw)
-            sprintf(_macAddress, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            safeSprintf(_macAddress, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         else
-            sprintf(_macAddress, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            safeSprintf(_macAddress, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         return _macAddress;
     default:
         return defaultValue;

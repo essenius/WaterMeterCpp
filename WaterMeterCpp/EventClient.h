@@ -18,17 +18,18 @@
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;
 
-enum class Topic {
+enum class Topic: uint16_t {
     None = 0,
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
-    Sample, Measurement, Result,
+    Sample, Samples, Result,
     FreeHeap, FreeStack,
-    Connected, ConnectingWifi, ConnectingMqtt, Disconnected,
+    Connection,
     Processing, DelayedFlush, ResultWritten,
-    Error, Log, Info,
+    Error, Info, Blocked,
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak, Flatline,
-    Time, IpAddress, MacRaw, MacFormatted
+    Time, IpAddress, MacRaw, MacFormatted,
+    ResetSensor
 };
 
 enum class LogLevel { Off = 0, On = 1 };
@@ -37,9 +38,8 @@ class EventServer;
 
 class EventClient {
 public:
-    EventClient(const char* name, EventServer* eventServer);
+    explicit EventClient(EventServer* eventServer);
     virtual ~EventClient();
-    const char* getName() const;
 
     // can't use generics on virtual functions, which we would need here.
     // Since we use only a limited set of types, type erasure seems overkill 
@@ -53,7 +53,6 @@ public:
 
 protected:
     EventServer* _eventServer;
-    const char* _name;
     bool _muted = false;
 };
 

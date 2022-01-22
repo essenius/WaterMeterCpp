@@ -15,7 +15,7 @@
 
 class FlowMeterDriver : public FlowMeter {
 public:
-    explicit FlowMeterDriver(int smoothValue, int derivative = 0, int smoothDerivative = 0,
+    FlowMeterDriver(EventServer* eventServer, int smoothValue, int derivative = 0, int smoothDerivative = 0,
                              bool flow = false, bool peak = false,
                              bool outlier = false, bool exclude = false, bool excludeAll = false);
 };

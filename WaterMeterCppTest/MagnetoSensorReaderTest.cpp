@@ -24,19 +24,20 @@ namespace WaterMeterCppTest {
     TEST_CLASS(MagnetoSensorReaderTest) {
     public:
         TEST_METHOD(magnetoSensorReaderTest1) {
+            constexpr int16_t zero = 0;
             EventServer eventServer;
             MagnetoSensorReader reader(&eventServer);
             reader.begin();
             auto result = reader.read();
-            Assert::AreEqual(0, result.X);
-            Assert::AreEqual(0, result.Y);
-            Assert::AreEqual(0, result.Z);
+            Assert::AreEqual(zero, result.x);
+            Assert::AreEqual(zero, result.y);
+            Assert::AreEqual(zero, result.z);
             eventServer.publish(Topic::Flatline, LONG_TRUE);
             result = reader.read();
-            Assert::AreEqual(1, result.Y);
+            Assert::AreEqual(static_cast<int16_t>(1), result.y);
             eventServer.publish(Topic::Flatline, "ANY");
             result = reader.read();
-            Assert::AreEqual(2, result.Y);
+            Assert::AreEqual(static_cast<int16_t>(2), result.y);
 
         }
     };

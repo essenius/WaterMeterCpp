@@ -14,7 +14,7 @@
 
 class TestEventClient : public EventClient {
 public:
-    TestEventClient(const char* name, EventServer* eventServer) : EventClient(name, eventServer) {
+    TestEventClient(EventServer* eventServer) : EventClient(eventServer) {
         _payload[0] = 0;
     }
 

@@ -11,24 +11,21 @@
 
 #include "EventClient.h"
 #include "EventServer.h"
+#include "SafeCString.h"
 
 #ifdef ESP32
 #include <ESP.h>
 #endif
 
-EventClient::EventClient(const char* name, EventServer* eventServer) : _eventServer(eventServer), _name(name) {}
+EventClient::EventClient(EventServer* eventServer) : _eventServer(eventServer) {}
 
 EventClient::~EventClient() {
     _eventServer->unsubscribe(this);
     _eventServer->cannotProvide(this);
 }
 
-const char* EventClient::getName() const {
-    return _name;
-}
-
 void EventClient::update(Topic topic, long payload) {
     char numberBuffer[20];
-    sprintf(numberBuffer, "%ld", payload);
+    safeSprintf(numberBuffer, "%ld", payload);
     update(topic, numberBuffer);
 }

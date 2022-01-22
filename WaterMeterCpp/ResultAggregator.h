@@ -12,50 +12,57 @@
 #ifndef HEADER_RESULTWRITER
 #define HEADER_RESULTWRITER
 
-#include "BatchWriter.h"
+#include "Aggregator.h"
 #include "FlowMeter.h"
 #include "EventServer.h"
 
-class ResultWriter : public BatchWriter {
+class ResultAggregator : public Aggregator {
 public:
-    ResultWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder, int measureIntervalMicros);
-    void addDuration(long duration);
-    void addMeasurement(int value, const FlowMeter* result);
-    using BatchWriter::begin;
+    ResultAggregator(EventServer* eventServer, DataQueue* dataQueue, RingbufferPayload* payload, uint32_t measureIntervalMicros);
+    void addDuration(uint32_t duration);
+    void addMeasurement(int16_t value, const FlowMeter* result);
+    using Aggregator::begin;
     virtual void begin();
-    bool needsFlush(bool endOfFile = false) override;
-    void prepareFlush() override;
+    void flush() override;
+    bool shouldSend(bool endOfFile = false) override;
+    //void prepareFlush() override;
+    bool send() override;
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
+    static constexpr int FLATLINE_STREAK = 20;
 
 protected:
     static constexpr long FLUSH_RATE_IDLE = 6000L;
     static constexpr long FLUSH_RATE_INTERESTING = 100L;
 
-    long _excludeCount = 0L;
-    long _flowCount = 0L;
+    ResultData* _result;
+    uint32_t _streak = 1;
+    uint32_t _measureIntervalMicros = 0;
+    int16_t _previousMeasure = 0;
+    ChangePublisher<long> _overrun;
+    //long _excludeCount = 0L;
+    //long _flowCount = 0L;
     long _idleFlushRate = FLUSH_RATE_IDLE;
-    long _maxDuration = 0L;
-    int _measure = 0;
-    int _measureIntervalMicros = 0;
+    //long _maxDuration = 0L;
+    //int _measure = 0;
     long _nonIdleFlushRate = FLUSH_RATE_INTERESTING;
-    long _outlierCount = 0L;
-    bool _overrun = false;
-    long _overrunCount = 0L;
-    long _peakCount = 0L;
-    long _processTime = 0L;
-    float _smoothValue = 0.0f;
-    float _derivative = 0.0f;
-    float _smoothDerivative = 0.0f;
-    float _smoothAbsDerivative = 0.0f;
-    long _sumDuration = 0L;
-    int _streak = 1;
-    int _maxStreak = 1;
-    int _previousMeasure = 0;
+    //long _outlierCount = 0L;
+    //bool _overrun = false;
+    //long _overrunCount = 0L;
+    //long _peakCount = 0L;
+    //long _processTime = 0L;
+    //float _smoothValue = 0.0f;
+    //float _derivative = 0.0f;
+    //float _smoothDerivative = 0.0f;
+    //float _smoothAbsDerivative = 0.0f;
+    //long _sumDuration = 0L;
+    //int _maxStreak = 1;
 
     //void publishOverrun(bool overrun);
-    void resetCounters() override;
+    //void resetCounters() override;
     void setIdleFlushRate(long rate);
     void setNonIdleFlushRate(long rate);
 };
+
+
 #endif

@@ -15,7 +15,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include <string>
-#include "../WaterMeterCpp/Connection.h"
+#include "../WaterMeterCpp/Connector.h"
 
 enum class ConnectionState;
 

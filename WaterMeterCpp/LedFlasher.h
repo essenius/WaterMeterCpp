@@ -12,20 +12,17 @@
 #ifndef HEADER_LEDFLASHER
 #define HEADER_LEDFLASHER
 
-#ifdef ESP32
-#include <ESP.h>
-#else
-#include "ArduinoMock.h"
-#endif
+#include "Led.h"
 
 class LedFlasher {
 public:
     LedFlasher(uint8_t led, unsigned int interval);
     void setInterval(unsigned int interval);
     void signal();
+    void reset();
 private:
-    unsigned int _interval = 1;
-    uint8_t _led = LED_BUILTIN;
+    unsigned int _interval;
+    uint8_t _led;
     unsigned int _ledCounter = 0;
 };
 #endif

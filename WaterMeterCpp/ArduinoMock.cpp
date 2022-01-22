@@ -12,25 +12,25 @@
 // ReSharper disable CppInconsistentNaming -- mimic existing interface
 // ReSharper disable CppMemberFunctionMayBeStatic -- same here
 #ifndef ESP32
-
 #include "ArduinoMock.h"
 #include <cstdio>
 #include <chrono>
 #include <cstring>
 #include <cstdarg>
 #include <iostream>
+#include "SafeCString.h"
 
 HardwareSerial Serial;
 auto startTime = std::chrono::high_resolution_clock::now();
 
 char* dtostrf(float value, signed char width, unsigned char precision, char* buffer) {
 		char fmt[20];
-		sprintf(fmt, "%%%d.%df", width, precision);
+		safeSprintf(fmt, "%%%d.%df", width, precision);
 		sprintf(buffer, fmt, value);
 		return buffer;
 }
 
-constexpr uint8_t PIN_COUNT = 13;
+constexpr uint8_t PIN_COUNT = 36;
 uint8_t pinValue[PIN_COUNT];
 uint8_t pinModeValue[PIN_COUNT];
 
@@ -55,6 +55,8 @@ long long microShift = 0;
 void shiftMicros(long long shift) {
 	microShift = shift;
 }
+
+void configTime(int i, int i1, const char* str, const char* text) {}
 
 unsigned long micros() {
     const auto now = std::chrono::high_resolution_clock::now() ;
@@ -89,7 +91,7 @@ const char* HardwareSerial::getOutput() {
 }
 
 void HardwareSerial::print(const char* input) {
-	strcat_s(_printBuffer, PRINTBUFFER_SIZE, input);
+	safeStrcat(_printBuffer, input);
 };
 
 void HardwareSerial::printf(const char* format, ...) {
@@ -102,7 +104,7 @@ void HardwareSerial::printf(const char* format, ...) {
 
 void HardwareSerial::println(const char* input) {
 	print(input);
-	strcat_s(_printBuffer, PRINTBUFFER_SIZE, "\n");
+	safeStrcat(_printBuffer, "\n");
 }
 
 char HardwareSerial::read() {
@@ -111,7 +113,7 @@ char HardwareSerial::read() {
 }
 
 void HardwareSerial::setInput(const char* input) {
-	strcpy_s(_inputBuffer, INPUTBUFFER_SIZE, input);
+	safeStrcpy(_inputBuffer, input);
 	_bufferPointer = _inputBuffer;
 }
 

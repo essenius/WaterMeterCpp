@@ -19,44 +19,32 @@
 
 
 #include "ArduinoMock.h"
+#include "SafeCString.h"
 
-class Client
-{
-};
+class Client {};
 
-class WiFiClient : public Client
-{
+class WiFiClient : public Client {
 public:
     WiFiClient() = default;
 
-    bool isConnected()
-    {
+    bool isConnected() {
         return true;
     }
 };
 
-class WiFiClientSecure : public WiFiClient
-{
+class WiFiClientSecure : public WiFiClient {
 public:
-    void setCACert(const char* cert)
-    {
-    }
+    void setCACert(const char* cert) { }
 
-    void setCertificate(const char* cert)
-    {
-    }
+    void setCertificate(const char* cert) { }
 
-    void setPrivateKey(const char* cert)
-    {
-    }
+    void setPrivateKey(const char* cert) { }
 };
 
-class String
-{
+class String {
 public:
-    String(const char* value)
-    {
-        strcpy(_value, value);
+    String(const char* value) {
+        safeStrcpy(_value, value);
     }
 
     int toInt() { return strtol(_value, nullptr, 10); }
@@ -66,14 +54,11 @@ private:
     char _value[30];
 };
 
-class HTTPClient
-{
+class HTTPClient {
 public:
     HTTPClient() = default;
 
-    void end()
-    {
-    }
+    void end() {}
 
     bool begin(WiFiClient& client, const char* url) { return true; }
     int GET() { return ReturnValue; }
@@ -87,8 +72,7 @@ constexpr int HTTP_UPDATE_OK = 2;
 
 using t_httpUpdate_return = int;
 
-class HTTPUpdate
-{
+class HTTPUpdate {
 public:
     t_httpUpdate_return update(WiFiClient& client, const char* url) { return ReturnValue; }
     int getLastError() { return 0; }
@@ -98,8 +82,7 @@ public:
 
 extern HTTPUpdate httpUpdate;
 
-class IPAddress
-{
+class IPAddress {
 public:
     IPAddress() = default;
     IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4);
@@ -113,8 +96,7 @@ public:
     uint8_t& operator[](int index) { return _address.bytes[index]; }
 
 private:
-    union
-    {
+    union {
         uint8_t bytes[4];
         uint32_t dword;
     } _address{};
@@ -123,18 +105,14 @@ private:
 };
 
 
-class WiFiClass
-{
+class WiFiClass {
 public:
     WiFiClass();
 
-    void mode(int i)
-    {
-    }
+    void mode(int i) { }
 
-    void begin(const char* ssid, const char* password, int ignore = 0, const uint8_t* _bssid = nullptr)
-    {
-        strcpy(_ssid, ssid);
+    void begin(const char* ssid, const char* password, int ignore = 0, const uint8_t* _bssid = nullptr) {
+        safeStrcpy(_ssid, ssid);
     }
 
     bool config(IPAddress local, IPAddress gateway, IPAddress subnet,
@@ -173,7 +151,6 @@ private:
 #define WIFI_STA 1
 
 extern WiFiClass WiFi;
-
 
 #endif
 

@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -22,20 +22,16 @@ public:
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
 
-    static constexpr unsigned char AUX_LED = 19;
-    static constexpr unsigned char BLUE_LED = 16;
-    static constexpr unsigned char GREEN_LED = 17;
-    static constexpr unsigned char RED_LED = 18;
-
     // number of samples for led blinking intervals
     static constexpr unsigned int EXCLUDE_INTERVAL = 25;
     static constexpr unsigned int FLOW_INTERVAL = 50;
     static constexpr unsigned int IDLE_INTERVAL = 100;
+    static constexpr unsigned int CONNECTING_INTERVAL = 50;
 
 private:
     LedFlasher _connectingFlasher;
     LedFlasher _sampleFlasher;
-    static uint8_t convertToState(const char* state);
+    //static uint8_t convertToState(const char* state);
 };
 
 #endif

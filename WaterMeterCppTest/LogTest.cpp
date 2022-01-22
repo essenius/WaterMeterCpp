@@ -18,6 +18,7 @@
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/TimeServer.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
+#include "../WaterMeterCpp/ConnectionState.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -27,58 +28,70 @@ namespace WaterMeterCppTest {
         EventServer eventServer;
 
         TEST_METHOD(logScriptTest) {
+            constexpr int SKIP_TIMESTAMP = 28;
             Log log(&eventServer);
             TimeServer timeServer(&eventServer);
             timeServer.begin();
             log.begin();
             Serial.begin(9600);
-            eventServer.publish(Topic::Connected, 0);
+            publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
 
-            Assert::IsTrue(std::regex_match(
+            Assert::AreEqual(" MQTT ready\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Connected logs OK");
+            /*Assert::IsTrue(std::regex_match(
                                Serial.getOutput(),
-                               std::regex(R"(\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\]\sConnected\n)")),
-                           L"Connected logs OK");
+                               std::regex(R"(\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\]\sMQTT ready\n)")),
+                           L"Connected logs OK"); */
 
             Serial.clearOutput();
             eventServer.publish(Topic::Error, "My Message");
-            Assert::IsTrue(std::regex_match(
+            Assert::AreEqual(" Error: My Message\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Error logs OK");
+            /*Assert::IsTrue(std::regex_match(
                                Serial.getOutput(),
                                std::regex(R"(\[.*\]\sError:\sMy\sMessage\n)")),
-                           L"Error logs OK");
+                           L"Error logs OK"); */
             Serial.clearOutput();
 
-            eventServer.publish(Topic::Disconnected, 24);
-            Assert::IsTrue(std::regex_match(
+            publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
+            Assert::AreEqual(" Disconnected\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Disconnected logs OK");
+
+            /*Assert::IsTrue(std::regex_match(
                                Serial.getOutput(),
                                std::regex(R"(\[.*\]\sDisconnected\n)")),
-                           L"Disconnected logs OK");
+                           L"Disconnected logs OK"); */
 
             Serial.clearOutput();
 
             Assert::AreEqual("", Serial.getOutput());
 
             eventServer.publish(Topic::Info, 24);
-            Assert::IsTrue(std::regex_match(
+            Assert::AreEqual(" Info: 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Info logs long OK");
+
+            /* Assert::IsTrue(std::regex_match(
                                Serial.getOutput(),
                                std::regex(R"(\[.*\]\sInfo:\s24\n)")),
-                           L"Info logs long OK");
+                           L"Info logs long OK"); */
             Serial.clearOutput();
 
             log.update(Topic::BatchSize, 24L);
+            Assert::AreEqual(" Topic '1': 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Unexpected topic handled OK");
 
-            Assert::IsTrue(std::regex_match(
+            /*Assert::IsTrue(std::regex_match(
                                Serial.getOutput(),
                                std::regex(R"(\[.*\]\sTopic\s'1':\s24\n)")),
-                           L"Unexpected topic handled OK");
-            Serial.clearOutput();
+                           L"Unexpected topic handled OK"); */
+            /* Serial.clearOutput();
 
             eventServer.publish(Topic::Error, "");
             //Assert::AreEqual("x", Serial.getOutput());
             Assert::IsTrue(std::regex_match(
                                Serial.getOutput(),
                                std::regex(R"(\[.*\]\sCleared\serror\n)")),
-                           L"Cleared error");
+                           L"Cleared error"); */
 
+        }
+private:
+        void publishConnectionState(const Topic topic, ConnectionState connectionState) {
+            eventServer.publish(topic, static_cast<long>(connectionState));
         }
     };
 }

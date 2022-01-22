@@ -19,5 +19,6 @@ public:
     explicit Log(EventServer* eventServer);
     void begin();
     void update(Topic topic, const char* payload) override;
+    void update(Topic topic, long payload) override;
 };
 #endif

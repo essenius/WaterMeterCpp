@@ -11,6 +11,7 @@
 
 #include "pch.h"
 #include "TestEventClient.h"
+#include "../WaterMeterCpp/SafeCString.h"
 
 void TestEventClient::reset() {
     _callCount = 0;
@@ -21,13 +22,13 @@ void TestEventClient::reset() {
 void TestEventClient::update(Topic topic, const char* payload) {
     _callCount++;
     _topic = topic;
-    strcpy(_payload, payload);
+    safeStrcpy(_payload, payload);
 }
 
 void TestEventClient::update(Topic topic, long payload) {
     _callCount++;
     _topic = topic;
-    sprintf(_payload, "%ld", payload);
+    safeSprintf(_payload, "%ld", payload);
 }
 
 Topic TestEventClient::getTopic() const { return _topic; }

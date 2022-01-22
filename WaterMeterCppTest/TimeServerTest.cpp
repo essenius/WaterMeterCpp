@@ -11,8 +11,9 @@
 
 #include "pch.h"
 #include "CppUnitTest.h"
-#include "../WaterMeterCpp/TimeServer.h"
 #include <regex>
+
+#include "TimeServerMock.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
 #include "../WaterMeterCpp/EventServer.h"
 
@@ -23,7 +24,8 @@ namespace WaterMeterCppTest {
     public:
         TEST_METHOD(timeServerScriptTest) {
             EventServer eventServer;
-            TimeServer timeServer(&eventServer);
+            // the mock only mocks the time setting and detection, but keeps the rest
+            TimeServerMock timeServer(&eventServer);
 
             Assert::IsFalse(timeServer.timeWasSet(), L"Time was not set");
 
@@ -51,6 +53,13 @@ namespace WaterMeterCppTest {
             eventServer.cannotProvide(&timeServer, Topic::Time);
             timestamp = eventServer.request(Topic::Time, "");
             Assert::AreEqual("", timestamp, "Time no longer available");
+        }
+
+        TEST_METHOD(timeServerTimeWasSetTest) {
+            EventServer eventServer;
+            TimeServer timeServer(&eventServer);
+            timeServer.begin();
+            Assert::IsTrue(timeServer.timeWasSet());
         }
     };
 }

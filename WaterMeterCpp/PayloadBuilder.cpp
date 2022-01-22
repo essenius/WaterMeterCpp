@@ -13,6 +13,10 @@
 #include <cstring>
 #include <cstdio>
 
+#include "SafeCString.h"
+
+constexpr unsigned long long MICROSECONDS_PER_SECOND = 1000000ULL;
+
 // higher level functions. See also the template function writeParam in .h
 
 void PayloadBuilder::begin() {
@@ -20,10 +24,16 @@ void PayloadBuilder::begin() {
     _currentPosition = _resultBuffer;
 }
 
-void PayloadBuilder::initialize() {
+void PayloadBuilder::initialize(const char prefix) {
     begin();
-    writeDelimiter('{');
+    if (prefix != 0) {
+        writeDelimiter(prefix);
+    }
     _needsDelimiter = false;
+}
+
+const char* PayloadBuilder::toString() const {
+    return _resultBuffer;
 }
 
 void PayloadBuilder::writeArrayEnd() {
@@ -60,8 +70,20 @@ void PayloadBuilder::writeLabel(const char* label) {
     writeDelimiter(':');
 }
 
-const char* PayloadBuilder::toString() const {
-    return _resultBuffer;
+void PayloadBuilder::writeTimestamp(const Timestamp timestampIn) {
+    Clock::formatTimestamp(timestampIn, _currentPosition, RESULT_BUFFER_SIZE - strlen(_resultBuffer));
+    updatePosition();
+}
+
+void PayloadBuilder::writeTimestampParam(const char* label, const Timestamp timestampIn) {
+    writeLabel(label);
+    writeTimestamp(timestampIn);
+    _needsDelimiter = true;
+}
+
+void PayloadBuilder::writeText(const char* text) {
+    safeStrcat(_resultBuffer, text);
+    updatePosition();
 }
 
 // low level functions 
@@ -84,14 +106,14 @@ void PayloadBuilder::writeDelimiter(const char delimiter) {
 }
 
 void PayloadBuilder::writeString(const char* input) {
-    strcat(_resultBuffer, "\"");
-    strcat(_resultBuffer, input);
-    strcat(_resultBuffer, "\"");
+    safeStrcat(_resultBuffer, "\"");
+    safeStrcat(_resultBuffer, input);
+    safeStrcat(_resultBuffer, "\"");
     updatePosition();
 }
 
 void PayloadBuilder::writeString(const float input) {
-    sprintf(_currentPosition, "%.2f", input);
+    safePointerSprintf(_currentPosition, _resultBuffer, "%.2f", input);
     updatePosition();
     // clean up any overprecision
     while (*(--_currentPosition) == '0') {}
@@ -102,17 +124,22 @@ void PayloadBuilder::writeString(const float input) {
 }
 
 void PayloadBuilder::writeString(int input) {
-    sprintf(_currentPosition, "%i", input);
+    safePointerSprintf(_currentPosition, _resultBuffer, "%i", input);
     updatePosition();
 }
 
 void PayloadBuilder::writeString(long input) {
-    sprintf(_currentPosition, "%ld", input);
+    safePointerSprintf(_currentPosition, _resultBuffer, "%ld", input);
     updatePosition();
 }
 
 
 void PayloadBuilder::writeString(unsigned long input) {
-    sprintf(_currentPosition, "%lu", input);
+    safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
+    updatePosition();
+}
+
+void PayloadBuilder::writeString(uint32_t input) {
+    safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
     updatePosition();
 }

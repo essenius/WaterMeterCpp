@@ -20,9 +20,9 @@
 #include "EventServer.h"
 
 struct SensorReading {
-  int X;
-  int Y;
-  int Z;
+  int16_t x;
+  int16_t y;
+  int16_t z;
 };
 
 class MagnetoSensorReader : public EventClient {

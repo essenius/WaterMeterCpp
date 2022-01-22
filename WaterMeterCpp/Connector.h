@@ -13,42 +13,56 @@
 #define HEADER_CONNECTION
 #include "MqttGateway.h"
 #include "Wifi.h"
+#include "FirmwareManager.h"
+#include "ChangePublisher.h"
+#include "TimeServer.h"
+#include "ConnectionState.h"
+#include "DataQueue.h"
+#include "LedDriver.h"
+#include "Log.h"
+#include "QueueClient.h"
 
 constexpr unsigned long SECONDS = 1000UL * 1000UL;
 constexpr unsigned long WIFI_INITIAL_WAIT_DURATION = 20UL * SECONDS;
 constexpr unsigned long WIFI_RECONNECT_WAIT_DURATION = 10UL * SECONDS;
+constexpr unsigned long TIMESERVER_WAIT_DURATION = 10UL * SECONDS;
 constexpr unsigned int MAX_RECONNECT_FAILURES = 5;
 constexpr unsigned long MQTT_RECONNECT_WAIT_DURATION = 2UL * SECONDS;
 
-enum class ConnectionState {
-    Init = 0, Disconnected,
-    WifiConnecting, WifiConnected, WifiReady,
-    MqttConnecting, WaitingForMqttReconnect, MqttConnected, MqttReady
-};
-
-class Connection
+class Connector: public EventClient
 {
 public:
-    Connection(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway);
-    void begin();
-    ConnectionState connectWifi();
+    Connector(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Wifi* wifi, MqttGateway* mqttGatway, 
+        TimeServer* timeServer, FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* queueClient);
+    void setup();
+    static void task(void* parameter);
+
+    ConnectionState loop();
     ConnectionState connectMqtt();
 private:
-    EventServer* _eventServer;
-    ConnectionState _state;
-    unsigned long _wifiConnectTimestamp = 0L;
-    unsigned long _mqttConnectTimestamp = 0L;
+    unsigned long _wifiConnectTimestamp = 0UL;
+    unsigned long _mqttConnectTimestamp = 0UL;
+    unsigned long _requestTimeTimestamp = 0UL;
 
+    Log* _logger;
+    LedDriver* _ledDriver;
     Wifi* _wifi;
     MqttGateway* _mqttGateway;
     unsigned long _waitDuration = WIFI_INITIAL_WAIT_DURATION;
     unsigned int _wifiConnectionFailureCount = 0;
+    TimeServer* _timeServer;
+    FirmwareManager* _firmwareManager;
+    DataQueue* _dataQueue;
+    QueueClient* _queueClient;
+    ChangePublisher<ConnectionState> _state;
 
     void handleInit();
     void handleWifiConnecting();
     void handleWifiConnected();
-    void handleWifiReadyForSetup();
+    void handleRequestTime();
+    void handleSettingTime();
     void handleWifiReady();
+    void handleCheckFirmware();
     void handleMqttConnecting();
     void handleWaitingForMqttReconnect();
     void handleMqttConnected();

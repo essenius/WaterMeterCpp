@@ -15,6 +15,7 @@
 #include "EventServer.h"
 
 #ifdef ESP32
+#include <ESP.h>
 #include "Client.h"
 #else
 #include "NetMock.h"
@@ -45,7 +46,7 @@ constexpr const char* const RESULT_VALUES = "values";
 static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::BatchSize, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}},
     {Topic::BatchSizeDesired, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}},
-    {Topic::Measurement, {MEASUREMENT, MEASUREMENT_VALUES}},
+    {Topic::Samples, {MEASUREMENT, MEASUREMENT_VALUES}},
     {Topic::Rate, {RESULT, RESULT_RATE}},
     {Topic::Result, {RESULT, RESULT_VALUES}},
     {Topic::IdleRate, {RESULT, RESULT_IDLE_RATE}},

@@ -17,9 +17,7 @@
 #include "ArduinoMock.h"
 #endif
 
-EventServer::EventServer(const LogLevel logLevel) : _logLevel(logLevel), _numberBuffer{0} {}
-
-EventServer::EventServer() : EventServer(LogLevel::Off) {}
+EventServer::EventServer() : _numberBuffer{0} {}
 
 void EventServer::cannotProvide(EventClient* client, Topic topic) {
     if (_providers[topic] == client) {
@@ -42,29 +40,8 @@ void EventServer::provides(EventClient* client, Topic topic) {
     _providers[topic] = client;
 }
 
-void EventServer::publishLog(
-    const char* const format, EventClient* client, const Topic topic, const char* const payload) {
-    if (_logLevel == LogLevel::On) {
-        char buffer[255] = {0};
-        sprintf(buffer, format, client->getName(), topic, payload);
-        publish(nullptr, Topic::Info, buffer, false);
-    }
-}
-
-void EventServer::publishLog(const char* const format, EventClient* client, const Topic topic, const long payload) {
-    if (_logLevel == LogLevel::On) {
-        char buffer[20] = {0};
-        sprintf(buffer, "%ld", payload);
-        publishLog(format, client, topic, buffer);
-    }
-}
-
-void EventServer::setLogLevel(const LogLevel logLevel) {
-    _logLevel = logLevel;
-}
-
 void EventServer::subscribe(EventClient* client, const Topic topic) {
-    publishLog("%s subscribes to %d\n", client, topic, 0L);
+    //publishLog("%s subscribes to %d\n", client, topic, 0L);
     for (auto& item : _subscribers) {
         if (item.first == topic) {
             // insert does not create duplicates
@@ -81,7 +58,7 @@ void EventServer::subscribe(EventClient* client, const Topic topic) {
 // unsubscribe the client from all subscribed topics
 // Note this is tricky as it could happen when another event is still being handled
 void EventServer::unsubscribe(EventClient* client) {
-    publishLog("%s unsubscribes\n", client, Topic::None, 0L);
+    //publishLog("%s unsubscribes\n", client, Topic::None, 0L);
     for (auto iterator = _subscribers.begin(); iterator != _subscribers.end();) {
         iterator->second.erase(client);
         if (iterator->second.empty()) {
@@ -95,7 +72,7 @@ void EventServer::unsubscribe(EventClient* client) {
 
 // unsubscribe the subscriber from the topic
 void EventServer::unsubscribe(EventClient* client, Topic topic) {
-    publishLog("%s unsubscribes from %d\n", client, topic, 0L);
+    //publishLog("%s unsubscribes from %d\n", client, topic, 0L);
     for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); ++iterator) {
         if (iterator->first == topic) {
             iterator->second.erase(client);

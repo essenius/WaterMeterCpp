@@ -16,8 +16,30 @@
 
 #include "Log.h"
 
+#include "ConnectionState.h"
+
+// expects the same size and order as the ConnectionState enum
+constexpr static const char* const MESSAGES[] = {
+    "Initializing connection",
+    "Disconnected",
+    "Connecting to Wifi",
+    "Connected to Wifi",
+    "Wifi ready",
+    "Connecting to MQTT broker",
+    "Waiting to reconnect to MQTT broker",
+    "Connected to MQTT broker",
+    "MQTT ready",
+    "Requesting time",
+    "Waiting for time",
+    "Checking for firmware update" };
+
+/* Init = 0, Disconnected,
+WifiConnecting, WifiConnected, WifiReady,
+MqttConnecting, WaitingForMqttReconnect, MqttConnected, MqttReady,
+SetTime, SettingTime, CheckFirmware */
+
 Log::Log(EventServer* eventServer) :
-    EventClient("Log", eventServer) {}
+    EventClient(eventServer) {}
     //_disconnectedPublisher(eventServer, this, Topic::Error),
     //_connectedPublisher(eventServer, this, Topic::Info)
 
@@ -25,25 +47,24 @@ Log::Log(EventServer* eventServer) :
 void Log::begin() {
     Serial.begin(115200);
     Serial.println("Starting");
-    _eventServer->subscribe(this, Topic::Connected);
-    _eventServer->subscribe(this, Topic::Disconnected);
+    _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::Error);
     _eventServer->subscribe(this, Topic::Info);
     _eventServer->subscribe(this, Topic::Flatline);    
     _eventServer->subscribe(this, Topic::TimeOverrun);
+    _eventServer->subscribe(this, Topic::Result);
+
 }
 
 void Log::update(Topic topic, const char* payload) {
     const char* timestamp = _eventServer->request(Topic::Time, "");
     Serial.printf("[%s] ", timestamp);
     switch (topic) {
+    case Topic::Connection:
+        Serial.println(payload);
+        break;
     case Topic::Error:
-        if (strlen(payload) == 0) {
-            Serial.println("Cleared error");
-        }
-        else {
-            Serial.printf("Error: %s\n", payload);
-        }
+        Serial.printf("Error: %s\n", payload);
         break;
     case Topic::Info:
         Serial.printf("Info: %s\n", payload);
@@ -51,16 +72,18 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Flatline:
         Serial.printf("Flatline: %s\n", payload);
         break;
-    case Topic::Connected:
-        Serial.println("Connected");
-        break;
-    case Topic::Disconnected:
-        Serial.println("Disconnected");
-        break;
     case Topic::TimeOverrun:
         Serial.printf("Time overrun: %s\n", payload);
         break;
     default:
         Serial.printf("Topic '%d': %s\n", static_cast<int>(topic), payload);
     }
+}
+
+void Log::update(Topic topic, const long payload) {
+    if (topic == Topic::Connection) {
+        update(topic, MESSAGES[payload]);
+        return;
+    }
+    EventClient::update(topic, payload);
 }

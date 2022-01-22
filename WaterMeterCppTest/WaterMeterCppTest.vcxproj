@@ -117,7 +117,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ArduinoMock.obj;BatchWriter.obj;Connection.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MeasurementWriter.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;ResultWriter.obj;Scheduler.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator.obj;ArduinoMock.obj;Clock.obj;Connector.obj;DataQueue.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;FreeRtosMock.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;QueueClient.obj;ResultAggregator.obj;SampleAggregator.obj;Sampler.obj;Serializer.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>false</Profile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>
@@ -162,8 +162,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BatchWriterTest.cpp" />
+    <ClCompile Include="AggregatorTest.cpp" />
     <ClCompile Include="ConnectionTest.cpp" />
+    <ClCompile Include="DataQueueTest.cpp" />
     <ClCompile Include="DeviceTest.cpp" />
     <ClCompile Include="FirmwareManagerTest.cpp" />
     <ClCompile Include="FlowMeterDriver.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="LedDriverTest.cpp" />
     <ClCompile Include="LogTest.cpp" />
     <ClCompile Include="MagnetoSensorReaderTest.cpp" />
+    <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="MqttGatewayMock.cpp" />
     <ClCompile Include="MqttGatewayTest.cpp" />
     <ClCompile Include="PayloadBuilderTest.cpp" />
@@ -180,11 +182,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="MeasurementWriterTest.cpp" />
-    <ClCompile Include="PubSubTest.cpp" />
-    <ClCompile Include="ResultWriterTest.cpp" />
+    <ClCompile Include="SampleAggregatorTest.cpp" />
+    <ClCompile Include="EventServerTest.cpp" />
+    <ClCompile Include="QueueClientTest.cpp" />
+    <ClCompile Include="ResultAggregatorTest.cpp" />
     <ClCompile Include="SchedulerTest.cpp" />
     <ClCompile Include="TestEventClient.cpp" />
+    <ClCompile Include="TimeServerMock.cpp" />
     <ClCompile Include="TimeServerTest.cpp" />
     <ClCompile Include="WifiMock.cpp" />
     <ClCompile Include="WifiTest.cpp" />
@@ -195,6 +199,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="StateHelper.h" />
     <ClInclude Include="TestEventClient.h" />
+    <ClInclude Include="TimeServerMock.h" />
     <ClInclude Include="TopicHelper.h" />
     <ClInclude Include="WifiMock.h" />
   </ItemGroup>

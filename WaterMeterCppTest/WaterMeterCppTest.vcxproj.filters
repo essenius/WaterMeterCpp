@@ -18,16 +18,16 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BatchWriterTest.cpp">
+    <ClCompile Include="AggregatorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MeasurementWriterTest.cpp">
+    <ClCompile Include="SampleAggregatorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FlowMeterDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ResultWriterTest.cpp">
+    <ClCompile Include="ResultAggregatorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FlowMeterTest.cpp">
@@ -39,7 +39,7 @@
     <ClCompile Include="TimeServerTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PubSubTest.cpp">
+    <ClCompile Include="EventServerTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TestEventClient.cpp">
@@ -78,6 +78,18 @@
     <ClCompile Include="ConnectionTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DataQueueTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QueueClientTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeServerMock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -99,6 +111,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StateHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeServerMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

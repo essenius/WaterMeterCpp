@@ -11,11 +11,11 @@
 
 #include "pch.h"
 
-
+/*
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Scheduler.h"
-#include "../WaterMeterCpp/MeasurementWriter.h"
-#include "../WaterMeterCpp/ResultWriter.h"
+#include "../WaterMeterCpp/MeasurementAggregator.h"
+#include "../WaterMeterCpp/ResultAggregator.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
 
 #include "FlowMeterDriver.h"
@@ -30,17 +30,25 @@ namespace WaterMeterCppTest {
 
     TEST_CLASS(SchedulerTest) {
     public:
-        static EventServer EventServer;
+        static EventServer eventServer;
         static TestEventClient MeasurementListener;
         static TestEventClient ResultListener;
-        static PayloadBuilder Builder1, Builder2;
-        static MeasurementWriter MeasurementWriter;
-        static ResultWriter ResultWriter;
+        //static PayloadBuilder Builder1, Builder2;
+        static RingbufferPayload payload1, payload2;
+        static MeasurementAggregator MeasurementWriter;
+        static ResultAggregator ResultWriter;
+        static PayloadBuilder payloadBuilder;
         static Scheduler Scheduler;
 
+        static Serializer serializer;
+        static RingbufHandle_t ringbufHandle;
+        static DataQueue dataQueue;
+
         TEST_CLASS_INITIALIZE(schedulerClassInitalize) {
-            EventServer.subscribe(&MeasurementListener, Topic::Measurement);
-            EventServer.subscribe(&ResultListener, Topic::Result);
+            eventServer.subscribe(&MeasurementListener, Topic::Measurement);
+            eventServer.subscribe(&ResultListener, Topic::Result);
+            ringbufHandle = xRingbufferCreate(40960, RINGBUF_TYPE_ALLOWSPLIT);
+            
         }
 
         TEST_METHOD_INITIALIZE(schedulerMethodInitialize) {
@@ -51,8 +59,8 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(schedulerForcedDoubleWriteTest) {
-            EventServer.publish(Topic::BatchSizeDesired, 1);
-            EventServer.publish(Topic::IdleRate, 1);
+            eventServer.publish(Topic::BatchSizeDesired, 1);
+            eventServer.publish(Topic::IdleRate, 1);
 
             registerMeasurement(1000, 350);
             Scheduler.processOutput();
@@ -70,14 +78,14 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(schedulerAlternateWriteTest) {
-            EventServer.publish(Topic::BatchSizeDesired, 2);
+            eventServer.publish(Topic::BatchSizeDesired, 2);
             Assert::AreEqual(2L, MeasurementWriter.getFlushRate(), L"measurement flush rate is 2");
             Assert::AreNotEqual(2L, ResultWriter.getFlushRate(), L"result flush rate is not 2");
 
-            EventServer.publish(Topic::IdleRate, 2);
+            eventServer.publish(Topic::IdleRate, 2);
             Assert::AreEqual(2L, ResultWriter.getFlushRate(), L"result flush rate is 2");
 
-            EventServer.publish(Topic::NonIdleRate, 33);
+            eventServer.publish(Topic::NonIdleRate, 33);
             Assert::AreEqual(2L, MeasurementWriter.getFlushRate(), L"measurement flush rate is still 2");
             Assert::AreEqual(2L, ResultWriter.getFlushRate(), L"result flush rate is still 2");
 
@@ -111,15 +119,20 @@ namespace WaterMeterCppTest {
             MeasurementWriter.addMeasurement(measurement);
             const FlowMeterDriver expected(measurement);
             ResultWriter.addMeasurement(measurement, &expected);
-            EventServer.publish(Topic::ProcessTime, duration);
+            eventServer.publish(Topic::ProcessTime, duration);
         }
     };
 
-    EventServer SchedulerTest::EventServer;
-    TestEventClient SchedulerTest::MeasurementListener("measure", &EventServer);
-    TestEventClient SchedulerTest::ResultListener("result", &EventServer);
-    PayloadBuilder SchedulerTest::Builder1, SchedulerTest::Builder2;
-    MeasurementWriter SchedulerTest::MeasurementWriter(&EventServer, &Builder1);
-    ResultWriter SchedulerTest::ResultWriter(&EventServer, &Builder2, MEASURE_INTERVAL_MICROS);
-    Scheduler SchedulerTest::Scheduler(&EventServer, &MeasurementWriter, &ResultWriter);
+    EventServer SchedulerTest::eventServer;
+    TestEventClient SchedulerTest::MeasurementListener("measure", &eventServer);
+    TestEventClient SchedulerTest::ResultListener("result", &eventServer);
+    RingbufferPayload SchedulerTest::payload1, SchedulerTest::payload2;
+    PayloadBuilder SchedulerTest::payloadBuilder;
+    Serializer SchedulerTest::serializer(&payloadBuilder);
+    DataQueue SchedulerTest::dataQueue(&SchedulerTest::eventServer, &serializer);
+
+    MeasurementAggregator SchedulerTest::MeasurementWriter(&eventServer, &dataQueue, &payload1);
+    ResultAggregator SchedulerTest::ResultWriter(&eventServer, &dataQueue, &payload2, MEASURE_INTERVAL_MICROS);
+    Scheduler SchedulerTest::Scheduler(&eventServer, &dataQueue, &MeasurementWriter, &ResultWriter);
 }
+*/

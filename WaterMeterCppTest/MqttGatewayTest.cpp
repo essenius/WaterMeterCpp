@@ -105,12 +105,12 @@ namespace WaterMeterCppTest {
 
             // Incoming valid callback from MQTT should get passed on to the event server
 
-            TestEventClient callBackListener("disconnectedListener", &EventServer);
+            TestEventClient callBackListener(&EventServer);
             EventServer.subscribe(&callBackListener, Topic::BatchSizeDesired);
             char topic[100];
             constexpr int PAYLOAD_SIZE = 2;
             uint8_t payload[PAYLOAD_SIZE] = {'2', '0'};
-            strcpy(topic, "homie/device_id/measurement/batch-size-desired/set");
+            safeStrcpy(topic, "homie/device_id/measurement/batch-size-desired/set");
             mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
             Assert::AreEqual(1, callBackListener.getCallCount(), L"callBackListener called");
             Assert::AreEqual("20", callBackListener.getPayload(), L"callBackListener got right payload");
@@ -118,7 +118,7 @@ namespace WaterMeterCppTest {
             // Invalid callback should get ignored
 
             callBackListener.reset();
-            strcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
+            safeStrcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
             mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
             Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
             callBackListener.reset();
@@ -130,12 +130,12 @@ namespace WaterMeterCppTest {
 
             // same with a payload not having a device id
 
-            strcpy(topic, "bogus");
+            safeStrcpy(topic, "bogus");
             mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
 
             // a topic we don't know should be ignored
 
-            strcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
+            safeStrcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
             mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
             Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
 
@@ -148,7 +148,7 @@ namespace WaterMeterCppTest {
     };
 
     Client MqttGatewayTest::Client;
-    EventServer MqttGatewayTest::EventServer(LogLevel::Off);
-    TestEventClient MqttGatewayTest::ErrorListener("errorListener", &EventServer);
-    TestEventClient MqttGatewayTest::InfoListener("infoListener", &EventServer);
+    EventServer MqttGatewayTest::EventServer;
+    TestEventClient MqttGatewayTest::ErrorListener(&EventServer);
+    TestEventClient MqttGatewayTest::InfoListener(&EventServer);
 }

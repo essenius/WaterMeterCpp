@@ -12,37 +12,43 @@
 #ifndef HEADER_BATCHWRITER
 #define HEADER_BATCHWRITER
 
+#include "RingbufferPayload.h"
 #include "EventServer.h"
-#include "PayloadBuilder.h"
 #include "ChangePublisher.h"
+#include "DataQueue.h"
 
 using byte = unsigned char;
 
-class BatchWriter : public EventClient {
+class Aggregator : public EventClient {
 public:
-    BatchWriter(const char* name, EventServer* eventServer, PayloadBuilder* payloadBuilder);
+    Aggregator(EventServer* eventServer, DataQueue* dataQueue, RingbufferPayload* payload);
     virtual void begin(long desiredFlushRate);
+    bool canSend() const;
     virtual void flush();
     long getFlushRate();
-    const char* getMessage() const;
-    virtual bool needsFlush(bool force = false);
+    RingbufferPayload* getPayload() const;
+    //const char* getMessage() const;
+    virtual bool shouldSend(bool force = false);
     bool newMessage();
-    virtual void prepareFlush();
+    //virtual void prepareFlush();
+    virtual bool send();
     virtual void setDesiredFlushRate(long flushRate);
 
 protected:
-    virtual void initBuffer();
+    //virtual void initBuffer();
     static long convertToLong(const char* stringParam, long defaultValue = 0L);
     static long limit(long input, long min, long max);
-    void update(Topic topic, long payload) override;
-    void update(Topic topic, const char* payload) override;
-    bool _canFlush = true;
+    //void update(Topic topic, const char* payload) override;
+    //void update(Topic topic, long payload) override;
+    DataQueue* _dataQueue;
+    //bool _canFlush = true;
     long _desiredFlushRate = 0;
-    bool _flushWaiting = false;
-    virtual void resetCounters();
-    PayloadBuilder* _payloadBuilder;
+    //bool _flushWaiting = false;
+    //virtual void resetCounters();
+    RingbufferPayload* _payload;
     long _messageCount = 0;
-    ChangePublisher<long> _flushRatePublisher;
+    ChangePublisher<long> _flushRate;
+    ChangePublisher<long> _blocked;
 };
 
 #endif

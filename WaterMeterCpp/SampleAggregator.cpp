@@ -9,57 +9,55 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#include "MeasurementWriter.h"
+#include "SampleAggregator.h"
 
-MeasurementWriter::MeasurementWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder) :
-    BatchWriter("MeasurementWriter", eventServer, payloadBuilder) {
-    _flushRatePublisher.setTopic(Topic::BatchSize);
+SampleAggregator::SampleAggregator(EventServer* eventServer, DataQueue* dataQueue, RingbufferPayload* payload) :
+    Aggregator(eventServer, dataQueue, payload) {
+    _flushRate.setTopic(Topic::BatchSize);
 }
 
-void MeasurementWriter::addMeasurement(int measure) {
+void SampleAggregator::addSample(const int16_t measure) {
     // Only record measurements if we need to
-    if (newMessage() && _canFlush) {
-        _payloadBuilder->writeArrayValue(measure);
+    if (newMessage() && canSend()) {
+
+        _payload->buffer.samples.value[_payload->buffer.samples.count++] = measure;
     }
     else {
         if (_messageCount > 0) {
-            // If we can't flush and we have messages already, discard them
+            // If we can't send and we have messages already, discard them (beats crashing)
             flush();
-            resetCounters();
         }
     }
 }
 
-void MeasurementWriter::begin() {
+void SampleAggregator::begin() {
     _eventServer->subscribe(this, Topic::BatchSizeDesired);
-    BatchWriter::begin(DEFAULT_FLUSH_RATE);
+    _eventServer->subscribe(this, Topic::Sample);
+    Aggregator::begin(DEFAULT_FLUSH_RATE);
     // This is the only time the desired rate gets published from here.
     _eventServer->publish(this, Topic::BatchSizeDesired, _desiredFlushRate);
 }
 
-void MeasurementWriter::initBuffer() {
-    BatchWriter::initBuffer();
-    _payloadBuilder->writeArrayStart("measurements");
+void SampleAggregator::flush() {
+    Aggregator::flush();
+    _payload->topic = Topic::Samples;
+    _payload->buffer.samples.count = 0;
 }
 
-void MeasurementWriter::prepareFlush() {
-    _payloadBuilder->writeArrayEnd();
-    BatchWriter::prepareFlush();
-}
-
-void MeasurementWriter::update(Topic topic, const char* payload) {
+void SampleAggregator::update(Topic topic, const char* payload) {
     if (topic == Topic::BatchSizeDesired) {
         const auto desiredRate = convertToLong(payload, DEFAULT_FLUSH_RATE);
-        return update(topic, desiredRate);
+        update(topic, desiredRate);
     }
-    BatchWriter::update(topic, payload);
 }
 
-void MeasurementWriter::update(Topic topic, long payload) {
+void SampleAggregator::update(Topic topic, long payload) {
     if (topic == Topic::BatchSizeDesired) {
         const auto desiredRate = static_cast<unsigned char>(limit(payload, 0L, MAX_FLUSH_RATE));
         setDesiredFlushRate(desiredRate);
         return;
     }
-    BatchWriter::update(topic, payload);
+    if (topic == Topic::Sample) {
+        addSample(static_cast<int16_t>(payload));
+    }
 }

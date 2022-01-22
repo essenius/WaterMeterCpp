@@ -15,6 +15,8 @@
 #include "FlowMeter.h"
 #include <cmath>
 
+#include "EventServer.h"
+
 // Wee need the line smooth enough to eliminate noise. Averaging over 20 seems to work OK
 constexpr float LOW_PASS_ALPHA = 0.05f;
 
@@ -33,7 +35,17 @@ constexpr float ZEROCHECK_THESHOLD = -2.0f;
 constexpr float FLOW_THRESHOLD = 1.0f;
 
 
-void FlowMeter::addMeasurement(int measurement) {
+FlowMeter::FlowMeter(EventServer* eventServer):
+    EventClient(eventServer),
+    _exclude(eventServer, this, Topic::Exclude, false),
+    _flow(eventServer, this, Topic::Flow, false),
+    _peak(eventServer, this, Topic::Peak, false) {}
+
+void FlowMeter::begin() {
+    _eventServer->subscribe(this, Topic::Sample);
+}
+
+void FlowMeter::addSample(int measurement) {
     const bool firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
     if (_startupSamplesLeft > 0) {
         _startupSamplesLeft--;
@@ -154,4 +166,10 @@ void FlowMeter::resetFilters(int initialMeasurement) {
     _smoothAbsDerivative = 0.0f;
     _minDerivative = MIN_DERIVATIVE_PEAK;
     _previousSmoothValue = _smoothValue;
+}
+
+void FlowMeter::update(Topic topic, long payload) {
+    if (topic == Topic::Sample) {
+        addSample(static_cast<int>(payload));
+    }
 }

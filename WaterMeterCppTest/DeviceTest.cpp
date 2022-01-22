@@ -24,7 +24,7 @@ namespace WaterMeterCppTest {
     public:
         TEST_METHOD(deviceTest1) {
             EventServer eventServer;
-            TestEventClient stackListener("stack", &eventServer), heapListener("heap", &eventServer);
+            TestEventClient stackListener(&eventServer), heapListener(&eventServer);
             eventServer.subscribe(&heapListener, Topic::FreeHeap);
             eventServer.subscribe(&stackListener, Topic::FreeStack);
 

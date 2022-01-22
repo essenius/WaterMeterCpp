@@ -11,11 +11,12 @@
 
 #ifndef HEADER_PAYLOADBUILDER
 #define HEADER_PAYLOADBUILDER
+#include "Clock.h"
 
 class PayloadBuilder {
 public:
     void begin();
-    void initialize();
+    void initialize(const char prefix = '{');
     bool isAlmostFull() const;
     int remainingSize() const;
     const char* toString() const;
@@ -26,7 +27,9 @@ public:
     void writeGroupEnd();
     void writeGroupStart(const char* label);
     void writeLabel(const char* label);
-
+    void writeTimestamp(Timestamp timestampIn);
+    void writeTimestampParam(const char* label, Timestamp timestampIn);
+    void writeText(const char* text);
 
     template <class T>
     void writeArrayValue(T value) {
@@ -56,6 +59,7 @@ private:
     void writeString(int input);
     void writeString(long input);
     void writeString(unsigned long input);
+    void writeString(uint32_t input);
 
     char* _currentPosition = _resultBuffer;
     bool _needsDelimiter = false;

@@ -11,10 +11,14 @@
 
 #ifndef HEADER_FLOWMETER
 #define HEADER_FLOWMETER
+#include "ChangePublisher.h"
+#include "EventClient.h"
 
-class FlowMeter {
+class FlowMeter: public EventClient {
 public:
-    void addMeasurement(int measurement);
+    explicit FlowMeter(EventServer* eventServer);
+    void begin();
+    void addSample(int measurement);
     bool areAllExcluded() const;
     float getSmoothValue() const;
     float getDerivative() const;
@@ -24,10 +28,13 @@ public:
     bool hasFlow() const;
     bool isExcluded() const;
     bool isOutlier() const;
+    void update(Topic topic, long payload) override;
+
 protected:
     static constexpr int STARTUP_SAMPLES = 10;
     static constexpr int MIN_DERIVATIVE_PEAK = -9;
-    bool _exclude = false;
+    ChangePublisher<bool> _exclude;
+    //= false;
     bool _excludeAll = false;
     //bool _firstOutlier = false;
     float _derivative = 0.0f;
@@ -37,9 +44,11 @@ protected:
     float _minDerivative = MIN_DERIVATIVE_PEAK;
     float _previousSmoothDerivative = 0.0f;
     float _previousSmoothValue = 0.0f;
-    bool _flow = false;
+    ChangePublisher<bool> _flow;
+    ChangePublisher<bool> _peak;
+    //bool _flow = false;
     bool _outlier = false;
-    bool _peak = false;
+    //bool _peak = false;
     unsigned int _startupSamplesLeft = STARTUP_SAMPLES;
 
     void detectOutlier(int measurement);

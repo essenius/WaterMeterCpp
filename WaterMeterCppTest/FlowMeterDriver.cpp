@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -13,9 +13,9 @@
 
 #include "FlowMeterDriver.h"
 
-// constructor for ResultWriterTest. Uses fields that are used for reporting
-FlowMeterDriver::FlowMeterDriver(const int smoothValue, const int derivative, const int smoothDerivative,
-                                 const bool flow, const bool peak, const bool outlier, const bool exclude, const bool excludeAll) {
+// constructor for ResultAggregatorTest. Uses fields that are used for reporting
+FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const int smoothValue, const int derivative, const int smoothDerivative,
+                                 const bool flow, const bool peak, const bool outlier, const bool exclude, const bool excludeAll): FlowMeter(eventServer) {
     _smoothValue = static_cast<float>(smoothValue);
     _derivative = static_cast<float>(derivative);
     _smoothDerivative = static_cast<float>(smoothDerivative);

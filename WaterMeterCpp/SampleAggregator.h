@@ -12,22 +12,24 @@
 #ifndef HEADER_MEASUREMENTWRITER
 #define HEADER_MEASUREMENTWRITER
 
-#include "BatchWriter.h"
+#include "Aggregator.h"
 #include "EventServer.h"
 
-class MeasurementWriter : public BatchWriter {
+class SampleAggregator : public Aggregator {
 public:
-    MeasurementWriter(EventServer* eventServer, PayloadBuilder* payloadBuilder);
-    using BatchWriter::begin;
+    SampleAggregator(EventServer* eventServer, DataQueue* dataQueue, RingbufferPayload* payload);
+    using Aggregator::begin;
     virtual void begin();
-    void addMeasurement(int measure);
-    void prepareFlush() override;
+    void addSample(int16_t measure);
+    void flush() override;
+    //void prepareFlush() override;
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
 protected:
-    void initBuffer() override;
+    //void initBuffer() override;
     static constexpr unsigned char DEFAULT_FLUSH_RATE = 50;
-    static constexpr unsigned char MAX_FLUSH_RATE = 60;
+    static constexpr unsigned char MAX_FLUSH_RATE = 50;
+    uint16_t _currentSample = 0;
 };
 
 #endif

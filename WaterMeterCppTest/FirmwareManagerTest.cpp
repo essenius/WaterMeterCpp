@@ -23,92 +23,118 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(FirmwareManagerTest) {
     public:
-        static WiFiClient Client;
-        static EventServer EventServer;
-        static TestEventClient InfoListener;
-        static TestEventClient ErrorListener;
+        static WiFiClient client;
+        static EventServer eventServer;
+        static TestEventClient infoListener;
+        static TestEventClient errorListener;
 
         TEST_CLASS_INITIALIZE(firmwareClassInitialize) {
-            EventServer.subscribe(&InfoListener, Topic::Info);
-            EventServer.subscribe(&ErrorListener, Topic::Error);
+            eventServer.subscribe(&infoListener, Topic::Info);
+            eventServer.subscribe(&errorListener, Topic::Error);
         }
 
         TEST_METHOD_INITIALIZE(firmwareMethodInitialize) {
-            InfoListener.reset();
-            ErrorListener.reset();
+            infoListener.reset();
+            errorListener.reset();
         }
 
-        TEST_METHOD(firmwareManagerUpdateAvailableTest) {
-            FirmwareManager manager(&EventServer);
-            manager.begin(&Client, "http://localhost/images", "001122334455");
-
+        TEST_METHOD(firmwareManagerNoUpdateAvailableTest) {
+            FirmwareManager manager(&eventServer, "http://localhost/images", "0.1.1");
+            manager.begin(&client, "001122334455");
 
             // Successful check, same version
             HTTPClient::ReturnValue = 200;
-            Assert::IsFalse(manager.updateAvailableFor("0.1.1"), L"No update for version 0.1.1");
-            Assert::AreEqual(0, InfoListener.getCallCount(), L"No info");
-            Assert::AreEqual(0, ErrorListener.getCallCount(), L"No error");
+            Assert::IsFalse(manager.updateAvailable(), L"No update for version 0.1.1");
+            Assert::AreEqual(0, infoListener.getCallCount(), L"No info");
+            Assert::AreEqual(0, errorListener.getCallCount(), L"No error");
+        }
 
-            // Failed check
+        TEST_METHOD(firmwareManagerFailedCheckTest) {
+            FirmwareManager manager(&eventServer, "http://localhost/images", "0.1.1");
+            manager.begin(&client, "001122334455");
+
             HTTPClient::ReturnValue = 400;
-            Assert::IsFalse(manager.updateAvailableFor("0.1.1"), L"No update for version 0.1.1");
-            Assert::AreEqual(0, InfoListener.getCallCount(), L"No info");
-            Assert::AreEqual(1, ErrorListener.getCallCount(), L"Error");
-            Assert::AreEqual("Firmware version check to 'http://localhost/images001122334455.version' failed with response code 400\n", ErrorListener.getPayload(),
-                             L"Error correct");
+            Assert::IsFalse(manager.updateAvailable(), L"No update for version 0.1.1");
+            Assert::AreEqual(0, infoListener.getCallCount(), L"No info");
+            Assert::AreEqual(1, errorListener.getCallCount(), L"Error");
+            Assert::AreEqual("Firmware version check to 'http://localhost/images001122334455.version' failed with response code 400\n", errorListener.getPayload(),
+                L"Error correct");
+        }
 
-            // Successful check, other version
+        TEST_METHOD(firmwareManagerOtherVersionTest) {
+            FirmwareManager manager(&eventServer, "http://localhost/images", "0.1.2");
+            manager.begin(&client, "112233445566");
+
             HTTPClient::ReturnValue = 200;
-            Assert::IsTrue(manager.updateAvailableFor("0.1.2"), L"update for version 0.1.2 available");
-            Assert::AreEqual(1, InfoListener.getCallCount(), L"Info called");
-            Assert::AreEqual(1, ErrorListener.getCallCount(), L"No new error");
-            Assert::AreEqual("Current firmware version: '0.1.2'; available version: '0.1.1'\n", InfoListener.getPayload(),
+            Assert::IsTrue(manager.updateAvailable(), L"update for version 0.1.2 available");
+            Assert::AreEqual(1, infoListener.getCallCount(), L"Info called");
+            Assert::AreEqual(0, errorListener.getCallCount(), L"No error");
+            Assert::AreEqual("Current firmware version: '0.1.2'; available version: '0.1.1'\n", infoListener.getPayload(),
                              L"Info correct");
         }
 
-        TEST_METHOD(FirmwareManagerUpdateTest) {
-            FirmwareManager manager(&EventServer);
-            manager.begin(&Client, "http://localhost/images/", "001122334455");
+        TEST_METHOD(firmwareManagerUpdateTest) {
+            FirmwareManager manager(&eventServer, "http://localhost/images/", "0.1.2");
+            manager.begin(&client, "001122334455");
 
             // check succeeds, update succeeds (but doesn't reboot, obviously)
             HTTPClient::ReturnValue = 200;
             HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
-            manager.tryUpdateFrom("0.1.2");
-            Assert::AreEqual(2, InfoListener.getCallCount(), L"info on success");
-            Assert::AreEqual(0, ErrorListener.getCallCount(), L"No error on success");
-            Assert::AreEqual("Firmware not updated (2/0): OK\n", InfoListener.getPayload(), L"warning message");
+            manager.tryUpdate();
+            Assert::AreEqual(2, infoListener.getCallCount(), L"info on success");
+            Assert::AreEqual(0, errorListener.getCallCount(), L"No error on success");
+            Assert::AreEqual("Firmware not updated (2/0): OK\n", infoListener.getPayload(), L"warning message");
 
-            // check fails
+            // second call doesn't do anything
+            manager.tryUpdate();
+            Assert::AreEqual(2, infoListener.getCallCount(), L"Second call doesn't log info");
+            Assert::AreEqual(0, errorListener.getCallCount(), L"Second call doesn't log errors");
+        }
+
+        TEST_METHOD(FirmwareManagerUpdateCheckFailsTest) {
+            FirmwareManager manager(&eventServer, "http://localhost/images/", "0.1.2");
+            manager.begin(&client, "001122334455");
             HTTPClient::ReturnValue = 400;
-            manager.tryUpdateFrom("0.1.2");
-            Assert::AreEqual(2, InfoListener.getCallCount(), L"no info on check failure");
-            Assert::AreEqual(1, ErrorListener.getCallCount(), L"Erro on check failure");
-            Assert::AreEqual("Firmware version check to 'http://localhost/images/001122334455.version' failed with response code 400\n", ErrorListener.getPayload(),
-                             L"Error correct");
+            manager.tryUpdate();
+            Assert::AreEqual(0, infoListener.getCallCount(), L"no info on check failure");
+            Assert::AreEqual(1, errorListener.getCallCount(), L"Erro on check failure");
+            Assert::AreEqual("Firmware version check to 'http://localhost/images/001122334455.version' failed with response code 400\n", errorListener.getPayload(),
+                L"Error correct");
 
+            // second call doesn't do anything
+            manager.tryUpdate();
+            Assert::AreEqual(0, infoListener.getCallCount(), L"Second call doesn't log info");
+            Assert::AreEqual(1, errorListener.getCallCount(), L"Second call doesn't log errors");
+        }
+
+        TEST_METHOD(firmwareManagerCheckSucceedsUpdateFailsTest) {
+            FirmwareManager manager(&eventServer, "http://localhost/images/", "0.1.2");
+            manager.begin(&client, "001122334455");
             // check succeeds and update fails
             HTTPClient::ReturnValue = 200;
             HTTPUpdate::ReturnValue = HTTP_UPDATE_FAILED;
-            manager.tryUpdateFrom("0.1.2");
-            Assert::AreEqual(3, InfoListener.getCallCount(), L"new info on update failure");
-            Assert::AreEqual("Current firmware version: '0.1.2'; available version: '0.1.1'\n", InfoListener.getPayload(),
-                             "info on update failure OK");
-            Assert::AreEqual(2, ErrorListener.getCallCount(), L"error on update failure");
-            Assert::AreEqual("Firmware update failed (0): OK\n", ErrorListener.getPayload(),
-                             L"error message on update failure OK");
-
-            HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
-            // check succeeds but no update needed
-            manager.tryUpdateFrom("0.1.1");
-            Assert::AreEqual(3, InfoListener.getCallCount(), L"no info on check without update");
-            Assert::AreEqual(2, ErrorListener.getCallCount(), L"no error on check without update");
-
+            manager.tryUpdate();
+            Assert::AreEqual(1, infoListener.getCallCount(), L"new info on update failure");
+            Assert::AreEqual("Current firmware version: '0.1.2'; available version: '0.1.1'\n", infoListener.getPayload(),
+                "info on update failure OK");
+            Assert::AreEqual(1, errorListener.getCallCount(), L"error on update failure");
+            Assert::AreEqual("Firmware update failed (0): OK\n", errorListener.getPayload(),
+                L"error message on update failure OK");
         }
 
+        TEST_METHOD(firmwareManagerCheckSucceedsNoUpdateNeededTest) {
+            FirmwareManager manager(&eventServer, "http://localhost/images/", "0.1.1");
+            manager.begin(&client, "001122334455");
+            HTTPClient::ReturnValue = 200;
+            HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
+            manager.tryUpdate();
+            Assert::AreEqual(0, infoListener.getCallCount(), L"no info on check without update");
+            Assert::AreEqual(0, errorListener.getCallCount(), L"no error on check without update");
+        }
     };
 
-    WiFiClient FirmwareManagerTest::Client;
-    EventServer FirmwareManagerTest::EventServer;
-    TestEventClient FirmwareManagerTest::InfoListener("info", &EventServer);
-    TestEventClient FirmwareManagerTest::ErrorListener("error", &EventServer);
+    WiFiClient FirmwareManagerTest::client;
+    EventServer FirmwareManagerTest::eventServer;
+    TestEventClient FirmwareManagerTest::infoListener(&eventServer);
+    TestEventClient FirmwareManagerTest::errorListener(&eventServer);
 }

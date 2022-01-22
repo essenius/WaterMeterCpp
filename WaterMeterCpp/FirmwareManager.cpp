@@ -19,20 +19,23 @@
 #include <cstring>
 #include "FirmwareManager.h" 
 #include "EventServer.h"
+#include "SafeCString.h"
 
-FirmwareManager::FirmwareManager(EventServer* eventServer) : EventClient("FirmwareManager", eventServer)
-{}
-
-void FirmwareManager::begin(WiFiClient* client, const char* baseUrl, const char* machineId) {
-  _client = client;
-  strcpy(_baseUrl, baseUrl);
-  strcat(_baseUrl, machineId);
+FirmwareManager::FirmwareManager(EventServer* eventServer, const char* baseUrl, const char* buildVersion) :
+    EventClient(eventServer), _buildVersion(buildVersion) {
+    safeStrcpy(_baseUrl, baseUrl);
 }
 
-bool FirmwareManager::updateAvailableFor(const char* currentVersion) const {
+void FirmwareManager::begin(WiFiClient* client, const char* machineId) {
+  _client = client;
+  safeStrcpy(_machineId, machineId);
+}
+
+bool FirmwareManager::updateAvailable() const {
     char versionUrl[BASE_URL_SIZE];
-    strcpy(versionUrl, _baseUrl);
-    strcat(versionUrl, VERSION_EXTENSION);
+    safeStrcpy(versionUrl, _baseUrl);
+    safeStrcat(versionUrl, _machineId);
+    safeStrcat(versionUrl, VERSION_EXTENSION);
     HTTPClient httpClient;
     httpClient.begin(*_client, versionUrl);
     bool newBuildAvailable = false;
@@ -41,13 +44,13 @@ bool FirmwareManager::updateAvailableFor(const char* currentVersion) const {
     const int httpCode = httpClient.GET();
     if (httpCode == 200) {
         String newVersion = httpClient.getString();
-        newBuildAvailable = strcmp(newVersion.c_str(), currentVersion) != 0;
+        newBuildAvailable = strcmp(newVersion.c_str(), _buildVersion) != 0;
         if (newBuildAvailable) {
-            sprintf(buffer, "Current firmware version: '%s'; available version: '%s'\n", currentVersion, newVersion.c_str());
+            safeSprintf(buffer, "Current firmware version: '%s'; available version: '%s'\n", _buildVersion, newVersion.c_str());
             _eventServer->publish(Topic::Info, buffer);
         }
     } else {
-        sprintf(buffer,"Firmware version check to '%s' failed with response code %d\n", versionUrl, httpCode);
+        safeSprintf(buffer,"Firmware version check to '%s' failed with response code %d\n", versionUrl, httpCode);
         _eventServer->publish(Topic::Error, buffer);
   }
   httpClient.end();
@@ -56,23 +59,25 @@ bool FirmwareManager::updateAvailableFor(const char* currentVersion) const {
 
 void FirmwareManager::loadUpdate() const {
     char buffer[BASE_URL_SIZE];
-    strcpy(buffer, _baseUrl);
-    strcat(buffer, IMAGE_EXTENSION);
+    safeStrcpy(buffer, _baseUrl);
+    safeStrcat(buffer, IMAGE_EXTENSION);
 
     // This should normally result in a reboot.
     const t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
 
     if (returnValue == HTTP_UPDATE_FAILED) {
-        sprintf(buffer, "Firmware update failed (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+        safeSprintf(buffer, "Firmware update failed (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
         _eventServer->publish(Topic::Error, buffer);
         return;
     }
-    sprintf(buffer, "Firmware not updated (%d/%d): %s\n", returnValue, httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    safeSprintf(buffer, "Firmware not updated (%d/%d): %s\n", returnValue, httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
     _eventServer->publish(Topic::Info, buffer);
 }
 
-void FirmwareManager::tryUpdateFrom(const char* currentVersion) const {
-    if (updateAvailableFor(currentVersion)) {
+void FirmwareManager::tryUpdate() {
+    // Make sure this is only done just after rebooting. We don't want reboots in the middle of a flow.
+    if (_justRebooted && updateAvailable()) {
         loadUpdate();
     }
+    _justRebooted = false;
 }

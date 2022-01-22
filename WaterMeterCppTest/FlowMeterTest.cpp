@@ -12,7 +12,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/FlowMeter.h"
-
+#include "../WaterMeterCpp/EventServer.h"
 #include <iostream>
 #include <fstream>
 
@@ -21,8 +21,11 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(FlowMeterTest) {
     public:
+        static EventServer eventServer;
+
         TEST_METHOD(flowMeterGoodFlowTest) {
-            FlowMeter flowMeter;
+            FlowMeter flowMeter(&eventServer);
+            flowMeter.begin();
             int measurement;
             float smoothValue;
             float derivative;
@@ -32,7 +35,7 @@ namespace WaterMeterCppTest {
             Assert::IsTrue(measurements.is_open(), L"File open");
             long index = 0;
             while (measurements >> measurement) {
-                flowMeter.addMeasurement(measurement);
+                eventServer.publish(Topic::Sample, measurement);
                 measurements >> smoothValue;
                 assertFloatAreEqual(smoothValue, flowMeter.getSmoothValue(), L"Smooth value", index);
                 measurements >> derivative;
@@ -54,7 +57,8 @@ namespace WaterMeterCppTest {
             const std::stringstream ss;
             std::cout.rdbuf(ss.rdbuf());
 
-            FlowMeter flowMeter;
+            FlowMeter flowMeter(&eventServer);
+            flowMeter.begin();
             int measurement;
             int totalOutliers = 0;
             std::ifstream measurements("outliertest.txt");
@@ -62,7 +66,7 @@ namespace WaterMeterCppTest {
             long index = 0;
             while (measurements >> measurement) {
                 std::cout << measurement << ",";
-                flowMeter.addMeasurement(measurement);
+                eventServer.publish(Topic::Sample, measurement);
                 std::cout << flowMeter.getSmoothValue() << "," << flowMeter.getDerivative() << ","
                     << flowMeter.getSmoothDerivative() << "," << flowMeter.isPeak() << "," << flowMeter.isExcluded() <<
                     "\n";
@@ -76,39 +80,39 @@ namespace WaterMeterCppTest {
             std::cout.rdbuf(backup);
         }
         TEST_METHOD(flowMeterEarlyOutlierTest) {
-            FlowMeter actual;
-            actual.addMeasurement(5000);
+            FlowMeter actual(&eventServer);
+            actual.addSample(5000);
             assertResult(&actual, L"Fist measurement", 5000.0f, 0.0f, 0.0f);
 
-            actual.addMeasurement(2500);
+            actual.addSample(2500);
             // an early outlier should result in a reset with the last value as seed.
             assertResult(&actual, L"Early first outlier",
                          2500.0f, 0.0f, 0.0f, false, true, true, true);
 
             // we're starting from scratch using the next value
-            actual.addMeasurement(2510);
+            actual.addSample(2510);
             assertResult(&actual, L"first after outlier reset", 2510.0f, 0.0f, 0.0f);
         }
 
         TEST_METHOD(flowMeterSingleOutlierIgnoredTest) {
-            FlowMeter actual;
-            actual.addMeasurement(1001);
+            FlowMeter actual(&eventServer);
+            actual.addSample(1001);
             assertResult(&actual, L"First", 1001.0f, 0.0f, 0.0f);
-            actual.addMeasurement(999);
+            actual.addSample(999);
             assertResult(&actual, L"Second", 1000.9f, -0.08f, -0.004f);
-            actual.addMeasurement(1001);
+            actual.addSample(1001);
             assertResult(&actual, L"Third", 1000.905f, -0.06f, -0.0068f);
 
             addMeasurementSeries(&actual, 7, [](const int i) { return 999 + i % 2 * 2; });
             assertResult(&actual, L"7 more good samples", 1000.5884f, -0.1547f, -0.043f);
 
             // introduce an outlier
-            actual.addMeasurement(2000);
+            actual.addSample(2000);
             assertResult(&actual, L"outlier ignored",
                          1000.5884f, -0.1547f, -0.043f, false, true, true);
 
             // new good data
-            actual.addMeasurement(1001);
+            actual.addSample(1001);
             assertResult(&actual, L"good value after outlier",
                          1000.6090f, -0.1073f, -0.046f);
         }
@@ -133,7 +137,7 @@ namespace WaterMeterCppTest {
 
         static void addMeasurementSeries(FlowMeter* flowMeter, const int count, int (*f)(int)) {
             for (int i = 0; i < count; i++) {
-                flowMeter->addMeasurement(f(i));
+                flowMeter->addSample(f(i));
             }
         }
 
@@ -147,5 +151,7 @@ namespace WaterMeterCppTest {
                     std::wstring(L" #") + std::to_wstring(index));
             Assert::IsTrue(difference < 0.002f, message.c_str());
         }
+
     };
+    EventServer FlowMeterTest::eventServer;
 }

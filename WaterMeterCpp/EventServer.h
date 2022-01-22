@@ -23,11 +23,9 @@ public:
     // No need for a destructor. Clients clean up when destroyed, and do so before the server gets destroyed.
     // Deleting the server before the client would cause an access violation when the client gets destroyed.
 
-    explicit EventServer(LogLevel logLevel);
     void provides(EventClient* client, Topic topic);
     void cannotProvide(EventClient* client, Topic topic);
     void cannotProvide(EventClient* client);
-    void setLogLevel(LogLevel logLevel);
     void subscribe(EventClient* client, Topic topic);
     void unsubscribe(EventClient* client, Topic topic);
     void unsubscribe(EventClient* client);
@@ -38,7 +36,7 @@ public:
         const auto provider = _providers.find(topic);
         if (provider != _providers.end()) {
             const auto eventClient = provider->second;
-            publishLog("%s provides %d\n", eventClient, topic, 0L);
+            //publishLog("%s provides %d\n", eventClient, topic, 0L);
             return eventClient->get(topic, defaultValue);
         }
         return defaultValue;
@@ -51,14 +49,17 @@ public:
         if (subscribers != _subscribers.end()) {
             for (auto eventClient : subscribers->second) {
                 if (client != eventClient && !eventClient->isMuted()) {
-                    if (_logLevel == LogLevel::On && log) {
-                        publishLog("Updating %s on %d with '%s'\n", eventClient, topic, payload);
-                    }
+                    //if (_logLevel == LogLevel::On && log) {
+                    //    publishLog("Updating %s on %d with '%s'\n", eventClient, topic, payload);
+                    //}
                     eventClient->update(topic, payload);
                 }
             }
         }
     }
+
+    //void publish(EventClient* client, Topic topic);
+    //void publish(Topic topic);
 
     // Publish to all subscribers including the sender
     template <class payloadType>
@@ -67,12 +68,12 @@ public:
     }
 
 private:
-    void publishLog(const char* format, EventClient* client, Topic topic, const char* payload);
-    void publishLog(const char* format, EventClient* client, Topic topic, long payload);
+    /*void publishLog(const char* format, EventClient* client, Topic topic, const char* payload);
+    void publishLog(const char* format, EventClient* client, Topic topic, long payload); */
 
     std::map<Topic, std::set<EventClient*>> _subscribers;
     std::map<Topic, EventClient*> _providers;
-    LogLevel _logLevel = LogLevel::Off;
+    //LogLevel _logLevel = LogLevel::Off;
     char _numberBuffer[10];
 };
 

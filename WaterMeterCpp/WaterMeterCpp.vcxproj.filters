@@ -18,16 +18,16 @@
     <ClCompile Include="WaterMeterCpp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BatchWriter.cpp">
+    <ClCompile Include="Aggregator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MeasurementWriter.cpp">
+    <ClCompile Include="SampleAggregator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FlowMeter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ResultWriter.cpp">
+    <ClCompile Include="ResultAggregator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MagnetoSensorReader.cpp">
@@ -81,21 +81,42 @@
     <ClCompile Include="LongChangePublisher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Connection.cpp">
+    <ClCompile Include="Connector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataQueue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Clock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeRtosMock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QueueClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Serializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Led.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BatchWriter.h">
+    <ClInclude Include="Aggregator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MeasurementWriter.h">
+    <ClInclude Include="SampleAggregator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FlowMeter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ResultWriter.h">
+    <ClInclude Include="ResultAggregator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MagnetoSensorReader.h">
@@ -158,7 +179,37 @@
     <ClInclude Include="LongChangePublisher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Connection.h">
+    <ClInclude Include="Connector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FreeRtosMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Clock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QueueClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Serializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RingbufferPayload.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Led.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SafeCString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

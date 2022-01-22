@@ -55,14 +55,14 @@ IPAddress& IPAddress::operator=(const uint8_t* address) {
 
 String IPAddress::toString() const {
     char buffer[16];
-    sprintf(buffer, "%u.%u.%u.%u", _address.bytes[0], _address.bytes[1], _address.bytes[2], _address.bytes[3]);
+    safeSprintf(buffer, "%u.%u.%u.%u", _address.bytes[0], _address.bytes[1], _address.bytes[2], _address.bytes[3]);
     return {buffer};
 }
 
 
 String WiFiClass::macAddress() {
     char buffer[20];
-    sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", _mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
+    safeSprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", _mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
     return {buffer};
 }
 
@@ -94,7 +94,7 @@ bool WiFiClass::isConnected() {
 }
 
 bool WiFiClass::setHostname(const char* name) {
-    strcpy(_name, name);
+    safeStrcpy(_name, name);
     return strlen(name) > 0;
 }
 

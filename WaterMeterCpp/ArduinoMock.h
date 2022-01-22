@@ -16,7 +16,10 @@
 #ifndef HEADER_ARDUINOMOCK
 #define HEADER_ARDUINOMOCK
 
+#define WIN32_LEAN_AND_MEAN
 #include <cstdint>
+
+
 #include <string>
 
 typedef uint8_t byte;
@@ -47,7 +50,7 @@ public:
 	const char* getOutput();
 	void setInput(const char* input);
 private:
-	static constexpr int PRINTBUFFER_SIZE = 1024;
+	static constexpr int PRINTBUFFER_SIZE = 2048;
 	char _printBuffer[PRINTBUFFER_SIZE] = {};
 	static constexpr int INPUTBUFFER_SIZE = 80;
 	char _inputBuffer[INPUTBUFFER_SIZE] = {};
@@ -67,6 +70,8 @@ void delay(int delay);
 // for testing only
 uint8_t getPinMode(uint8_t pin);
 void shiftMicros(long long shift);
+
+void configTime(int i, int i1, const char* str, const char* text);
 
 #endif
 

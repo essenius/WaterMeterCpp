@@ -17,14 +17,13 @@
 class TimeServer : public EventClient {
 public:
     explicit TimeServer(EventServer* eventServer);
-    void begin();
-    virtual bool setTime();
-    virtual const char* getTime();
+    virtual void begin();
+    virtual void setTime();
     const char* get(Topic topic, const char* defaultValue) override;
-    bool timeWasSet() const;
+    virtual bool timeWasSet() const;
 
 protected:
-    static constexpr int BUFFER_SIZE = 26;
+    static constexpr int BUFFER_SIZE = 27;
     static char _buffer[BUFFER_SIZE];
     bool _wasSet = false;
 };

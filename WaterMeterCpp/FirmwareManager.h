@@ -27,16 +27,19 @@
 
 class FirmwareManager : public EventClient {
 public:
-    explicit FirmwareManager(EventServer* eventServer);
-    void begin(WiFiClient* client, const char* baseUrl, const char* machineId);
-    bool updateAvailableFor(const char* currentVersion) const;
+    explicit FirmwareManager(EventServer* eventServer, const char* baseUrl, const char* buildVersion);
+    void begin(WiFiClient* client, const char* machineId);
+    bool updateAvailable() const;
     void loadUpdate() const;
-    void tryUpdateFrom(const char* currentVersion) const;
+    void tryUpdate();
 private:
     static constexpr const char* VERSION_EXTENSION = ".version";
     static constexpr const char* IMAGE_EXTENSION = ".bin";
     static constexpr int BASE_URL_SIZE = 100;
     WiFiClient* _client = nullptr;
     char _baseUrl[BASE_URL_SIZE] = {};
+    char _machineId[20] = {};
+    bool _justRebooted = true;
+    const char* _buildVersion;
 };
 #endif
