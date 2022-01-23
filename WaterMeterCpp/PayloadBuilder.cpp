@@ -10,12 +10,7 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #include "PayloadBuilder.h"
-#include <cstring>
-#include <cstdio>
-
 #include "SafeCString.h"
-
-constexpr unsigned long long MICROSECONDS_PER_SECOND = 1000000ULL;
 
 // higher level functions. See also the template function writeParam in .h
 

@@ -12,7 +12,6 @@
 #ifndef HEADER_SAFECSTRING
 #define HEADER_SAFECSTRING
 
-//#include <cstdio>
 #include <cstring>
 
 template <size_t BufferSize>

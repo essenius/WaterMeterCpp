@@ -14,7 +14,7 @@
 
 class MqttGatewayMock : public MqttGateway {
 public:
-    explicit MqttGatewayMock(EventServer* eventServer);
+    explicit MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient);
     void announceReady() override { }
     void begin(Client* client, const char* clientName) override { }
     void connect() override { }
@@ -30,4 +30,5 @@ public:
 private:
     bool _connect = false;
     int _announceCounter = 0;
+    constexpr static MqttConfig _mqttConfig{ "broker", 1883, "user", "password" };
 };

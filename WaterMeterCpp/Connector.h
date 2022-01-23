@@ -38,7 +38,7 @@ public:
     static void task(void* parameter);
 
     ConnectionState loop();
-    ConnectionState connectMqtt();
+    ConnectionState connect();
 private:
     unsigned long _wifiConnectTimestamp = 0UL;
     unsigned long _mqttConnectTimestamp = 0UL;

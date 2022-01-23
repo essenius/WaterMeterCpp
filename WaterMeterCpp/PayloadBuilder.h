@@ -11,6 +11,8 @@
 
 #ifndef HEADER_PAYLOADBUILDER
 #define HEADER_PAYLOADBUILDER
+#include <cstdint>
+
 #include "Clock.h"
 
 class PayloadBuilder {

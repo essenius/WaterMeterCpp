@@ -42,12 +42,7 @@ void Connector::setup() {
     _eventServer->subscribe(_queueClient, Topic::NonIdleRate);
     _eventServer->subscribe(_queueClient, Topic::ResetSensor);
 
-
-#ifdef CONFIG_USE_STATIC_IP
-    _wifi->configure(CONFIG_LOCAL_IP, CONFIG_GATEWAY, CONFIG_SUBNETMASK, CONFIG_DNS_1, CONFIG_DNS_2);
-#else
-    _wifi->configure(Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP, Wifi::NO_IP);
-#endif
+    _wifi->configure(&IP_CONFIG);
 
 #ifdef CONFIG_USE_TLS
     _wifi->setCertificates(CONFIG_ROOTCA_CERTIFICATE, CONFIG_DEVICE_CERTIFICATE, CONFIG_DEVICE_PRIVATE_KEY);
@@ -56,7 +51,7 @@ void Connector::setup() {
 }
 
 ConnectionState Connector::loop() {
-    const auto state = connectMqtt();
+    const auto state = connect();
     delay(100);
     return state;
 }
@@ -69,7 +64,7 @@ void Connector::task(void *parameter) {
     }
 }
 
-ConnectionState Connector::connectMqtt() {
+ConnectionState Connector::connect() {
     switch (_state.get()) {
     case ConnectionState::Init:
         handleInit();
@@ -160,12 +155,15 @@ void Connector::handleRequestTime() {
 }
 
 void Connector::handleSettingTime() {
+    if (!_wifi->isConnected()) {
+        _state = ConnectionState::Disconnected;
+        return;
+    }
     if (_timeServer->timeWasSet()) {
         _wifi->announceReady();
         _state = ConnectionState::CheckFirmware;
         return;
     }
-
     const unsigned long timesetWaitDuration = micros() - _requestTimeTimestamp;
     if (timesetWaitDuration > TIMESERVER_WAIT_DURATION) {
         // setting time failed. Retry.
@@ -229,6 +227,7 @@ void Connector::handleMqttReady() {
         _state = ConnectionState::WifiReady;
     }
     // process all waiting batches that we need to send out
+    _mqttGateway->sendPendingMessages();
     while (_dataQueue->receive()) {}
 }
 

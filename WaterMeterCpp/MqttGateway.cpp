@@ -31,18 +31,18 @@ constexpr const char* const TYPE_STRING = "string";
 constexpr const char* const LAST_WILL_MESSAGE = "lost";
 constexpr bool SETTABLE = true;
 
-// TODO: make property (and potentially inject via constructor)
-
-PubSubClient mqttClient;
-
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
 MqttGateway::MqttGateway(
-    EventServer* eventServer,
-    const char* broker, const int port, const char* user, const char* password,
-    const char* buildVersion) :
+    EventServer* eventServer, PubSubClient* mqttClient, const MqttConfig* mqttConfig, const DataQueue* dataQueue, const char* buildVersion) :
     EventClient(eventServer),
-    _broker(broker), _user(user), _password(password), _port(port), _buildVersion(buildVersion) {}
+    _mqttClient(mqttClient),
+    _broker(mqttConfig->broker),
+    _user(mqttConfig->user),
+    _password(mqttConfig->password),
+    _port(mqttConfig->port),
+    _dataQueue(dataQueue),
+    _buildVersion(buildVersion) {}
 
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
@@ -69,11 +69,11 @@ void MqttGateway::begin(Client* client, const char* clientName) {
     if (strlen(_announcementBuffer) == 0) {
         prepareAnnouncementBuffer();
     }
-    mqttClient.setClient(*client);
-    mqttClient.setBufferSize(512);
-    mqttClient.setServer(_broker, _port);
+    _mqttClient->setClient(*client);
+    _mqttClient->setBufferSize(512);
+    _mqttClient->setServer(_broker, _port);
     // TODO: optimize in a way that works on Arduino
-    mqttClient.setCallback(std::bind(&MqttGateway::callback, this, _1, _2, _3));
+    _mqttClient->setCallback(std::bind(&MqttGateway::callback, this, _1, _2, _3));
     connect();
 }
 
@@ -111,10 +111,10 @@ void MqttGateway::connect() {
 
     bool success;
     if (_user == nullptr || strlen(_user) == 0) {
-        success = mqttClient.connect(_clientName, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
+        success = _mqttClient->connect(_clientName, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
     }
     else {
-        success = mqttClient.connect(_clientName, _user, _password, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
+        success = _mqttClient->connect(_clientName, _user, _password, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
     }
 
     // shoudl get picked up by isConnected later
@@ -124,19 +124,19 @@ void MqttGateway::connect() {
 
     // if this doesn't work but the connection is still up, we may still be able to run.
     safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, "+/+/set");
-    if (!mqttClient.subscribe(_topicBuffer)) {
+    if (!_mqttClient->subscribe(_topicBuffer)) {
         publishError("Could not subscribe to setters");
     }
 }
 
 void MqttGateway::handleQueue() {
     if (isConnected()) {
-        mqttClient.loop();
+        _mqttClient->loop();
     }
 }
 
 bool MqttGateway::isConnected() {
-    return mqttClient.connected();
+    return _mqttClient->connected();
 }
 
 bool MqttGateway::hasAnnouncement() {
@@ -167,8 +167,9 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD,
-            DEVICE_MAC);
+    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO,
+                DEVICE_BUILD,
+                DEVICE_MAC);
     prepareNode(DEVICE, "Device", "1", payload);
     prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap Memory", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_FREE_STACK, "Free Stack Memory", TYPE_INTEGER);
@@ -206,7 +207,8 @@ void MqttGateway::prepareNode(const char* node, const char* name, const char* ty
 }
 
 void MqttGateway::prepareProperty(
-    const char* node, const char* property, const char* attribute, const char* dataType, const char* format, const bool settable) {
+    const char* node, const char* property, const char* attribute, const char* dataType, const char* format,
+    const bool settable) {
     safeSprintf(_topicBuffer, "%s/%s", node, property);
     prepareEntity(_topicBuffer, "$name", attribute);
     prepareEntity(_topicBuffer, "$dataType", dataType);
@@ -218,13 +220,13 @@ void MqttGateway::prepareProperty(
     }
 }
 
-bool MqttGateway::publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain) {
+bool MqttGateway::publishEntity(const char* baseTopic, const char* entity, const char* payload, const bool retain) {
     safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, baseTopic, entity);
-    return mqttClient.publish(_topicBuffer, payload, retain);
+    return _mqttClient->publish(_topicBuffer, payload, retain);
 }
 
 void MqttGateway::publishError(const char* message) {
-    safeSprintf(_topicBuffer, "MQTT: %s [state = %d]", message, mqttClient.state());
+    safeSprintf(_topicBuffer, "MQTT: %s [state = %d]", message, _mqttClient->state());
     _eventServer->publish<const char*>(Topic::Error, _topicBuffer);
 }
 
@@ -235,18 +237,58 @@ bool MqttGateway::publishNextAnnouncement() {
     const char* payload = _announcementPointer;
     _announcementPointer += strlen(payload) + 1;
     safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, topic);
-    return mqttClient.publish(_topicBuffer, payload, true);
+    return _mqttClient->publish(_topicBuffer, payload, true);
 }
 
-bool MqttGateway::publishProperty(const char* node, const char* property, const char* payload, bool retain) {
+bool MqttGateway::publishProperty(const char* node, const char* property, const char* payload, const bool retain) {
     char baseTopic[50];
     safeSprintf(baseTopic, "%s/%s", _clientName, node);
     return publishEntity(baseTopic, property, payload, retain);
 }
 
+void MqttGateway::storePendingMessage(const Topic topic, const long payload) {
+    _pendingMessages[topic] = payload;
+}
+
+void MqttGateway::sendPendingMessages() {
+    for (auto iterator = _pendingMessages.begin(); iterator != _pendingMessages.end();) {
+        update(iterator->first, iterator->second);
+        iterator = _pendingMessages.erase(iterator);
+    }
+}
+
+void MqttGateway::update(const Topic topic, long payload) {
+    if (!isConnected()) {
+        storePendingMessage(topic, payload);
+        return;
+    }
+    // making sure we don't call update (topic, const char*) here
+    char numberBuffer[20];
+    safeSprintf(numberBuffer, "%ld", payload);
+    publishUpdate(topic, numberBuffer);
+}
+
 // incoming event from EventServer
 // TODO: this gets lost when we get this during a disconnect. Fix that.
 void MqttGateway::update(const Topic topic, const char* payload) {
+    if (!isConnected()) {
+        if (topic == Topic::Error || topic == Topic::Info) {
+            RingbufferPayload bufferPayload{};
+            bufferPayload.topic = topic;
+            bufferPayload.timestamp = Clock::getTimestamp();
+            safeStrcpy(bufferPayload.buffer.message, payload);
+            // if this doesn't work (e.g. buffer full), we discard the message
+            if (!_dataQueue->send(&bufferPayload)) {
+                _eventServer->publish(Topic::Blocked, LONG_TRUE);
+            }
+        }
+        // discard other topics. Results and samples should not come in while disconnected
+        return;
+    }
+    publishUpdate(topic, payload);
+}
+
+void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
     const auto entry = TOPIC_MAP.find(topic);
     if (entry != TOPIC_MAP.end()) {
         const auto topicPair = entry->second;

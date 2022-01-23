@@ -25,6 +25,7 @@
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
+#include "../WaterMeterCpp/PubSubClientMock.h"
 #include "../WaterMeterCpp/ResultAggregator.h"
 #include "../WaterMeterCpp/TimeServer.h"
 #include "../WaterMeterCpp/Wifi.h"
@@ -58,8 +59,7 @@ constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
             EventServer samplerEventServer;
             EventServer communicationEventServer;
             LedDriver ledDriver(&communicationEventServer);
-
-            Wifi wifi(&communicationEventServer, CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, CONFIG_DEVICE_NAME, CONFIG_WIFI_BSSID);
+            Wifi wifi(&communicationEventServer, &WIFI_CONFIG);
             TimeServer timeServer(&communicationEventServer);
             Device device(&samplerEventServer);
             MagnetoSensorReader sensorReader(&samplerEventServer);
@@ -70,9 +70,8 @@ constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
             DataQueue dataQueue(&communicationEventServer, &serializer);
             RingbufferPayload resultPayload{};
             Log logger(&communicationEventServer);
-
-            MqttGateway mqttGateway(&communicationEventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
-                CONFIG_MQTT_PASSWORD, BUILD_VERSION);
+            PubSubClient mqttClient;
+            MqttGateway mqttGateway(&communicationEventServer, &mqttClient, &MQTT_CONFIG, &dataQueue, BUILD_VERSION);
             FirmwareManager firmwareManager(&communicationEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
 
             SampleAggregator sampleAggregator(&samplerEventServer, &dataQueue, &measurementPayload);

@@ -14,6 +14,7 @@
 
 #include "EventClient.h"
 #include "PayloadBuilder.h"
+#include "secrets.h"
 
 #ifdef ESP32
 #include <WiFi.h>
@@ -25,8 +26,7 @@
 class Wifi : public EventClient {
 
 public:
-    Wifi(EventServer* eventServer, const char* ssid, const char* password,
-         const char* hostName = nullptr, const uint8_t* bssid = nullptr);
+    Wifi(EventServer* eventServer, const WifiConfig* wifiConfig);
     virtual void begin();
     const char* getHostName() const;
     const char* get(Topic topic, const char* defaultValue) override;
@@ -35,16 +35,13 @@ public:
     virtual bool isConnected();
     virtual void reconnect();
     virtual void disconnect();
-    void setCertificates(const char* rootCaCert, const char* deviceCert, const char* devicePrivateKey);
+    void setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey);
     const char* statusSummary();
     WiFiClient* getClient();
-    void configure(IPAddress localIp, IPAddress gatewayIp, IPAddress subnetMaskIp, IPAddress dns1, IPAddress dns2);
+    void configure(const IpConfig* ipConfig = &IP_AUTO_CONFIG);
     virtual bool needsReinit();
-    static const IPAddress NO_IP;
-
 
 private:
-
     static constexpr int HOSTNAME_LENGTH = 64;
     char _hostNameBuffer[HOSTNAME_LENGTH] = {0};
     const char* _ssid; // not volatile

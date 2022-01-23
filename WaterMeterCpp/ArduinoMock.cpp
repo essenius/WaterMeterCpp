@@ -15,7 +15,6 @@
 #include "ArduinoMock.h"
 #include <cstdio>
 #include <chrono>
-#include <cstring>
 #include <cstdarg>
 #include <iostream>
 #include "SafeCString.h"
@@ -23,12 +22,12 @@
 HardwareSerial Serial;
 auto startTime = std::chrono::high_resolution_clock::now();
 
-char* dtostrf(float value, signed char width, unsigned char precision, char* buffer) {
+/* char* dtostrf(float value, signed char width, unsigned char precision, char* buffer) {
 		char fmt[20];
 		safeSprintf(fmt, "%%%d.%df", width, precision);
 		sprintf(buffer, fmt, value);
 		return buffer;
-}
+}*/
 
 constexpr uint8_t PIN_COUNT = 36;
 uint8_t pinValue[PIN_COUNT];

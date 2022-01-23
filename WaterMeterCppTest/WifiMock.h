@@ -30,6 +30,7 @@ public:
 private:
     bool _isConnected = false;
     bool _needsReconnect = true;
+    static constexpr WifiConfig _config{ "ssid", "password", nullptr, nullptr };
 };
 
 

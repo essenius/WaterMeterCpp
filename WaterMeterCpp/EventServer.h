@@ -31,49 +31,38 @@ public:
     void unsubscribe(EventClient* client);
 
     // Request a topic. There can be only one provider
-    template <class payloadType>
-    payloadType request(Topic topic, payloadType defaultValue) {
+    template <class PayloadType>
+    PayloadType request(Topic topic, PayloadType defaultValue) {
         const auto provider = _providers.find(topic);
         if (provider != _providers.end()) {
             const auto eventClient = provider->second;
-            //publishLog("%s provides %d\n", eventClient, topic, 0L);
             return eventClient->get(topic, defaultValue);
         }
         return defaultValue;
     }
 
     // Publish to all subscribers except the sender
-    template <class payloadType>
-    void publish(EventClient* client, Topic topic, payloadType payload, bool log = true) {
+    template <class PayloadType>
+    void publish(EventClient* client, Topic topic, PayloadType payload, bool log = true) {
         const auto subscribers = _subscribers.find(topic);
         if (subscribers != _subscribers.end()) {
             for (auto eventClient : subscribers->second) {
                 if (client != eventClient && !eventClient->isMuted()) {
-                    //if (_logLevel == LogLevel::On && log) {
-                    //    publishLog("Updating %s on %d with '%s'\n", eventClient, topic, payload);
-                    //}
                     eventClient->update(topic, payload);
                 }
             }
         }
     }
 
-    //void publish(EventClient* client, Topic topic);
-    //void publish(Topic topic);
-
     // Publish to all subscribers including the sender
-    template <class payloadType>
-    void publish(Topic topic, payloadType payload) {
+    template <class PayloadType>
+    void publish(Topic topic, PayloadType payload) {
         publish(NULL, topic, payload);
     }
 
 private:
-    /*void publishLog(const char* format, EventClient* client, Topic topic, const char* payload);
-    void publishLog(const char* format, EventClient* client, Topic topic, long payload); */
-
     std::map<Topic, std::set<EventClient*>> _subscribers;
     std::map<Topic, EventClient*> _providers;
-    //LogLevel _logLevel = LogLevel::Off;
     char _numberBuffer[10];
 };
 

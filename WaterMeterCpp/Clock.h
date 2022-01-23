@@ -17,7 +17,6 @@
 #include <sys/time.h>
 #else
 #include <ctime>
-#include <cstdint>
 #include <cstdio>
 struct timeval {
     time_t tv_sec; // seconds 
@@ -29,6 +28,7 @@ typedef unsigned long long Timestamp;
 
 class Clock {
     public:
+
     static Timestamp getTimestamp();
     static bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
 };

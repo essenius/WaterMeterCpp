@@ -16,7 +16,6 @@
 #include <WiFiClient.h>
 #endif
 
-#include <cstring>
 #include "FirmwareManager.h" 
 #include "EventServer.h"
 #include "SafeCString.h"

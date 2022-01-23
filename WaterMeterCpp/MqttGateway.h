@@ -13,6 +13,9 @@
 #define HEADER_MQTTGATEWAY
 #include <map>
 #include "EventServer.h"
+#include "config.h"
+#include "DataQueue.h"
+
 
 #ifdef ESP32
 #include <ESP.h>
@@ -60,8 +63,7 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
 
 class MqttGateway : public EventClient {
 public:
-    MqttGateway(EventServer* eventServer, const char* broker, int port, const char* user, const char* password,
-                const char* buildVersion);
+    MqttGateway(EventServer* eventServer, PubSubClient* mqttClient, const MqttConfig* mqttConfig, const DataQueue* dataQueue, const char* buildVersion);
     virtual void announceReady();
     virtual void begin(Client* client, const char* clientName);
     virtual void connect();
@@ -71,21 +73,27 @@ public:
     void publishError(const char* message);
     virtual bool publishNextAnnouncement();
     void update(Topic topic, const char* payload) override;
+    void publishUpdate(Topic topic, const char* payload);
+    void sendPendingMessages();
+    void update(Topic topic, long payload) override;
 
 protected:
+    PubSubClient* _mqttClient{};
     const char* _clientName = nullptr;
     unsigned long _reconnectTimestamp = 0UL;
     const char* _broker = nullptr;
     const char* _user;
     const char* _password;
     int _port = 1883;
-    const char* _buildVersion;
     int _announceIndex = 0;
+    const DataQueue* _dataQueue;
+    const char* _buildVersion;
     static constexpr int TOPIC_BUFFER_SIZE = 255;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = {0};
     static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2048; // using 1812 now.
     char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = {0};
     char* _announcementPointer = _announcementBuffer;
+    std::map<Topic, long> _pendingMessages;
 
     void callback(const char* topic, const byte* payload, unsigned length);
 
@@ -99,6 +107,7 @@ protected:
 
     bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
     bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);
+    void storePendingMessage(Topic topic, long payload);
 };
 
 #endif

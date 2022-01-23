@@ -29,14 +29,14 @@
 #include "Connector.h"
 #include "FirmwareManager.h"
 #include "Log.h"
+#include "PubSubClientMock.h"
 #include "SampleAggregator.h"
 #include "QueueClient.h"
 #include "Sampler.h"
 #include "secrets.h" // for all CONFIG constants
 
-
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.1";
+constexpr const char* const BUILD_VERSION = "0.100.2";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle takes about 8ms max, so that is also within the limit.
@@ -45,7 +45,7 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 EventServer samplerEventServer;
 EventServer communicatorEventServer;
 LedDriver ledDriver(&communicatorEventServer);
-Wifi wifi(&communicatorEventServer, CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, CONFIG_DEVICE_NAME, CONFIG_WIFI_BSSID);
+Wifi wifi(&communicatorEventServer, &WIFI_CONFIG);
 TimeServer timeServer(&communicatorEventServer);
 
 Device device(&samplerEventServer);
@@ -56,8 +56,8 @@ PayloadBuilder payloadBuilder;
 Serializer serializer(&payloadBuilder);
 DataQueue dataQueue(&communicatorEventServer, &serializer);
 RingbufferPayload resultPayload;
-MqttGateway mqttGateway(&communicatorEventServer, CONFIG_MQTT_BROKER, CONFIG_MQTT_PORT, CONFIG_MQTT_USER,
-    CONFIG_MQTT_PASSWORD, BUILD_VERSION);
+PubSubClient mqttClient;
+MqttGateway mqttGateway(&communicatorEventServer, &mqttClient, &MQTT_CONFIG, &dataQueue, BUILD_VERSION);
 FirmwareManager firmwareManager(&communicatorEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
 Log logger(&communicatorEventServer);
 QueueClient samplerQueueClient(&samplerEventServer);

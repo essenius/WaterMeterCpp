@@ -176,6 +176,7 @@
     <ClInclude Include="ArduinoMock.h" />
     <ClInclude Include="Aggregator.h" />
     <ClInclude Include="ChangePublisher.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="Connector.h" />
     <ClInclude Include="ConnectionState.h" />
     <ClInclude Include="DataQueue.h" />

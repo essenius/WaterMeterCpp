@@ -12,8 +12,8 @@
 #include "pch.h"
 #include "MqttGatewayMock.h"
 
-MqttGatewayMock::MqttGatewayMock(EventServer* eventServer) :
-    MqttGateway(eventServer, "broker", 1883, "user", "password", "1.0.0") {}
+MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient) :
+    MqttGateway(eventServer, mqttClient, &_mqttConfig, nullptr, "1.0.0") {}
 
 bool MqttGatewayMock::hasAnnouncement() {
     _announceCounter++;

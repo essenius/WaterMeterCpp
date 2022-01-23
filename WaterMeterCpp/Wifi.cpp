@@ -11,24 +11,19 @@
 
 #ifdef ESP32
 #include <HTTPClient.h>
-#else
-#include <cstring>
 #endif
 
 #include "Wifi.h"
 #include "SafeCString.h"
-
 #include "EventServer.h"
 
-const IPAddress Wifi::NO_IP = IPAddress(0, 0, 0, 0);
-
-Wifi::Wifi(EventServer* eventServer, const char* ssid, const char* password, const char* hostName, const uint8_t* bssid) :
-    EventClient(eventServer),  _ssid(ssid), _password(password), _bssid(bssid) {
-    if (hostName == nullptr) {
+Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig) :
+    EventClient(eventServer),  _ssid(wifiConfig->ssid), _password(wifiConfig->password), _bssid(wifiConfig->bssid) {
+    if (wifiConfig->deviceName == nullptr) {
         _hostName = nullptr;
     }
     else {
-        safeStrcpy(_hostNameBuffer, hostName);
+        safeStrcpy(_hostNameBuffer, wifiConfig->deviceName);
         _hostName = _hostNameBuffer;
     }
     _macAddress[0] = 0;
@@ -37,29 +32,27 @@ Wifi::Wifi(EventServer* eventServer, const char* ssid, const char* password, con
 
 WiFiClient* Wifi::getClient() { return &_wifiClient; }
 
-void Wifi::configure(
-    const IPAddress localIp, const IPAddress gatewayIp, const IPAddress subnetMaskIp, 
-    const IPAddress dns1Ip, const IPAddress dns2Ip) {
-    _localIp = localIp;
-    if (gatewayIp == NO_IP && localIp != NO_IP) {
-        _gatewayIp = localIp;
+void Wifi::configure(const IpConfig* ipConfig) {
+    _localIp = ipConfig->localIp;
+    if (ipConfig->gateway == NO_IP && ipConfig->localIp != NO_IP) {
+        _gatewayIp = ipConfig->localIp;
         _gatewayIp[3] = 1;
     }
     else {
-        _gatewayIp = gatewayIp;
+        _gatewayIp = ipConfig->gateway;
     }
-    _subnetMaskIp = subnetMaskIp == NO_IP ? IPAddress(255, 255, 255, 0) : subnetMaskIp;
+    _subnetMaskIp = ipConfig->subnetMask == NO_IP ? IPAddress(255, 255, 255, 0) : ipConfig->subnetMask;
 
     bool result;
-    if (dns1Ip == NO_IP) {
+    if (ipConfig->primaryDns == NO_IP) {
         result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp);
     }
     else {
-        if (dns2Ip == NO_IP) {
-            result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, dns1Ip);
+        if (ipConfig->secondaryDns == NO_IP) {
+            result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, ipConfig->primaryDns);
         }
         else {
-            result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, dns1Ip, dns2Ip);
+            result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, ipConfig->primaryDns, ipConfig->secondaryDns);
         }
     }
     if (!result) {
@@ -97,8 +90,8 @@ void Wifi::init() {
     WiFi.begin(_ssid, _password, 0, _bssid);
 }
 
-void Wifi::setCertificates(const char* rootCACertificate, const char* deviceCertificate, const char* devicePrivateKey) {
-    _wifiClient.setCACert(rootCACertificate);
+void Wifi::setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey) {
+    _wifiClient.setCACert(rootCaCertificate);
     _wifiClient.setCertificate(deviceCertificate);
     _wifiClient.setPrivateKey(devicePrivateKey);
 }
