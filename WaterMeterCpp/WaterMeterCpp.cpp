@@ -13,8 +13,10 @@
 
 #ifdef ESP32
 #include <ESP.h>
+#include <PubSubClient.h>
 #else
 #include "ArduinoMock.h"
+#include "PubSubClientMock.h"
 #endif
 
 #include "Device.h"
@@ -29,7 +31,6 @@
 #include "Connector.h"
 #include "FirmwareManager.h"
 #include "Log.h"
-#include "PubSubClientMock.h"
 #include "SampleAggregator.h"
 #include "QueueClient.h"
 #include "Sampler.h"
