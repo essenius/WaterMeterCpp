@@ -14,7 +14,7 @@
 
 #include "EventClient.h"
 #include "PayloadBuilder.h"
-#include "secrets.h"
+#include "config.h"
 
 #ifdef ESP32
 #include <WiFi.h>
