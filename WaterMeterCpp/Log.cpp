@@ -46,7 +46,7 @@ Log::Log(EventServer* eventServer) :
 
 void Log::begin() {
     Serial.begin(115200);
-    Serial.println("Starting");
+    update(Topic::Info,"Starting");
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::Error);
     _eventServer->subscribe(this, Topic::Info);
@@ -67,7 +67,7 @@ void Log::update(Topic topic, const char* payload) {
         Serial.printf("Error: %s\n", payload);
         break;
     case Topic::Info:
-        Serial.printf("Info: %s\n", payload);
+        Serial.println(payload);
         break;
     case Topic::Flatline:
         Serial.printf("Flatline: %s\n", payload);

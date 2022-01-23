@@ -30,6 +30,8 @@ namespace WaterMeterCppTest {
             Assert::IsFalse(timeServer.timeWasSet(), L"Time was not set");
 
             timeServer.begin();
+            Assert::IsFalse(timeServer.timeWasSet(), L"Time was not set");
+            timeServer.setTime();
             Assert::IsTrue(timeServer.timeWasSet(), L"Time was set");
 
             // trigger the get function with Topic::Time

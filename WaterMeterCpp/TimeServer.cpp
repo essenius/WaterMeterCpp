@@ -25,7 +25,6 @@ char TimeServer::_buffer[BUFFER_SIZE] = {'0'};
 TimeServer::TimeServer(EventServer* eventServer) : EventClient(eventServer) {}
 
 void TimeServer::begin() {
-    setTime();
     _eventServer->provides(this, Topic::Time);
 }
 
@@ -52,4 +51,3 @@ const char* TimeServer::get(Topic topic, const char* defaultValue) {
     }
     return defaultValue;
 }
-

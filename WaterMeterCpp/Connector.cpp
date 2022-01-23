@@ -148,7 +148,7 @@ void Connector::handleRequestTime() {
         _state = ConnectionState::CheckFirmware;
         return;
     }
-    _timeServer->begin();
+    _timeServer->setTime();
     _state = ConnectionState::SettingTime;
     _requestTimeTimestamp = micros();
 }

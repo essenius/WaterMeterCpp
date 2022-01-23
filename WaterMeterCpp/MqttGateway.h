@@ -20,6 +20,7 @@
 #ifdef ESP32
 #include <ESP.h>
 #include "Client.h"
+#include <PubSubClient.h>
 #else
 #include "NetMock.h"
 #include "PubSubClientMock.h"

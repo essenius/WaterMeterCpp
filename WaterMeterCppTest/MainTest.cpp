@@ -96,7 +96,7 @@ constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
             while (communicationQueueClient.receive()) { }
             Assert::AreEqual(Led::OFF, Led::get(Led::AUX), L"AUX still off");
             Assert::AreEqual(Led::ON, Led::get(Led::RUNNING), L"RUNNING on");
-            Assert::AreEqual("Starting\n[] Topic '6': 0\n", Serial.getOutput());
+            Assert::AreEqual("[] Starting\n[] Topic '6': 0\n", Serial.getOutput());
             communicationEventServer.unsubscribe(&logger, Topic::Sample);
             Serial.clearOutput();
             for (int i = 0; i < ResultAggregator::FLATLINE_STREAK - 1; i++) {

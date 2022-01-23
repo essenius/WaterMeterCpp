@@ -49,22 +49,22 @@ void Sampler::loop() {
     // Duration gets picked up by resultWriter, so must be published before sending
     const unsigned long measureDurationTimestamp = micros();
     // making sure to use durations to operate on, not timestamps -- to avoid overflow issues
-    const unsigned long duration = measureDurationTimestamp - startLoopTimestamp + _additionalDuration;
-    _eventServer->publish(Topic::ProcessTime, static_cast<long>(duration));
+    const unsigned long durationSoFar = measureDurationTimestamp - startLoopTimestamp;
+    _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar  + _additionalDuration));
     _resultAggregator->send();
 
     _eventServer->publish(Topic::Processing, LONG_FALSE);
 
-    const unsigned long usedTime = micros() - startLoopTimestamp;
+    const unsigned long duration = micros() - startLoopTimestamp;
     // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
-    _additionalDuration = usedTime - duration;
+    _additionalDuration = duration - durationSoFar;
 
     // not using delayMicroseconds() as that is less accurate. Sometimes up to 300 us too much wait time.
-    if (usedTime > MEASURE_INTERVAL_MICROS) {
+    if (duration > MEASURE_INTERVAL_MICROS) {
         // It took too long. If we're still within one interval, we might be able to catch up
         // Intervene if it gets more than that
 
-        _eventServer->publish(Topic::TimeOverrun, static_cast<long>(usedTime - MEASURE_INTERVAL_MICROS));
+        _eventServer->publish(Topic::TimeOverrun, static_cast<long>(duration - MEASURE_INTERVAL_MICROS));
         const unsigned long extraTimeNeeded = micros() - _nextMeasureTime;
         _nextMeasureTime += (extraTimeNeeded / MEASURE_INTERVAL_MICROS) * MEASURE_INTERVAL_MICROS;
     }

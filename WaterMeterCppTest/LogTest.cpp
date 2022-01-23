@@ -64,7 +64,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual("", Serial.getOutput());
 
             eventServer.publish(Topic::Info, 24);
-            Assert::AreEqual(" Info: 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Info logs long OK");
+            Assert::AreEqual(" 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Info logs long OK");
 
             /* Assert::IsTrue(std::regex_match(
                                Serial.getOutput(),

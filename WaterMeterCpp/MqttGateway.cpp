@@ -19,7 +19,7 @@
 #include "PubSubClientMock.h"
 #endif
 
-#include <cstring>
+#include "SafeCstring.h"
 
 #include "MqttGateway.h"
 

@@ -13,6 +13,7 @@
 #define HEADER_SAFECSTRING
 
 #include <cstring>
+#include <stdio.h>
 
 template <size_t BufferSize>
 void safeStrcpy(char (&buffer)[BufferSize], const char* source) {
