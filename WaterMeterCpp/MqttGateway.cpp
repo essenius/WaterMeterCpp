@@ -37,10 +37,7 @@ MqttGateway::MqttGateway(
     EventServer* eventServer, PubSubClient* mqttClient, const MqttConfig* mqttConfig, const DataQueue* dataQueue, const char* buildVersion) :
     EventClient(eventServer),
     _mqttClient(mqttClient),
-    _broker(mqttConfig->broker),
-    _user(mqttConfig->user),
-    _password(mqttConfig->password),
-    _port(mqttConfig->port),
+    _mqttConfig(mqttConfig),
     _dataQueue(dataQueue),
     _buildVersion(buildVersion) {}
 
@@ -71,7 +68,7 @@ void MqttGateway::begin(Client* client, const char* clientName) {
     }
     _mqttClient->setClient(*client);
     _mqttClient->setBufferSize(512);
-    _mqttClient->setServer(_broker, _port);
+    _mqttClient->setServer(_mqttConfig->broker, _mqttConfig->port);
     // TODO: optimize in a way that works on Arduino
     _mqttClient->setCallback(std::bind(&MqttGateway::callback, this, _1, _2, _3));
     connect();
@@ -110,11 +107,11 @@ void MqttGateway::connect() {
     safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, "$state");
 
     bool success;
-    if (_user == nullptr || strlen(_user) == 0) {
+    if (_mqttConfig->user == nullptr || strlen(_mqttConfig->user) == 0) {
         success = _mqttClient->connect(_clientName, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
     }
     else {
-        success = _mqttClient->connect(_clientName, _user, _password, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
+        success = _mqttClient->connect(_clientName, _mqttConfig->user, _mqttConfig->password, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
     }
 
     // shoudl get picked up by isConnected later

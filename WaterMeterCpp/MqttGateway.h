@@ -81,10 +81,11 @@ protected:
     PubSubClient* _mqttClient{};
     const char* _clientName = nullptr;
     unsigned long _reconnectTimestamp = 0UL;
-    const char* _broker = nullptr;
-    const char* _user;
-    const char* _password;
-    int _port = 1883;
+    const MqttConfig* _mqttConfig;
+    //const char* _broker = nullptr;
+    //const char* _user;
+    //const char* _password;
+    //int _port = 1883;
     int _announceIndex = 0;
     const DataQueue* _dataQueue;
     const char* _buildVersion;

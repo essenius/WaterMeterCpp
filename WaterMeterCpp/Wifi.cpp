@@ -18,7 +18,7 @@
 #include "EventServer.h"
 
 Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig) :
-    EventClient(eventServer),  _ssid(wifiConfig->ssid), _password(wifiConfig->password), _bssid(wifiConfig->bssid) {
+    EventClient(eventServer),  _wifiConfig(wifiConfig) {
     if (wifiConfig->deviceName == nullptr) {
         _hostName = nullptr;
     }
@@ -87,7 +87,7 @@ void Wifi::init() {
     _hostName = _hostNameBuffer;
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(_ssid, _password, 0, _bssid);
+    WiFi.begin(_wifiConfig->ssid, _wifiConfig->password, 0, _wifiConfig->bssid);
 }
 
 void Wifi::setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey) {

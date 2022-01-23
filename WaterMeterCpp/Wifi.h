@@ -44,9 +44,7 @@ public:
 private:
     static constexpr int HOSTNAME_LENGTH = 64;
     char _hostNameBuffer[HOSTNAME_LENGTH] = {0};
-    const char* _ssid; // not volatile
-    const char* _password; // not volatile
-    const uint8_t* _bssid; // not volatile
+    const WifiConfig* _wifiConfig;
     PayloadBuilder _payloadBuilder;
     WiFiClientSecure _wifiClient;
     IPAddress _localIp = NO_IP;
