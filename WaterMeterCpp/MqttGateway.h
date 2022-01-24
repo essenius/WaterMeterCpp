@@ -46,6 +46,7 @@ constexpr const char* const RESULT_IDLE_RATE = "idle-rate";
 constexpr const char* const RESULT_NON_IDLE_RATE = "non-idle-rate";
 constexpr const char* const RESULT_RATE = "rate";
 constexpr const char* const RESULT_VALUES = "values";
+constexpr const char* const STATE = "$state";
 
 static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::BatchSize, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}},
@@ -59,7 +60,8 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK}},
     {Topic::Error, {DEVICE, DEVICE_ERROR}},
     {Topic::Info, {DEVICE, DEVICE_INFO}},
-    {Topic::Flatline, {DEVICE, DEVICE_RESET_SENSOR}}
+    {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}},
+    {Topic::Alert, {EMPTY, STATE}}
 };
 
 class MqttGateway : public EventClient {
@@ -83,10 +85,6 @@ protected:
     const char* _clientName = nullptr;
     unsigned long _reconnectTimestamp = 0UL;
     const MqttConfig* _mqttConfig;
-    //const char* _broker = nullptr;
-    //const char* _user;
-    //const char* _password;
-    //int _port = 1883;
     int _announceIndex = 0;
     const DataQueue* _dataQueue;
     const char* _buildVersion;

@@ -16,12 +16,13 @@ Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, Fl
     _eventServer(eventServer), _sensorReader(sensorReader), _flowMeter(flowMeter),
     _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _device(device), _queueClient(queueClient) {}
 
-void Sampler::setup() {
+void Sampler::setup(const unsigned long samplePeriod) {
+    _samplePeriod = samplePeriod;
+    _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
     _sensorReader->begin();
     _flowMeter->begin();
     _eventServer->subscribe(_queueClient, Topic::Blocked);
     _eventServer->subscribe(_queueClient, Topic::Exclude);
-    _eventServer->subscribe(_queueClient, Topic::Flatline);
     _eventServer->subscribe(_queueClient, Topic::Flow);
     _eventServer->subscribe(_queueClient, Topic::Peak);
     _eventServer->subscribe(_queueClient, Topic::Processing);
@@ -38,13 +39,13 @@ void Sampler::begin() {
 
 void Sampler::loop() {
     const unsigned long startLoopTimestamp = micros();
-    _nextMeasureTime += MEASURE_INTERVAL_MICROS;
+    _nextMeasureTime += _samplePeriod;
     _eventServer->publish(Topic::Processing, LONG_TRUE);
-    const SensorReading measure = _sensorReader->read();
+    const int16_t measure = _sensorReader->read();
 
     // this triggers flowMeter and measurementWriter as well as the comms thread
-    _eventServer->publish(Topic::Sample, measure.y);
-    _resultAggregator->addMeasurement(measure.y, _flowMeter);
+    _eventServer->publish(Topic::Sample, measure);
+    _resultAggregator->addMeasurement(measure, _flowMeter);
     _sampleAggregator->send();
     // Duration gets picked up by resultWriter, so must be published before sending
     const unsigned long measureDurationTimestamp = micros();
@@ -55,35 +56,28 @@ void Sampler::loop() {
 
     _eventServer->publish(Topic::Processing, LONG_FALSE);
 
-    const unsigned long duration = micros() - startLoopTimestamp;
+    unsigned long duration = micros() - startLoopTimestamp;
     // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
     _additionalDuration = duration - durationSoFar;
 
     // not using delayMicroseconds() as that is less accurate. Sometimes up to 300 us too much wait time.
-    if (duration > MEASURE_INTERVAL_MICROS) {
+    if (duration > _samplePeriod) {
         // It took too long. If we're still within one interval, we might be able to catch up
         // Intervene if it gets more than that
 
-        _eventServer->publish(Topic::TimeOverrun, static_cast<long>(duration - MEASURE_INTERVAL_MICROS));
+        _eventServer->publish(Topic::TimeOverrun, static_cast<long>(duration - _samplePeriod));
         const unsigned long extraTimeNeeded = micros() - _nextMeasureTime;
-        _nextMeasureTime += (extraTimeNeeded / MEASURE_INTERVAL_MICROS) * MEASURE_INTERVAL_MICROS;
+        _nextMeasureTime += (extraTimeNeeded / _samplePeriod) * _samplePeriod;
     }
     else {
-
-        // fill remaining time with validating the connection, checking health and handling incoming messages,
-        // but only if we have a minimum amount of time left. We don't want overruns because of this.
-
-        // We use a trick to avoid micros() overrun issues. Create a duration using unsigned long comparison, and then cast to a
-        // signed value. We will not pass LONG_MAX in the duration; ESP32 has 64 bit longs and micros() only uses 32 of those.
-
-        auto remainingTime = static_cast<long>(_nextMeasureTime - micros());
-        if (remainingTime >= MIN_MICROS_FOR_CHECKS) {
+        // we only do additional work if we have enough time left.
+        if (duration <= _maxDurationForChecks) {
             _device->reportHealth();
 
             do {
                 _queueClient->receive();
-                remainingTime = static_cast<long>(_nextMeasureTime - micros());
-            } while (remainingTime > 0L);
+                duration = micros() - startLoopTimestamp;
+            } while (duration < _samplePeriod);
         }
     }
 }

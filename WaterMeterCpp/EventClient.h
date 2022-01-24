@@ -25,9 +25,9 @@ enum class Topic: uint16_t {
     FreeHeap, FreeStack,
     Connection,
     Processing, DelayedFlush, ResultWritten,
-    Error, Info, Blocked,
+    Error, Info, Blocked, Alert,
     ProcessTime, TimeOverrun,
-    Flow, Exclude, Peak, Flatline,
+    Flow, Exclude, Peak, //Flatline,
     Time, IpAddress, MacRaw, MacFormatted,
     ResetSensor
 };

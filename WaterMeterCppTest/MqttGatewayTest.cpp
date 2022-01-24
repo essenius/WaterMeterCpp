@@ -165,6 +165,12 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(" Error: Error message\n", mqttClient.getPayloads() + 26, L"sent payload OK");
             Assert::AreEqual("homie/client1/device/error\n", mqttClient.getTopics(), L"sent topic OK");
             Assert::IsFalse(dataQueue.receive(), L"No more items in the quue");
+
+            mqttClient.reset();
+            eventServer.publish(Topic::Alert, 1);
+            Assert::AreEqual("homie/client1/$state\n", mqttClient.getTopics(), L"alert topic OK");
+            Assert::AreEqual("alert\n", mqttClient.getPayloads(), L"alert payload OK");
+
         }
     };
 

@@ -41,18 +41,15 @@ void ResultAggregator::addMeasurement(const int16_t value, const FlowMeter* resu
     newMessage();
     _result->sampleCount = _messageCount;
 
-    _result->lastSample = value;
-    if (_previousMeasure == value) {
+    if (_result->lastSample == value) {
         _streak++;
-        if (_streak > _result->maxStreak) _result->maxStreak = _streak;
-        if (_streak > FLATLINE_STREAK) {
-            _eventServer->publish(Topic::Flatline, static_cast<long>(value));
-            _streak = 1;
+        if (_streak > _result->maxStreak) {
+            _result->maxStreak = _streak;
         }
     }
     else {
         _streak = 1;
-        _previousMeasure = value;
+        _result->lastSample = value;
     }
     if (result->isOutlier()) {
         _result->outlierCount++;

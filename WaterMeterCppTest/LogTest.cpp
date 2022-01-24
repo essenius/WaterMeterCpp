@@ -35,58 +35,33 @@ namespace WaterMeterCppTest {
             log.begin();
             Serial.begin(9600);
             publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
-
             Assert::AreEqual(" MQTT ready\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Connected logs OK");
-            /*Assert::IsTrue(std::regex_match(
-                               Serial.getOutput(),
-                               std::regex(R"(\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\]\sMQTT ready\n)")),
-                           L"Connected logs OK"); */
 
             Serial.clearOutput();
             eventServer.publish(Topic::Error, "My Message");
             Assert::AreEqual(" Error: My Message\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Error logs OK");
-            /*Assert::IsTrue(std::regex_match(
-                               Serial.getOutput(),
-                               std::regex(R"(\[.*\]\sError:\sMy\sMessage\n)")),
-                           L"Error logs OK"); */
-            Serial.clearOutput();
 
+            Serial.clearOutput();
             publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
             Assert::AreEqual(" Disconnected\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Disconnected logs OK");
 
-            /*Assert::IsTrue(std::regex_match(
-                               Serial.getOutput(),
-                               std::regex(R"(\[.*\]\sDisconnected\n)")),
-                           L"Disconnected logs OK"); */
-
             Serial.clearOutput();
-
             Assert::AreEqual("", Serial.getOutput());
 
             eventServer.publish(Topic::Info, 24);
             Assert::AreEqual(" 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Info logs long OK");
 
-            /* Assert::IsTrue(std::regex_match(
-                               Serial.getOutput(),
-                               std::regex(R"(\[.*\]\sInfo:\s24\n)")),
-                           L"Info logs long OK"); */
             Serial.clearOutput();
-
             log.update(Topic::BatchSize, 24L);
             Assert::AreEqual(" Topic '1': 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Unexpected topic handled OK");
 
-            /*Assert::IsTrue(std::regex_match(
-                               Serial.getOutput(),
-                               std::regex(R"(\[.*\]\sTopic\s'1':\s24\n)")),
-                           L"Unexpected topic handled OK"); */
-            /* Serial.clearOutput();
+            Serial.clearOutput();
+            eventServer.publish(Topic::Alert, 1);
+            Assert::AreEqual(" Alert!\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Alert handled OK");
 
-            eventServer.publish(Topic::Error, "");
-            //Assert::AreEqual("x", Serial.getOutput());
-            Assert::IsTrue(std::regex_match(
-                               Serial.getOutput(),
-                               std::regex(R"(\[.*\]\sCleared\serror\n)")),
-                           L"Cleared error"); */
+            Serial.clearOutput();
+            eventServer.publish(Topic::TimeOverrun, 1234);
+            Assert::AreEqual(" Time overrun: 1234\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Time overrun handled OK");
 
         }
 private:

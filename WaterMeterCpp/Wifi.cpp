@@ -29,7 +29,6 @@ Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig) :
     _macAddress[0] = 0;
 }
 
-
 WiFiClient* Wifi::getClient() { return &_wifiClient; }
 
 void Wifi::configure(const IpConfig* ipConfig) {

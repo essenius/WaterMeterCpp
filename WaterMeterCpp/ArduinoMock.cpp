@@ -19,6 +19,8 @@
 #include <iostream>
 #include "SafeCString.h"
 
+Esp ESP;
+
 HardwareSerial Serial;
 auto startTime = std::chrono::high_resolution_clock::now();
 

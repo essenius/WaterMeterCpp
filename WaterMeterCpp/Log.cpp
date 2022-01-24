@@ -47,10 +47,10 @@ Log::Log(EventServer* eventServer) :
 void Log::begin() {
     Serial.begin(115200);
     update(Topic::Info,"Starting");
+    _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::Error);
     _eventServer->subscribe(this, Topic::Info);
-    _eventServer->subscribe(this, Topic::Flatline);    
     _eventServer->subscribe(this, Topic::TimeOverrun);
     _eventServer->subscribe(this, Topic::Result);
 
@@ -69,8 +69,8 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Info:
         Serial.println(payload);
         break;
-    case Topic::Flatline:
-        Serial.printf("Flatline: %s\n", payload);
+    case Topic::Alert:
+        Serial.println("Alert!");
         break;
     case Topic::TimeOverrun:
         Serial.printf("Time overrun: %s\n", payload);

@@ -14,6 +14,7 @@
 #include <regex>
 
 #include "CppUnitTest.h"
+#include "TestEventClient.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -25,20 +26,27 @@ namespace WaterMeterCppTest {
     public:
         TEST_METHOD(magnetoSensorReaderTest1) {
             constexpr int16_t zero = 0;
+            constexpr int16_t one = 1;
+            QMC5883LCompass compass;
             EventServer eventServer;
-            MagnetoSensorReader reader(&eventServer);
+            TestEventClient resetSensorEventClient(&eventServer);
+            TestEventClient alertEventClient(&eventServer);
+            eventServer.subscribe(&resetSensorEventClient, Topic::ResetSensor);
+            eventServer.subscribe(&alertEventClient, Topic::Alert);
+            MagnetoSensorReader reader(&eventServer, &compass);
+            compass.resetSucceeds(false);
             reader.begin();
-            auto result = reader.read();
-            Assert::AreEqual(zero, result.x);
-            Assert::AreEqual(zero, result.y);
-            Assert::AreEqual(zero, result.z);
-            eventServer.publish(Topic::Flatline, LONG_TRUE);
-            result = reader.read();
-            Assert::AreEqual(static_cast<int16_t>(1), result.y);
-            eventServer.publish(Topic::Flatline, "ANY");
-            result = reader.read();
-            Assert::AreEqual(static_cast<int16_t>(2), result.y);
 
+            for (int streaks = 0; streaks < 10; streaks++) {
+                for (int sample = 0; sample < 25; sample++) {
+                    reader.read();
+                    Assert::AreEqual(streaks, resetSensorEventClient.getCallCount(), L"right number of events fired");
+                    Assert::AreEqual(0, alertEventClient.getCallCount(), L"Alert event not fired");
+                }
+            }
+            reader.read();
+            Assert::AreEqual(10, resetSensorEventClient.getCallCount(), L"ResetSensor event event fired");
+            Assert::AreEqual(1, alertEventClient.getCallCount(), L"Alert event event fired");
         }
     };
 }

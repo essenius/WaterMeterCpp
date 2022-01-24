@@ -19,7 +19,7 @@
 #include "PubSubClientMock.h"
 #endif
 
-#include "SafeCstring.h"
+#include "SafeCString.h"
 
 #include "MqttGateway.h"
 
@@ -30,6 +30,8 @@ constexpr const char* const TYPE_INTEGER = "integer";
 constexpr const char* const TYPE_STRING = "string";
 constexpr const char* const LAST_WILL_MESSAGE = "lost";
 constexpr bool SETTABLE = true;
+constexpr const char* const NAME = "$name";
+
 
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
@@ -43,11 +45,11 @@ MqttGateway::MqttGateway(
 
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
+    _eventServer->subscribe(this, Topic::Alert); // long
     _eventServer->subscribe(this, Topic::BatchSize); // long
     _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
     _eventServer->subscribe(this, Topic::FreeHeap); // long
     _eventServer->subscribe(this, Topic::FreeStack); // long
-    _eventServer->subscribe(this, Topic::Flatline); // long
     _eventServer->subscribe(this, Topic::IdleRate); // long
     _eventServer->subscribe(this, Topic::Samples); // string
     _eventServer->subscribe(this, Topic::NonIdleRate); // long
@@ -104,7 +106,7 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
 
 void MqttGateway::connect() {
     _announcementPointer = _announcementBuffer;
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, "$state");
+    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, STATE);
 
     bool success;
     if (_mqttConfig->user == nullptr || strlen(_mqttConfig->user) == 0) {
@@ -144,8 +146,8 @@ void MqttGateway::prepareAnnouncementBuffer() {
     char payload[TOPIC_BUFFER_SIZE];
 
     prepareEntity("$homie", "4.0.0");
-    prepareEntity("$state", "init");
-    prepareEntity("$name", _clientName);
+    prepareEntity(STATE, "init");
+    prepareEntity(NAME, _clientName);
     safeSprintf(payload, "%s,%s,%s", MEASUREMENT, RESULT, DEVICE);
     prepareEntity("$nodes", payload);
     prepareEntity("$implementation", "esp32");
@@ -178,7 +180,7 @@ void MqttGateway::prepareAnnouncementBuffer() {
 
     prepareEntity(DEVICE, DEVICE_BUILD, _buildVersion);
     prepareEntity(DEVICE, DEVICE_MAC, _eventServer->request(Topic::MacFormatted, "unknown"));
-    prepareEntity("$state", "ready");
+    prepareEntity(STATE, "ready");
 }
 
 void MqttGateway::prepareEntity(const char* entity, const char* payload) {
@@ -198,7 +200,7 @@ void MqttGateway::prepareItem(const char* item) {
 }
 
 void MqttGateway::prepareNode(const char* node, const char* name, const char* type, const char* properties) {
-    prepareEntity(node, "$name", name);
+    prepareEntity(node, NAME, name);
     prepareEntity(node, "$type", type);
     prepareEntity(node, "$properties", properties);
 }
@@ -207,7 +209,7 @@ void MqttGateway::prepareProperty(
     const char* node, const char* property, const char* attribute, const char* dataType, const char* format,
     const bool settable) {
     safeSprintf(_topicBuffer, "%s/%s", node, property);
-    prepareEntity(_topicBuffer, "$name", attribute);
+    prepareEntity(_topicBuffer, NAME, attribute);
     prepareEntity(_topicBuffer, "$dataType", dataType);
     if (strlen(format) > 0) {
         prepareEntity(_topicBuffer, "$format", format);
@@ -243,6 +245,18 @@ bool MqttGateway::publishProperty(const char* node, const char* property, const 
     return publishEntity(baseTopic, property, payload, retain);
 }
 
+void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
+    if (topic == Topic::Alert) {
+        publishEntity(_clientName, STATE, "alert");
+        return;
+    }
+    const auto entry = TOPIC_MAP.find(topic);
+    if (entry != TOPIC_MAP.end()) {
+        const auto topicPair = entry->second;
+        publishProperty(topicPair.first, topicPair.second, payload);
+    }
+}
+
 void MqttGateway::storePendingMessage(const Topic topic, const long payload) {
     _pendingMessages[topic] = payload;
 }
@@ -266,7 +280,6 @@ void MqttGateway::update(const Topic topic, long payload) {
 }
 
 // incoming event from EventServer
-// TODO: this gets lost when we get this during a disconnect. Fix that.
 void MqttGateway::update(const Topic topic, const char* payload) {
     if (!isConnected()) {
         if (topic == Topic::Error || topic == Topic::Info) {
@@ -283,12 +296,4 @@ void MqttGateway::update(const Topic topic, const char* payload) {
         return;
     }
     publishUpdate(topic, payload);
-}
-
-void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
-    const auto entry = TOPIC_MAP.find(topic);
-    if (entry != TOPIC_MAP.end()) {
-        const auto topicPair = entry->second;
-        publishProperty(topicPair.first, topicPair.second, payload);
-    }
 }

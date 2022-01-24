@@ -38,7 +38,7 @@ protected:
     ResultData* _result;
     uint32_t _streak = 1;
     uint32_t _measureIntervalMicros = 0;
-    int16_t _previousMeasure = 0;
+    //int16_t _previousMeasure = 0;
     ChangePublisher<long> _overrun;
     //long _excludeCount = 0L;
     //long _flowCount = 0L;

@@ -32,7 +32,6 @@ constexpr time_t ONE_YEAR_IN_SECONDS = 31536000;
 
 void TimeServer::setTime() {
     configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-    time_t currentTime = time(nullptr);
 }
 
 bool TimeServer::timeWasSet() const {

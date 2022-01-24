@@ -30,12 +30,9 @@ class Sampler {
 public:
     Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter,
         SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, Device* device,  QueueClient* queueClient);
-    void setup();
+    void setup(unsigned long samplePeriod = 10000UL);
     void begin();
     void loop();
-    // TODO: eliminate duplication of constants
-    static constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
-    static constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
 
 private:
     EventServer* _eventServer;
@@ -47,6 +44,8 @@ private:
     QueueClient* _queueClient;
     unsigned long _nextMeasureTime = 0;
     unsigned long _additionalDuration = 0;
+    unsigned long _samplePeriod = 10000;
+    unsigned long _maxDurationForChecks = 8000;
 };
 
 #endif

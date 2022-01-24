@@ -17,25 +17,24 @@
 #else
 #include "QMC5883LCompassMock.h"
 #endif
+
 #include "EventServer.h"
 
-struct SensorReading {
-  int16_t x;
-  int16_t y;
-  int16_t z;
-};
-
-class MagnetoSensorReader : public EventClient {
+class MagnetoSensorReader {
 public:
-    explicit MagnetoSensorReader(EventServer* eventServer);
-    void begin();
-    SensorReading read();
-    void update(Topic topic, long payload) override;
-    void update(Topic topic, const char* payload) override;
+    MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass);
+    void begin() const;
+    int16_t read();
+    void reset();
 
 private:
-    QMC5883LCompass _compass;
-    SensorReading _sensorReading = {};
+    static constexpr int FLATLINE_STREAK = 25;
+    static constexpr int MAX_STREAKS_TO_ALERT = 10;
+    EventServer* _eventServer;
+    QMC5883LCompass* _compass;
+    int16_t _previousSample = -32768;
+    int _streakCount = 0;
+    int _consecutiveStreakCount = 0;
 };
 
 #endif

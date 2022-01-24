@@ -87,6 +87,8 @@ namespace WaterMeterCppTest {
             constexpr WifiConfig wifiConfig{ "ssid", "password", "hostname", nullptr };
             Wifi wifi(&eventServer, &wifiConfig);
             wifi.begin();
+            Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit as disconnected");
+
             while (!wifi.isConnected()) {}
             Assert::IsTrue(wifi.needsReinit(), L"Needs reinit");
             wifi.begin();
@@ -121,8 +123,14 @@ namespace WaterMeterCppTest {
             constexpr WifiConfig config{ "ssid", "password", nullptr, nullptr };
             Wifi wifi(&eventServer, &config);
             wifi.begin();
+
             Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
             Assert::AreEqual("esp32_001122334455", WiFi.getHostname(), L"Default hostname set");
+            while (!wifi.isConnected()) {}
+            wifi.disconnect();
+            Assert::IsFalse(wifi.isConnected(), L"Disconnected");
+            wifi.reconnect();
+            while (!wifi.isConnected()) {}
         }
 
 
@@ -176,6 +184,14 @@ namespace WaterMeterCppTest {
                 infoListener.getPayload(),
                 L"Info OK");
         }
+
+        TEST_METHOD(wifiGetUnknownTopicTestTest) {
+
+            constexpr WifiConfig config{ "ssid", "password", "hostname", nullptr };
+            Wifi wifi(&eventServer, &config);
+            Assert::AreEqual("x", wifi.get(Topic::Flow, "x"), L"Unexpected topic returns default");
+        }
+
     };
 
     EventServer WifiTest::eventServer;

@@ -14,9 +14,12 @@
 #ifdef ESP32
 #include <ESP.h>
 #include <PubSubClient.h>
+#include <QMC5883LCompass.h>
+
 #else
 #include "ArduinoMock.h"
 #include "PubSubClientMock.h"
+#include "QMC5883LCompassMock.h"
 #endif
 
 #include "Device.h"
@@ -40,18 +43,19 @@
 constexpr const char* const BUILD_VERSION = "0.100.2";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
-// Processing one cycle takes about 8ms max, so that is also within the limit.
+// Processing one cycle usually takes quite a bit less than that, unless a write happened.
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
+QMC5883LCompass compass;
 EventServer samplerEventServer;
+MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
+Device device(&samplerEventServer);
+FlowMeter flowMeter(&samplerEventServer);
+
 EventServer communicatorEventServer;
 LedDriver ledDriver(&communicatorEventServer);
 Wifi wifi(&communicatorEventServer, &WIFI_CONFIG);
 TimeServer timeServer(&communicatorEventServer);
-
-Device device(&samplerEventServer);
-MagnetoSensorReader sensorReader(&samplerEventServer);
-FlowMeter flowMeter(&samplerEventServer);
 RingbufferPayload measurementPayload;
 PayloadBuilder payloadBuilder;
 Serializer serializer(&payloadBuilder);
@@ -87,7 +91,7 @@ void setup() {
     samplerQueueClient.begin(communicatorQueueClient.getQueueHandle());
     communicatorQueueClient.begin(samplerQueueClient.getQueueHandle());
 
-    sampler.setup();
+    sampler.setup(MEASURE_INTERVAL_MICROS);
     connector.setup();
 
     // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (setup and loop run on core 1)

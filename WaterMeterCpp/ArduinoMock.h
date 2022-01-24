@@ -35,6 +35,13 @@ constexpr uint8_t LED_BUILTIN = 13;
 
 // emulation of Arduino capabilities
 
+class Esp {
+public:
+	void restart() {}
+};
+
+extern Esp ESP;
+
 class HardwareSerial {
 public:
 	int available();

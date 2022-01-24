@@ -19,18 +19,31 @@
 	#ifndef HEADER_QMC5883LCOMPASS
 	#define HEADER_QMC5883LCOMPASS
 
+    #include <cmath>
+
 	class QMC5883LCompass {
 	public:
+		//mock existing interface
 		void init() {}
 		void read() {}
 		void setCalibration(int a, int b, int c, int d, int e, int f) {}
-		void setReset() { _y++; }
-		int getX() { return 0; }
+
+		void setReset() {
+			_resetCount++;
+		    if (_resetSucceeds) _y++;
+		}
 		int getY() { return _y; }
-		int getZ() { return 0; }
         void setMode(int i, int i1, int i2, int i3) {}
+
+		// testing purposes
+		void setY(const int16_t value) { _y = value; }
+		void resetSucceeds(const bool succeeds) { _resetSucceeds = succeeds; }
+		int resetCount() { return _resetCount; }
     private:
 		int _y = 0;
+		bool _resetSucceeds = true;
+		int _resetCount = 0;
+
 	};
 	#endif
 

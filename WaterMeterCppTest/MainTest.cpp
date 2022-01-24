@@ -41,15 +41,12 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WaterMeterCppTest {
 
-// TODO: this main part is way too big. Fix that.
-
 // For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "0.100.1";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle takes about 8ms max, so that is also within the limit.
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
-constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
 
     TEST_CLASS(MainTest) {
     public:
@@ -62,7 +59,8 @@ constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
             Wifi wifi(&communicationEventServer, &WIFI_CONFIG);
             TimeServer timeServer(&communicationEventServer);
             Device device(&samplerEventServer);
-            MagnetoSensorReader sensorReader(&samplerEventServer);
+            QMC5883LCompass compass;
+            MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
             FlowMeter flowMeter(&samplerEventServer);
             RingbufferPayload measurementPayload{};
             PayloadBuilder payloadBuilder;
@@ -98,14 +96,6 @@ constexpr signed long MIN_MICROS_FOR_CHECKS = MEASURE_INTERVAL_MICROS / 5L;
             Assert::AreEqual(Led::ON, Led::get(Led::RUNNING), L"RUNNING on");
             Assert::AreEqual("[] Starting\n[] Topic '6': 0\n", Serial.getOutput());
             communicationEventServer.unsubscribe(&logger, Topic::Sample);
-            Serial.clearOutput();
-            for (int i = 0; i < ResultAggregator::FLATLINE_STREAK - 1; i++) {
-                sampler.loop();
-                while (communicationQueueClient.receive()) {}
-            }
-            Assert::AreEqual("[] Flatline: 0\n", Serial.getOutput());
-
-
         }
     };
 }
