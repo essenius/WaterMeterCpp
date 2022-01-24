@@ -60,8 +60,7 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK}},
     {Topic::Error, {DEVICE, DEVICE_ERROR}},
     {Topic::Info, {DEVICE, DEVICE_INFO}},
-    {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}},
-    {Topic::Alert, {EMPTY, STATE}}
+    {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}}
 };
 
 class MqttGateway : public EventClient {

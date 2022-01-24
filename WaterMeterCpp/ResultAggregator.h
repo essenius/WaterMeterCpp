@@ -25,7 +25,6 @@ public:
     virtual void begin();
     void flush() override;
     bool shouldSend(bool endOfFile = false) override;
-    //void prepareFlush() override;
     bool send() override;
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
@@ -38,28 +37,9 @@ protected:
     ResultData* _result;
     uint32_t _streak = 1;
     uint32_t _measureIntervalMicros = 0;
-    //int16_t _previousMeasure = 0;
     ChangePublisher<long> _overrun;
-    //long _excludeCount = 0L;
-    //long _flowCount = 0L;
     long _idleFlushRate = FLUSH_RATE_IDLE;
-    //long _maxDuration = 0L;
-    //int _measure = 0;
     long _nonIdleFlushRate = FLUSH_RATE_INTERESTING;
-    //long _outlierCount = 0L;
-    //bool _overrun = false;
-    //long _overrunCount = 0L;
-    //long _peakCount = 0L;
-    //long _processTime = 0L;
-    //float _smoothValue = 0.0f;
-    //float _derivative = 0.0f;
-    //float _smoothDerivative = 0.0f;
-    //float _smoothAbsDerivative = 0.0f;
-    //long _sumDuration = 0L;
-    //int _maxStreak = 1;
-
-    //void publishOverrun(bool overrun);
-    //void resetCounters() override;
     void setIdleFlushRate(long rate);
     void setNonIdleFlushRate(long rate);
 };

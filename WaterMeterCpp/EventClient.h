@@ -27,7 +27,7 @@ enum class Topic: uint16_t {
     Processing, DelayedFlush, ResultWritten,
     Error, Info, Blocked, Alert,
     ProcessTime, TimeOverrun,
-    Flow, Exclude, Peak, //Flatline,
+    Flow, Exclude, Peak,
     Time, IpAddress, MacRaw, MacFormatted,
     ResetSensor
 };
