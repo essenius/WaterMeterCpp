@@ -15,7 +15,6 @@
 #include <ESP.h>
 #include <PubSubClient.h>
 #include <QMC5883LCompass.h>
-
 #else
 #include "ArduinoMock.h"
 #include "PubSubClientMock.h"
@@ -87,7 +86,7 @@ void communicatorLoop(void* parameter) {
 }
 
 void setup() {
-    Serial.begin(115200);
+    timeServer.begin();
     samplerQueueClient.begin(communicatorQueueClient.getQueueHandle());
     communicatorQueueClient.begin(samplerQueueClient.getQueueHandle());
 
