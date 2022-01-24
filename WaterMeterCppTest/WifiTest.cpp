@@ -24,12 +24,10 @@ namespace WaterMeterCppTest {
     TEST_CLASS(WifiTest) {
     public:
         static EventServer eventServer;
-        //static TestEventClient ConnectingListener;
         static TestEventClient errorListener;
         static TestEventClient infoListener;
 
         TEST_CLASS_INITIALIZE(wifiTestClassInitialize) {
-            //EventServer.subscribe(&ConnectingListener, Topic::Connection);
             eventServer.subscribe(&errorListener, Topic::Error);
             eventServer.subscribe(&infoListener, Topic::Info);
 
@@ -37,13 +35,11 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD_INITIALIZE(wifiTestMethodInitialize) {
             WiFi.reset();
-            //ConnectingListener.reset();
             errorListener.reset();
             infoListener.reset();
         }
 
         TEST_CLASS_CLEANUP(wifiTestClassCleanup) {
-            //EventServer.unsubscribe(&ConnectingListener);
             eventServer.unsubscribe(&infoListener);
             eventServer.unsubscribe(&errorListener);
         }

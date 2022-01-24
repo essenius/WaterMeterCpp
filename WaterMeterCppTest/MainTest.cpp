@@ -34,7 +34,7 @@
 #include "../WaterMeterCpp/Log.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
 #include "../WaterMeterCpp/QueueClient.h"
-#include "../WaterMeterCpp/secrets.h" // for all CONFIG constants
+#include "../WaterMeterCpp/secrets.h" 
 #include "../WaterMeterCpp/Sampler.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

@@ -54,9 +54,6 @@
     <ClCompile Include="PayloadBuilderTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SchedulerTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DeviceTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

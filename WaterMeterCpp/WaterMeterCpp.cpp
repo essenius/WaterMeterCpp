@@ -37,7 +37,7 @@
 #include "SampleAggregator.h"
 #include "QueueClient.h"
 #include "Sampler.h"
-#include "secrets.h" // for all CONFIG constants
+#include "secrets.h" // includes config.h
 
 // For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "0.100.2";

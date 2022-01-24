@@ -166,7 +166,6 @@
     <ClCompile Include="QueueClient.cpp" />
     <ClCompile Include="ResultAggregator.cpp" />
     <ClCompile Include="Sampler.cpp" />
-    <ClCompile Include="Scheduler.cpp" />
     <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="TimeServer.cpp" />
     <ClCompile Include="WaterMeterCpp.cpp" />
@@ -204,7 +203,6 @@
     <ClInclude Include="ResultAggregator.h" />
     <ClInclude Include="RingbufferPayload.h" />
     <ClInclude Include="Sampler.h" />
-    <ClInclude Include="Scheduler.h" />
     <ClInclude Include="secrets.h" />
     <ClInclude Include="Serializer.h" />
     <ClInclude Include="TimeServer.h" />

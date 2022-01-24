@@ -33,16 +33,8 @@ constexpr static const char* const MESSAGES[] = {
     "Waiting for time",
     "Checking for firmware update" };
 
-/* Init = 0, Disconnected,
-WifiConnecting, WifiConnected, WifiReady,
-MqttConnecting, WaitingForMqttReconnect, MqttConnected, MqttReady,
-SetTime, SettingTime, CheckFirmware */
-
 Log::Log(EventServer* eventServer) :
     EventClient(eventServer) {}
-    //_disconnectedPublisher(eventServer, this, Topic::Error),
-    //_connectedPublisher(eventServer, this, Topic::Info)
-
 
 void Log::begin() {
     Serial.begin(115200);

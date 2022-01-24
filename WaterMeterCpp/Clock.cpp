@@ -41,7 +41,7 @@ int gettimeofday(timeval* timeVal, void* ignore) {
 }
 
 #endif
-/* return the number of microseconds since epoch */
+// return the number of microseconds since epoch
 Timestamp Clock::getTimestamp() {
     timeval currentTime{};
     gettimeofday(&currentTime, nullptr);

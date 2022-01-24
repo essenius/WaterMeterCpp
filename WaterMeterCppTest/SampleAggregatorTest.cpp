@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //   except in compliance with the License. You may obtain a copy of the License at
@@ -42,25 +42,17 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(1U, static_cast<unsigned>(payload.buffer.samples.count), L"One sample added");
             Assert::AreEqual<int16_t>(1000, payload.buffer.samples.value[0], L"First sample value correct");
 
-            /*Assert::AreEqual(
-                R"({"timestamp":"","measurements":[1000)",
-                writer.getMessage(),
-                "buffer OK after first measurement"); */
             aggregator.addSample(-1000);
             Assert::IsTrue(aggregator.shouldSend(), L"Needs flush after two measurements");
+
             // specialization for uint16_t does not work for some reason
             Assert::AreEqual(2U, static_cast<unsigned>(payload.buffer.samples.count), L"Second sample added");
             Assert::AreEqual<int16_t>(1000, payload.buffer.samples.value[0], L"First sample value still correct");
             Assert::AreEqual<int16_t>(-1000, payload.buffer.samples.value[1], L"Second sample value correct");
 
-            /*Assert::AreEqual(
-                R"({"timestamp":"","measurements":[1000,-1000]})",
-                writer.getMessage(),
-                "buffer OK after second measurement"); */
             aggregator.flush();
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer empty after flush");
 
-            //Assert::AreEqual(R"({"timestamp":"","measurements":[)", aggregator.getMessage(), "buffer OK after flush");
         }
 
         TEST_METHOD(sampleAggregatorZeroFlushRateTest) {
@@ -103,10 +95,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(static_cast<int16_t>(3000), payload.buffer.samples.value[1], L"Second value OK");
 
             Assert::IsTrue(aggregator.send(), L"Send successful");
-            /*Assert::AreEqual(
-                R"({"timestamp":"","measurements":[1000,3000]})",
-                writer.getMessage(),
-                "buffer OK after two measurements");*/
+
             Assert::AreEqual(0L, aggregator.getFlushRate(), L"Flush rate changed");
             aggregator.flush();
             aggregator.addSample(5000);
@@ -114,35 +103,20 @@ namespace WaterMeterCppTest {
             Assert::AreNotEqual(currentTimestamp, payload.timestamp, L"Timestamp set");
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer empty");
 
-            /*Assert::AreEqual(
-                R"({"timestamp":"","measurements":[)",
-                writer.getMessage(),
-                "buffer OK after zero flush rate kicks in");*/
-
             // check whether failure to write is handled OK
             eventServer.publish(Topic::BatchSizeDesired, 2L);
             Assert::AreEqual(2L, aggregator.getFlushRate(), L"Flush rate changed back to 2");
             aggregator.addSample(-2000);
             setRingBufferBufferFull(true);
-//            eventServer.publish(Topic::Disconnected, 1);
             aggregator.addSample(-3000);
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer flushed since we can't write");
 
-            /* Assert::AreEqual(
-                R"({"timestamp":"","measurements":[)",
-                writer.getMessage(),
-                "buffer flushed since we can't write"); */
 
             // reconnect
             setRingBufferBufferFull(false);
-            //eventServer.publish(Topic::Connected, 1);
             aggregator.addSample(-4000);
             Assert::AreEqual(1U, static_cast<unsigned>(payload.buffer.samples.count), L"restarted filling buffer");
 
-            /*Assert::AreEqual(
-                R"({"timestamp":"","measurements":[-4000)",
-                writer.getMessage(),
-                "restarted filling buffer");*/
             Assert::IsFalse(aggregator.shouldSend(), L"No flush needed after first");
 
             // Switch to max buffer size 

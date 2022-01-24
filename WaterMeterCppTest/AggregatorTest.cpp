@@ -39,11 +39,6 @@ namespace WaterMeterCppTest {
             Assert::IsFalse(aggregator.shouldSend(), L"No need for flush before first message");
             aggregator.newMessage();
             Assert::AreNotEqual(0ULL, payload.timestamp);
-            /*Assert::IsTrue(
-                std::regex_match(
-                    bw.getMessage(),
-                    std::regex(R"(\{"timestamp":"\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}")")
-                ), L"Start of message created correctly"); */
 
             Assert::IsTrue(aggregator.shouldSend(true), L"must send when forced even if not at target size.");
             Assert::IsFalse(aggregator.shouldSend(), L"no need to send before being at target size");
@@ -65,11 +60,6 @@ namespace WaterMeterCppTest {
             aggregator.newMessage();
             Assert::IsTrue(aggregator.shouldSend(), L"Must send when at multiple of flush rate");
 
-            /*Assert::IsTrue(
-                std::regex_match(
-                    bw.getMessage(),
-                    std::regex(R"(\{"timestamp":"\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}"\})")
-                ), L"Message created correctly"); */
         }
     };
 }

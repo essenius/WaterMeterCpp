@@ -27,21 +27,21 @@ struct Samples {
 // ResultData must be smaller than Samples
 
 struct ResultData {
-    int16_t lastSample;      //2
-    uint32_t sampleCount;    //4
-    uint32_t peakCount;      //4
-    uint32_t flowCount;      //4
-    uint32_t maxStreak;      //4
-    uint32_t outlierCount;   //2
-    uint32_t excludeCount;   //2
-    uint32_t overrunCount;   //2
-    uint32_t totalDuration;  //4
-    uint32_t averageDuration;//4
-    uint32_t maxDuration;    //4
-    float smooth;            //4
-    float derivativeSmooth;  //4
-    float smoothDerivativeSmooth;    //4
-    float smoothAbsDerivativeSmooth; //4
+    int16_t lastSample;
+    uint32_t sampleCount;
+    uint32_t peakCount;
+    uint32_t flowCount;
+    uint32_t maxStreak;
+    uint32_t outlierCount;
+    uint32_t excludeCount;
+    uint32_t overrunCount;
+    uint32_t totalDuration;
+    uint32_t averageDuration;
+    uint32_t maxDuration;
+    float smooth;
+    float derivativeSmooth;
+    float smoothDerivativeSmooth;
+    float smoothAbsDerivativeSmooth;
 };
 
 typedef union {
@@ -49,7 +49,7 @@ typedef union {
     ResultData result;
     char message[sizeof(Samples)];
     uint32_t value;
-} Content;
+} Content; 
 
 struct RingbufferPayload {
     Topic topic;

@@ -27,8 +27,6 @@
 class DataQueue : public EventClient {
 public:
     DataQueue(EventServer* eventServer, Serializer* serializer);
-    //static RingbufHandle_t create();
-    //static void begin(RingbufHandle_t bufferHandle);
 
     bool canSend(const RingbufferPayload* payload) const;
     size_t freeSpace() const;
@@ -37,15 +35,6 @@ public:
 
     bool send(RingbufferPayload* payload) const;
 
-/*    template<class PayloadType>
-    static bool send(PayloadType* payload) {
-
-        auto const size = sizeof(RingbufferPayload) - sizeof(Z) + sizeof(PayloadType)
-        payload->header.timestamp = Clock::getTimestamp();
-        return xRingbufferSend(_bufferHandle, payload, sizeof(*payload), pdMS_TO_TICKS(1000)) == pdTRUE;
-    }*/
-
-    //void handleMessage(RingbufferPayload* payload);
     bool receive() const;
 
 private:
