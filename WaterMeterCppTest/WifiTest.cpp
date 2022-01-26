@@ -47,9 +47,9 @@ namespace WaterMeterCppTest {
         TEST_METHOD(wifiPredefinedLocalIpTest) {
             const IPAddress local(192, 168, 1, 2);
             const IPAddress gateway(192, 168, 1, 1);
-            constexpr WifiConfig wifiConfig{ "ssid", "password", "hostname", nullptr };
+            constexpr WifiConfig wifiConfig{"ssid", "password", "hostname", nullptr};
             Wifi wifi(&eventServer, &wifiConfig);
-            const IpConfig ipConfig{ local, NO_IP, NO_IP, NO_IP, NO_IP };
+            const IpConfig ipConfig{local, NO_IP, NO_IP, NO_IP, NO_IP};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit");
@@ -80,7 +80,7 @@ namespace WaterMeterCppTest {
             const IPAddress gateway(10, 0, 0, 1);
             const IPAddress dns1(8, 8, 8, 8);
             const IPAddress dns2(8, 8, 4, 4);
-            constexpr WifiConfig wifiConfig{ "ssid", "password", "hostname", nullptr };
+            constexpr WifiConfig wifiConfig{"ssid", "password", "hostname", nullptr};
             Wifi wifi(&eventServer, &wifiConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit as disconnected");
@@ -103,20 +103,19 @@ namespace WaterMeterCppTest {
                 L"Info OK");
         }
 
-        // TODO: this is a bit weird as it fails two times. One time should be enough
         TEST_METHOD(wifiFailSetNameTest) {
-            constexpr WifiConfig config{ "ssid", "password", "", nullptr };
+            constexpr WifiConfig config{"ssid", "password", "", nullptr};
             Wifi wifi(&eventServer, &config);
             wifi.begin();
             // just showing intended usage
             wifi.setCertificates("", "", "");
-            Assert::AreEqual(1, errorListener.getCallCount(), L"Error called 2 times");
+            Assert::AreEqual(1, errorListener.getCallCount(), L"Error called");
             Assert::AreEqual("Could not set host name", errorListener.getPayload(), L"Error message OK");
         }
 
         TEST_METHOD(wifiNullNameTest) {
             WiFi.setHostname("esp32_001122334455");
-            constexpr WifiConfig config{ "ssid", "password", nullptr, nullptr };
+            constexpr WifiConfig config{"ssid", "password", nullptr, nullptr};
             Wifi wifi(&eventServer, &config);
             wifi.begin();
 
@@ -129,14 +128,13 @@ namespace WaterMeterCppTest {
             while (!wifi.isConnected()) {}
         }
 
-
         TEST_METHOD(wifiPredefinedPrimaryDnsTest) {
             const IPAddress local(192, 168, 1, 2);
             const IPAddress gateway(192, 168, 1, 253);
             const IPAddress dns(9, 9, 9, 9);
-            constexpr WifiConfig config{ "ssid", "password", "hostname", nullptr };
+            constexpr WifiConfig config{"ssid", "password", "hostname", nullptr};
             Wifi wifi(&eventServer, &config);
-            const IpConfig ipConfig{ local, gateway, NO_IP, dns, NO_IP };
+            const IpConfig ipConfig{local, gateway, NO_IP, dns, NO_IP};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit");
@@ -161,9 +159,9 @@ namespace WaterMeterCppTest {
             const IPAddress dns1(9, 9, 9, 9);
             const IPAddress dns2(1, 1, 1, 1);
 
-            constexpr WifiConfig config{ "ssid", "password", "hostname", nullptr };
+            constexpr WifiConfig config{"ssid", "password", "hostname", nullptr};
             Wifi wifi(&eventServer, &config);
-            const IpConfig ipConfig{ local, NO_IP, NO_IP, dns1, dns2 };
+            const IpConfig ipConfig{local, NO_IP, NO_IP, dns1, dns2};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"does not need reinit");
@@ -183,7 +181,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(wifiGetUnknownTopicTestTest) {
 
-            constexpr WifiConfig config{ "ssid", "password", "hostname", nullptr };
+            constexpr WifiConfig config{"ssid", "password", "hostname", nullptr};
             Wifi wifi(&eventServer, &config);
             Assert::AreEqual("x", wifi.get(Topic::Flow, "x"), L"Unexpected topic returns default");
         }
