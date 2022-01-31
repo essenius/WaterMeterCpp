@@ -12,8 +12,6 @@
 
 #include "Clock.h"
 
-#include "FreeRtosMock.h"
-
 constexpr unsigned long long MICROSECONDS_PER_SECOND = 1000000ULL;
 
 #ifdef _WIN32
