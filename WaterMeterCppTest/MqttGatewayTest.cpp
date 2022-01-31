@@ -84,7 +84,7 @@ namespace WaterMeterCppTest {
                 Assert::IsTrue(gateway.publishNextAnnouncement(), (L"Announcement #" + std::to_wstring(count)).c_str());
                 count++;
             }
-            Assert::AreEqual(58, count, L"announcement count");
+            Assert::AreEqual(60, count, L"announcement count");
             gateway.publishNextAnnouncement();
             Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
             Assert::AreEqual(0, infoListener.getCallCount(), L"Info not called");
@@ -92,9 +92,9 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(MQTT_CONFIG_WITH_USER.user, mqttClient.user());
             Assert::AreEqual("client1", mqttClient.id());
             // check if the homie init events were sent 
-            Assert::AreEqual(static_cast<size_t>(2227), strlen(mqttClient.getTopics()), L"Topic lenght OK");
-            Assert::AreEqual(static_cast<size_t>(672), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
-            Assert::AreEqual(58, mqttClient.getCallCount(), L"Call count");
+            Assert::AreEqual(static_cast<size_t>(2307), strlen(mqttClient.getTopics()), L"Topic lenght OK");
+            Assert::AreEqual(static_cast<size_t>(696), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
+            Assert::AreEqual(60, mqttClient.getCallCount(), L"Call count");
 
             gateway.announceReady();
 

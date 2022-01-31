@@ -35,6 +35,7 @@ constexpr const char* const DEVICE_FREE_HEAP = "free-heap";
 constexpr const char* const DEVICE_FREE_STACK_SAMPLER = "free-stack-sampler";
 constexpr const char* const DEVICE_FREE_STACK_COMMUNICATOR = "free-stack-communicator";
 constexpr const char* const DEVICE_FREE_STACK_CONNECTOR = "free-stack-connector";
+constexpr const char* const DEVICE_FREE_QUEUE = "free-queue";
 constexpr const char* const DEVICE_INFO = "info";
 constexpr const char* const DEVICE_BUILD = "firmware-version";
 constexpr const char* const DEVICE_MAC = "mac-address";
@@ -62,6 +63,7 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::FreeStackSampler, {DEVICE, DEVICE_FREE_STACK_SAMPLER}},
     {Topic::FreeStackCommunicator, {DEVICE, DEVICE_FREE_STACK_COMMUNICATOR}},
     {Topic::FreeStackConnector, {DEVICE, DEVICE_FREE_STACK_CONNECTOR}},
+    {Topic::FreeQueue, {DEVICE, DEVICE_FREE_QUEUE}},
     {Topic::SamplingError, {DEVICE, DEVICE_ERROR}},
     {Topic::Info, {DEVICE, DEVICE_INFO}},
     {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}}

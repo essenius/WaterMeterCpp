@@ -56,7 +56,7 @@ void Connector::setup() {
 
 ConnectionState Connector::loop() {
     connect();
-    delay(100);
+    delay(50);
     return _state;
 }
 

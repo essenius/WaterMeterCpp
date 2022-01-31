@@ -21,16 +21,20 @@
 
 DataQueue::DataQueue(EventServer* eventServer, Clock* theClock, Serializer* serializer) :
     EventClient(eventServer),
+    _freeSpace(eventServer, this, Topic::FreeQueue, 1000, 2000),
     _bufferHandle(xRingbufferCreate(40960, RINGBUF_TYPE_ALLOWSPLIT)),
     _clock(theClock),
     _serializer(serializer) {}
 
-bool DataQueue::canSend(const RingbufferPayload* payload) const {
+bool DataQueue::canSend(const RingbufferPayload* payload) {
     return freeSpace() >= requiredSize(payloadSize(payload));
 }
 
-size_t DataQueue::freeSpace() const {
-    return xRingbufferGetCurFreeSize(_bufferHandle);
+
+size_t DataQueue::freeSpace() {
+    const auto space = xRingbufferGetCurFreeSize(_bufferHandle);
+    _freeSpace = static_cast<long>(space);
+    return space;
 }
 
 size_t DataQueue::payloadSize(const RingbufferPayload* payload) {
@@ -58,7 +62,7 @@ size_t DataQueue::requiredSize(size_t realSize) {
     return (realSize + 3) / 4 * 4 + 8;
 }
 
-bool DataQueue::send(RingbufferPayload* payload) const {
+bool DataQueue::send(RingbufferPayload* payload) {
     // optimizing the use of the buffer by not sending unused parts
     const size_t size = payloadSize(payload);
     if (requiredSize(size) > freeSpace()) return false;

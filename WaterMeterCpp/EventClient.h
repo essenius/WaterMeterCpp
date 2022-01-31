@@ -22,7 +22,7 @@ enum class Topic: uint16_t {
     None = 0,
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
     Sample, Samples, Result,
-    FreeHeap, FreeStackSampler, FreeStackCommunicator, FreeStackConnector,
+    FreeHeap, FreeStackSampler, FreeStackCommunicator, FreeStackConnector, FreeQueue,
     Connection, WifiSummaryReady,
     ResultWritten,
     SamplingError, CommunicationError, Info, Blocked, Alert,

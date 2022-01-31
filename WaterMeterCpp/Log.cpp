@@ -45,6 +45,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::FreeStackSampler);
     _eventServer->subscribe(this, Topic::FreeStackCommunicator);
     _eventServer->subscribe(this, Topic::FreeStackConnector);
+    _eventServer->subscribe(this, Topic::FreeQueue);
     _eventServer->subscribe(this, Topic::Info);
     _eventServer->subscribe(this, Topic::Result);
     _eventServer->subscribe(this, Topic::ResultWritten);
@@ -74,6 +75,9 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::FreeStackConnector:
         Serial.printf("Free Stack Connector: %s\n", payload);
+        break;
+    case Topic::FreeQueue:
+        Serial.printf("Free DataQueue space: %s\n", payload);
         break;
     case Topic::Info:
         Serial.println(payload);

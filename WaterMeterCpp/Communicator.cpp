@@ -32,6 +32,9 @@ void Communicator::setup() const {
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackSampler);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackCommunicator);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackConnector);
+    _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeQueue);
+    _eventServer->subscribe(_fromConnectorQueueClient, Topic::Result);
+    _eventServer->subscribe(_fromConnectorQueueClient, Topic::Samples);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::Rate);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::SamplingError);
 }

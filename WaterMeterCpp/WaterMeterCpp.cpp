@@ -93,7 +93,6 @@ TaskHandle_t connectorTaskHandle;
 
 void setup() {
     Serial.begin(115200);
-    device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
     theClock.begin();
 
     // queue for the sampler process
@@ -117,6 +116,8 @@ void setup() {
 
     // start the communication task which takes care of logging and leds, as well as passing on data to the connector if there is a connection
     xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
+    
+    device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 
     // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
     sampler.begin();

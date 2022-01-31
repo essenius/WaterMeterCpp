@@ -24,7 +24,7 @@
 class Device : public EventClient {
 public:
     explicit Device(EventServer* eventServer);
-    void begin(const TaskHandle_t& samplerHandle, const TaskHandle_t& communicatorHandle, const TaskHandle_t& connectorHandle);
+    void begin(const TaskHandle_t samplerHandle, const TaskHandle_t communicatorHandle, const TaskHandle_t connectorHandle);
     void reportHealth();
 private:
     TaskHandle_t _samplerHandle{};
@@ -36,6 +36,6 @@ private:
     LongChangePublisher _freeStackConnector;
 
     long freeHeap();
-    long freeStack(TaskHandle_t taskHandle = nullptr);
+    long freeStack(TaskHandle_t taskHandle);
 };
 #endif

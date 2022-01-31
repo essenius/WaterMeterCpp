@@ -145,6 +145,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(Led::OFF, Led::get(Led::AUX), L"AUX still off");
             Assert::AreEqual(Led::ON, Led::get(Led::RUNNING), L"RUNNING on");
             Assert::AreEqual(R"([] Starting
+[] Free DataQueue space: 12800
 [] Topic '6': 0
 [] Wifi summary: {"ssid":"","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
 [] Free Heap: 32000

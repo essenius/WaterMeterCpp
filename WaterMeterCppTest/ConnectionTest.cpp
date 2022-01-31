@@ -147,7 +147,7 @@ namespace WaterMeterCppTest {
             const auto timestampReady = micros();
             Assert::AreEqual(ConnectionState::MqttReady, connection.loop(), L"MQTT ready");
             // we're doing the division to filter out the few micros that the statement costs
-            Assert::AreEqual(100UL, (micros() - timestampReady) / 1000UL, L"100 ms wait time when ready");
+            Assert::AreEqual(50UL, (micros() - timestampReady) / 1000UL, L"50 ms wait time when ready");
             Assert::AreEqual(ConnectionState::MqttReady, connection.connect(),
                              L"MQTT stays ready if nothing changges");
             // disconnecting Wifi should change state to Disconnected

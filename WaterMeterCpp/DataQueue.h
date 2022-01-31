@@ -21,6 +21,7 @@
 
 #include "Clock.h"
 #include "EventClient.h"
+#include "LongChangePublisher.h"
 #include "RingbufferPayload.h"
 #include "Serializer.h"
 
@@ -29,16 +30,17 @@ class DataQueue : public EventClient {
 public:
     DataQueue(EventServer* eventServer, Clock* theClock, Serializer* serializer);
 
-    bool canSend(const RingbufferPayload* payload) const;
-    size_t freeSpace() const;
+    bool canSend(const RingbufferPayload* payload);
+    size_t freeSpace();
     static size_t payloadSize(const RingbufferPayload* payload);
     static size_t requiredSize(size_t realSize);
 
-    bool send(RingbufferPayload* payload) const;
+    bool send(RingbufferPayload* payload);
 
     bool receive() const;
 
 private:
+    LongChangePublisher _freeSpace;
     RingbufHandle_t _bufferHandle = nullptr;
     Clock* _clock;
     Serializer* _serializer;
