@@ -15,6 +15,7 @@
 // higher level functions. See also the template function writeParam in .h
 
 PayloadBuilder::PayloadBuilder(Clock* theClock) : _clock(theClock) {}
+
 void PayloadBuilder::begin() {
     _resultBuffer[0] = 0;
     _currentPosition = _resultBuffer;

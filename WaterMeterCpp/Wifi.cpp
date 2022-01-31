@@ -18,7 +18,7 @@
 #include "EventServer.h"
 
 Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder) :
-    EventClient(eventServer),  _wifiConfig(wifiConfig), _payloadBuilder(payloadBuilder) {
+    EventClient(eventServer), _wifiConfig(wifiConfig), _payloadBuilder(payloadBuilder) {
     if (wifiConfig->deviceName == nullptr) {
         _hostName = nullptr;
     }
@@ -102,9 +102,9 @@ void Wifi::announceReady() {
 const char* Wifi::getHostName() const { return _hostName; }
 
 const char* Wifi::get(const Topic topic, const char* defaultValue) {
-    switch(topic) {
+    switch (topic) {
     case Topic::IpAddress: {
-        safeStrcpy(_ipAddress,WiFi.localIP().toString().c_str());
+        safeStrcpy(_ipAddress, WiFi.localIP().toString().c_str());
         return _ipAddress;
     }
     case Topic::MacRaw:

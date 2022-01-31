@@ -71,7 +71,7 @@ bool Aggregator::shouldSend(const bool force) {
 }
 
 bool Aggregator::newMessage() {
-    if (_flushRate.get() == 0) return false;
+    if (_flushRate == 0) return false;
     _messageCount++;
     return true;
 }
@@ -91,7 +91,7 @@ void Aggregator::setDesiredFlushRate(long flushRate) {
     _desiredFlushRate = flushRate;
     // Immediately apply if we are starting a new round, or aren't logging
     // Otherwise it will be done at the next reset.
-    if (_messageCount == 0 || _flushRate.get() == 0) {
+    if (_messageCount == 0 || _flushRate == 0) {
         _flushRate = _desiredFlushRate;
     }
 }

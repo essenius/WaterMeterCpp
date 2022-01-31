@@ -55,9 +55,9 @@ void Clock::begin() {
 // return the number of microseconds since epoch. Can be called from multipe tasks, so using a semaphore
 Timestamp Clock::getTimestamp() {
     timeval currentTime{};
-    xSemaphoreTake(Clock::_timeMutex, portMAX_DELAY);
+    xSemaphoreTake(_timeMutex, portMAX_DELAY);
     gettimeofday(&currentTime, nullptr);
-    xSemaphoreGive(Clock::_timeMutex);
+    xSemaphoreGive(_timeMutex);
     return static_cast<Timestamp>(currentTime.tv_sec) * 1000000ULL + static_cast<Timestamp>(currentTime.tv_usec);
 }
 
@@ -66,9 +66,9 @@ bool Clock::formatTimestamp(Timestamp timestamp, char* destination, size_t size)
     const auto currentTime = getTimestamp();
     const auto microseconds = static_cast<long>(currentTime % MICROSECONDS_PER_SECOND);
     const auto seconds = static_cast<time_t>(currentTime / MICROSECONDS_PER_SECOND);
-    xSemaphoreTake(Clock::_formatTimeMutex, portMAX_DELAY);    
+    xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
     strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds));
-    xSemaphoreGive(Clock::_formatTimeMutex);    
+    xSemaphoreGive(_formatTimeMutex);
     char* currentPosition = destination + strlen(destination);
     snprintf(currentPosition, size - strlen(destination), "%06ld", microseconds);
     return true;

@@ -13,11 +13,12 @@
 #include <climits>
 #include "ResultAggregator.h"
 
-ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload, const uint32_t measureIntervalMicros) :
+ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload,
+                                   const uint32_t measureIntervalMicros) :
     Aggregator(eventServer, theClock, dataQueue, payload),
     _result(&payload->buffer.result),
     _measureIntervalMicros(measureIntervalMicros),
-    _overrun(eventServer, this, Topic::TimeOverrun, 0L){
+    _overrun(eventServer, this, Topic::TimeOverrun, 0L) {
     _desiredFlushRate = _idleFlushRate;
 }
 
@@ -106,7 +107,7 @@ bool ResultAggregator::shouldSend(const bool endOfFile) {
     // We set the flush rate regardless of whether we still need to write something. This can end an idle batch early.
     const bool isInteresting = _result->flowCount > 0 || _result->excludeCount > 0;
     if (isInteresting) {
-        _flushRate.set(_nonIdleFlushRate);
+        _flushRate = _nonIdleFlushRate;
     }
     return Aggregator::shouldSend(endOfFile);
 }

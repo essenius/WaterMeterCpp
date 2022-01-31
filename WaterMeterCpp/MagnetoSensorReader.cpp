@@ -19,7 +19,8 @@
 #include "MagnetoSensorReader.h"
 
 
-MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass) : _eventServer(eventServer), _compass(compass) {}
+MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass) : _eventServer(eventServer),
+    _compass(compass) {}
 
 void MagnetoSensorReader::begin() const {
     _compass->setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
@@ -44,7 +45,8 @@ int16_t MagnetoSensorReader::read() {
             _eventServer->publish(Topic::ResetSensor, LONG_TRUE);
             reset();
         }
-    } else {
+    }
+    else {
         // all good, reset the statistics
         _streakCount = 1;
         _consecutiveStreakCount = 0;

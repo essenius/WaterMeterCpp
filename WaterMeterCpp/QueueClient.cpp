@@ -33,11 +33,10 @@ QueueHandle_t QueueClient::getQueueHandle() const {
 }
 
 void QueueClient::update(Topic topic, long payload) {
-    if (_sendQueue == nullptr) return;    
-    const ShortMessage message = { topic, static_cast<int32_t>(payload) };
+    if (_sendQueue == nullptr) return;
+    const ShortMessage message = {topic, static_cast<int32_t>(payload)};
     if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {
         // TODO: handle error
-        return;
     }
 }
 

@@ -28,7 +28,10 @@ Device::Device(EventServer* eventServer) :
     _freeStackCommunicator(eventServer, this, Topic::FreeStackCommunicator, 0L, 0L),
     _freeStackConnector(eventServer, this, Topic::FreeStackConnector, 0L, 0L) {}
 
-void Device::begin(const TaskHandle_t &samplerHandle, const TaskHandle_t &communicatorHandle, const TaskHandle_t &connectorHandle) {
+void Device::begin(
+    const TaskHandle_t& samplerHandle, 
+    const TaskHandle_t& communicatorHandle,
+    const TaskHandle_t& connectorHandle) {
     _samplerHandle = samplerHandle;
     _communicatorHandle = communicatorHandle;
     _connectorHandle = connectorHandle;
@@ -56,7 +59,7 @@ long Device::freeHeap() {
     if (count <= 2) return 32000L - count * 3000L;
     if (count <= 4) return 26000L;
     count = -1;
-     return 23000L;
+    return 23000L;
 }
 
 long Device::freeStack(TaskHandle_t taskHandle) {
@@ -74,8 +77,8 @@ long Device::freeStack(TaskHandle_t taskHandle) {
 #endif
 
 void Device::reportHealth() {
-    _freeHeap.set(freeHeap());
-    _freeStackSampler.set(freeStack(_samplerHandle));
-    _freeStackCommunicator.set(freeStack(_communicatorHandle));
-    _freeStackConnector.set(freeStack(_connectorHandle));
+    _freeHeap = freeHeap();
+    _freeStackSampler = freeStack(_samplerHandle);
+    _freeStackCommunicator = freeStack(_communicatorHandle);
+    _freeStackConnector = freeStack(_connectorHandle);
 }

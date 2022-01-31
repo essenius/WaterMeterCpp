@@ -31,7 +31,6 @@ private:
     static QueueHandle_t createQueue(uint16_t length);
     QueueHandle_t _receiveQueue;
     QueueHandle_t _sendQueue = nullptr;
-   // bool _connected = false;
 };
 
 #endif

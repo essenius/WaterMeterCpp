@@ -19,7 +19,6 @@
 #include <sys/time.h>
 #else
 #include <ctime>
-#include <cstdio>
 #include "FreeRtosMock.h"
 
 struct timeval {
@@ -28,11 +27,11 @@ struct timeval {
 };
 #endif
 
-typedef unsigned long long Timestamp;
+using Timestamp = unsigned long long;
 
 class Clock : public EventClient {
 public:
-    Clock(EventServer* eventServer);
+    explicit Clock(EventServer* eventServer);
     void begin();
     const char* get(Topic topic, const char* defaultValue) override;
 
@@ -41,7 +40,7 @@ public:
 
 private:
     static constexpr int BUFFER_SIZE = 27;
-    char _buffer[BUFFER_SIZE] = { 0 };
+    char _buffer[BUFFER_SIZE] = {0};
     static SemaphoreHandle_t _timeMutex;
     static SemaphoreHandle_t _formatTimeMutex;
 };

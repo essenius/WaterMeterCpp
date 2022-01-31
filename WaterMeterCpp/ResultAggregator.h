@@ -9,8 +9,8 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_RESULTWRITER
-#define HEADER_RESULTWRITER
+#ifndef HEADER_RESULTAGGREGATOR
+#define HEADER_RESULTAGGREGATOR
 
 #include "Aggregator.h"
 #include "FlowMeter.h"
@@ -18,7 +18,8 @@
 
 class ResultAggregator : public Aggregator {
 public:
-    ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload, uint32_t measureIntervalMicros);
+    ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload,
+                     uint32_t measureIntervalMicros);
     void addDuration(uint32_t duration);
     void addMeasurement(int16_t value, const FlowMeter* result);
     using Aggregator::begin;

@@ -81,10 +81,12 @@ QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100);
 QueueClient connectorSamplerQueueClient(&connectorEventServer, 1);
 
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &theClock, &logger, &ledDriver, &device, &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
+Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &communicatorSamplerQueueClient,
+                          &communicatorConnectorQueueClient);
 
 TimeServer timeServer;
-Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &dataQueue, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
+Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &dataQueue,
+                    &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
 
 TaskHandle_t communicatorTaskHandle;
 TaskHandle_t connectorTaskHandle;
@@ -122,7 +124,7 @@ void setup() {
 
 void loop() {
     sampler.loop();
-} 
+}
 
 #ifndef ESP32
 int main() {

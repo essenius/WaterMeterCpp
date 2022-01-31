@@ -19,7 +19,7 @@ class PayloadBuilder {
 public:
     explicit PayloadBuilder(Clock* theClock = nullptr);
     void begin();
-    void initialize(const char prefix = '{');
+    void initialize(char prefix = '{');
     bool isAlmostFull() const;
     int remainingSize() const;
     const char* toString() const;
@@ -67,8 +67,8 @@ private:
     Clock* _clock;
     char* _currentPosition = _resultBuffer;
     bool _needsDelimiter = false;
-    char _numberBuffer[NUMBER_BUFFER_SIZE] = { 0 };
-    char _resultBuffer[RESULT_BUFFER_SIZE] = { 0 };
+    char _numberBuffer[NUMBER_BUFFER_SIZE] = {0};
+    char _resultBuffer[RESULT_BUFFER_SIZE] = {0};
 };
 
 #endif

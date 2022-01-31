@@ -12,10 +12,9 @@
 #include "Communicator.h"
 #include "Connector.h"
 
-Communicator::Communicator(EventServer* eventServer, Clock* theClock, Log* logger, LedDriver* ledDriver, Device* device,
+Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device,
                            QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient) :
     EventClient(eventServer),
-    _clock(theClock),
     _logger(logger),
     _ledDriver(ledDriver),
     _device(device),

@@ -23,7 +23,7 @@ struct WifiConfig {
     const char* ssid;
     const char* password;
     const char* deviceName;
-    const uint8_t* bssid;   // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
+    const uint8_t* bssid; // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
 };
 
 struct MqttConfig {
@@ -41,11 +41,11 @@ struct IpConfig {
     const IPAddress secondaryDns;
 };
 
-const IPAddress NO_IP{ 0,0,0,0 };
+const IPAddress NO_IP{0, 0, 0, 0};
 
 // NO_IP means auto-configure
 
-const IpConfig IP_AUTO_CONFIG{ NO_IP, NO_IP, NO_IP, NO_IP, NO_IP };
+const IpConfig IP_AUTO_CONFIG{NO_IP, NO_IP, NO_IP, NO_IP, NO_IP};
 
 #define CONFIG_USE_TLS
 

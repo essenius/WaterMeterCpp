@@ -27,11 +27,11 @@ constexpr unsigned long TIMESERVER_WAIT_DURATION = 10UL * SECONDS;
 constexpr unsigned int MAX_RECONNECT_FAILURES = 5;
 constexpr unsigned long MQTT_RECONNECT_WAIT_DURATION = 2UL * SECONDS;
 
-class Connector: public EventClient
-{
+class Connector : public EventClient {
 public:
-    Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer, 
-        FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
+    Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
+              FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* samplerQueueClient,
+              QueueClient* communicatorQueueClient);
     void setup();
     static void task(void* parameter);
 
@@ -66,7 +66,6 @@ private:
     void handleMqttConnected();
     void handleMqttReady();
     void handleDisconnected();
-
 };
 
 #endif

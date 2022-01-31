@@ -14,7 +14,7 @@
 #include "ChangePublisher.h"
 #include "EventClient.h"
 
-class FlowMeter: public EventClient {
+class FlowMeter : public EventClient {
 public:
     explicit FlowMeter(EventServer* eventServer);
     void begin();

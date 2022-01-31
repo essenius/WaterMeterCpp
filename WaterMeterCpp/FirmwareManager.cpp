@@ -16,7 +16,7 @@
 #include <WiFiClient.h>
 #endif
 
-#include "FirmwareManager.h" 
+#include "FirmwareManager.h"
 #include "EventServer.h"
 #include "SafeCString.h"
 
@@ -26,8 +26,8 @@ FirmwareManager::FirmwareManager(EventServer* eventServer, const char* baseUrl, 
 }
 
 void FirmwareManager::begin(WiFiClient* client, const char* machineId) {
-  _client = client;
-  safeStrcpy(_machineId, machineId);
+    _client = client;
+    safeStrcpy(_machineId, machineId);
 }
 
 bool FirmwareManager::updateAvailable() const {
@@ -48,12 +48,13 @@ bool FirmwareManager::updateAvailable() const {
             safeSprintf(buffer, "Current firmware version: '%s'; available version: '%s'\n", _buildVersion, newVersion.c_str());
             _eventServer->publish(Topic::Info, buffer);
         }
-    } else {
-        safeSprintf(buffer,"Firmware version check to '%s' failed with response code %d\n", versionUrl, httpCode);
+    }
+    else {
+        safeSprintf(buffer, "Firmware version check to '%s' failed with response code %d\n", versionUrl, httpCode);
         _eventServer->publish(Topic::CommunicationError, buffer);
-  }
-  httpClient.end();
-  return newBuildAvailable;
+    }
+    httpClient.end();
+    return newBuildAvailable;
 }
 
 void FirmwareManager::loadUpdate() const {
@@ -65,11 +66,20 @@ void FirmwareManager::loadUpdate() const {
     const t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
 
     if (returnValue == HTTP_UPDATE_FAILED) {
-        safeSprintf(buffer, "Firmware update failed (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+        safeSprintf(
+            buffer, 
+            "Firmware update failed (%d): %s\n", 
+            httpUpdate.getLastError(),
+            httpUpdate.getLastErrorString().c_str());
         _eventServer->publish(Topic::CommunicationError, buffer);
         return;
     }
-    safeSprintf(buffer, "Firmware not updated (%d/%d): %s\n", returnValue, httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    safeSprintf(
+        buffer, 
+        "Firmware not updated (%d/%d): %s\n", 
+        returnValue, 
+        httpUpdate.getLastError(),
+        httpUpdate.getLastErrorString().c_str());
     _eventServer->publish(Topic::Info, buffer);
 }
 

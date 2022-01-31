@@ -15,11 +15,12 @@
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
-class LongChangePublisher : public ChangePublisher<long>
-{
+class LongChangePublisher : public ChangePublisher<long> {
 public:
+    ~LongChangePublisher() override = default;
+
     LongChangePublisher(EventServer* eventServer, EventClient* eventClient, Topic topic, long epsilon, long lowThreshold);
-    void set(long payload) override;
+    LongChangePublisher& operator=(long payload) override;
 
 protected:
     long _epsilon;

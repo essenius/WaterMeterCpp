@@ -20,13 +20,12 @@
 
 class Communicator : public EventClient {
 public:
-    Communicator(EventServer* eventServer, Clock* theClock, Log* logger, LedDriver* ledDriver, Device* device, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
+    Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
     void setup() const;
     void loop() const;
     static void task(void* parameter);
 
 private:
-    Clock* _clock;
     Log* _logger;
     LedDriver* _ledDriver;
     Device* _device;

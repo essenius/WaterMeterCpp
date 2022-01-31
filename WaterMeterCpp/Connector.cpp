@@ -11,14 +11,14 @@
 
 #include "Connector.h"
 #include "LedDriver.h"
-#include "Log.h"
 #include "QueueClient.h"
 #include "secrets.h" // for the CONFIG constants
 
 constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
 
-Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, 
-    TimeServer* timeServer, FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
+Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway,
+                     TimeServer* timeServer, FirmwareManager* firmwareManager, DataQueue* dataQueue,
+                     QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
 
     EventClient(eventServer),
     _wifi(wifi),
@@ -28,8 +28,7 @@ Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatw
     _dataQueue(dataQueue),
     _samplerQueueClient(samplerQueueClient),
     _communicatorQueueClient(communicatorQueueClient),
-    _state(eventServer, communicatorQueueClient, Topic::Connection)
-{}
+    _state(eventServer, communicatorQueueClient, Topic::Connection) {}
 
 void Connector::setup() {
 
@@ -61,7 +60,7 @@ ConnectionState Connector::loop() {
     return _state;
 }
 
-void Connector::task(void *parameter) {
+void Connector::task(void* parameter) {
     const auto me = static_cast<Connector*>(parameter);
 
     for (;;) {
@@ -177,7 +176,7 @@ void Connector::handleSettingTime() {
 }
 
 void Connector::handleCheckFirmware() {
-    _firmwareManager->begin(_wifi->getClient(), _eventServer->request(Topic::MacRaw,""));
+    _firmwareManager->begin(_wifi->getClient(), _eventServer->request(Topic::MacRaw, ""));
     _firmwareManager->tryUpdate();
     _state = ConnectionState::WifiReady;
 }
@@ -216,10 +215,10 @@ void Connector::handleMqttConnected() {
     }
     // don't announce if we already did it recently. 
     // using millis since micros works only a bit over 70 minutes.
-    if (_lastAnnouncementTimestampMillis == 0 || millis() - _lastAnnouncementTimestampMillis  > ONE_HOUR_IN_MILLIS) {
+    if (_lastAnnouncementTimestampMillis == 0 || millis() - _lastAnnouncementTimestampMillis > ONE_HOUR_IN_MILLIS) {
         while (_mqttGateway->hasAnnouncement()) {
             _mqttGateway->publishNextAnnouncement();
-        }      
+        }
         _lastAnnouncementTimestampMillis = millis();
     }
     _mqttGateway->announceReady();
@@ -237,10 +236,10 @@ void Connector::handleMqttReady() {
     }
 
     while (_samplerQueueClient->receive()) {}
-    
+
     // returns false if disconnected, minimizing risk of losing data from the queue
     if (!_mqttGateway->handleQueue()) {
-      return;
+        return;
     }
     while (_dataQueue->receive()) {}
 }

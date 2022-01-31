@@ -68,8 +68,8 @@ namespace WaterMeterCppTest {
             PayloadBuilder serializePayloadBuilder(&theClock);
             Serializer serializer(&serializePayloadBuilder);
             DataQueue dataQueue(&communicatorEventServer, &theClock, &serializer);
-            RingbufferPayload measurementPayload;
-            RingbufferPayload resultPayload;
+            RingbufferPayload measurementPayload{};
+            RingbufferPayload resultPayload{};
             SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &dataQueue, &measurementPayload);
             ResultAggregator resultAggregator(&samplerEventServer, &theClock, &dataQueue, &resultPayload, MEASURE_INTERVAL_MICROS);
 
@@ -93,7 +93,7 @@ namespace WaterMeterCppTest {
             QueueClient connectorSamplerQueueClient(&remoteEventServer, 1);
 
             Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-            Communicator communicator(&communicatorEventServer, &theClock, &logger, &ledDriver, &device, &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
+            Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
             Connector connector(&remoteEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &dataQueue, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
 
             TaskHandle_t communicatorTaskHandle;

@@ -16,6 +16,7 @@
 // ReSharper disable CppMemberFunctionMayBeConst -- same here
 
 #include "PubSubClientMock.h"
+
 PubSubClient& PubSubClient::setCallback(MQTT_CALLBACK_SIGNATURE) {
     _callback = callback;
     return *this;
@@ -27,7 +28,7 @@ bool PubSubClient::connect(const char* id, const char* willTopic, uint8_t willQo
 }
 
 bool PubSubClient::connect(const char* id, const char* user, const char* pass,
-    const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
+                           const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
     safeStrcpy(_user, user);
     safeStrcpy(_pass, pass);
     return connect(id, willTopic, willQos, willRetain, willMessage);
@@ -47,7 +48,7 @@ bool PubSubClient::publish(const char* topic, const char* payload, bool retain) 
 
 void PubSubClient::reset() {
     _callCount = 0;
-    _payload[0] =  0;
+    _payload[0] = 0;
     _topic[0] = 0;
     _user[0] = 0;
     _pass[0] = 0;

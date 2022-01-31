@@ -17,7 +17,6 @@
 template <class payloadType>
 class ChangePublisher {
 public:
-
     ChangePublisher(EventServer* eventServer, EventClient* eventClient, Topic topic, payloadType defaultValue = {}) {
         _eventServer = eventServer;
         _eventClient = eventClient;
@@ -25,28 +24,20 @@ public:
         _payload = defaultValue;
     }
 
-    payloadType get() { return _payload; }
-
     virtual ~ChangePublisher() = default;
-
-    virtual void set(payloadType payload) {
-        if (payload != _payload) {
-            _payload = payload;
-            _eventServer->publish(_eventClient, _topic, static_cast<long>(payload));
-        }
-    }
 
     operator payloadType() const { return _payload; }
 
     void reset() { _payload = payloadType(); }
     void setTopic(Topic topic) { _topic = topic; }
 
-    ChangePublisher& operator=(payloadType payload) {
-        set(payload);
+    virtual ChangePublisher& operator=(payloadType payload) {
+        if (payload != _payload) {
+            _payload = payload;
+            _eventServer->publish(_eventClient, _topic, static_cast<long>(payload));
+        }
         return *this;
     }
-
-    bool operator==(const payloadType payload) { return get() == payload; }
 
 protected:
     EventServer* _eventServer;
@@ -54,6 +45,5 @@ protected:
     payloadType _payload{};
     Topic _topic;
 };
-
 
 #endif
