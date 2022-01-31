@@ -22,16 +22,16 @@
 
 class QueueClient : public EventClient {
 public:
-    explicit QueueClient(EventServer* eventServer);
-    void begin(QueueHandle_t sendQueue);
+    QueueClient(EventServer* eventServer, uint16_t size);
+    void begin(QueueHandle_t sendQueue = nullptr);
     QueueHandle_t getQueueHandle() const;
     void update(Topic topic, long payload) override;
-    bool receive(bool needsConnection = false);
+    bool receive();
 private:
-    static QueueHandle_t createQueue(int length);
+    static QueueHandle_t createQueue(uint16_t length);
     QueueHandle_t _receiveQueue;
     QueueHandle_t _sendQueue = nullptr;
-    bool _connected = false;
+   // bool _connected = false;
 };
 
 #endif

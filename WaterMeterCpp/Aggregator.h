@@ -9,9 +9,10 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_BATCHWRITER
-#define HEADER_BATCHWRITER
+#ifndef HEADER_AGGREGATOR
+#define HEADER_AGGREGATOR
 
+#include "Clock.h"
 #include "RingbufferPayload.h"
 #include "EventServer.h"
 #include "ChangePublisher.h"
@@ -21,30 +22,23 @@ using byte = unsigned char;
 
 class Aggregator : public EventClient {
 public:
-    Aggregator(EventServer* eventServer, DataQueue* dataQueue, RingbufferPayload* payload);
+    Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload);
     virtual void begin(long desiredFlushRate);
     bool canSend() const;
     virtual void flush();
     long getFlushRate();
     RingbufferPayload* getPayload() const;
-    //const char* getMessage() const;
     virtual bool shouldSend(bool force = false);
     bool newMessage();
-    //virtual void prepareFlush();
     virtual bool send();
     virtual void setDesiredFlushRate(long flushRate);
 
 protected:
-    //virtual void initBuffer();
     static long convertToLong(const char* stringParam, long defaultValue = 0L);
     static long limit(long input, long min, long max);
-    //void update(Topic topic, const char* payload) override;
-    //void update(Topic topic, long payload) override;
+    Clock* _clock;
     DataQueue* _dataQueue;
-    //bool _canFlush = true;
     long _desiredFlushRate = 0;
-    //bool _flushWaiting = false;
-    //virtual void resetCounters();
     RingbufferPayload* _payload;
     long _messageCount = 0;
     ChangePublisher<long> _flushRate;

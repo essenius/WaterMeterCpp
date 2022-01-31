@@ -12,12 +12,16 @@
 #ifndef HEADER_CLOCK_H
 #define HEADER_CLOCK_H
 
+#include "EventServer.h"
+
 #ifdef ESP32
 #include <ESP.h>  
 #include <sys/time.h>
 #else
 #include <ctime>
 #include <cstdio>
+#include "FreeRtosMock.h"
+
 struct timeval {
     time_t tv_sec; // seconds 
     long tv_usec; // microseconds
@@ -26,10 +30,20 @@ struct timeval {
 
 typedef unsigned long long Timestamp;
 
-class Clock {
-    public:
+class Clock : public EventClient {
+public:
+    Clock(EventServer* eventServer);
+    void begin();
+    const char* get(Topic topic, const char* defaultValue) override;
 
-    static Timestamp getTimestamp();
-    static bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
+    Timestamp getTimestamp();
+    bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
+
+private:
+    static constexpr int BUFFER_SIZE = 27;
+    char _buffer[BUFFER_SIZE] = { 0 };
+    static SemaphoreHandle_t _timeMutex;
+    static SemaphoreHandle_t _formatTimeMutex;
 };
+
 #endif

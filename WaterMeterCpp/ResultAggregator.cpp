@@ -13,8 +13,8 @@
 #include <climits>
 #include "ResultAggregator.h"
 
-ResultAggregator::ResultAggregator(EventServer* eventServer, DataQueue* dataQueue, RingbufferPayload* payload, const uint32_t measureIntervalMicros) :
-    Aggregator(eventServer, dataQueue, payload),
+ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload, const uint32_t measureIntervalMicros) :
+    Aggregator(eventServer, theClock, dataQueue, payload),
     _result(&payload->buffer.result),
     _measureIntervalMicros(measureIntervalMicros),
     _overrun(eventServer, this, Topic::TimeOverrun, 0L){
@@ -97,6 +97,7 @@ bool ResultAggregator::send() {
     const auto wasSuccessful = Aggregator::send();
     if (wasSuccessful) {
         _eventServer->publish(this, Topic::ResultWritten, LONG_TRUE);
+        _eventServer->publish(this, Topic::TimeOverrun, LONG_FALSE);
     }
     return wasSuccessful;
 }

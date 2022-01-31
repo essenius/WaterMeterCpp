@@ -14,17 +14,12 @@
 
 #include "EventServer.h"
 
-class TimeServer : public EventClient {
+class TimeServer {
 public:
-    explicit TimeServer(EventServer* eventServer);
-    virtual void begin();
     virtual void setTime();
-    const char* get(Topic topic, const char* defaultValue) override;
     virtual bool timeWasSet() const;
 
 protected:
-    static constexpr int BUFFER_SIZE = 27;
-    static char _buffer[BUFFER_SIZE];
     bool _wasSet = false;
 };
 #endif

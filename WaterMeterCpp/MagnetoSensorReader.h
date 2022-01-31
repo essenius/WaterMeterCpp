@@ -29,7 +29,7 @@ public:
 
 private:
     static constexpr int FLATLINE_STREAK = 25;
-    static constexpr int MAX_STREAKS_TO_ALERT = 10;
+    static constexpr int MAX_STREAKS_TO_ALERT = 20;
     EventServer* _eventServer;
     QMC5883LCompass* _compass;
     int16_t _previousSample = -32768;

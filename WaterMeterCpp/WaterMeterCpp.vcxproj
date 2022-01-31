@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClCompile Include="ArduinoMock.cpp" />
     <ClCompile Include="Aggregator.cpp" />
+    <ClCompile Include="Communicator.cpp" />
     <ClCompile Include="Connector.cpp" />
     <ClCompile Include="DataQueue.cpp" />
     <ClCompile Include="Device.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="ArduinoMock.h" />
     <ClInclude Include="Aggregator.h" />
     <ClInclude Include="ChangePublisher.h" />
+    <ClInclude Include="Communicator.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="Connector.h" />
     <ClInclude Include="ConnectionState.h" />

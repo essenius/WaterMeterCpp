@@ -14,6 +14,7 @@
 
 // higher level functions. See also the template function writeParam in .h
 
+PayloadBuilder::PayloadBuilder(Clock* theClock) : _clock(theClock) {}
 void PayloadBuilder::begin() {
     _resultBuffer[0] = 0;
     _currentPosition = _resultBuffer;
@@ -66,7 +67,7 @@ void PayloadBuilder::writeLabel(const char* label) {
 }
 
 void PayloadBuilder::writeTimestamp(const Timestamp timestampIn) {
-    Clock::formatTimestamp(timestampIn, _currentPosition, RESULT_BUFFER_SIZE - strlen(_resultBuffer));
+    _clock->formatTimestamp(timestampIn, _currentPosition, RESULT_BUFFER_SIZE - strlen(_resultBuffer));
     updatePosition();
 }
 

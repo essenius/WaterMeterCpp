@@ -26,17 +26,16 @@
 class Wifi : public EventClient {
 
 public:
-    Wifi(EventServer* eventServer, const WifiConfig* wifiConfig);
+    Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder);
     virtual void begin();
     const char* getHostName() const;
     const char* get(Topic topic, const char* defaultValue) override;
-    void init();
     virtual void announceReady();
     virtual bool isConnected();
     virtual void reconnect();
     virtual void disconnect();
     void setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey);
-    const char* statusSummary();
+    void setStatusSummary() const;
     WiFiClient* getClient();
     void configure(const IpConfig* ipConfig = &IP_AUTO_CONFIG);
     virtual bool needsReinit();
@@ -45,7 +44,7 @@ private:
     static constexpr int HOSTNAME_LENGTH = 64;
     char _hostNameBuffer[HOSTNAME_LENGTH] = {0};
     const WifiConfig* _wifiConfig;
-    PayloadBuilder _payloadBuilder;
+    PayloadBuilder* _payloadBuilder;
     WiFiClientSecure _wifiClient;
     IPAddress _localIp = NO_IP;
     IPAddress _gatewayIp = NO_IP;

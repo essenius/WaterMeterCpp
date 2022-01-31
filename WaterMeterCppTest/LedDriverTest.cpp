@@ -64,7 +64,7 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::Peak, false);
             assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"No peak (blue stays off)");
 
-            eventServer.publish(Topic::Error, "Problem");
+            eventServer.publish(Topic::SamplingError, "Problem");
             assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"Error (red on)");
 
             eventServer.publish(Topic::Blocked, LONG_FALSE);

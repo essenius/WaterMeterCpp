@@ -95,8 +95,8 @@ namespace WaterMeterCppTest {
         TEST_METHOD(eventServerErrorTest) {
             EventServer server;
             TestEventClient client1(&server);
-            server.subscribe(&client1, Topic::Error);
-            server.publish(nullptr, Topic::Error, "My Error");
+            server.subscribe(&client1, Topic::SamplingError);
+            server.publish(nullptr, Topic::SamplingError, "My Error");
             Assert::AreEqual("My Error", client1.getPayload(), L"error received");
             Assert::AreEqual(1, client1.getCallCount(), L"one call to client1");
         }
@@ -104,7 +104,7 @@ namespace WaterMeterCppTest {
         TEST_METHOD(eventServerDefaultGetTest) {
             EventServer server;
             EventClient client1(&server);
-            Assert::AreEqual("x", client1.get(Topic::Error, "x"), L"Default get char* OK");
+            Assert::AreEqual("x", client1.get(Topic::SamplingError, "x"), L"Default get char* OK");
             Assert::AreEqual(25L, client1.get(Topic::Info, 25L), L"default get long ok");
         }
     };

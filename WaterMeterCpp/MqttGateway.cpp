@@ -36,7 +36,8 @@ constexpr const char* const NAME = "$name";
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
 MqttGateway::MqttGateway(
-    EventServer* eventServer, PubSubClient* mqttClient, const MqttConfig* mqttConfig, const DataQueue* dataQueue, const char* buildVersion) :
+    EventServer* eventServer, PubSubClient* mqttClient, const MqttConfig* mqttConfig, const DataQueue* dataQueue,
+    const char* buildVersion) :
     EventClient(eventServer),
     _mqttClient(mqttClient),
     _mqttConfig(mqttConfig),
@@ -49,13 +50,15 @@ void MqttGateway::announceReady() {
     _eventServer->subscribe(this, Topic::BatchSize); // long
     _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
     _eventServer->subscribe(this, Topic::FreeHeap); // long
-    _eventServer->subscribe(this, Topic::FreeStack); // long
+    _eventServer->subscribe(this, Topic::FreeStackSampler); // long
+    _eventServer->subscribe(this, Topic::FreeStackCommunicator); // long
+    _eventServer->subscribe(this, Topic::FreeStackConnector); // long
     _eventServer->subscribe(this, Topic::IdleRate); // long
     _eventServer->subscribe(this, Topic::Samples); // string
     _eventServer->subscribe(this, Topic::NonIdleRate); // long
     _eventServer->subscribe(this, Topic::Rate); // long  
     _eventServer->subscribe(this, Topic::Result); // string
-    _eventServer->subscribe(this, Topic::Error); // string 
+    _eventServer->subscribe(this, Topic::SamplingError); // string 
     _eventServer->subscribe(this, Topic::Info); // string
     // making sure we are listening. Mute is on after a disconnect.
     mute(false);
@@ -71,8 +74,9 @@ void MqttGateway::begin(Client* client, const char* clientName) {
     _mqttClient->setClient(*client);
     _mqttClient->setBufferSize(512);
     _mqttClient->setServer(_mqttConfig->broker, _mqttConfig->port);
-    // TODO: optimize in a way that works on Arduino
-    _mqttClient->setCallback(std::bind(&MqttGateway::callback, this, _1, _2, _3));
+    _mqttClient->setCallback([=](const char* topic, const uint8_t* payload, const unsigned int length) {
+        this->callback(topic, payload, length);
+    });
     connect();
 }
 
@@ -113,10 +117,11 @@ void MqttGateway::connect() {
         success = _mqttClient->connect(_clientName, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
     }
     else {
-        success = _mqttClient->connect(_clientName, _mqttConfig->user, _mqttConfig->password, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
+        success = _mqttClient->connect(_clientName, _mqttConfig->user, _mqttConfig->password, _topicBuffer, 0, true,
+                                       LAST_WILL_MESSAGE);
     }
 
-    // shoudl get picked up by isConnected later
+    // should get picked up by isConnected later
     if (!success) {
         return;
     }
@@ -128,10 +133,8 @@ void MqttGateway::connect() {
     }
 }
 
-void MqttGateway::handleQueue() {
-    if (isConnected()) {
-        _mqttClient->loop();
-    }
+bool MqttGateway::handleQueue() {
+    return isConnected() && _mqttClient->loop();
 }
 
 bool MqttGateway::isConnected() {
@@ -166,12 +169,12 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_ERROR, DEVICE_INFO,
-                DEVICE_BUILD,
-                DEVICE_MAC);
+    safeSprintf(payload, "%s,%s,%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK_SAMPLER, DEVICE_FREE_STACK_COMMUNICATOR, DEVICE_FREE_STACK_CONNECTOR, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD, DEVICE_MAC);
     prepareNode(DEVICE, "Device", "1", payload);
-    prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap Memory", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_FREE_STACK, "Free Stack Memory", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_FREE_STACK_SAMPLER, "Free Stack Sampler", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_FREE_STACK_COMMUNICATOR, "Free Stack Communicator", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_FREE_STACK_CONNECTOR, "Free Stack Connector", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_ERROR, "Error message", TYPE_STRING);
     prepareProperty(DEVICE, DEVICE_INFO, "Info message", TYPE_STRING);
     prepareProperty(DEVICE, DEVICE_BUILD, "Firmware version", TYPE_STRING);
@@ -226,7 +229,7 @@ bool MqttGateway::publishEntity(const char* baseTopic, const char* entity, const
 
 void MqttGateway::publishError(const char* message) {
     safeSprintf(_topicBuffer, "MQTT: %s [state = %d]", message, _mqttClient->state());
-    _eventServer->publish<const char*>(Topic::Error, _topicBuffer);
+    _eventServer->publish<const char*>(Topic::CommunicationError, _topicBuffer);
 }
 
 bool MqttGateway::publishNextAnnouncement() {
@@ -257,43 +260,7 @@ void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
     }
 }
 
-void MqttGateway::storePendingMessage(const Topic topic, const long payload) {
-    _pendingMessages[topic] = payload;
-}
-
-void MqttGateway::sendPendingMessages() {
-    for (auto iterator = _pendingMessages.begin(); iterator != _pendingMessages.end();) {
-        update(iterator->first, iterator->second);
-        iterator = _pendingMessages.erase(iterator);
-    }
-}
-
-void MqttGateway::update(const Topic topic, long payload) {
-    if (!isConnected()) {
-        storePendingMessage(topic, payload);
-        return;
-    }
-    // making sure we don't call update (topic, const char*) here
-    char numberBuffer[20];
-    safeSprintf(numberBuffer, "%ld", payload);
-    publishUpdate(topic, numberBuffer);
-}
-
-// incoming event from EventServer
+// incoming event from EventServer. This only happens if we are connected
 void MqttGateway::update(const Topic topic, const char* payload) {
-    if (!isConnected()) {
-        if (topic == Topic::Error || topic == Topic::Info) {
-            RingbufferPayload bufferPayload{};
-            bufferPayload.topic = topic;
-            bufferPayload.timestamp = Clock::getTimestamp();
-            safeStrcpy(bufferPayload.buffer.message, payload);
-            // if this doesn't work (e.g. buffer full), we discard the message
-            if (!_dataQueue->send(&bufferPayload)) {
-                _eventServer->publish(Topic::Blocked, LONG_TRUE);
-            }
-        }
-        // discard other topics. Results and samples should not come in while disconnected
-        return;
-    }
     publishUpdate(topic, payload);
 }

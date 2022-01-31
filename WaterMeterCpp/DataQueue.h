@@ -19,6 +19,7 @@
 #include "FreeRtosMock.h"
 #endif
 
+#include "Clock.h"
 #include "EventClient.h"
 #include "RingbufferPayload.h"
 #include "Serializer.h"
@@ -26,7 +27,7 @@
 
 class DataQueue : public EventClient {
 public:
-    DataQueue(EventServer* eventServer, Serializer* serializer);
+    DataQueue(EventServer* eventServer, Clock* theClock, Serializer* serializer);
 
     bool canSend(const RingbufferPayload* payload) const;
     size_t freeSpace() const;
@@ -39,6 +40,7 @@ public:
 
 private:
     RingbufHandle_t _bufferHandle = nullptr;
+    Clock* _clock;
     Serializer* _serializer;
 };
 

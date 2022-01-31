@@ -11,8 +11,8 @@
 
 #include "SampleAggregator.h"
 
-SampleAggregator::SampleAggregator(EventServer* eventServer, DataQueue* dataQueue, RingbufferPayload* payload) :
-    Aggregator(eventServer, dataQueue, payload) {
+SampleAggregator::SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload) :
+    Aggregator(eventServer, theClock, dataQueue, payload) {
     _flushRate.setTopic(Topic::BatchSize);
 }
 

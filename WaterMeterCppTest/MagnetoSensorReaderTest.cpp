@@ -37,7 +37,7 @@ namespace WaterMeterCppTest {
             compass.resetSucceeds(false);
             reader.begin();
 
-            for (int streaks = 0; streaks < 10; streaks++) {
+            for (int streaks = 0; streaks < 20; streaks++) {
                 for (int sample = 0; sample < 25; sample++) {
                     reader.read();
                     Assert::AreEqual(streaks, resetSensorEventClient.getCallCount(), L"right number of events fired");
@@ -45,8 +45,8 @@ namespace WaterMeterCppTest {
                 }
             }
             reader.read();
-            Assert::AreEqual(10, resetSensorEventClient.getCallCount(), L"ResetSensor event event fired");
-            Assert::AreEqual(1, alertEventClient.getCallCount(), L"Alert event event fired");
+            Assert::AreEqual(20, resetSensorEventClient.getCallCount(), L"ResetSensor event fired 20 times");
+            Assert::AreEqual(1, alertEventClient.getCallCount(), L"Alert event fired");
         }
     };
 }

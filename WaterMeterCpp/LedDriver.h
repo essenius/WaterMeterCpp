@@ -23,6 +23,7 @@ public:
     void update(Topic topic, long payload) override;
 
     // number of samples for led blinking intervals
+    // intervals of 10 ms
     static constexpr unsigned int EXCLUDE_INTERVAL = 25;
     static constexpr unsigned int FLOW_INTERVAL = 50;
     static constexpr unsigned int IDLE_INTERVAL = 100;
@@ -31,7 +32,6 @@ public:
 private:
     LedFlasher _connectingFlasher;
     LedFlasher _sampleFlasher;
-    //static uint8_t convertToState(const char* state);
 };
 
 #endif

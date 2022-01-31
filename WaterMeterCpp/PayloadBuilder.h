@@ -17,6 +17,7 @@
 
 class PayloadBuilder {
 public:
+    explicit PayloadBuilder(Clock* theClock = nullptr);
     void begin();
     void initialize(const char prefix = '{');
     bool isAlmostFull() const;
@@ -63,6 +64,7 @@ private:
     void writeString(unsigned long input);
     void writeString(uint32_t input);
 
+    Clock* _clock;
     char* _currentPosition = _resultBuffer;
     bool _needsDelimiter = false;
     char _numberBuffer[NUMBER_BUFFER_SIZE] = { 0 };

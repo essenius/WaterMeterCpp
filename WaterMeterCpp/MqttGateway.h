@@ -32,7 +32,9 @@ constexpr const char* const EMPTY = "";
 constexpr const char* const DEVICE = "device";
 constexpr const char* const DEVICE_ERROR = "error";
 constexpr const char* const DEVICE_FREE_HEAP = "free-heap";
-constexpr const char* const DEVICE_FREE_STACK = "free-stack";
+constexpr const char* const DEVICE_FREE_STACK_SAMPLER = "free-stack-sampler";
+constexpr const char* const DEVICE_FREE_STACK_COMMUNICATOR = "free-stack-communicator";
+constexpr const char* const DEVICE_FREE_STACK_CONNECTOR = "free-stack-connector";
 constexpr const char* const DEVICE_INFO = "info";
 constexpr const char* const DEVICE_BUILD = "firmware-version";
 constexpr const char* const DEVICE_MAC = "mac-address";
@@ -57,8 +59,10 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::IdleRate, {RESULT, RESULT_IDLE_RATE}},
     {Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE}},
     {Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP}},
-    {Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK}},
-    {Topic::Error, {DEVICE, DEVICE_ERROR}},
+    {Topic::FreeStackSampler, {DEVICE, DEVICE_FREE_STACK_SAMPLER}},
+    {Topic::FreeStackCommunicator, {DEVICE, DEVICE_FREE_STACK_COMMUNICATOR}},
+    {Topic::FreeStackConnector, {DEVICE, DEVICE_FREE_STACK_CONNECTOR}},
+    {Topic::SamplingError, {DEVICE, DEVICE_ERROR}},
     {Topic::Info, {DEVICE, DEVICE_INFO}},
     {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}}
 };
@@ -69,15 +73,14 @@ public:
     virtual void announceReady();
     virtual void begin(Client* client, const char* clientName);
     virtual void connect();
-    void handleQueue();
+    bool handleQueue();
     virtual bool hasAnnouncement();
     virtual bool isConnected();
     void publishError(const char* message);
     virtual bool publishNextAnnouncement();
+    using EventClient::update;
     void update(Topic topic, const char* payload) override;
     void publishUpdate(Topic topic, const char* payload);
-    void sendPendingMessages();
-    void update(Topic topic, long payload) override;
 
 protected:
     PubSubClient* _mqttClient{};
@@ -89,13 +92,11 @@ protected:
     const char* _buildVersion;
     static constexpr int TOPIC_BUFFER_SIZE = 255;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = {0};
-    static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2048; // using 1812 now.
+    static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2500; 
     char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = {0};
     char* _announcementPointer = _announcementBuffer;
-    std::map<Topic, long> _pendingMessages;
 
     void callback(const char* topic, const byte* payload, unsigned length);
-
     void prepareAnnouncementBuffer();
     void prepareEntity(const char* entity, const char* payload);
     void prepareEntity(const char* baseTopic, const char* entity, const char* payload);
@@ -106,7 +107,6 @@ protected:
 
     bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
     bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);
-    void storePendingMessage(Topic topic, long payload);
 };
 
 #endif

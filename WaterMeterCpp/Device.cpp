@@ -11,6 +11,12 @@
 
 // ReSharper disable CppMemberFunctionMayBeStatic -- mimic existing interface
 
+#ifdef ESP32
+#include "ESP.h"
+#else
+#include "FreeRtosMock.h"
+#endif
+
 #include "Device.h"
 
 Device::Device(EventServer* eventServer) :
@@ -18,24 +24,29 @@ Device::Device(EventServer* eventServer) :
     // Only catch larger variations or alarmingly low values to avoid very frequent updates
     _freeHeap(eventServer, this, Topic::FreeHeap, 5000L, 25000L),
     // catch all changes as this is not expected to change
-    _freeStack(eventServer, this, Topic::FreeStack, 0L, 0L) {}
+    _freeStackSampler(eventServer, this, Topic::FreeStackSampler, 0L, 0L),
+    _freeStackCommunicator(eventServer, this, Topic::FreeStackCommunicator, 0L, 0L),
+    _freeStackConnector(eventServer, this, Topic::FreeStackConnector, 0L, 0L) {}
 
-void Device::begin() {
-    reportHealth();
+void Device::begin(const TaskHandle_t &samplerHandle, const TaskHandle_t &communicatorHandle, const TaskHandle_t &connectorHandle) {
+    _samplerHandle = samplerHandle;
+    _communicatorHandle = communicatorHandle;
+    _connectorHandle = connectorHandle;
 }
 
 #ifdef ESP32
 // running on the device
 #include <ESP.h>
-#define INCLUDE_uxTaskGetStackHighWaterMark 1
+//#define INCLUDE_uxTaskGetStackHighWaterMark 1
 
 long  Device::freeHeap() {
     return ESP.getFreeHeap();
 }
 
-long  Device::freeStack() {
-    return uxTaskGetStackHighWaterMark(nullptr);
+long Device::freeStack(TaskHandle_t taskHandle) {
+      return uxTaskGetStackHighWaterMark(taskHandle);
 }
+
 #else
 // mock implementation for testing. Simulate changes as well as staying the same
 
@@ -48,17 +59,23 @@ long Device::freeHeap() {
      return 23000L;
 }
 
-long Device::freeStack() {
-    static int count = -1;
-    count++;
-    if (count <= 2) return 1500L + count * 64L;
-    if (count <= 4) return 1628L;
-    count = -1;
-    return 1500;
+long Device::freeStack(TaskHandle_t taskHandle) {
+    if (taskHandle == _samplerHandle) {
+        static int count = -1;
+        count++;
+        if (count <= 2) return 1500L + count * 64L;
+        if (count <= 4) return 1628L;
+        count = -1;
+        return 1500;
+    }
+    if (taskHandle == _communicatorHandle) return 3750;
+    return 5250;
 }
 #endif
 
 void Device::reportHealth() {
     _freeHeap.set(freeHeap());
-    _freeStack.set(freeStack());
+    _freeStackSampler.set(freeStack(_samplerHandle));
+    _freeStackCommunicator.set(freeStack(_communicatorHandle));
+    _freeStackConnector.set(freeStack(_connectorHandle));
 }

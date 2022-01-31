@@ -33,19 +33,23 @@ constexpr static const char* const MESSAGES[] = {
     "Waiting for time",
     "Checking for firmware update" };
 
-Log::Log(EventServer* eventServer) :
-    EventClient(eventServer) {}
+Log::Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder) :
+    EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {}
 
 void Log::begin() {
-    Serial.begin(115200);
     update(Topic::Info,"Starting");
     _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Connection);
-    _eventServer->subscribe(this, Topic::Error);
+    _eventServer->subscribe(this, Topic::SamplingError);
+    _eventServer->subscribe(this, Topic::FreeHeap);
+    _eventServer->subscribe(this, Topic::FreeStackSampler);
+    _eventServer->subscribe(this, Topic::FreeStackCommunicator);
+    _eventServer->subscribe(this, Topic::FreeStackConnector);
     _eventServer->subscribe(this, Topic::Info);
-    _eventServer->subscribe(this, Topic::TimeOverrun);
     _eventServer->subscribe(this, Topic::Result);
-
+    _eventServer->subscribe(this, Topic::ResultWritten);
+    _eventServer->subscribe(this, Topic::TimeOverrun);
+    _eventServer->subscribe(this, Topic::WifiSummaryReady);
 }
 
 void Log::update(Topic topic, const char* payload) {
@@ -55,8 +59,21 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Connection:
         Serial.println(payload);
         break;
-    case Topic::Error:
-        Serial.printf("Error: %s\n", payload);
+    case Topic::SamplingError:
+    case Topic::CommunicationError:
+        Serial.printf("Error: '%s'\n", payload);
+        break;
+    case Topic::FreeHeap:
+        Serial.printf("Free Heap: %s\n", payload);
+        break;
+    case Topic::FreeStackSampler:
+        Serial.printf("Free Stack Sampler: %s\n", payload);
+        break;
+    case Topic::FreeStackCommunicator:
+        Serial.printf("Free Stack Communicator: %s\n", payload);
+        break;
+    case Topic::FreeStackConnector:
+        Serial.printf("Free Stack Connector: %s\n", payload);
         break;
     case Topic::Info:
         Serial.println(payload);
@@ -64,8 +81,14 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Alert:
         Serial.println("Alert!");
         break;
+    case Topic::ResultWritten:
+        Serial.printf("Result Written: %s\n", payload);
+        break;
     case Topic::TimeOverrun:
         Serial.printf("Time overrun: %s\n", payload);
+        break;
+    case Topic::WifiSummaryReady:
+        Serial.printf("Wifi summary: %s\n", _wifiPayloadBuilder->toString());
         break;
     default:
         Serial.printf("Topic '%d': %s\n", static_cast<int>(topic), payload);
@@ -74,8 +97,11 @@ void Log::update(Topic topic, const char* payload) {
 
 void Log::update(Topic topic, const long payload) {
     if (topic == Topic::Connection) {
+      if (_previousConnectionTopic != payload) {
+        _previousConnectionTopic = payload;
         update(topic, MESSAGES[payload]);
-        return;
+      }
+      return;
     }
     EventClient::update(topic, payload);
 }

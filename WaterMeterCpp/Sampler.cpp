@@ -12,20 +12,22 @@
 #include "Sampler.h"
 
 Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter,
-                 SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, Device* device, QueueClient* queueClient) :
+                 SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
     _eventServer(eventServer), _sensorReader(sensorReader), _flowMeter(flowMeter),
-    _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _device(device), _queueClient(queueClient) {}
+    _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {}
 
 void Sampler::setup(const unsigned long samplePeriod) {
     _samplePeriod = samplePeriod;
     _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
     _sensorReader->begin();
     _flowMeter->begin();
+    // what can be sent to the communicator (note: must be numerical payload)
+    _eventServer->subscribe(_queueClient, Topic::Alert);
     _eventServer->subscribe(_queueClient, Topic::Blocked);
     _eventServer->subscribe(_queueClient, Topic::Exclude);
     _eventServer->subscribe(_queueClient, Topic::Flow);
     _eventServer->subscribe(_queueClient, Topic::Peak);
-    _eventServer->subscribe(_queueClient, Topic::Processing);
+    _eventServer->subscribe(_queueClient, Topic::ResultWritten);    
     _eventServer->subscribe(_queueClient, Topic::Sample);
     _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
 }
@@ -40,7 +42,6 @@ void Sampler::begin() {
 void Sampler::loop() {
     const unsigned long startLoopTimestamp = micros();
     _nextMeasureTime += _samplePeriod;
-    _eventServer->publish(Topic::Processing, LONG_TRUE);
     const int16_t measure = _sensorReader->read();
 
     // this triggers flowMeter and measurementWriter as well as the comms thread
@@ -48,16 +49,13 @@ void Sampler::loop() {
     _resultAggregator->addMeasurement(measure, _flowMeter);
     _sampleAggregator->send();
     // Duration gets picked up by resultWriter, so must be published before sending
-    const unsigned long measureDurationTimestamp = micros();
     // making sure to use durations to operate on, not timestamps -- to avoid overflow issues
-    const unsigned long durationSoFar = measureDurationTimestamp - startLoopTimestamp;
+    const unsigned long durationSoFar = micros() - startLoopTimestamp;
+    // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
     _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar  + _additionalDuration));
     _resultAggregator->send();
 
-    _eventServer->publish(Topic::Processing, LONG_FALSE);
-
     unsigned long duration = micros() - startLoopTimestamp;
-    // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
     _additionalDuration = duration - durationSoFar;
 
     // not using delayMicroseconds() as that is less accurate. Sometimes up to 300 us too much wait time.
@@ -70,14 +68,10 @@ void Sampler::loop() {
         _nextMeasureTime += (extraTimeNeeded / _samplePeriod) * _samplePeriod;
     }
     else {
-        // we only do additional work if we have enough time left.
-        if (duration <= _maxDurationForChecks) {
-            _device->reportHealth();
-
-            do {
-                _queueClient->receive();
-                duration = micros() - startLoopTimestamp;
-            } while (duration < _samplePeriod);
-        }
+        // we don't need to use delay to yield, since this is the only task on this core.
+        do {
+            _queueClient->receive();
+            duration = micros() - startLoopTimestamp;
+        } while (duration < _samplePeriod);
     }
 }

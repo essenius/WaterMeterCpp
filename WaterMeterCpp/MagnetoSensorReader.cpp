@@ -58,7 +58,8 @@ void MagnetoSensorReader::reset() {
     // If we have done this a number of times in a row, we post an alert
     if (_consecutiveStreakCount >= MAX_STREAKS_TO_ALERT) {
         _eventServer->publish(Topic::Alert, LONG_TRUE);
-        _eventServer->publish(Topic::Error, "Sensor does not return values");
+        _eventServer->publish(Topic::SamplingError, "Sensor does not return values");
+        _consecutiveStreakCount = 0;
     }
     // reset the sensor
     _compass->setReset();

@@ -50,7 +50,7 @@ bool FirmwareManager::updateAvailable() const {
         }
     } else {
         safeSprintf(buffer,"Firmware version check to '%s' failed with response code %d\n", versionUrl, httpCode);
-        _eventServer->publish(Topic::Error, buffer);
+        _eventServer->publish(Topic::CommunicationError, buffer);
   }
   httpClient.end();
   return newBuildAvailable;
@@ -66,7 +66,7 @@ void FirmwareManager::loadUpdate() const {
 
     if (returnValue == HTTP_UPDATE_FAILED) {
         safeSprintf(buffer, "Firmware update failed (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-        _eventServer->publish(Topic::Error, buffer);
+        _eventServer->publish(Topic::CommunicationError, buffer);
         return;
     }
     safeSprintf(buffer, "Firmware not updated (%d/%d): %s\n", returnValue, httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());

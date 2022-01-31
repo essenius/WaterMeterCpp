@@ -17,16 +17,7 @@
 #include "ArduinoMock.h"
 #endif
 
-#include "Clock.h"
 #include "TimeServer.h"
-
-char TimeServer::_buffer[BUFFER_SIZE] = {'0'};
-
-TimeServer::TimeServer(EventServer* eventServer) : EventClient(eventServer) {}
-
-void TimeServer::begin() {
-    _eventServer->provides(this, Topic::Time);
-}
 
 constexpr time_t ONE_YEAR_IN_SECONDS = 31536000;
 
@@ -37,16 +28,6 @@ void TimeServer::setTime() {
 bool TimeServer::timeWasSet() const {
     // If the time didn't get set, the system thinks we're in 1970.
     // Then currentTime will be less than a year in seconds.
-
     const time_t currentTime = time(nullptr);
     return currentTime > ONE_YEAR_IN_SECONDS;
-}
-
-const char* TimeServer::get(Topic topic, const char* defaultValue) {
-    if (topic == Topic::Time) {
-        const auto currentTime = Clock::getTimestamp();
-        Clock::formatTimestamp(currentTime, _buffer, BUFFER_SIZE);
-        return _buffer;
-    }
-    return defaultValue;
 }

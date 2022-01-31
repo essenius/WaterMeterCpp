@@ -19,7 +19,7 @@ const char* Serializer::convertPayload(RingbufferPayload* data) const {
         return convertResult(data);
     case Topic::Samples:
         return convertMeasurements(data);
-    case Topic::Error:
+    case Topic::SamplingError:
     case Topic::Info:
         return convertString(data);
     }
@@ -75,7 +75,7 @@ const char* Serializer::convertString(const RingbufferPayload* data) const {
     _payloadBuilder->initialize(0);
     _payloadBuilder->writeTimestamp(data->timestamp);
     _payloadBuilder->writeText(" ");
-    _payloadBuilder->writeText((data->topic == Topic::Error) ? "Error" : "Info");
+    _payloadBuilder->writeText((data->topic == Topic::SamplingError) ? "Error" : "Info");
     _payloadBuilder->writeText(": ");
     _payloadBuilder->writeText(data->buffer.message);
     return _payloadBuilder->toString();

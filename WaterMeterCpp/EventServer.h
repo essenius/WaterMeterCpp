@@ -43,7 +43,7 @@ public:
 
     // Publish to all subscribers except the sender
     template <class PayloadType>
-    void publish(EventClient* client, Topic topic, PayloadType payload, bool log = true) {
+    void publish(EventClient* client, Topic topic, PayloadType payload) {
         const auto subscribers = _subscribers.find(topic);
         if (subscribers != _subscribers.end()) {
             for (auto eventClient : subscribers->second) {

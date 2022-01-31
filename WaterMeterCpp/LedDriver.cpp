@@ -26,9 +26,11 @@ LedDriver::LedDriver(EventServer* eventServer) :
     _sampleFlasher(Led::RUNNING, IDLE_INTERVAL) {}
 
 void LedDriver::begin() {
+    _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
-    _eventServer->subscribe(this, Topic::Error);
+    _eventServer->subscribe(this, Topic::SamplingError);
+    _eventServer->subscribe(this, Topic::CommunicationError);
     _eventServer->subscribe(this, Topic::Exclude);
     _eventServer->subscribe(this, Topic::Flow);
     _eventServer->subscribe(this, Topic::Peak);
@@ -45,7 +47,7 @@ void LedDriver::begin() {
 
 void LedDriver::update(const Topic topic, const char* payload) {
     // red led has two functions: error and overrun
-    if (topic == Topic::Error) {
+    if (topic == Topic::SamplingError || topic == Topic::CommunicationError) {
         Led::set(Led::RED, Led::ON);
     }
 }
@@ -88,10 +90,11 @@ void LedDriver::update(Topic topic, long payload) {
         _sampleFlasher.signal();
         return;
     case Topic::Blocked:
-        Led::set(Led::RED, state);
+    case Topic::Alert:
+        Led::toggle(Led::RED);
         return;
     case Topic::ResultWritten:
-        Led::set(Led::AUX, state);
+        Led::toggle(Led::AUX);
         return;
     case Topic::TimeOverrun:
         Led::set(Led::YELLOW, state);

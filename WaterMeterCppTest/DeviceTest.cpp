@@ -25,15 +25,25 @@ namespace WaterMeterCppTest {
         TEST_METHOD(deviceTest1) {
             EventServer eventServer;
             TestEventClient stackListener(&eventServer), heapListener(&eventServer);
+            TestEventClient stack2Listener(&eventServer);
             eventServer.subscribe(&heapListener, Topic::FreeHeap);
-            eventServer.subscribe(&stackListener, Topic::FreeStack);
+            eventServer.subscribe(&stackListener, Topic::FreeStackSampler);
+            eventServer.subscribe(&stack2Listener, Topic::FreeStackCommunicator);
+            TaskHandle_t handle1 = nullptr;
+            TaskHandle_t handle2 = nullptr;
 
             Device device(&eventServer);
-            device.begin();
+            device.begin(xTaskGetCurrentTaskHandle(), handle1, handle2);
+            handle1 = reinterpret_cast<TaskHandle_t>(53);
+            handle2 = reinterpret_cast<TaskHandle_t>(33);
+            device.reportHealth();
+
             Assert::AreEqual(1, stackListener.getCallCount(), L"Stack called once");
             Assert::AreEqual(1, heapListener.getCallCount(), L"Heap called once");
-            Assert::AreEqual("1500", stackListener.getPayload(), L"Free stack is 1564");
+            Assert::AreEqual(1, stack2Listener.getCallCount(), L"Heap called once");
+            Assert::AreEqual("1500", stackListener.getPayload(), L"Free stack for sampler is 1500");
             Assert::AreEqual("32000", heapListener.getPayload(), L"Free heap is 32000");
+            Assert::AreEqual("3750", stack2Listener.getPayload(), L"Free stack for comms is 3750");
             device.reportHealth();
             Assert::AreEqual(2, stackListener.getCallCount(), L"Stack called again - different value");
             Assert::AreEqual(1, heapListener.getCallCount(), L"Heap not called again - 29000 is too close");

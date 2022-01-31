@@ -34,14 +34,14 @@ namespace WaterMeterCppTest {
         static TimeServerMock timeServer;
         static PayloadBuilder payloadBuilder;
         static Serializer serializer;
-        static QueueHandle_t queueHandle ;
-        static QueueClient queueClient;
-        static Log logger;
-        static LedDriver ledDriver;
+        static QueueHandle_t queueHandle;
+        static QueueClient queueClient1;
+        static QueueClient queueClient2;
         static DataQueue dataQueue;
 
         TEST_CLASS_INITIALIZE(connectionTestInitialize) {
-            queueClient.begin(queueClient.getQueueHandle());
+            queueClient1.begin(queueClient2.getQueueHandle());
+            queueClient2.begin();
         }
          TEST_METHOD(connectionWifiInitTest) {
             connection.setup();
@@ -142,10 +142,8 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(ConnectionState::WifiReady, connection.connect(), L"Wifi ready");
             // happy path for mqtt
             mqttGatewayMock.setIsConnected(true);
-            Assert::AreEqual(ConnectionState::MqttConnecting, connection.connect(), L"Connecting to MQTT");
+            Assert::AreEqual(ConnectionState::MqttConnecting, connection.connect(), L"Connecting to MQTT 1");
             Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 1");
-            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 2");
-            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 3");
             const auto timestampReady = micros();
             Assert::AreEqual(ConnectionState::MqttReady, connection.loop(), L"MQTT ready");
             // we're doing the division to filter out the few micros that the statement costs
@@ -156,7 +154,6 @@ namespace WaterMeterCppTest {
             wifiMock.setIsConnected(false);
             const auto timestampDisconnected = micros();
             Assert::AreEqual(ConnectionState::Disconnected, connection.loop(), L"Disconnects if wifi is down");
-            Assert::AreEqual(100UL, (micros() - timestampDisconnected) / 1000UL, L"100 ms wait time when not ready (changed - can remove this test)");
 
             Assert::AreEqual(ConnectionState::WifiConnecting, connection.connect(), L"Reconnecting Wifi");
             delay(20000);
@@ -170,9 +167,7 @@ namespace WaterMeterCppTest {
 
             Assert::AreEqual(ConnectionState::WifiReady, connection.connect(), L"Wifi Ready 2");
             Assert::AreEqual(ConnectionState::MqttConnecting, connection.connect(), L"Connecting to MQTT 2");
-            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 4");
-            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 5");
-            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 6");
+            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 2");
             Assert::AreEqual(ConnectionState::MqttReady, connection.connect(), L"Mqtt Ready 2");
 
             // disconnecting MQTT should put the state to Wifi connected
@@ -192,31 +187,28 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(ConnectionState::CheckFirmware, connection.connect(), L"Checking firmware 3 (does nothing)");
 
             Assert::AreEqual(ConnectionState::WifiReady, connection.connect(), L"Wifi Ready 4");
-            Assert::AreEqual(ConnectionState::MqttConnecting, connection.connect(), L"Connecting to MQTT 5");
+            Assert::AreEqual(ConnectionState::MqttConnecting, connection.connect(), L"Connecting to MQTT 4");
             Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 4");
             mqttGatewayMock.setIsConnected(false);
             Assert::AreEqual(ConnectionState::WifiReady, connection.connect(), L"announce failed, to Wifi ready");
             mqttGatewayMock.setIsConnected(true);
-            Assert::AreEqual(ConnectionState::MqttConnecting, connection.connect(), L"Connecting to MQTT 6");
-            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 7");
-            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 8");
-            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 9");
+            Assert::AreEqual(ConnectionState::MqttConnecting, connection.connect(), L"Connecting to MQTT 5");
+            Assert::AreEqual(ConnectionState::MqttConnected, connection.connect(), L"Connected to MQTT 5");
             Assert::AreEqual(ConnectionState::MqttReady, connection.connect(), L"Final MQTT Ready");
         }
     };
 
     EventServer ConnectionTest::eventServer;
-    WifiMock ConnectionTest::wifiMock(&eventServer);
+    WifiMock ConnectionTest::wifiMock(&eventServer, nullptr);
     PubSubClient ConnectionTest::mqttClient;
     MqttGatewayMock ConnectionTest::mqttGatewayMock(&eventServer, &mqttClient);
-    TimeServerMock ConnectionTest::timeServer(&eventServer);
+    TimeServerMock ConnectionTest::timeServer;
     FirmwareManager ConnectionTest::firmwareManager(&eventServer, "http://localhost", "0.99.3");
     PayloadBuilder ConnectionTest::payloadBuilder;
     Serializer ConnectionTest::serializer(&payloadBuilder);
-    DataQueue ConnectionTest::dataQueue(&eventServer, &serializer);
+    DataQueue ConnectionTest::dataQueue(&eventServer, nullptr, &serializer);
     QueueHandle_t ConnectionTest::queueHandle = nullptr;
-    QueueClient ConnectionTest::queueClient(&eventServer);
-    Log ConnectionTest::logger(&eventServer);
-    LedDriver ConnectionTest::ledDriver(&eventServer);
-    Connector ConnectionTest::connection(&eventServer, &logger, &ledDriver, &wifiMock, &mqttGatewayMock, &timeServer, &firmwareManager, &dataQueue, &queueClient);
+    QueueClient ConnectionTest::queueClient1(&eventServer, 10);
+    QueueClient ConnectionTest::queueClient2(&eventServer, 10);
+    Connector ConnectionTest::connection(&eventServer, &wifiMock, &mqttGatewayMock, &timeServer, &firmwareManager, &dataQueue, &queueClient1, &queueClient2);
 }

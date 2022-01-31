@@ -34,9 +34,7 @@ protected:
     static constexpr int STARTUP_SAMPLES = 10;
     static constexpr int MIN_DERIVATIVE_PEAK = -9;
     ChangePublisher<bool> _exclude;
-    //= false;
     bool _excludeAll = false;
-    //bool _firstOutlier = false;
     float _derivative = 0.0f;
     float _smoothValue = 0.0f;
     float _smoothDerivative = 0.0f;
@@ -46,9 +44,7 @@ protected:
     float _previousSmoothValue = 0.0f;
     ChangePublisher<bool> _flow;
     ChangePublisher<bool> _peak;
-    //bool _flow = false;
     bool _outlier = false;
-    //bool _peak = false;
     unsigned int _startupSamplesLeft = STARTUP_SAMPLES;
 
     void detectOutlier(int measurement);

@@ -15,7 +15,6 @@
 
 void TimeServerMock::begin() {
     _wasSet = false;
-    TimeServer::begin();
 }
 
 void TimeServerMock::setTime() {

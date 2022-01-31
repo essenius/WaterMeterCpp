@@ -28,6 +28,7 @@ namespace WaterMeterCppTest {
 public:
     TEST_METHOD(dataQueueTest1) {
         EventServer eventServer;
+        Clock theClock(&eventServer);
         TestEventClient resultEventClient(&eventServer);
         TestEventClient sampleEventClient(&eventServer);
         TestEventClient errorEventClient(&eventServer);
@@ -35,13 +36,13 @@ public:
 
         eventServer.subscribe(&resultEventClient, Topic::Result);
         eventServer.subscribe(&sampleEventClient, Topic::Samples);
-        eventServer.subscribe(&errorEventClient, Topic::Error);
+        eventServer.subscribe(&errorEventClient, Topic::SamplingError);
         eventServer.subscribe(&infoEventClient, Topic::Info);
 
         PayloadBuilder payloadBuilder;
         Serializer serializer(&payloadBuilder);
 
-        DataQueue dataQueue(&eventServer, &serializer);
+        DataQueue dataQueue(&eventServer, &theClock, &serializer);
         RingbufferPayload payload{};
         payload.topic = Topic::Samples;
         for (uint16_t times = 0; times < 5; times++) {
@@ -67,7 +68,7 @@ public:
         payload.buffer.result.peakCount = 3;
         dataQueue.send(&payload);
 
-        payload.topic = Topic::Error;
+        payload.topic = Topic::SamplingError;
         safeStrcpy(payload.buffer.message, "Not sure what went wrong here...");
         dataQueue.send(&payload);
 

@@ -12,12 +12,12 @@
 #pragma once
 #include "../WaterMeterCpp/TimeServer.h"
 
-class TimeServerMock :     public TimeServer
+class TimeServerMock : public TimeServer
 {
 public:
-    explicit TimeServerMock(EventServer* eventServer) : TimeServer(eventServer) {}
-    void begin() override;
+    void begin();
     void setTime() override;
     bool timeWasSet() const override;
     void reset();
 };
+    

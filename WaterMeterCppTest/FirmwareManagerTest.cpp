@@ -30,7 +30,7 @@ namespace WaterMeterCppTest {
 
         TEST_CLASS_INITIALIZE(firmwareClassInitialize) {
             eventServer.subscribe(&infoListener, Topic::Info);
-            eventServer.subscribe(&errorListener, Topic::Error);
+            eventServer.subscribe(&errorListener, Topic::CommunicationError);
         }
 
         TEST_METHOD_INITIALIZE(firmwareMethodInitialize) {

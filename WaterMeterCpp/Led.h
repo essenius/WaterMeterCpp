@@ -33,7 +33,7 @@
 
 class Led {
 public:
-    static void init(const uint8_t port, const uint8_t value = OFF);
+    static void init(uint8_t port, uint8_t value = OFF);
     static void set(uint8_t port, uint8_t value);
     static void toggle(uint8_t port);
     static uint8_t get(uint8_t port);

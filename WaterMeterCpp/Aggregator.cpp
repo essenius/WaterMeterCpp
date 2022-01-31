@@ -14,8 +14,9 @@
 #include "Aggregator.h"
 #include "DataQueue.h"
 
-Aggregator::Aggregator(EventServer* eventServer, DataQueue* dataQueue, RingbufferPayload* payload) :
+Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload) :
     EventClient(eventServer),
+    _clock(theClock),
     _dataQueue(dataQueue), _payload(payload),
     _flushRate(eventServer, this, Topic::Rate),
     _blocked(eventServer, this, Topic::Blocked, false) {}
@@ -38,14 +39,14 @@ long Aggregator::convertToLong(const char* stringParam, const long defaultValue)
 
 void Aggregator::flush() {
     _messageCount = 0;
-    _payload->timestamp = Clock::getTimestamp();
+    _payload->timestamp = _clock->getTimestamp();
     for (short& i : _payload->buffer.samples.value) {
         i = 0;
     }
     _flushRate = _desiredFlushRate;
 }
 
-// only used for testing -- driver?
+// TODO: only used for testing -- driver?
 long Aggregator::getFlushRate() {
     return _flushRate;
 }

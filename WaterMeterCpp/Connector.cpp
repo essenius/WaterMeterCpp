@@ -15,31 +15,37 @@
 #include "QueueClient.h"
 #include "secrets.h" // for the CONFIG constants
 
-Connector::Connector(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Wifi* wifi, MqttGateway* mqttGatway, 
-    TimeServer* timeServer, FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* queueClient) :
+constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
+
+Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, 
+    TimeServer* timeServer, FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
+
     EventClient(eventServer),
-    _logger(logger),
-    _ledDriver(ledDriver),
     _wifi(wifi),
     _mqttGateway(mqttGatway),
     _timeServer(timeServer),
     _firmwareManager(firmwareManager),
     _dataQueue(dataQueue),
-    _queueClient(queueClient),
-    _state(eventServer, this, Topic::Connection)
+    _samplerQueueClient(samplerQueueClient),
+    _communicatorQueueClient(communicatorQueueClient),
+    _state(eventServer, communicatorQueueClient, Topic::Connection)
 {}
 
 void Connector::setup() {
-    _logger->begin();
-    _ledDriver->begin();
+
     _state = ConnectionState::Init;
     _waitDuration = WIFI_INITIAL_WAIT_DURATION;
     _wifiConnectionFailureCount = 0;
 
-    _eventServer->subscribe(_queueClient, Topic::BatchSizeDesired);
-    _eventServer->subscribe(_queueClient, Topic::IdleRate);
-    _eventServer->subscribe(_queueClient, Topic::NonIdleRate);
-    _eventServer->subscribe(_queueClient, Topic::ResetSensor);
+    // what can be sent to the sampler (numerical payload)
+    _eventServer->subscribe(_samplerQueueClient, Topic::BatchSizeDesired);
+    _eventServer->subscribe(_samplerQueueClient, Topic::IdleRate);
+    _eventServer->subscribe(_samplerQueueClient, Topic::NonIdleRate);
+    _eventServer->subscribe(_samplerQueueClient, Topic::ResetSensor);
+
+    // what can be sent to the communicator
+    _eventServer->subscribe(_communicatorQueueClient, Topic::Connection);
+    _eventServer->subscribe(_communicatorQueueClient, Topic::WifiSummaryReady);
 
     _wifi->configure(&IP_CONFIG);
 
@@ -50,9 +56,9 @@ void Connector::setup() {
 }
 
 ConnectionState Connector::loop() {
-    const auto state = connect();
+    connect();
     delay(100);
-    return state;
+    return _state;
 }
 
 void Connector::task(void *parameter) {
@@ -64,7 +70,7 @@ void Connector::task(void *parameter) {
 }
 
 ConnectionState Connector::connect() {
-    switch (_state.get()) {
+    switch (_state) {
     case ConnectionState::Init:
         handleInit();
         break;
@@ -101,7 +107,7 @@ ConnectionState Connector::connect() {
     case ConnectionState::Disconnected:
         handleDisconnected();
     }
-    return _state.get();
+    return _state;
 }
 
 void Connector::handleInit() {
@@ -116,6 +122,7 @@ void Connector::handleWifiConnecting() {
     if (_wifi->isConnected()) {
         _state = ConnectionState::WifiConnected;
         _wifiConnectionFailureCount = 0;
+        _wifi->announceReady();
         return;
     }
     const unsigned long wifiWaitDuration = micros() - _wifiConnectTimestamp;
@@ -159,7 +166,6 @@ void Connector::handleSettingTime() {
         return;
     }
     if (_timeServer->timeWasSet()) {
-        _wifi->announceReady();
         _state = ConnectionState::CheckFirmware;
         return;
     }
@@ -208,13 +214,16 @@ void Connector::handleMqttConnected() {
         _state = ConnectionState::WifiReady;
         return;
     }
-    // The connection is ready when we are done with the announcements
-    if (_mqttGateway->hasAnnouncement()) {
-        _mqttGateway->publishNextAnnouncement();
-    } else {
-        _mqttGateway->announceReady();
-        _state = ConnectionState::MqttReady;
+    // don't announce if we already did it recently. 
+    // using millis since micros works only a bit over 70 minutes.
+    if (_lastAnnouncementTimestampMillis == 0 || millis() - _lastAnnouncementTimestampMillis  > ONE_HOUR_IN_MILLIS) {
+        while (_mqttGateway->hasAnnouncement()) {
+            _mqttGateway->publishNextAnnouncement();
+        }      
+        _lastAnnouncementTimestampMillis = millis();
     }
+    _mqttGateway->announceReady();
+    _state = ConnectionState::MqttReady;
 }
 
 void Connector::handleMqttReady() {
@@ -224,9 +233,15 @@ void Connector::handleMqttReady() {
     }
     if (!_mqttGateway->isConnected()) {
         _state = ConnectionState::WifiReady;
+        return;
     }
-    // process all waiting batches that we need to send out
-    _mqttGateway->sendPendingMessages();
+
+    while (_samplerQueueClient->receive()) {}
+    
+    // returns false if disconnected, minimizing risk of losing data from the queue
+    if (!_mqttGateway->handleQueue()) {
+      return;
+    }
     while (_dataQueue->receive()) {}
 }
 

@@ -76,45 +76,41 @@ BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, v
 class Queue {
 public:
     short currentIndex;
-    long element[10];
+    long long element[10];
 };
 
-Queue queue1, queue2;
-
-
-QueueHandle_t queueHandle1 = nullptr;
-QueueHandle_t queueHandle2 = nullptr;
+constexpr short MAX_QUEUES = 5;
+Queue queue[MAX_QUEUES];
+QueueHandle_t queueHandle[MAX_QUEUES] = { nullptr };
+short queueIndex = 0;
 
 QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize) {
-    if (queueHandle1 == nullptr) {
-        queueHandle1 = &queue1;
-        return queueHandle1;
-    }
-    if (queueHandle2 == nullptr) {
-        queueHandle2 = &queue2;
-        return queueHandle2;
+    if (queueIndex < MAX_QUEUES) {
+        queueHandle[queueIndex] = &queue[queueIndex];
+        
+        return queueHandle[queueIndex++];
     }
     return nullptr;
 }
 
 UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue) { return ((Queue*)xQueue)->currentIndex>=0 ? pdTRUE : pdFALSE; }
 BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait) {
-    const auto queue = static_cast<Queue*>(xQueue);
-    if (queue->currentIndex <= 0) return pdFALSE;
-    *static_cast<long*>(pvBuffer) = queue->element[0];
-    for (short i=0; i< queue->currentIndex - 1; i++ ) {
-        queue->element[i] = queue->element[i + 1];
+    const auto queue1 = static_cast<Queue*>(xQueue);
+    if (queue1->currentIndex <= 0) return pdFALSE;
+    *static_cast<long long*>(pvBuffer) = queue1->element[0];
+    for (short i=0; i< queue1->currentIndex - 1; i++ ) {
+        queue1->element[i] = queue1->element[i + 1];
     }
-    queue->currentIndex--;
+    queue1->currentIndex--;
     return pdTRUE;
 }
 
 BaseType_t xQueueSendToToFront(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) { return pdFALSE; }
 BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
-    const auto queue = static_cast<Queue*>(xQueue);
+    const auto queue1 = static_cast<Queue*>(xQueue);
 
-    if (queue->currentIndex > 9) return pdFALSE;
-    queue->element[queue->currentIndex++] = *static_cast<const long*>(pvItemToQueue);
+    if (queue1->currentIndex > 9) return pdFALSE;
+    queue1->element[queue1->currentIndex++] = *static_cast<const long long*>(pvItemToQueue);
     return pdTRUE;
 }
 
@@ -125,6 +121,17 @@ BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName
 
 
 void uxQueueReset() {
-    queueHandle1 = nullptr;
-    queueHandle2 = nullptr;
+    queueIndex = 0;
+    for (short i=0;i<MAX_QUEUES; i++) {
+        queueHandle[i] = nullptr;
+        queue[i].currentIndex = 0;
+    }
+    ringbufHandle = nullptr;
+    nextBufferItem = 0;
+    nextReadBufferItem = 0;
+    bufferIsFull = false;
 }
+
+TaskHandle_t testHandle = reinterpret_cast<TaskHandle_t>(42);
+
+TaskHandle_t xTaskGetCurrentTaskHandle() { return testHandle; }

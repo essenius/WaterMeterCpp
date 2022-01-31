@@ -57,7 +57,7 @@ public:
 	const char* getOutput();
 	void setInput(const char* input);
 private:
-	static constexpr int PRINTBUFFER_SIZE = 2048;
+	static constexpr int PRINTBUFFER_SIZE = 4096;
 	char _printBuffer[PRINTBUFFER_SIZE] = {};
 	static constexpr int INPUTBUFFER_SIZE = 80;
 	char _inputBuffer[INPUTBUFFER_SIZE] = {};
@@ -72,6 +72,7 @@ void pinMode(uint8_t pin, uint8_t mode);
 void digitalWrite(uint8_t pin, uint8_t val);
 uint8_t digitalRead(uint8_t pin);
 unsigned long micros();
+unsigned long millis();
 void delay(int delay);
 
 // for testing only

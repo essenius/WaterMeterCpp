@@ -25,9 +25,10 @@ namespace WaterMeterCppTest {
             RingbufferPayload payload{};
             PayloadBuilder payloadBuilder;
             Serializer serializer(&payloadBuilder);
-            DataQueue dataQueue(&eventServer, &serializer);
+            Clock theClock(&eventServer);
+            DataQueue dataQueue(&eventServer, &theClock, &serializer);
 
-            SampleAggregator aggregator(&eventServer, &dataQueue, &payload);
+            SampleAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
             aggregator.begin();
             Assert::AreEqual(50L, aggregator.getFlushRate(), L"Default flush rate OK");
             eventServer.publish(Topic::BatchSizeDesired, "5");
@@ -57,14 +58,15 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(sampleAggregatorZeroFlushRateTest) {
             EventServer eventServer;
+            Clock theClock(&eventServer);
             RingbufferPayload payload{};
             PayloadBuilder payloadBuilder;
             Serializer serializer(&payloadBuilder);
-            DataQueue dataQueue(&eventServer, &serializer);
+            DataQueue dataQueue(&eventServer, &theClock, &serializer);
 
             TestEventClient batchSizeListener(&eventServer);
             eventServer.subscribe(&batchSizeListener, Topic::BatchSize);
-            SampleAggregator aggregator(&eventServer, &dataQueue, &payload);
+            SampleAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
             aggregator.begin();
 
             Assert::IsFalse(aggregator.send());

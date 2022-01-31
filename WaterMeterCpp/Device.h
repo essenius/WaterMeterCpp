@@ -12,19 +12,30 @@
 #ifndef HEADER_DEVICE_H
 #define HEADER_DEVICE_H
 
+#ifdef ESP32
+#include "ESP.h"
+#else
+#include "FreeRtosMock.h"
+#endif
+
 #include "EventServer.h"
 #include "LongChangePublisher.h"
 
 class Device : public EventClient {
 public:
     explicit Device(EventServer* eventServer);
-    void begin();
+    void begin(const TaskHandle_t &samplerHandle, const TaskHandle_t &communicatorHandle, const TaskHandle_t &connectorHandle);
     void reportHealth();
 private:
+    TaskHandle_t _samplerHandle{};
+    TaskHandle_t _communicatorHandle{};
+    TaskHandle_t _connectorHandle{};
     LongChangePublisher _freeHeap;
-    LongChangePublisher _freeStack;
+    LongChangePublisher _freeStackSampler;
+    LongChangePublisher _freeStackCommunicator;
+    LongChangePublisher _freeStackConnector;
 
     long freeHeap();
-    long freeStack();
+    long freeStack(TaskHandle_t taskHandle = nullptr);
 };
 #endif

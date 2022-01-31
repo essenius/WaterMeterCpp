@@ -31,6 +31,7 @@ namespace WaterMeterCppTest {
         static Client client;
 
         static EventServer eventServer;
+        static Clock theClock;
         static TestEventClient errorListener;
         static TestEventClient infoListener;
         static PubSubClient mqttClient;
@@ -39,7 +40,7 @@ namespace WaterMeterCppTest {
         static DataQueue dataQueue;
 
         TEST_CLASS_INITIALIZE(mqttGatewayClassInitialize) {
-            eventServer.subscribe(&errorListener, Topic::Error);
+            eventServer.subscribe(&errorListener, Topic::CommunicationError);
             eventServer.subscribe(&infoListener, Topic::Info);
             mqttClient.reset();
         }
@@ -83,7 +84,7 @@ namespace WaterMeterCppTest {
                 Assert::IsTrue(gateway.publishNextAnnouncement(), (L"Announcement #" + std::to_wstring(count)).c_str());
                 count++;
             }
-            Assert::AreEqual(54, count, L"announcement count");
+            Assert::AreEqual(58, count, L"announcement count");
             gateway.publishNextAnnouncement();
             Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
             Assert::AreEqual(0, infoListener.getCallCount(), L"Info not called");
@@ -91,9 +92,9 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(MQTT_CONFIG_WITH_USER.user, mqttClient.user());
             Assert::AreEqual("client1", mqttClient.id());
             // check if the homie init events were sent 
-            Assert::AreEqual(static_cast<size_t>(2005), strlen(mqttClient.getTopics()), L"Topic lenght OK");
-            Assert::AreEqual(static_cast<size_t>(564), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
-            Assert::AreEqual(54, mqttClient.getCallCount(), L"Call count");
+            Assert::AreEqual(static_cast<size_t>(2227), strlen(mqttClient.getTopics()), L"Topic lenght OK");
+            Assert::AreEqual(static_cast<size_t>(672), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
+            Assert::AreEqual(58, mqttClient.getCallCount(), L"Call count");
 
             gateway.announceReady();
 
@@ -147,7 +148,7 @@ namespace WaterMeterCppTest {
             gateway.handleQueue();
             Assert::AreEqual(1, mqttClient.getLoopCount(), L"Loop count still 1 after disconnect");
 
-            mqttClient.reset();
+            /*mqttClient.reset();
             mqttClient.setCanConnect(false);
 
             gateway.update(Topic::BatchSize, 23);
@@ -156,7 +157,6 @@ namespace WaterMeterCppTest {
             gateway.update(Topic::Error, "Error message");
             Assert::AreEqual("", mqttClient.getPayloads(), L"Nothing sent");
             mqttClient.setCanConnect(true);
-            gateway.sendPendingMessages();
             Assert::AreEqual("23\n", mqttClient.getPayloads(), L"sent payload OK");
             Assert::AreEqual("homie/client1/measurement/batch-size\n", mqttClient.getTopics(), L"sent topic OK");
             mqttClient.reset();
@@ -169,17 +169,18 @@ namespace WaterMeterCppTest {
             mqttClient.reset();
             eventServer.publish(Topic::Alert, 1);
             Assert::AreEqual("homie/client1/$state\n", mqttClient.getTopics(), L"alert topic OK");
-            Assert::AreEqual("alert\n", mqttClient.getPayloads(), L"alert payload OK");
+            Assert::AreEqual("alert\n", mqttClient.getPayloads(), L"alert payload OK"); */
 
         }
     };
 
     Client MqttGatewayTest::client;
     EventServer MqttGatewayTest::eventServer;
+    Clock MqttGatewayTest::theClock(&eventServer);
     TestEventClient MqttGatewayTest::errorListener(&eventServer);
     TestEventClient MqttGatewayTest::infoListener(&eventServer);
     PubSubClient MqttGatewayTest::mqttClient;
     PayloadBuilder MqttGatewayTest::payloadBuilder;
     Serializer MqttGatewayTest::serializer(&payloadBuilder);
-    DataQueue MqttGatewayTest::dataQueue(&eventServer, &serializer);
+    DataQueue MqttGatewayTest::dataQueue(&eventServer, &theClock, &serializer);
 }

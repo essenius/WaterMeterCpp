@@ -25,7 +25,7 @@ template <size_t BufferSize>
 void safePointerStrcpy(char* const pointer, char(&buffer)[BufferSize], const char* source) {
     auto charactersUsed = pointer - buffer;
     // if the pointer is not in the right range, do nothing
-    if (charactersUsed < 0 || charactersUsed > BufferSize) return;
+    if (charactersUsed < 0 || charactersUsed >= BufferSize) return;
     strncpy(pointer, source, BufferSize - charactersUsed - 1);
     buffer[BufferSize - 1] = 0;
 }

@@ -16,7 +16,7 @@
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Log.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/TimeServer.h"
+#include "../WaterMeterCpp/Clock.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
 #include "../WaterMeterCpp/ConnectionState.h"
 
@@ -29,17 +29,18 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(logScriptTest) {
             constexpr int SKIP_TIMESTAMP = 28;
-            Log log(&eventServer);
-            TimeServer timeServer(&eventServer);
-            timeServer.begin();
+            PayloadBuilder payloadBuilder;
+            Log log(&eventServer, &payloadBuilder);
+            Clock theClock(&eventServer);
+            theClock.begin();
             log.begin();
             Serial.begin(9600);
             publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
             Assert::AreEqual(" MQTT ready\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Connected logs OK");
 
             Serial.clearOutput();
-            eventServer.publish(Topic::Error, "My Message");
-            Assert::AreEqual(" Error: My Message\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Error logs OK");
+            eventServer.publish(Topic::SamplingError, "My Message");
+            Assert::AreEqual(" Error: 'My Message'\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Error logs OK");
 
             Serial.clearOutput();
             publishConnectionState(Topic::Connection, ConnectionState::Disconnected);

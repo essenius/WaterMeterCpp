@@ -30,6 +30,7 @@ namespace WaterMeterCppTest {
         static PayloadBuilder payloadBuilder;
         static Serializer serializer;
         static DataQueue dataQueue;
+        static Clock theClock;
 
         TEST_CLASS_INITIALIZE(resultAggregatorTestClassInitialize) {
             eventServer.subscribe(&rateListener, Topic::Rate);
@@ -40,7 +41,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(resultAggregatorIdleTest) {
-            ResultAggregator aggregator(&eventServer, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
             aggregator.begin();
 
             Assert::AreEqual(1, rateListener.getCallCount(), L"rate set");
@@ -81,7 +82,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(resultAggregatorIdleOutlierTest) {
-            ResultAggregator aggregator(&eventServer, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
             aggregator.begin();
             eventServer.publish(Topic::IdleRate, "10");
             eventServer.publish(Topic::NonIdleRate, "5");
@@ -123,7 +124,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(resultAggregatorOverrunTest) {
-            ResultAggregator aggregator(&eventServer, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
             aggregator.begin();
             eventServer.publish(Topic::IdleRate, 1);
             eventServer.publish(Topic::NonIdleRate, 1);
@@ -142,7 +143,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(resultAggregatorFlowTest) {
-            ResultAggregator Aggregator(&eventServer, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+            ResultAggregator Aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
             Aggregator.begin();
             eventServer.publish(Topic::IdleRate, 10);
             eventServer.publish(Topic::NonIdleRate, 5);
@@ -164,7 +165,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(resultAggregatorAllExcludedTest) {
-            ResultAggregator aggregator(&eventServer, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
             aggregator.begin();
             eventServer.publish(Topic::IdleRate, 10);
             eventServer.publish(Topic::NonIdleRate, 5);
@@ -197,7 +198,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(resultAggregatorDisconnectTest) {
-            ResultAggregator aggregator(&eventServer, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
             aggregator.begin();
             eventServer.publish(Topic::IdleRate, 5);
             eventServer.publish(Topic::NonIdleRate, 5);
@@ -266,9 +267,10 @@ namespace WaterMeterCppTest {
     };
 
     EventServer ResultAggregatorTest::eventServer;
+    Clock ResultAggregatorTest::theClock(&eventServer);
     RingbufferPayload ResultAggregatorTest::payload;
     TestEventClient ResultAggregatorTest::rateListener(&eventServer);
     PayloadBuilder ResultAggregatorTest::payloadBuilder;
     Serializer ResultAggregatorTest::serializer(&payloadBuilder);
-    DataQueue ResultAggregatorTest::dataQueue(&eventServer, &serializer);
+    DataQueue ResultAggregatorTest::dataQueue(&eventServer, &theClock, &serializer);
 }

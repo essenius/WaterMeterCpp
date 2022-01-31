@@ -18,7 +18,6 @@
 #include "ArduinoMock.h"
 #endif
 
-#include "Device.h"
 #include "EventClient.h"
 #include "FlowMeter.h"
 #include "MagnetoSensorReader.h"
@@ -29,7 +28,7 @@
 class Sampler {
 public:
     Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter,
-        SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, Device* device,  QueueClient* queueClient);
+        SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient);
     void setup(unsigned long samplePeriod = 10000UL);
     void begin();
     void loop();
@@ -40,7 +39,6 @@ private:
     FlowMeter* _flowMeter;
     SampleAggregator* _sampleAggregator;
     ResultAggregator* _resultAggregator;
-    Device* _device;
     QueueClient* _queueClient;
     unsigned long _nextMeasureTime = 0;
     unsigned long _additionalDuration = 0;

@@ -27,6 +27,7 @@
 	public:
         PubSubClient& setClient(Client& client) { return *this; }
         bool setBufferSize(int size) { return true; }
+        PubSubClient& setKeepAlive(uint16_t period) { return *this; }
         PubSubClient& setServer(const char* broker, const int port) { return *this; }
         PubSubClient& setCallback(MQTT_CALLBACK_SIGNATURE);
         bool connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage);
@@ -51,7 +52,7 @@
         int getLoopCount() const { return _loopCount; }
 
     private:
-        constexpr static int TOPIC_SIZE = 2048;
+        constexpr static int TOPIC_SIZE = 2500;
         constexpr static int PAYLOAD_SIZE = 1024;
         constexpr static int FIELD_SIZE = 64;
         bool _canConnect = true;

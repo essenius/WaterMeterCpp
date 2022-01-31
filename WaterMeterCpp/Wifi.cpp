@@ -17,8 +17,8 @@
 #include "SafeCString.h"
 #include "EventServer.h"
 
-Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig) :
-    EventClient(eventServer),  _wifiConfig(wifiConfig) {
+Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder) :
+    EventClient(eventServer),  _wifiConfig(wifiConfig), _payloadBuilder(payloadBuilder) {
     if (wifiConfig->deviceName == nullptr) {
         _hostName = nullptr;
     }
@@ -55,7 +55,7 @@ void Wifi::configure(const IpConfig* ipConfig) {
         }
     }
     if (!result) {
-        _eventServer->publish(Topic::Error, "Could not configure Wifi with static IP");
+        _eventServer->publish(Topic::CommunicationError, "Could not configure Wifi with static IP");
     }
 }
 
@@ -74,13 +74,9 @@ bool Wifi::needsReinit() {
 }
 
 void Wifi::begin() {
-    init();
-}
-
-void Wifi::init() {
     // need to set the host name before setting the mode
     if (_hostName != nullptr && !WiFi.setHostname(_hostName)) {
-        _eventServer->publish(Topic::Error, "Could not set host name");
+        _eventServer->publish(Topic::CommunicationError, "Could not set host name");
     }
     safeStrcpy(_hostNameBuffer, WiFi.getHostname());
     _hostName = _hostNameBuffer;
@@ -96,7 +92,8 @@ void Wifi::setCertificates(const char* rootCaCertificate, const char* deviceCert
 }
 
 void Wifi::announceReady() {
-    _eventServer->publish(Topic::Info, statusSummary());
+    setStatusSummary();
+    _eventServer->publish(this, Topic::WifiSummaryReady, LONG_TRUE);
     _eventServer->provides(this, Topic::IpAddress);
     _eventServer->provides(this, Topic::MacFormatted);
     _eventServer->provides(this, Topic::MacRaw);
@@ -132,22 +129,21 @@ void Wifi::disconnect() {
     WiFi.disconnect();
 }
 
-const char* Wifi::statusSummary() {
-    _payloadBuilder.initialize();
-    _payloadBuilder.writeParam("ssid", WiFi.SSID().c_str());
-    _payloadBuilder.writeParam("hostname", getHostName());
-    _payloadBuilder.writeParam("mac-address", WiFi.macAddress().c_str());
-    _payloadBuilder.writeParam("rssi-dbm", WiFi.RSSI());
-    _payloadBuilder.writeParam("channel", WiFi.channel());
-    _payloadBuilder.writeParam("network-id", WiFi.networkID().toString().c_str());
-    _payloadBuilder.writeParam("ip-address", WiFi.localIP().toString().c_str());
-    _payloadBuilder.writeParam("gateway-ip", WiFi.gatewayIP().toString().c_str());
-    _payloadBuilder.writeParam("dns1-ip", WiFi.dnsIP(0).toString().c_str());
-    _payloadBuilder.writeParam("dns2-ip", WiFi.dnsIP(1).toString().c_str());
-    _payloadBuilder.writeParam("subnet-mask", WiFi.subnetMask().toString().c_str());
-    _payloadBuilder.writeParam("bssid", WiFi.BSSIDstr().c_str());
-    _payloadBuilder.writeGroupEnd();
-    return _payloadBuilder.toString();
+void Wifi::setStatusSummary() const {
+    _payloadBuilder->initialize();
+    _payloadBuilder->writeParam("ssid", WiFi.SSID().c_str());
+    _payloadBuilder->writeParam("hostname", getHostName());
+    _payloadBuilder->writeParam("mac-address", WiFi.macAddress().c_str());
+    _payloadBuilder->writeParam("rssi-dbm", WiFi.RSSI());
+    _payloadBuilder->writeParam("channel", WiFi.channel());
+    _payloadBuilder->writeParam("network-id", WiFi.networkID().toString().c_str());
+    _payloadBuilder->writeParam("ip-address", WiFi.localIP().toString().c_str());
+    _payloadBuilder->writeParam("gateway-ip", WiFi.gatewayIP().toString().c_str());
+    _payloadBuilder->writeParam("dns1-ip", WiFi.dnsIP(0).toString().c_str());
+    _payloadBuilder->writeParam("dns2-ip", WiFi.dnsIP(1).toString().c_str());
+    _payloadBuilder->writeParam("subnet-mask", WiFi.subnetMask().toString().c_str());
+    _payloadBuilder->writeParam("bssid", WiFi.BSSIDstr().c_str());
+    _payloadBuilder->writeGroupEnd();
 }
 
 bool Wifi::isConnected() {

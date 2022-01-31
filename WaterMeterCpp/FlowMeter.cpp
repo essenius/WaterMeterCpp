@@ -68,9 +68,7 @@ bool FlowMeter::areAllExcluded() const {
 
 void FlowMeter::detectOutlier(const int measurement) {
     const float amplitude = fabsf(_smoothValue - static_cast<float>(measurement));
-    //const bool previousIsOutlier = _outlier;
     _outlier = amplitude > OUTLIER_THRESHOLD;
-    //_firstOutlier = _outlier && !previousIsOutlier;
 }
 
 void FlowMeter::detectPeaks(const int measurement) {
@@ -153,7 +151,6 @@ void FlowMeter::markAnomalies(int measurement) {
 
 void FlowMeter::resetAnomalies() {
     _outlier = false;
-    //_firstOutlier = false;
     _flow = false;
     _exclude = false;
     _excludeAll = false;

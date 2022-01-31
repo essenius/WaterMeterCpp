@@ -18,8 +18,6 @@
 #include "TimeServer.h"
 #include "ConnectionState.h"
 #include "DataQueue.h"
-#include "LedDriver.h"
-#include "Log.h"
 #include "QueueClient.h"
 
 constexpr unsigned long SECONDS = 1000UL * 1000UL;
@@ -32,8 +30,8 @@ constexpr unsigned long MQTT_RECONNECT_WAIT_DURATION = 2UL * SECONDS;
 class Connector: public EventClient
 {
 public:
-    Connector(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Wifi* wifi, MqttGateway* mqttGatway, 
-        TimeServer* timeServer, FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* queueClient);
+    Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer, 
+        FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
     void setup();
     static void task(void* parameter);
 
@@ -43,9 +41,8 @@ private:
     unsigned long _wifiConnectTimestamp = 0UL;
     unsigned long _mqttConnectTimestamp = 0UL;
     unsigned long _requestTimeTimestamp = 0UL;
+    unsigned long _lastAnnouncementTimestampMillis = 0UL;
 
-    Log* _logger;
-    LedDriver* _ledDriver;
     Wifi* _wifi;
     MqttGateway* _mqttGateway;
     unsigned long _waitDuration = WIFI_INITIAL_WAIT_DURATION;
@@ -53,7 +50,8 @@ private:
     TimeServer* _timeServer;
     FirmwareManager* _firmwareManager;
     DataQueue* _dataQueue;
-    QueueClient* _queueClient;
+    QueueClient* _samplerQueueClient;
+    QueueClient* _communicatorQueueClient;
     ChangePublisher<ConnectionState> _state;
 
     void handleInit();

@@ -16,7 +16,7 @@
 class WifiMock : public Wifi
 {
 public:
-    explicit WifiMock(EventServer* eventServer);
+    explicit WifiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder);
     void begin() override {}
     void disconnect() override {}
     bool isConnected() override { return _isConnected; }

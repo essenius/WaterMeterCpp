@@ -41,7 +41,6 @@ void EventServer::provides(EventClient* client, Topic topic) {
 }
 
 void EventServer::subscribe(EventClient* client, const Topic topic) {
-    //publishLog("%s subscribes to %d\n", client, topic, 0L);
     for (auto& item : _subscribers) {
         if (item.first == topic) {
             // insert does not create duplicates
@@ -58,7 +57,6 @@ void EventServer::subscribe(EventClient* client, const Topic topic) {
 // unsubscribe the client from all subscribed topics
 // Note this is tricky as it could happen when another event is still being handled
 void EventServer::unsubscribe(EventClient* client) {
-    //publishLog("%s unsubscribes\n", client, Topic::None, 0L);
     for (auto iterator = _subscribers.begin(); iterator != _subscribers.end();) {
         iterator->second.erase(client);
         if (iterator->second.empty()) {
@@ -72,7 +70,6 @@ void EventServer::unsubscribe(EventClient* client) {
 
 // unsubscribe the subscriber from the topic
 void EventServer::unsubscribe(EventClient* client, Topic topic) {
-    //publishLog("%s unsubscribes from %d\n", client, topic, 0L);
     for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); ++iterator) {
         if (iterator->first == topic) {
             iterator->second.erase(client);

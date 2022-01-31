@@ -10,12 +10,14 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
+#include <climits>
 #include <cstdint>
 
 using QueueHandle_t = void*;
 using RingbufHandle_t = void*;
 using TaskHandle_t = void*;
 using RingbufHandle_t = void*;
+using SemaphoreHandle_t = void*;
 
 using UBaseType_t = unsigned long;
 using BaseType_t = long;
@@ -62,5 +64,13 @@ BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName
                                    BaseType_t xCoreID);
 
 
+
+constexpr unsigned long portMAX_DELAY = ULONG_MAX;
+inline SemaphoreHandle_t xSemaphoreCreateMutex() { return nullptr; }
+inline void xSemaphoreTake(SemaphoreHandle_t handle, unsigned long delay) {}
+inline void xSemaphoreGive(SemaphoreHandle_t handle) {}
+TaskHandle_t xTaskGetCurrentTaskHandle();
+
 // testing only, does not exist in FreeRTOS
 void uxQueueReset();
+

@@ -59,6 +59,11 @@ void shiftMicros(long long shift) {
 
 void configTime(int i, int i1, const char* str, const char* text) {}
 
+unsigned long millis() {
+	const auto now = std::chrono::high_resolution_clock::now();
+	return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count() + microShift / 1000);
+}
+
 unsigned long micros() {
     const auto now = std::chrono::high_resolution_clock::now() ;
 	return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::microseconds>(now - startTime).count() + microShift);

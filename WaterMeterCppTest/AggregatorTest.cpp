@@ -16,6 +16,7 @@
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Aggregator.h"
 #include "../WaterMeterCpp/TimeServer.h"
+#include "../WaterMeterCpp/Clock.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -24,14 +25,14 @@ namespace WaterMeterCppTest {
     public:
         TEST_METHOD(aggregatorFlushTest) {
             EventServer eventServer;
-            TimeServer timeServer(&eventServer);
-            timeServer.begin();
+            Clock theClock(&eventServer);
+            theClock.begin();
             RingbufferPayload payload{};
             PayloadBuilder payloadBuilder;
             Serializer serializer(&payloadBuilder);
-            DataQueue dataQueue(&eventServer, &serializer);
+            DataQueue dataQueue(&eventServer, &theClock, &serializer);
             Assert::AreEqual(0ULL, payload.timestamp);
-            Aggregator aggregator(&eventServer, &dataQueue, &payload);
+            Aggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
             aggregator.begin(0);
             Assert::IsFalse(aggregator.newMessage(), L"Can't create new message when flush rate is 0");
             aggregator.setDesiredFlushRate(2);

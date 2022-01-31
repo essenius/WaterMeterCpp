@@ -30,16 +30,17 @@ namespace WaterMeterCppTest {
             uxQueueReset();
             eventServer.subscribe(&testEventClient, Topic::Exclude);
             //QueueHandle_t qHandle = QueueClient::createQueue(10);
-            QueueClient qClient(&eventServer);
+            constexpr uint16_t QUEUE_SIZE = 10;
+            QueueClient qClient(&eventServer, QUEUE_SIZE);
             qClient.begin(qClient.getQueueHandle());
             eventServer.subscribe(&qClient, Topic::Exclude);
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < QUEUE_SIZE; i++) {
                 eventServer.publish(Topic::Exclude, i * 11);
             }
             // should not get saved
             eventServer.publish(Topic::Exclude, 111);
             testEventClient.reset();
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < QUEUE_SIZE; i++) {
                 char numbuf[10];
                 Assert::IsTrue(qClient.receive(), L"receive true");
                 Assert::AreEqual(i + 1, testEventClient.getCallCount(), L"Call count");
@@ -47,7 +48,7 @@ namespace WaterMeterCppTest {
                 Assert::AreEqual(numbuf, testEventClient.getPayload(), L"Payload");
             }
             Assert::IsFalse(qClient.receive(), L"Receive false");
-            Assert::AreEqual(10, testEventClient.getCallCount(), L"Call count last");
+            Assert::AreEqual<int>(QUEUE_SIZE, testEventClient.getCallCount(), L"Call count last");
         }
     };
 

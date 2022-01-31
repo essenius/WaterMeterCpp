@@ -19,9 +19,10 @@
 #include "ArduinoMock.h"
 #endif
 
-DataQueue::DataQueue(EventServer* eventServer, Serializer* serializer) :
+DataQueue::DataQueue(EventServer* eventServer, Clock* theClock, Serializer* serializer) :
     EventClient(eventServer),
     _bufferHandle(xRingbufferCreate(40960, RINGBUF_TYPE_ALLOWSPLIT)),
+    _clock(theClock),
     _serializer(serializer) {}
 
 bool DataQueue::canSend(const RingbufferPayload* payload) const {
@@ -42,7 +43,7 @@ size_t DataQueue::payloadSize(const RingbufferPayload* payload) {
     case Topic::Samples:
         size += sizeof(Samples::count) + payload->buffer.samples.count * sizeof(Samples::value[0]);
         break;
-    case Topic::Error:
+    case Topic::SamplingError:
     case Topic::Info:
         size += strlen(payload->buffer.message);
         break;
@@ -61,7 +62,7 @@ bool DataQueue::send(RingbufferPayload* payload) const {
     // optimizing the use of the buffer by not sending unused parts
     const size_t size = payloadSize(payload);
     if (requiredSize(size) > freeSpace()) return false;
-    if (payload->timestamp == 0) payload->timestamp = Clock::getTimestamp();
+    if (payload->timestamp == 0) payload->timestamp = _clock->getTimestamp();
     return (xRingbufferSend(_bufferHandle, payload, size, 0) == pdTRUE);
 }
 
@@ -77,7 +78,7 @@ bool DataQueue::receive() const {
         reinterpret_cast<void**>(&item2),
         &item1Size,
         &item2Size,
-        pdMS_TO_TICKS(1000));
+        0);
 
     if (returnValue != pdTRUE || item1 == nullptr) return false;
 
