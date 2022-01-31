@@ -28,7 +28,7 @@ Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatw
     _dataQueue(dataQueue),
     _samplerQueueClient(samplerQueueClient),
     _communicatorQueueClient(communicatorQueueClient),
-    _state(eventServer, communicatorQueueClient, Topic::Connection) {}
+    _state(eventServer, this, Topic::Connection) {}
 
 void Connector::setup() {
 

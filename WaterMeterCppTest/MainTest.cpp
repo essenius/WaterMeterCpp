@@ -138,7 +138,10 @@ namespace WaterMeterCppTest {
 
             sampler.loop();
             communicator.loop();
+            connector.loop();
             while (communicatorSamplerQueueClient.receive()) {}
+            while (communicatorConnectorQueueClient.receive()) {}
+
             Assert::AreEqual(Led::OFF, Led::get(Led::AUX), L"AUX still off");
             Assert::AreEqual(Led::ON, Led::get(Led::RUNNING), L"RUNNING on");
             Assert::AreEqual(R"([] Starting
@@ -148,6 +151,7 @@ namespace WaterMeterCppTest {
 [] Free Stack Sampler: 1500
 [] Free Stack Communicator: 3750
 [] Free Stack Connector: 5250
+[] Connecting to Wifi
 )", Serial.getOutput());
             samplerEventServer.unsubscribe(&logger, Topic::Sample);
 

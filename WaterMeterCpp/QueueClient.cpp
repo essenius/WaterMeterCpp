@@ -25,7 +25,6 @@ QueueClient::QueueClient(EventServer* eventServer, uint16_t size): EventClient(e
 
 void QueueClient::begin(QueueHandle_t sendQueue) {
     _sendQueue = sendQueue;
-    /*_eventServer->subscribe(this, Topic::Connection);*/
 }
 
 QueueHandle_t QueueClient::getQueueHandle() const {
