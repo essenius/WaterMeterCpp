@@ -117,7 +117,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator.obj;ArduinoMock.obj;Clock.obj;Communicator.obj;Connector.obj;DataQueue.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;FreeRtosMock.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;QueueClient.obj;ResultAggregator.obj;SampleAggregator.obj;Sampler.obj;Serializer.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator.obj;ArduinoMock.obj;Clock.obj;Communicator.obj;Connector.obj;DataQueue.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;FreeRtosMock.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;QueueClient.obj;ResultAggregator.obj;SampleAggregator.obj;Sampler.obj;SensorDataQueue.obj;SensorDataQueuePayload.obj;Serializer.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>false</Profile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>
@@ -164,7 +164,7 @@
   <ItemGroup>
     <ClCompile Include="AggregatorTest.cpp" />
     <ClCompile Include="ClockTest.cpp" />
-    <ClCompile Include="ConnectionTest.cpp" />
+    <ClCompile Include="ConnectorTest.cpp" />
     <ClCompile Include="DataQueueTest.cpp" />
     <ClCompile Include="DeviceTest.cpp" />
     <ClCompile Include="FirmwareManagerTest.cpp" />
@@ -187,6 +187,7 @@
     <ClCompile Include="EventServerTest.cpp" />
     <ClCompile Include="QueueClientTest.cpp" />
     <ClCompile Include="ResultAggregatorTest.cpp" />
+    <ClCompile Include="SerializerTest.cpp" />
     <ClCompile Include="TestEventClient.cpp" />
     <ClCompile Include="TimeServerMock.cpp" />
     <ClCompile Include="TimeServerTest.cpp" />

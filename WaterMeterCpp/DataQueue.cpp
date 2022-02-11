@@ -13,67 +13,38 @@
 #include "DataQueue.h"
 #include <cstring>
 
+#include "SensorDataQueuePayload.h"
+
 #ifdef ESP32
 #include <ESP.h>
 #else
 #include "ArduinoMock.h"
 #endif
 
-DataQueue::DataQueue(EventServer* eventServer, Clock* theClock, Serializer* serializer) :
+DataQueue::DataQueue(EventServer* eventServer, SensorDataQueuePayload* payload, const size_t queueSize) :
     EventClient(eventServer),
-    _freeSpace(eventServer, this, Topic::FreeQueue, 1000, 2000),
-    _bufferHandle(xRingbufferCreate(40960, RINGBUF_TYPE_ALLOWSPLIT)),
-    _clock(theClock),
-    _serializer(serializer) {}
+    _bufferHandle(xRingbufferCreate(queueSize, RINGBUF_TYPE_ALLOWSPLIT)),
+    _payload(payload){}
 
-bool DataQueue::canSend(const RingbufferPayload* payload) {
-    return freeSpace() >= requiredSize(payloadSize(payload));
+bool DataQueue::canSend(const SensorDataQueuePayload* payload) {
+    return freeSpace() >= requiredSize(payload->size());
 }
-
-
+ 
 size_t DataQueue::freeSpace() {
     const auto space = xRingbufferGetCurFreeSize(_bufferHandle);
-    _freeSpace = static_cast<long>(space);
     return space;
 }
 
-size_t DataQueue::payloadSize(const RingbufferPayload* payload) {
-    // optimizing the use of the buffer by not sending unused parts
-    size_t size = sizeof(RingbufferPayload) - sizeof(Content);
-    switch (payload->topic) {
-    case Topic::Result:
-        size += sizeof(ResultData);
-        break;
-    case Topic::Samples:
-        size += sizeof(Samples::count) + payload->buffer.samples.count * sizeof(Samples::value[0]);
-        break;
-    case Topic::SamplingError:
-    case Topic::Info:
-        size += strlen(payload->buffer.message);
-        break;
-    default:
-        break;
-    } 
-    return size;
-}
+RingbufHandle_t DataQueue::handle() const { return _bufferHandle; }
 
-size_t DataQueue::requiredSize(size_t realSize) {
+size_t DataQueue::requiredSize(const size_t realSize) {
     // round up to nearest 32 bit aligned size, and add an 8 byte header
     return (realSize + 3) / 4 * 4 + 8;
 }
 
-bool DataQueue::send(RingbufferPayload* payload) {
-    // optimizing the use of the buffer by not sending unused parts
-    const size_t size = payloadSize(payload);
-    if (requiredSize(size) > freeSpace()) return false;
-    if (payload->timestamp == 0) payload->timestamp = _clock->getTimestamp();
-    return (xRingbufferSend(_bufferHandle, payload, size, 0) == pdTRUE);
-}
-
-bool DataQueue::receive() const {
+SensorDataQueuePayload* DataQueue::receive() const {
     char* item1 = nullptr;
     char* item2 = nullptr;
-    RingbufferPayload payload{};
     size_t item1Size;
     size_t item2Size;
     const BaseType_t returnValue = xRingbufferReceiveSplit(
@@ -84,18 +55,22 @@ bool DataQueue::receive() const {
         &item2Size,
         0);
 
-    if (returnValue != pdTRUE || item1 == nullptr) return false;
+    if (returnValue != pdTRUE || item1 == nullptr) return nullptr;
 
-    memcpy(&payload, item1, item1Size);
+    memcpy(_payload, item1, item1Size);
     vRingbufferReturnItem(_bufferHandle, item1);
     if (item2 != nullptr) {
         // TODO: figure out how to do this c-style cast the c++ way
-        const auto targetAddress = (void*)(reinterpret_cast<const char*>(&payload) + item1Size);
+        const auto targetAddress = (void*)(reinterpret_cast<const char*>(_payload) + item1Size);
         memcpy(targetAddress, item2, item2Size);
         vRingbufferReturnItem(_bufferHandle, item2);
     }
+    return _payload;
+}
 
-    const char* message = _serializer->convertPayload(&payload);
-    _eventServer->publish(payload.topic, message);
-    return true;
+bool DataQueue::send(const SensorDataQueuePayload* payload) {
+    // optimizing the use of the buffer by not sending unused parts
+    const size_t size = payload->size();
+    if (requiredSize(size) > freeSpace()) return false;
+    return (xRingbufferSend(_bufferHandle, payload, size, 0) == pdTRUE);
 }

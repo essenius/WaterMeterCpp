@@ -15,16 +15,18 @@
 
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
-#include "../WaterMeterCpp/DataQueue.h"
+#include "../WaterMeterCpp/SensorDataQueue.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/FreeRtosMock.h"
 #include "../WaterMeterCpp/SafeCString.h"
+#include "TopicHelper.h"
+#include "../WaterMeterCpp/Serializer.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WaterMeterCppTest {
-    TEST_CLASS(DataQueueTest){
+    TEST_CLASS(DataQueueTest) {
 public:
     TEST_METHOD(dataQueueTest1) {
         EventServer eventServer;
@@ -40,17 +42,16 @@ public:
         eventServer.subscribe(&infoEventClient, Topic::Info);
 
         PayloadBuilder payloadBuilder;
-        Serializer serializer(&payloadBuilder);
-
-        DataQueue dataQueue(&eventServer, &theClock, &serializer);
-        RingbufferPayload payload{};
+        Serializer serializer(&eventServer, &payloadBuilder);
+        SensorDataQueuePayload payload{};
+        SensorDataQueue dataQueue(&eventServer, &payload);
         payload.topic = Topic::Samples;
         for (uint16_t times = 0; times < 5; times++) {
             payload.buffer.samples.count = MAX_SAMPLES - times;
             for (int16_t i = 0; i < payload.buffer.samples.count; i++) {
                 payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
             }
-            auto size = dataQueue.requiredSize(dataQueue.payloadSize(&payload));
+            auto size = DataQueue::requiredSize(payload.size());
             Assert::IsTrue(size <= 128, (L"Payload didn't max out: " + std::to_wstring(size)).c_str());
             Assert::IsTrue(dataQueue.send(&payload), (L"Send works for sample " + std::to_wstring(times)).c_str());
             Serial.printf("<<P%d Stack size: %d>>", times, uxTaskGetStackHighWaterMark(nullptr));
@@ -66,26 +67,32 @@ public:
         payload.buffer.result.sampleCount = 81;
         payload.buffer.result.flowCount = 27;
         payload.buffer.result.peakCount = 3;
+        payload.buffer.result.smoothAbsDerivativeSmooth = 23.2f;
         dataQueue.send(&payload);
 
         payload.topic = Topic::SamplingError;
         safeStrcpy(payload.buffer.message, "Not sure what went wrong here...");
         dataQueue.send(&payload);
 
-        payload.topic = Topic::Info;
-        safeStrcpy(payload.buffer.message, "About to close down...");
-        dataQueue.send(&payload);
-
-        while (dataQueue.receive()) {
-            delay(100);
+        for (int i = 0; i < 5; i++) {
+            auto payloadReceive = dataQueue.receive();
+            Assert::IsNotNull(payloadReceive, L"PayloadReceive not null 1");
+            Assert::AreEqual(Topic::Samples, payloadReceive->topic, L"Topic 1 is Samples");
         }
-        // skip timestamps
-        Assert::AreEqual(" Error: Not sure what went wrong here...", errorEventClient.getPayload()+26);
-        Assert::AreEqual(" Info: About to close down...", infoEventClient.getPayload()+26);
-        Assert::AreEqual(5, sampleEventClient.getCallCount());
-        Assert::AreEqual(R"([475,476,477,478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520]})", sampleEventClient.getPayload()+55);
-        Assert::AreEqual(R"(,"lastValue":0,"summaryCount":{"samples":81,"peaks":3,"flows":27,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})", resultEventClient.getPayload()+39);
+        auto payloadReceive2 = dataQueue.receive();
+        Assert::IsNotNull(payloadReceive2, L"PayloadReceive not null 2");
+        Assert::AreEqual(Topic::Result, payloadReceive2->topic, L"Topic 2 is Result");
+        Assert::AreEqual<uint32_t>(81, payloadReceive2->buffer.result.sampleCount, L"SampleCount=81");
+        Assert::AreEqual<uint32_t>(27, payloadReceive2->buffer.result.flowCount, L"FlowCount=27");
+        Assert::AreEqual<uint32_t>(3, payloadReceive2->buffer.result.peakCount, L"PeakCount=3");
+        Assert::AreEqual(23.2f, payloadReceive2->buffer.result.smoothAbsDerivativeSmooth, L"SmoothAbsDerivativeSmooth=23.2");
+
+        auto payloadReceive3 = dataQueue.receive();
+        Assert::IsNotNull(payloadReceive3, L"PayloadReceive not null 3");
+        Assert::AreEqual(Topic::SamplingError, payloadReceive3->topic, L"Topic 3 is SamplingError");
+        Assert::AreEqual("Not sure what went wrong here...", payloadReceive3->buffer.message, L"error message ok");
 
     }
+
     };
 }

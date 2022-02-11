@@ -16,16 +16,18 @@
 
 constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
 
-Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway,
-                     TimeServer* timeServer, FirmwareManager* firmwareManager, DataQueue* dataQueue,
-                     QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
+Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer, 
+                     FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue, 
+                     Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
 
     EventClient(eventServer),
     _wifi(wifi),
     _mqttGateway(mqttGatway),
     _timeServer(timeServer),
     _firmwareManager(firmwareManager),
-    _dataQueue(dataQueue),
+    _samplerDataQueue(samplerDataQueue),
+    _communicatorDataQueue(communicatorDataQueue),
+    _serializer(serializer),
     _samplerQueueClient(samplerQueueClient),
     _communicatorQueueClient(communicatorQueueClient),
     _state(eventServer, this, Topic::Connection) {}
@@ -42,10 +44,13 @@ void Connector::setup() {
     _eventServer->subscribe(_samplerQueueClient, Topic::NonIdleRate);
     _eventServer->subscribe(_samplerQueueClient, Topic::ResetSensor);
 
+    _eventServer->subscribe(_communicatorDataQueue, Topic::Result);
+    _eventServer->subscribe(_serializer, Topic::SensorData);
+
     // what can be sent to the communicator
     _eventServer->subscribe(_communicatorQueueClient, Topic::Connection);
     _eventServer->subscribe(_communicatorQueueClient, Topic::WifiSummaryReady);
-
+    _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueue);
     _wifi->configure(&IP_CONFIG);
 
 #ifdef CONFIG_USE_TLS
@@ -241,7 +246,14 @@ void Connector::handleMqttReady() {
     if (!_mqttGateway->handleQueue()) {
         return;
     }
-    while (_dataQueue->receive()) {}
+    SensorDataQueuePayload* payload;
+    while ((payload = _samplerDataQueue->receive()) != nullptr) {
+        _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
+        if (payload->topic == Topic::Result) {
+            _communicatorDataQueue->send(payload);
+        }
+
+    }
 }
 
 void Connector::handleDisconnected() {

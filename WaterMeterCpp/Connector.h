@@ -19,6 +19,7 @@
 #include "ConnectionState.h"
 #include "DataQueue.h"
 #include "QueueClient.h"
+#include "Serializer.h"
 
 constexpr unsigned long SECONDS = 1000UL * 1000UL;
 constexpr unsigned long WIFI_INITIAL_WAIT_DURATION = 20UL * SECONDS;
@@ -30,8 +31,8 @@ constexpr unsigned long MQTT_RECONNECT_WAIT_DURATION = 2UL * SECONDS;
 class Connector : public EventClient {
 public:
     Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
-              FirmwareManager* firmwareManager, DataQueue* dataQueue, QueueClient* samplerQueueClient,
-              QueueClient* communicatorQueueClient);
+              FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
+              Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
     void setup();
     static void task(void* parameter);
 
@@ -49,7 +50,9 @@ private:
     unsigned int _wifiConnectionFailureCount = 0;
     TimeServer* _timeServer;
     FirmwareManager* _firmwareManager;
-    DataQueue* _dataQueue;
+    DataQueue* _samplerDataQueue;
+    DataQueue* _communicatorDataQueue;
+    Serializer* _serializer;
     QueueClient* _samplerQueueClient;
     QueueClient* _communicatorQueueClient;
     ChangePublisher<ConnectionState> _state;

@@ -47,7 +47,7 @@ public:
         const auto subscribers = _subscribers.find(topic);
         if (subscribers != _subscribers.end()) {
             for (auto eventClient : subscribers->second) {
-                if (client != eventClient && !eventClient->isMuted()) {
+                if (client != eventClient) {
                     eventClient->update(topic, payload);
                 }
             }

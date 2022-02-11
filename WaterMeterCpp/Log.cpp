@@ -48,6 +48,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::FreeQueue);
     _eventServer->subscribe(this, Topic::Info);
     _eventServer->subscribe(this, Topic::Result);
+    _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::TimeOverrun);
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
@@ -87,6 +88,9 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::ResultWritten:
         Serial.printf("Result Written: %s\n", payload);
+        break;
+    case Topic::ResultFormatted:
+        Serial.printf("Result: %s\n", payload);
         break;
     case Topic::TimeOverrun:
         Serial.printf("Time overrun: %s\n", payload);

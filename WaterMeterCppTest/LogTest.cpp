@@ -35,6 +35,7 @@ namespace WaterMeterCppTest {
             theClock.begin();
             log.begin();
             Serial.begin(9600);
+            Serial.setInput(""); // just so it's used
             publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
             Assert::AreEqual(" MQTT ready\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Connected logs OK");
 
@@ -63,6 +64,10 @@ namespace WaterMeterCppTest {
             Serial.clearOutput();
             eventServer.publish(Topic::TimeOverrun, 1234);
             Assert::AreEqual(" Time overrun: 1234\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Time overrun handled OK");
+
+            Serial.clearOutput();
+            eventServer.publish(Topic::ResultWritten, LONG_TRUE);
+            Assert::AreEqual(" Result Written: 1\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Result Written handled OK");
 
         }
 private:

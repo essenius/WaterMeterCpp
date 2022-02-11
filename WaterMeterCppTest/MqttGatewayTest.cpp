@@ -16,6 +16,8 @@
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/PayloadBuilder.h"
+#include "../WaterMeterCpp/SensorDataQueue.h"
+#include "../WaterMeterCpp/Serializer.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -37,7 +39,8 @@ namespace WaterMeterCppTest {
         static PubSubClient mqttClient;
         static PayloadBuilder payloadBuilder;
         static Serializer serializer;
-        static DataQueue dataQueue;
+        static SensorDataQueuePayload payload;
+        static SensorDataQueue dataQueue;
 
         TEST_CLASS_INITIALIZE(mqttGatewayClassInitialize) {
             eventServer.subscribe(&errorListener, Topic::CommunicationError);
@@ -93,7 +96,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual("client1", mqttClient.id());
             // check if the homie init events were sent 
             Assert::AreEqual(static_cast<size_t>(2307), strlen(mqttClient.getTopics()), L"Topic lenght OK");
-            Assert::AreEqual(static_cast<size_t>(696), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
+            Assert::AreEqual(static_cast<size_t>(708), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
             Assert::AreEqual(60, mqttClient.getCallCount(), L"Call count");
 
             gateway.announceReady();
@@ -112,9 +115,9 @@ namespace WaterMeterCppTest {
             eventServer.subscribe(&callBackListener, Topic::BatchSizeDesired);
             char topic[100];
             constexpr int PAYLOAD_SIZE = 2;
-            uint8_t payload[PAYLOAD_SIZE] = {'2', '0'};
+            uint8_t payload1[PAYLOAD_SIZE] = {'2', '0'};
             safeStrcpy(topic, "homie/device_id/measurement/batch-size-desired/set");
-            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
             Assert::AreEqual(1, callBackListener.getCallCount(), L"callBackListener called");
             Assert::AreEqual("20", callBackListener.getPayload(), L"callBackListener got right payload");
 
@@ -122,24 +125,24 @@ namespace WaterMeterCppTest {
 
             callBackListener.reset();
             safeStrcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
-            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
             Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
             callBackListener.reset();
 
             // Empty topic should get ignored, just checking nothing breaks
 
             topic[0] = 0;
-            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
 
             // same with a payload not having a device id
 
             safeStrcpy(topic, "bogus");
-            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
 
             // a topic we don't know should be ignored
 
             safeStrcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
-            mqttClient.callBack(topic, payload, PAYLOAD_SIZE);
+            mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
             Assert::AreEqual(0, callBackListener.getCallCount(), L"callBackListener not called");
 
             gateway.handleQueue();
@@ -181,6 +184,6 @@ namespace WaterMeterCppTest {
     TestEventClient MqttGatewayTest::infoListener(&eventServer);
     PubSubClient MqttGatewayTest::mqttClient;
     PayloadBuilder MqttGatewayTest::payloadBuilder;
-    Serializer MqttGatewayTest::serializer(&payloadBuilder);
-    DataQueue MqttGatewayTest::dataQueue(&eventServer, &theClock, &serializer);
+    SensorDataQueuePayload MqttGatewayTest::payload;
+    SensorDataQueue MqttGatewayTest::dataQueue(&eventServer, &payload);
 }

@@ -11,13 +11,17 @@
 
 #include "Communicator.h"
 #include "Connector.h"
+#include "SensorDataQueuePayload.h"
 
 Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device,
-                           QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient) :
+    DataQueue* dataQueue, Serializer* serializer,
+    QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient) :
     EventClient(eventServer),
     _logger(logger),
     _ledDriver(ledDriver),
     _device(device),
+    _dataQueue(dataQueue),
+    _serializer(serializer),
     _fromSamplerQueueClient(fromSamplerQueueClient),
     _fromConnectorQueueClient(fromConnectorQueueClient) {}
 
@@ -26,22 +30,28 @@ void Communicator::setup() const {
     _ledDriver->begin();
 
     // what can be sent to mqtt (note: nothing sent to the sampler)
+    // TODO: this doesn't look right. Validate. We shouldn't send results, samples etc from here.
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::Alert);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::BatchSize);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeHeap);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackSampler);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackCommunicator);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackConnector);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeQueue);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::Result);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::Samples);
+    //_eventServer->subscribe(_fromConnectorQueueClient, Topic::Result);
+    //_eventServer->subscribe(_fromConnectorQueueClient, Topic::Samples);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::Rate);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::SamplingError);
+    _eventServer->subscribe(_serializer, Topic::SensorData);
 }
 
 void Communicator::loop() const {
     while (_fromSamplerQueueClient->receive())  { delay(5); }
     while (_fromConnectorQueueClient->receive()) { delay(5); }
+    SensorDataQueuePayload* payload;
+    while ((payload =_dataQueue->receive()) != nullptr) {
+        _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
+        delay(5);
+    }
     _device->reportHealth();
     delay(10);
 }

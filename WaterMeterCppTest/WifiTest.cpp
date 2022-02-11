@@ -124,6 +124,7 @@ namespace WaterMeterCppTest {
 
             Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
             Assert::AreEqual("esp32_001122334455", WiFi.getHostname(), L"Default hostname set");
+            WiFi.connectIn(1);
             while (!wifi.isConnected()) {}
             wifi.disconnect();
             Assert::IsFalse(wifi.isConnected(), L"Disconnected");

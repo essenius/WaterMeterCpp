@@ -119,7 +119,7 @@ public:
                 IPAddress dns1 = IPAddress(), IPAddress dns2 = IPAddress());
     bool isConnected();
     bool setHostname(const char* name);
-    void reconnect() { _connectCountdown = 10; }
+    void reconnect() { _connectCountdown = _connectMax; }
     const char* getHostname() { return _name; }
     String SSID() { return {_ssid}; }
     String macAddress();
@@ -132,10 +132,11 @@ public:
     IPAddress dnsIP(int i = 0) { return i == 0 ? _primaryDNSIP : _secondaryDNSIP; }
     IPAddress subnetMask() const { return _subnetIP; }
     String BSSIDstr() { return {"55:44:33:22:11:00"}; }
-    void disconnect() { _connectCountdown = 10; }
+    void disconnect() { _connectCountdown = _connectMax; }
+
     // testing
     void reset();
-
+    void connectIn(int connectCount);
 private:
     char _name[20] = {0};
     char _ssid[20] = {0};
@@ -145,7 +146,8 @@ private:
     IPAddress _subnetIP;
     IPAddress _primaryDNSIP;
     IPAddress _secondaryDNSIP;
-    int _connectCountdown = 10;
+    int _connectMax = 5;
+    int _connectCountdown = _connectMax;
 };
 
 #define WIFI_STA 1

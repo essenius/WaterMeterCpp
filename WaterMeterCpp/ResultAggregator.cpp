@@ -13,7 +13,7 @@
 #include <climits>
 #include "ResultAggregator.h"
 
-ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload,
+ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, SensorDataQueuePayload* payload,
                                    const uint32_t measureIntervalMicros) :
     Aggregator(eventServer, theClock, dataQueue, payload),
     _result(&payload->buffer.result),
@@ -80,11 +80,6 @@ void ResultAggregator::begin() {
     _eventServer->subscribe(this, Topic::NonIdleRate);
     _eventServer->subscribe(this, Topic::ProcessTime);
     Aggregator::begin(FLUSH_RATE_IDLE);
-
-    // This is the only time the desired rates get published from here.
-    // removed for simplification - would start an endless loop.
-    //_eventServer->publish(this, Topic::IdleRate, _idleFlushRate);
-    //_eventServer->publish(this, Topic::NonIdleRate, _nonIdleFlushRate);
 }
 
 void ResultAggregator::flush() {

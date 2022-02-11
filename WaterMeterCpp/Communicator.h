@@ -12,15 +12,18 @@
 #ifndef HEADER_COMMUNICATOR
 #define HEADER_COMMUNICATOR
 #include "Clock.h"
+#include "DataQueue.h"
 #include "Device.h"
 #include "EventServer.h"
 #include "LedDriver.h"
 #include "Log.h"
 #include "QueueClient.h"
+#include "Serializer.h"
 
 class Communicator : public EventClient {
 public:
-    Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
+    Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device, 
+        DataQueue* dataQueuem, Serializer* serializer, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
     void setup() const;
     void loop() const;
     static void task(void* parameter);
@@ -29,6 +32,8 @@ private:
     Log* _logger;
     LedDriver* _ledDriver;
     Device* _device;
+    DataQueue* _dataQueue;
+    Serializer* _serializer;
     QueueClient* _fromSamplerQueueClient;
     QueueClient* _fromConnectorQueueClient;
 };

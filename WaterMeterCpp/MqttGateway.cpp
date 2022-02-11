@@ -55,14 +55,12 @@ void MqttGateway::announceReady() {
     _eventServer->subscribe(this, Topic::FreeStackConnector); // long
     _eventServer->subscribe(this, Topic::FreeQueue); // long
     _eventServer->subscribe(this, Topic::IdleRate); // long
-    _eventServer->subscribe(this, Topic::Samples); // string
+    _eventServer->subscribe(this, Topic::SamplesFormatted); // string
     _eventServer->subscribe(this, Topic::NonIdleRate); // long
     _eventServer->subscribe(this, Topic::Rate); // long  
-    _eventServer->subscribe(this, Topic::Result); // string
+    _eventServer->subscribe(this, Topic::ResultFormatted); // string
     _eventServer->subscribe(this, Topic::SamplingError); // string 
     _eventServer->subscribe(this, Topic::Info); // string
-    // making sure we are listening. Mute is on after a disconnect.
-    mute(false);
 }
 
 void MqttGateway::begin(Client* client, const char* clientName) {
@@ -170,7 +168,7 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK_SAMPLER, DEVICE_FREE_STACK_COMMUNICATOR, DEVICE_FREE_STACK_CONNECTOR, DEVICE_FREE_QUEUE, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD, DEVICE_MAC);
+    safeSprintf(payload, "%s,%s,%s,%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK_SAMPLER, DEVICE_FREE_STACK_COMMUNICATOR, DEVICE_FREE_STACK_CONNECTOR, DEVICE_FREE_QUEUE, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD, DEVICE_MAC);
     prepareNode(DEVICE, "Device", "1", payload);
     prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_FREE_STACK_SAMPLER, "Free Stack Sampler", TYPE_INTEGER);

@@ -13,7 +13,7 @@
 #define HEADER_AGGREGATOR
 
 #include "Clock.h"
-#include "RingbufferPayload.h"
+#include "SensorDataQueuePayload.h"
 #include "EventServer.h"
 #include "ChangePublisher.h"
 #include "DataQueue.h"
@@ -22,12 +22,12 @@ using byte = unsigned char;
 
 class Aggregator : public EventClient {
 public:
-    Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload);
+    Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, SensorDataQueuePayload* payload);
     virtual void begin(long desiredFlushRate);
     bool canSend() const;
     virtual void flush();
     long getFlushRate();
-    RingbufferPayload* getPayload() const;
+    SensorDataQueuePayload* getPayload() const;
     virtual bool shouldSend(bool force = false);
     bool newMessage();
     virtual bool send();
@@ -39,7 +39,7 @@ protected:
     Clock* _clock;
     DataQueue* _dataQueue;
     long _desiredFlushRate = 0;
-    RingbufferPayload* _payload;
+    SensorDataQueuePayload* _payload;
     long _messageCount = 0;
     ChangePublisher<long> _flushRate;
     ChangePublisher<long> _blocked;

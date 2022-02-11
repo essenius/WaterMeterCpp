@@ -157,6 +157,7 @@
     <ClCompile Include="LedFlasher.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MagnetoSensorReader.cpp" />
+    <ClCompile Include="SensorDataQueuePayload.cpp" />
     <ClCompile Include="SampleAggregator.cpp" />
     <ClCompile Include="MqttGateway.cpp" />
     <ClCompile Include="NetMock.cpp" />
@@ -167,6 +168,7 @@
     <ClCompile Include="QueueClient.cpp" />
     <ClCompile Include="ResultAggregator.cpp" />
     <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="SensorDataQueue.cpp" />
     <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="TimeServer.cpp" />
     <ClCompile Include="WaterMeterCpp.cpp" />
@@ -203,9 +205,10 @@
     <ClInclude Include="QMC5883LCompassMock.h" />
     <ClInclude Include="QueueClient.h" />
     <ClInclude Include="ResultAggregator.h" />
-    <ClInclude Include="RingbufferPayload.h" />
+    <ClInclude Include="SensorDataQueuePayload.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="secrets.h" />
+    <ClInclude Include="SensorDataQueue.h" />
     <ClInclude Include="Serializer.h" />
     <ClInclude Include="TimeServer.h" />
     <ClInclude Include="Wifi.h" />

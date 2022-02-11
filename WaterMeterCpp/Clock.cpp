@@ -61,9 +61,8 @@ Timestamp Clock::getTimestamp() {
 
 bool Clock::formatTimestamp(Timestamp timestamp, char* destination, size_t size) {
     if (size < 27) return false;
-    const auto currentTime = getTimestamp();
-    const auto microseconds = static_cast<long>(currentTime % MICROSECONDS_PER_SECOND);
-    const auto seconds = static_cast<time_t>(currentTime / MICROSECONDS_PER_SECOND);
+    const auto microseconds = static_cast<long>(timestamp % MICROSECONDS_PER_SECOND);
+    const auto seconds = static_cast<time_t>(timestamp / MICROSECONDS_PER_SECOND);
     xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
     strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds));
     xSemaphoreGive(_formatTimeMutex);

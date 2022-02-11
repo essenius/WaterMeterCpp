@@ -14,6 +14,7 @@
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
+#include "../WaterMeterCpp/SensorDataQueue.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -22,11 +23,9 @@ namespace WaterMeterCppTest {
     public:
         TEST_METHOD(sampleAggregatorAddSampleTest) {
             EventServer eventServer;
-            RingbufferPayload payload{};
-            PayloadBuilder payloadBuilder;
-            Serializer serializer(&payloadBuilder);
+            SensorDataQueuePayload payload{};
             Clock theClock(&eventServer);
-            DataQueue dataQueue(&eventServer, &theClock, &serializer);
+            SensorDataQueue dataQueue(&eventServer, &payload);
 
             SampleAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
             aggregator.begin();
@@ -59,10 +58,8 @@ namespace WaterMeterCppTest {
         TEST_METHOD(sampleAggregatorZeroFlushRateTest) {
             EventServer eventServer;
             Clock theClock(&eventServer);
-            RingbufferPayload payload{};
-            PayloadBuilder payloadBuilder;
-            Serializer serializer(&payloadBuilder);
-            DataQueue dataQueue(&eventServer, &theClock, &serializer);
+            SensorDataQueuePayload payload{};
+            SensorDataQueue dataQueue(&eventServer, &payload);
 
             TestEventClient batchSizeListener(&eventServer);
             eventServer.subscribe(&batchSizeListener, Topic::BatchSize);
@@ -109,13 +106,13 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::BatchSizeDesired, 2L);
             Assert::AreEqual(2L, aggregator.getFlushRate(), L"Flush rate changed back to 2");
             aggregator.addSample(-2000);
-            setRingBufferBufferFull(true);
+            setRingBufferBufferFull(dataQueue.handle(), true);
             aggregator.addSample(-3000);
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer flushed since we can't write");
 
 
             // reconnect
-            setRingBufferBufferFull(false);
+            setRingBufferBufferFull(dataQueue.handle(), false);
             aggregator.addSample(-4000);
             Assert::AreEqual(1U, static_cast<unsigned>(payload.buffer.samples.count), L"restarted filling buffer");
 

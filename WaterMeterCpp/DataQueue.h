@@ -19,31 +19,26 @@
 #include "FreeRtosMock.h"
 #endif
 
-#include "Clock.h"
 #include "EventClient.h"
-#include "LongChangePublisher.h"
-#include "RingbufferPayload.h"
-#include "Serializer.h"
-
+#include "SensorDataQueuePayload.h"
 
 class DataQueue : public EventClient {
 public:
-    DataQueue(EventServer* eventServer, Clock* theClock, Serializer* serializer);
+    DataQueue(EventServer* eventServer, SensorDataQueuePayload* payload, size_t queueSize);
 
-    bool canSend(const RingbufferPayload* payload);
-    size_t freeSpace();
-    static size_t payloadSize(const RingbufferPayload* payload);
+    bool canSend(const SensorDataQueuePayload* payload);
+
+    virtual size_t freeSpace();
     static size_t requiredSize(size_t realSize);
 
-    bool send(RingbufferPayload* payload);
+    bool send(const SensorDataQueuePayload* payload); 
 
-    bool receive() const;
+    SensorDataQueuePayload* receive() const;
+    RingbufHandle_t handle() const;
 
 private:
-    LongChangePublisher _freeSpace;
     RingbufHandle_t _bufferHandle = nullptr;
-    Clock* _clock;
-    Serializer* _serializer;
+    SensorDataQueuePayload* _payload;
 };
 
 #endif

@@ -21,11 +21,11 @@ constexpr long LONG_FALSE = 0L;
 enum class Topic: uint16_t {
     None = 0,
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
-    Sample, Samples, Result,
+    Sample, Samples, SamplesFormatted, Result, ResultFormatted, SensorData,
     FreeHeap, FreeStackSampler, FreeStackCommunicator, FreeStackConnector, FreeQueue,
     Connection, WifiSummaryReady,
     ResultWritten,
-    SamplingError, CommunicationError, Info, Blocked, Alert,
+    SamplingError, CommunicationError, Info, MessageFormatted, Blocked, Alert,
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak,
     Time, IpAddress, MacRaw, MacFormatted,
@@ -48,12 +48,9 @@ public:
     virtual long get(Topic topic, long defaultValue) { return defaultValue; }
     virtual void update(Topic topic, const char* payload) {}
     virtual void update(Topic topic, long payload);
-    virtual void mute(bool muted) { _muted = muted; }
-    virtual bool isMuted() { return _muted; }
 
 protected:
     EventServer* _eventServer;
-    bool _muted = false;
 };
 
 #endif

@@ -54,9 +54,9 @@ constexpr const char* const STATE = "$state";
 static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::BatchSize, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}},
     {Topic::BatchSizeDesired, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}},
-    {Topic::Samples, {MEASUREMENT, MEASUREMENT_VALUES}},
+    {Topic::SamplesFormatted, {MEASUREMENT, MEASUREMENT_VALUES}},
     {Topic::Rate, {RESULT, RESULT_RATE}},
-    {Topic::Result, {RESULT, RESULT_VALUES}},
+    {Topic::ResultFormatted, {RESULT, RESULT_VALUES}},
     {Topic::IdleRate, {RESULT, RESULT_IDLE_RATE}},
     {Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE}},
     {Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP}},

@@ -35,8 +35,11 @@
 #include "../WaterMeterCpp/Log.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
 #include "../WaterMeterCpp/QueueClient.h"
-#include "../WaterMeterCpp/secrets.h" 
+#include "../WaterMeterCpp/secrets.h"
 #include "../WaterMeterCpp/Sampler.h"
+#include "../WaterMeterCpp/SensorDataQueue.h"
+#include "TopicHelper.h"
+#include "StateHelper.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -51,7 +54,7 @@ namespace WaterMeterCppTest {
             uxQueueReset();
 
             // For being able to set the firmware 
-            constexpr const char* const BUILD_VERSION = "0.100.3";
+            constexpr const auto BUILD_VERSION = "0.100.3";
 
             // We measure every 10 ms. That is about the fastest that the sensor can do reliably
             // Processing one cycle usually takes quite a bit less than that, unless a write happened.
@@ -63,44 +66,56 @@ namespace WaterMeterCppTest {
             FlowMeter flowMeter(&samplerEventServer);
 
             EventServer communicatorEventServer;
-            // this is where Clock provides Topic::Time
+            EventServer connectorEventServer;
+
             Clock theClock(&communicatorEventServer);
             PayloadBuilder serializePayloadBuilder(&theClock);
-            Serializer serializer(&serializePayloadBuilder);
-            DataQueue dataQueue(&communicatorEventServer, &theClock, &serializer);
-            RingbufferPayload measurementPayload{};
-            RingbufferPayload resultPayload{};
-            SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &dataQueue, &measurementPayload);
-            ResultAggregator resultAggregator(&samplerEventServer, &theClock, &dataQueue, &resultPayload, MEASURE_INTERVAL_MICROS);
-
-            LedDriver ledDriver(&communicatorEventServer);
-            PayloadBuilder wifiPayloadBuilder;
+            Serializer serializer(&connectorEventServer, &serializePayloadBuilder);
+            SensorDataQueuePayload connectorPayload;
+            SensorDataQueue sensorDataQueue(&connectorEventServer, &connectorPayload);
+            SensorDataQueuePayload measurementPayload;
+            SensorDataQueuePayload resultPayload;
+            SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &measurementPayload);
+            ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &resultPayload,
+                                              MEASURE_INTERVAL_MICROS);
 
             Device device(&communicatorEventServer);
+            LedDriver ledDriver(&communicatorEventServer);
+            PayloadBuilder wifiPayloadBuilder;
             Log logger(&communicatorEventServer, &wifiPayloadBuilder);
-            EventServer remoteEventServer;
-            Wifi wifi(&remoteEventServer, &WIFI_CONFIG, &wifiPayloadBuilder);
-            TimeServer timeServer;
+
+            Wifi wifi(&connectorEventServer, &WIFI_CONFIG, &wifiPayloadBuilder);
             PubSubClient mqttClient;
-            MqttGateway mqttGateway(&remoteEventServer, &mqttClient, &MQTT_CONFIG, &dataQueue, BUILD_VERSION);
-            FirmwareManager firmwareManager(&remoteEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
+            MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &MQTT_CONFIG, &sensorDataQueue, BUILD_VERSION);
+            FirmwareManager firmwareManager(&connectorEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
 
             QueueClient samplerQueueClient(&samplerEventServer, 20);
             QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20);
             QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20);
-            QueueClient connectorCommunicatorQueueClient(&remoteEventServer, 100);
-            // send only
-            QueueClient connectorSamplerQueueClient(&remoteEventServer, 1);
+            QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100);
 
-            Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-            Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
-            Connector connector(&remoteEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &dataQueue, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
+            // send only, but 1 is the minimum size for a queue
+            QueueClient connectorSamplerQueueClient(&connectorEventServer, 1);
+            SensorDataQueuePayload communicatorQueuePayload;
+            PayloadBuilder serialize2PayloadBuilder(&theClock);
+            Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
+
+            DataQueue connectorDataQueue(&communicatorEventServer, &communicatorQueuePayload, 1024);
+            Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator,
+                            &samplerQueueClient);
+            Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2,
+                                      &communicatorSamplerQueueClient,
+                                      &communicatorConnectorQueueClient);
+
+            TimeServer timeServer;
+            Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &sensorDataQueue,
+                                &connectorDataQueue, &serializer, &connectorSamplerQueueClient,
+                                &connectorCommunicatorQueueClient);
 
             TaskHandle_t communicatorTaskHandle;
             TaskHandle_t connectorTaskHandle;
 
             Serial.begin(115200);
-            device.begin(xTaskGetCurrentTaskHandle(), &communicatorTaskHandle, &connectorTaskHandle);
             theClock.begin();
 
             // queue for the sampler process
@@ -128,8 +143,9 @@ namespace WaterMeterCppTest {
             // start the communication task which takes care of logging and leds, as well as passing on data to the connector if there is a connection
             xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
 
-            // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
+            device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 
+            // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
             sampler.begin();
 
             // subscribe to a topic normally not subscribed to so we can see if it is dealt with appropriately
@@ -145,16 +161,50 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(Led::OFF, Led::get(Led::AUX), L"AUX still off");
             Assert::AreEqual(Led::ON, Led::get(Led::RUNNING), L"RUNNING on");
             Assert::AreEqual(R"([] Starting
-[] Free DataQueue space: 12800
 [] Topic '6': 0
 [] Wifi summary: {"ssid":"","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
+[] Free DataQueue space: 12800
 [] Free Heap: 32000
 [] Free Stack Sampler: 1500
 [] Free Stack Communicator: 3750
 [] Free Stack Connector: 5250
 [] Connecting to Wifi
 )", Serial.getOutput());
+            // reduce the noise in the logger 
             samplerEventServer.unsubscribe(&logger, Topic::Sample);
+            communicatorEventServer.unsubscribe(&logger, Topic::Connection);
+            // start again with the wifi connection
+            WiFi.reset();
+            WiFi.connectIn(1);
+            while (connector.connect() != ConnectionState::MqttReady) {}
+            Serial.println("");
+            Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Checking for data");
+
+            // emulate the publication of a result from sensor to log
+            SensorDataQueuePayload payload1{};
+            payload1.topic = Topic::Result;
+            payload1.timestamp = 1000000;
+            payload1.buffer.result.sampleCount = 327;
+            payload1.buffer.result.smoothAbsDerivativeSmooth = 23.02f;
+            sensorDataQueue.send(&payload1);
+            Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Reading queue");
+
+            Serial.clearOutput();
+            communicator.loop();
+            auto expected = R"([] Wifi summary: {"ssid":"essenii30n","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
+[] Wifi summary: {"ssid":"essenii30n","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
+[] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
+[] Free Stack Sampler: 1564
+)";
+            Assert::AreEqual(expected, Serial.getOutput(), L"Formatted result came through");
+            Serial.clearOutput();
+            // expect an overrun
+            delay(10);
+            sampler.loop();
+            Assert::AreEqual(ConnectionState::MqttReady, connector.loop(), L"Connector loop");
+            communicator.loop();
+            Assert::AreEqual(0, strncmp("[] Time overrun:", Serial.getOutput(), 16), L"Time overrun");
+
 
         }
     };

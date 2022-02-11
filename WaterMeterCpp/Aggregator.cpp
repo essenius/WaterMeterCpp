@@ -14,7 +14,7 @@
 #include "Aggregator.h"
 #include "DataQueue.h"
 
-Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, RingbufferPayload* payload) :
+Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, SensorDataQueuePayload* payload) :
     EventClient(eventServer),
     _clock(theClock),
     _dataQueue(dataQueue), _payload(payload),
@@ -51,7 +51,7 @@ long Aggregator::getFlushRate() {
     return _flushRate;
 }
 
-RingbufferPayload* Aggregator::getPayload() const {
+SensorDataQueuePayload* Aggregator::getPayload() const {
     return _payload;
 }
 

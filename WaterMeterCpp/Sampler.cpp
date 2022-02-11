@@ -23,6 +23,7 @@ void Sampler::setup(const unsigned long samplePeriod) {
     _flowMeter->begin();
     // what can be sent to the communicator (note: must be numerical payload)
     _eventServer->subscribe(_queueClient, Topic::Alert);
+    _eventServer->subscribe(_queueClient, Topic::BatchSize);
     _eventServer->subscribe(_queueClient, Topic::Blocked);
     _eventServer->subscribe(_queueClient, Topic::Exclude);
     _eventServer->subscribe(_queueClient, Topic::Flow);
@@ -36,42 +37,42 @@ void Sampler::begin() {
     // These two publish, so we need to run them when both threads finished setting up the event listeners
     _sampleAggregator->begin(); 
     _resultAggregator->begin();
-    _nextMeasureTime = micros();
+    _scheduledStartTime = micros();
 }
 
+// TODO: fix wrong use of nextMeasureTime
 void Sampler::loop() {
-    const unsigned long startLoopTimestamp = micros();
-    _nextMeasureTime += _samplePeriod;
     const int16_t measure = _sensorReader->read();
-
+    const auto startTime = micros();
+    const auto slack = startTime - _scheduledStartTime;
     // this triggers flowMeter and measurementWriter as well as the comms thread
     _eventServer->publish(Topic::Sample, measure);
     _resultAggregator->addMeasurement(measure, _flowMeter);
     _sampleAggregator->send();
-    // Duration gets picked up by resultWriter, so must be published before sending
+    // Duration gets picked up by resultAggregator, so must be published before sending
     // making sure to use durations to operate on, not timestamps -- to avoid overflow issues
-    const unsigned long durationSoFar = micros() - startLoopTimestamp;
+    const unsigned long durationSoFar = micros() - _scheduledStartTime;
     // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
     _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar  + _additionalDuration));
     _resultAggregator->send();
 
-    unsigned long duration = micros() - startLoopTimestamp;
+    unsigned long duration = micros() - _scheduledStartTime;
     _additionalDuration = duration - durationSoFar;
 
     // not using delayMicroseconds() as that is less accurate. Sometimes up to 300 us too much wait time.
+    // This is the only task on this core, so no need to yield either.
     if (duration > _samplePeriod) {
         // It took too long. If we're still within one interval, we might be able to catch up
         // Intervene if it gets more than that
-
-        _eventServer->publish(Topic::TimeOverrun, static_cast<long>(duration - _samplePeriod));
-        const unsigned long extraTimeNeeded = micros() - _nextMeasureTime;
-        _nextMeasureTime += (extraTimeNeeded / _samplePeriod) * _samplePeriod;
+        _scheduledStartTime += (duration / _samplePeriod) * _samplePeriod;
     }
     else {
-        // we don't need to use delay to yield, since this is the only task on this core.
+        // Wait for the next sample time; read the command queue while we're at it.
+        // No need to use delay since we
         do {
             _queueClient->receive();
-            duration = micros() - startLoopTimestamp;
+            duration = micros() - _scheduledStartTime;
         } while (duration < _samplePeriod);
+        _scheduledStartTime += _samplePeriod;
     }
 }

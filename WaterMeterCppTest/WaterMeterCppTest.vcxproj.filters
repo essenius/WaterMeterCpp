@@ -72,7 +72,7 @@
     <ClCompile Include="WifiMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ConnectionTest.cpp">
+    <ClCompile Include="ConnectorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DataQueueTest.cpp">
@@ -88,6 +88,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClockTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SerializerTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

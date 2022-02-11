@@ -15,8 +15,8 @@
 
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Aggregator.h"
-#include "../WaterMeterCpp/TimeServer.h"
 #include "../WaterMeterCpp/Clock.h"
+#include "../WaterMeterCpp/SensorDataQueue.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -27,10 +27,8 @@ namespace WaterMeterCppTest {
             EventServer eventServer;
             Clock theClock(&eventServer);
             theClock.begin();
-            RingbufferPayload payload{};
-            PayloadBuilder payloadBuilder;
-            Serializer serializer(&payloadBuilder);
-            DataQueue dataQueue(&eventServer, &theClock, &serializer);
+            SensorDataQueuePayload payload{};
+            SensorDataQueue dataQueue(&eventServer, &payload);
             Assert::AreEqual(0ULL, payload.timestamp);
             Aggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
             aggregator.begin(0);
@@ -47,7 +45,7 @@ namespace WaterMeterCppTest {
             Assert::IsTrue(aggregator.shouldSend(), L"Must send after two messages");
 
             // force buffer to look like it's full
-            setRingBufferBufferFull(true);
+            setRingBufferBufferFull(dataQueue.handle(), true);
             Assert::IsTrue(aggregator.shouldSend(), L"Should send");
             Assert::IsFalse(aggregator.canSend(), L"Cannot send when buffer full");
             Assert::IsFalse(aggregator.send(), L"Send fails");
@@ -55,7 +53,7 @@ namespace WaterMeterCppTest {
             Assert::IsFalse(aggregator.shouldSend(), L"Still can't send when buffer is full");
 
             // force buffer to look like it got space again
-            setRingBufferBufferFull(false);
+            setRingBufferBufferFull(dataQueue.handle(), false);
             Assert::IsFalse(aggregator.shouldSend(), L"Should not send due to not being at multiple of flush rate");
             Assert::IsTrue(aggregator.canSend(), L"Can now send as there is space in the buffer");
             aggregator.newMessage();

@@ -35,7 +35,7 @@ using TaskFunction_t = void(*)(void*);
 enum RingbufferType_t { RINGBUF_TYPE_NOSPLIT = 0, RINGBUF_TYPE_ALLOWSPLIT, RINGBUF_TYPE_BYTEBUF, RINGBUF_TYPE_MAX };
 
 // test function
-void setRingBufferBufferFull(bool isFull);
+void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull);
 
 RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType);
 

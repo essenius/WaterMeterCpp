@@ -12,6 +12,8 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/ResultAggregator.h"
+#include "../WaterMeterCpp/SensorDataQueue.h"
+#include "../WaterMeterCpp/Serializer.h"
 #include "FlowMeterDriver.h"
 #include <iostream>
 
@@ -25,11 +27,11 @@ namespace WaterMeterCppTest {
     TEST_CLASS(ResultAggregatorTest) {
     public:
         static EventServer eventServer;
-        static RingbufferPayload payload;
+        static SensorDataQueuePayload payload;
         static TestEventClient rateListener;
         static PayloadBuilder payloadBuilder;
         static Serializer serializer;
-        static DataQueue dataQueue;
+        static SensorDataQueue dataQueue;
         static Clock theClock;
 
         TEST_CLASS_INITIALIZE(resultAggregatorTestClassInitialize) {
@@ -37,6 +39,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD_INITIALIZE(resultAggregatorTestMethodInitialize) {
+            uxQueueReset();
             rateListener.reset();
         }
 
@@ -208,7 +211,7 @@ namespace WaterMeterCppTest {
                 eventServer.publish(Topic::ProcessTime, 2500 + 10 * i);
                 Assert::IsFalse(aggregator.send(), L"First 3 measurements don't send");
             }
-            setRingBufferBufferFull(true);
+            setRingBufferBufferFull(dataQueue.handle(), true);
 
             for (int i = 0; i < 4; i++) {
                 aggregator.addMeasurement(500, &fmd);
@@ -216,7 +219,7 @@ namespace WaterMeterCppTest {
                 Assert::IsFalse(aggregator.send(), L"Next 4 measurements still don't send (can't after 5th)");
             }
 
-            setRingBufferBufferFull(false);
+            setRingBufferBufferFull(dataQueue.handle(), false);
 
             for (int i = 0; i < 2; i++) {
                 aggregator.addMeasurement(500, &fmd);
@@ -268,9 +271,7 @@ namespace WaterMeterCppTest {
 
     EventServer ResultAggregatorTest::eventServer;
     Clock ResultAggregatorTest::theClock(&eventServer);
-    RingbufferPayload ResultAggregatorTest::payload;
+    SensorDataQueuePayload ResultAggregatorTest::payload;
     TestEventClient ResultAggregatorTest::rateListener(&eventServer);
-    PayloadBuilder ResultAggregatorTest::payloadBuilder;
-    Serializer ResultAggregatorTest::serializer(&payloadBuilder);
-    DataQueue ResultAggregatorTest::dataQueue(&eventServer, &theClock, &serializer);
+    SensorDataQueue ResultAggregatorTest::dataQueue(&eventServer, &payload);
 }

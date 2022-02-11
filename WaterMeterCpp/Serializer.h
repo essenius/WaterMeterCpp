@@ -14,17 +14,18 @@
 #define HEADER_SERIALIZER
 
 #include "PayloadBuilder.h"
-#include "RingbufferPayload.h"
+#include "SensorDataQueuePayload.h"
 
 
-class Serializer {
+class Serializer : public EventClient {
 public:
-    explicit Serializer(PayloadBuilder* payloadBuilder);
-    const char* convertPayload(RingbufferPayload* data) const;
+    Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder);
+    void update(Topic topic, const char* payload) override;
+
 private:
-    const char* convertResult(const RingbufferPayload* data) const;
-    const char* convertMeasurements(const RingbufferPayload* data) const;
-    const char* convertString(const RingbufferPayload* data) const;
+    void convertResult(const SensorDataQueuePayload* payload) const;
+    void convertMeasurements(const SensorDataQueuePayload* payload) const;
+    void convertString(const SensorDataQueuePayload* data) const;
     PayloadBuilder* _payloadBuilder;
 };
 #endif

@@ -11,39 +11,48 @@
 
 #include "Serializer.h"
 
-Serializer::Serializer(PayloadBuilder* payloadBuilder) : _payloadBuilder(payloadBuilder) {}
+Serializer::Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder) : EventClient(eventServer), _payloadBuilder(payloadBuilder) {}
 
-const char* Serializer::convertPayload(RingbufferPayload* data) const {
-    switch (data->topic) {
+void Serializer::update(Topic topic, const char* payload) {
+    const auto sensorPayload = reinterpret_cast<const SensorDataQueuePayload*>(payload);
+    Topic newTopic;
+    switch (sensorPayload->topic) {
     case Topic::Result:
-        return convertResult(data);
+        convertResult(sensorPayload);
+        newTopic = Topic::ResultFormatted;
+        break;
     case Topic::Samples:
-        return convertMeasurements(data);
+        convertMeasurements(sensorPayload);
+        newTopic = Topic::SamplesFormatted;
+        break;
     case Topic::SamplingError:
     case Topic::Info:
-        return convertString(data);
+        convertString(sensorPayload);
+        newTopic = Topic::MessageFormatted;
+        break;
+    default:
+        return;
     }
-    return nullptr;
+    _eventServer->publish(this, newTopic, _payloadBuilder->toString());
 }
 
-const char* Serializer::convertMeasurements(const RingbufferPayload* data) const {
+void Serializer::convertMeasurements(const SensorDataQueuePayload* payload) const {
     _payloadBuilder->initialize();
-    _payloadBuilder->writeTimestampParam("timestamp", data->timestamp);
+    _payloadBuilder->writeTimestampParam("timestamp", payload->timestamp);
     _payloadBuilder->writeArrayStart("measurements");
-    const auto samples = data->buffer.samples;
+    const auto samples = payload->buffer.samples;
     for (int i = 0; i < samples.count; i++) {
         _payloadBuilder->writeArrayValue(samples.value[i]);
     }
     _payloadBuilder->writeArrayEnd();
     _payloadBuilder->writeGroupEnd();
-    return _payloadBuilder->toString();
 }
 
-const char* Serializer::convertResult(const RingbufferPayload* data) const {
+void Serializer::convertResult(const SensorDataQueuePayload* payload) const {
     _payloadBuilder->initialize();
-    _payloadBuilder->writeTimestampParam("timestamp", data->timestamp);
+    _payloadBuilder->writeTimestampParam("timestamp", payload->timestamp);
 
-    const auto result = data->buffer.result;
+    const auto result = payload->buffer.result;
     _payloadBuilder->writeParam("lastValue", result.lastSample);
     _payloadBuilder->writeGroupStart("summaryCount");
     _payloadBuilder->writeParam("samples", result.sampleCount);
@@ -68,15 +77,14 @@ const char* Serializer::convertResult(const RingbufferPayload* data) const {
     _payloadBuilder->writeParam("smoothAbsDerivative", result.smoothAbsDerivativeSmooth);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupEnd();
-    return _payloadBuilder->toString();
 }
 
-const char* Serializer::convertString(const RingbufferPayload* data) const {
+void Serializer::convertString(const SensorDataQueuePayload* data) const {
     _payloadBuilder->initialize(0);
     _payloadBuilder->writeTimestamp(data->timestamp);
+    if (data->topic == Topic::SamplingError) {
+        _payloadBuilder->writeText(" Error:");
+    }
     _payloadBuilder->writeText(" ");
-    _payloadBuilder->writeText((data->topic == Topic::SamplingError) ? "Error" : "Info");
-    _payloadBuilder->writeText(": ");
     _payloadBuilder->writeText(data->buffer.message);
-    return _payloadBuilder->toString();
 }

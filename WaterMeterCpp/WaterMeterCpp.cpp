@@ -38,6 +38,7 @@
 #include "QueueClient.h"
 #include "Sampler.h"
 #include "secrets.h" // includes config.h
+#include "SensorDataQueue.h"
 
 // For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "0.100.3";
@@ -46,47 +47,56 @@ constexpr const char* const BUILD_VERSION = "0.100.3";
 // Processing one cycle usually takes quite a bit less than that, unless a write happened.
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
+// This is where you would normally use an injector framework,
+// but defining globally to not use the heap.
+
 QMC5883LCompass compass;
 EventServer samplerEventServer;
 MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
 FlowMeter flowMeter(&samplerEventServer);
 
 EventServer communicatorEventServer;
-// this is where Clock provides Topic::Time
+EventServer connectorEventServer;
+
 Clock theClock(&communicatorEventServer);
 PayloadBuilder serializePayloadBuilder(&theClock);
-Serializer serializer(&serializePayloadBuilder);
-DataQueue dataQueue(&communicatorEventServer, &theClock, &serializer);
-RingbufferPayload measurementPayload;
-RingbufferPayload resultPayload;
-SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &dataQueue, &measurementPayload);
-ResultAggregator resultAggregator(&samplerEventServer, &theClock, &dataQueue, &resultPayload, MEASURE_INTERVAL_MICROS);
+Serializer serializer(&connectorEventServer, &serializePayloadBuilder);
+SensorDataQueuePayload connectorPayload;
+SensorDataQueue sensorDataQueue(&connectorEventServer, &connectorPayload);
+SensorDataQueuePayload measurementPayload;
+SensorDataQueuePayload resultPayload;
+SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &measurementPayload);
+ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &resultPayload, MEASURE_INTERVAL_MICROS);
 
 Device device(&communicatorEventServer);
 LedDriver ledDriver(&communicatorEventServer);
 PayloadBuilder wifiPayloadBuilder;
 Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
-EventServer connectorEventServer;
 Wifi wifi(&connectorEventServer, &WIFI_CONFIG, &wifiPayloadBuilder);
 PubSubClient mqttClient;
-MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &MQTT_CONFIG, &dataQueue, BUILD_VERSION);
+MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &MQTT_CONFIG, &sensorDataQueue, BUILD_VERSION);
 FirmwareManager firmwareManager(&connectorEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
 
 QueueClient samplerQueueClient(&samplerEventServer, 20);
 QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20);
 QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20);
 QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100);
-// send only, 1 is the minimum size for a queue
-QueueClient connectorSamplerQueueClient(&connectorEventServer, 1);
 
+// send only, but 1 is the minimum size for a queue
+QueueClient connectorSamplerQueueClient(&connectorEventServer, 1);
+SensorDataQueuePayload connectorDataQueuePayload;
+SensorDataQueuePayload communicatorQueuePayload;
+PayloadBuilder serialize2PayloadBuilder(&theClock);
+Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
+
+DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1024);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &communicatorSamplerQueueClient,
+Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2, &communicatorSamplerQueueClient,
                           &communicatorConnectorQueueClient);
 
 TimeServer timeServer;
-Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &dataQueue,
-                    &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
+Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &sensorDataQueue, &connectorDataQueue, &serializer, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
 
 TaskHandle_t communicatorTaskHandle;
 TaskHandle_t connectorTaskHandle;

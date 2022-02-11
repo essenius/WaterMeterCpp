@@ -19,7 +19,7 @@
 WiFiClass::WiFiClass(): _name("esp32_001122334455") {
     reset();
     for (byte i = 0; i < 6; i++) {
-        _mac[i] = i * 17;  
+        _mac[i] = i * 17;
     }
 }
 
@@ -72,6 +72,12 @@ void WiFiClass::reset() {
     _subnetIP = IPAddress(255, 255, 0, 0);
     _primaryDNSIP = IPAddress(8, 8, 8, 8);
     _secondaryDNSIP = IPAddress(8, 8, 4, 4);
+    _connectCountdown = _connectMax;
+}
+
+void WiFiClass::connectIn(int connectCount) {
+    _connectMax = connectCount;
+    _connectCountdown = _connectMax;
 }
 
 const IPAddress NO_IP = IPAddress(0, 0, 0, 0);

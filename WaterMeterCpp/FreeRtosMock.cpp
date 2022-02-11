@@ -16,60 +16,84 @@
 constexpr int16_t MAX_ITEMS = 100;
 constexpr int16_t MAX_ITEM_SIZE = 64;
 
-char ringBuffer[MAX_ITEMS][2][MAX_ITEM_SIZE];
-size_t itemSize[MAX_ITEMS];
+constexpr int MAX_RINGBUFFERS = 10;
 
-short nextBufferItem = 0;
-bool bufferIsFull = false;
+struct RingBufferContainer {
+    RingbufHandle_t ringbufHandle = nullptr;
+    char ringBuffer[MAX_ITEMS][2][MAX_ITEM_SIZE]{};
+    size_t itemSize[MAX_ITEMS]{};
+    short nextBufferItem = 0;
+    short nextReadBufferItem = 0;
+    bool bufferIsFull = false;
+};
 
-RingbufHandle_t ringbufHandle = nullptr;
+RingBufferContainer container[MAX_RINGBUFFERS];
 
-void setRingBufferBufferFull(bool isFull) { bufferIsFull = isFull; }
+int getIndex(RingbufHandle_t bufferHandle) {
+    return reinterpret_cast<int>(bufferHandle) - 1;
+}
+
+// testing only
+
+void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull) {
+    const int i = getIndex(bufferHandle);
+    container[i].bufferIsFull = isFull;
+}
 
 RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType) {
-    if (ringbufHandle == nullptr) {
-        ringbufHandle = &ringBuffer;
-        return ringbufHandle;
+    int i = 0;
+    while (container[i].ringbufHandle != nullptr && i <= MAX_RINGBUFFERS) {
+        i++;
     }
-    return nullptr;
+    if (i > MAX_RINGBUFFERS) return nullptr;
+    container[i].ringbufHandle = reinterpret_cast<RingbufHandle_t>(i+1);
+    return container[i].ringbufHandle;
 }
+
 
 size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle) {
-    if (bufferIsFull) return 7;
-    return static_cast<size_t>(100 - nextBufferItem) * MAX_ITEM_SIZE * 2;
+    if (bufferHandle == nullptr) return 0;
+    const int i = getIndex(bufferHandle);
+    if (container[i].bufferIsFull) return 7;
+    return static_cast<size_t>(100 - container[i].nextBufferItem) * MAX_ITEM_SIZE * 2;
 }
 
-UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t  ticksToWait) {
-    if (nextBufferItem >= MAX_ITEMS) return pdFALSE;
+UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t ticksToWait) {
+    if (bufferHandle == nullptr) return pdFALSE;
+    const int i = getIndex(bufferHandle);
+    if (container[i].nextBufferItem >= MAX_ITEMS) return pdFALSE;
     if (size > 2 * MAX_ITEM_SIZE) return pdFALSE;
     if (size > MAX_ITEM_SIZE) {
         const auto startItem2Pointer = static_cast<const char*>(payload) + MAX_ITEM_SIZE;
-        memcpy(&ringBuffer[nextBufferItem][0], payload, MAX_ITEM_SIZE);
-        memcpy(&ringBuffer[nextBufferItem][1] , startItem2Pointer, size - MAX_ITEM_SIZE);
-    } else {
-        memcpy(&ringBuffer[nextBufferItem][0], payload, size);
+        memcpy(&container[i].ringBuffer[container[i].nextBufferItem][0], payload, MAX_ITEM_SIZE);
+        memcpy(&container[i].ringBuffer[container[i].nextBufferItem][1], startItem2Pointer, size - MAX_ITEM_SIZE);
     }
-    itemSize[nextBufferItem] = size;
-    nextBufferItem++;
+    else {
+        memcpy(&container[i].ringBuffer[container[i].nextBufferItem][0], payload, size);
+    }
+    container[i].itemSize[container[i].nextBufferItem] = size;
+    container[i].nextBufferItem++;
     return pdTRUE;
 }
 
-short nextReadBufferItem = 0;
 
-BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size, size_t* item2Size, uint32_t ticksToWait) {
-    if (nextReadBufferItem >= nextBufferItem) return pdFALSE;
-    *item1 = &ringBuffer[nextReadBufferItem][0];
-    if (itemSize[nextReadBufferItem] > MAX_ITEM_SIZE) {
-        *item2 = &ringBuffer[nextReadBufferItem][1];
+BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
+                                   size_t* item2Size, uint32_t ticksToWait) {
+    if (bufferHandle == nullptr) return pdFALSE;
+    const int i = getIndex(bufferHandle);
+    if (container[i].nextReadBufferItem >= container[i].nextBufferItem) return pdFALSE;
+    *item1 = &container[i].ringBuffer[container[i].nextReadBufferItem][0];
+    if (container[i].itemSize[container[i].nextReadBufferItem] > MAX_ITEM_SIZE) {
+        *item2 = &container[i].ringBuffer[container[i].nextReadBufferItem][1];
         *item1Size = MAX_ITEM_SIZE;
-        *item2Size = itemSize[nextReadBufferItem] - MAX_ITEM_SIZE;
+        *item2Size = container[i].itemSize[container[i].nextReadBufferItem] - MAX_ITEM_SIZE;
     }
     else {
         *item2 = nullptr;
-        *item1Size = itemSize[nextReadBufferItem];
+        *item1Size = container[i].itemSize[container[i].nextReadBufferItem];
         *item2Size = 0;
     }
-    nextReadBufferItem++;
+    container[i].nextReadBufferItem++;
     return pdTRUE;
 }
 
@@ -81,24 +105,27 @@ public:
 
 constexpr short MAX_QUEUES = 5;
 Queue queue[MAX_QUEUES];
-QueueHandle_t queueHandle[MAX_QUEUES] = { nullptr };
+QueueHandle_t queueHandle[MAX_QUEUES] = {nullptr};
 short queueIndex = 0;
 
 QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize) {
     if (queueIndex < MAX_QUEUES) {
         queueHandle[queueIndex] = &queue[queueIndex];
-        
+
         return queueHandle[queueIndex++];
     }
     return nullptr;
 }
 
-UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue) { return ((Queue*)xQueue)->currentIndex>=0 ? pdTRUE : pdFALSE; }
+UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue) {
+    return static_cast<Queue*>(xQueue)->currentIndex >= 0 ? pdTRUE : pdFALSE;
+}
+
 BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait) {
     const auto queue1 = static_cast<Queue*>(xQueue);
     if (queue1->currentIndex <= 0) return pdFALSE;
     *static_cast<long long*>(pvBuffer) = queue1->element[0];
-    for (short i=0; i< queue1->currentIndex - 1; i++ ) {
+    for (short i = 0; i < queue1->currentIndex - 1; i++) {
         queue1->element[i] = queue1->element[i + 1];
     }
     queue1->currentIndex--;
@@ -106,6 +133,7 @@ BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicks
 }
 
 BaseType_t xQueueSendToToFront(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) { return pdFALSE; }
+
 BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
     const auto queue1 = static_cast<Queue*>(xQueue);
 
@@ -114,22 +142,31 @@ BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, Tic
     return pdTRUE;
 }
 
+unsigned long taskHandle = 100;
+
 BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, uint16_t usStackDepth,
-    void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask, BaseType_t xCoreID) {
+                                   void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
+                                   BaseType_t xCoreID) {
+    *pxCreatedTask = (TaskHandle_t)taskHandle++;
     return pdTRUE;
 }
 
 
 void uxQueueReset() {
     queueIndex = 0;
-    for (short i=0;i<MAX_QUEUES; i++) {
+    for (short i = 0; i < MAX_QUEUES; i++) {
         queueHandle[i] = nullptr;
         queue[i].currentIndex = 0;
     }
-    ringbufHandle = nullptr;
-    nextBufferItem = 0;
-    nextReadBufferItem = 0;
-    bufferIsFull = false;
+    for (int i = 0; i < MAX_RINGBUFFERS; i++) {
+        container[i].ringbufHandle = nullptr;
+        container[i].nextBufferItem = 0;
+        container[i].nextReadBufferItem = 0;
+        container[i].bufferIsFull = false;
+        for (int j = 0; j < MAX_ITEMS; j++) {
+            container[i].itemSize[j] = 0;
+        }
+    }
 }
 
 TaskHandle_t testHandle = reinterpret_cast<TaskHandle_t>(42);

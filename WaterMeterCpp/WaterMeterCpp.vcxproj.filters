@@ -105,6 +105,12 @@
     <ClCompile Include="Communicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SensorDataQueue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SensorDataQueuePayload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aggregator.h">
@@ -194,7 +200,7 @@
     <ClInclude Include="Serializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RingbufferPayload.h">
+    <ClInclude Include="SensorDataQueuePayload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConnectionState.h">
@@ -213,6 +219,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Communicator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SensorDataQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
