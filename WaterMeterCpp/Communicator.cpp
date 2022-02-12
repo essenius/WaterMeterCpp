@@ -29,18 +29,16 @@ void Communicator::setup() const {
     _logger->begin();
     _ledDriver->begin();
 
+    // TODO rename queues
     // what can be sent to mqtt (note: nothing sent to the sampler)
-    // TODO: this doesn't look right. Validate. We shouldn't send results, samples etc from here.
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::Alert);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::BatchSize);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeHeap);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackSampler);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackCommunicator);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStackConnector);
-    //_eventServer->subscribe(_fromConnectorQueueClient, Topic::Result);
-    //_eventServer->subscribe(_fromConnectorQueueClient, Topic::Samples);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::Rate);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::SamplingError);
+    _eventServer->subscribe(_fromConnectorQueueClient, Topic::SensorWasReset);
     _eventServer->subscribe(_serializer, Topic::SensorData);
 }
 

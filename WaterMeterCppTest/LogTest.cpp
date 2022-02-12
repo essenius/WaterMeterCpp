@@ -40,8 +40,8 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(" MQTT ready\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Connected logs OK");
 
             Serial.clearOutput();
-            eventServer.publish(Topic::SamplingError, "My Message");
-            Assert::AreEqual(" Error: 'My Message'\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Error logs OK");
+            eventServer.publish(Topic::MessageFormatted, "My Message");
+            Assert::AreEqual(" My Message\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Message logs OK");
 
             Serial.clearOutput();
             publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
@@ -50,8 +50,8 @@ namespace WaterMeterCppTest {
             Serial.clearOutput();
             Assert::AreEqual("", Serial.getOutput());
 
-            eventServer.publish(Topic::Info, 24);
-            Assert::AreEqual(" 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Info logs long OK");
+            eventServer.publish(Topic::MessageFormatted, 24);
+            Assert::AreEqual(" 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"MessageFormatted accepts long OK");
 
             Serial.clearOutput();
             log.update(Topic::BatchSize, 24L);
@@ -68,6 +68,10 @@ namespace WaterMeterCppTest {
             Serial.clearOutput();
             eventServer.publish(Topic::ResultWritten, LONG_TRUE);
             Assert::AreEqual(" Result Written: 1\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Result Written handled OK");
+
+            Serial.clearOutput();
+            eventServer.publish(Topic::Blocked, LONG_TRUE);
+            Assert::AreEqual(" Blocked: 1\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Blocked handled OK");
 
         }
 private:

@@ -38,20 +38,23 @@ bool FirmwareManager::updateAvailable() const {
     HTTPClient httpClient;
     httpClient.begin(*_client, versionUrl);
     bool newBuildAvailable = false;
-    char buffer[255];
+    char buffer[102]; // max size that the data queue can handle
 
     const int httpCode = httpClient.GET();
     if (httpCode == 200) {
         String newVersion = httpClient.getString();
         newBuildAvailable = strcmp(newVersion.c_str(), _buildVersion) != 0;
         if (newBuildAvailable) {
-            safeSprintf(buffer, "Current firmware version: '%s'; available version: '%s'\n", _buildVersion, newVersion.c_str());
+            safeSprintf(buffer, "Current firmware: '%s'; available: '%s'", _buildVersion, newVersion.c_str());
             _eventServer->publish(Topic::Info, buffer);
         }
     }
     else {
-        safeSprintf(buffer, "Firmware version check to '%s' failed with response code %d\n", versionUrl, httpCode);
-        _eventServer->publish(Topic::CommunicationError, buffer);
+        // This can be a long message, so separating out the URL
+        safeSprintf(buffer, "Firmware version check failed with response code %d. URL:", httpCode);
+        _eventServer->publish(Topic::ConnectionError, buffer);
+        _eventServer->publish(Topic::Info, versionUrl);
+
     }
     httpClient.end();
     return newBuildAvailable;
@@ -68,15 +71,15 @@ void FirmwareManager::loadUpdate() const {
     if (returnValue == HTTP_UPDATE_FAILED) {
         safeSprintf(
             buffer, 
-            "Firmware update failed (%d): %s\n", 
+            "Firmware update failed (%d): %s", 
             httpUpdate.getLastError(),
             httpUpdate.getLastErrorString().c_str());
-        _eventServer->publish(Topic::CommunicationError, buffer);
+        _eventServer->publish(Topic::ConnectionError, buffer);
         return;
     }
     safeSprintf(
         buffer, 
-        "Firmware not updated (%d/%d): %s\n", 
+        "Firmware not updated (%d/%d): %s", 
         returnValue, 
         httpUpdate.getLastError(),
         httpUpdate.getLastErrorString().c_str());

@@ -30,13 +30,13 @@
 
 constexpr const char* const EMPTY = "";
 constexpr const char* const DEVICE = "device";
-constexpr const char* const DEVICE_ERROR = "error";
+//constexpr const char* const DEVICE_ERROR = "error";
 constexpr const char* const DEVICE_FREE_HEAP = "free-heap";
 constexpr const char* const DEVICE_FREE_STACK_SAMPLER = "free-stack-sampler";
 constexpr const char* const DEVICE_FREE_STACK_COMMUNICATOR = "free-stack-communicator";
 constexpr const char* const DEVICE_FREE_STACK_CONNECTOR = "free-stack-connector";
 constexpr const char* const DEVICE_FREE_QUEUE = "free-queue";
-constexpr const char* const DEVICE_INFO = "info";
+//constexpr const char* const DEVICE_INFO = "info";
 constexpr const char* const DEVICE_BUILD = "firmware-version";
 constexpr const char* const DEVICE_MAC = "mac-address";
 constexpr const char* const DEVICE_RESET_SENSOR = "reset-sensor";
@@ -50,24 +50,6 @@ constexpr const char* const RESULT_NON_IDLE_RATE = "non-idle-rate";
 constexpr const char* const RESULT_RATE = "rate";
 constexpr const char* const RESULT_VALUES = "values";
 constexpr const char* const STATE = "$state";
-
-static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
-    {Topic::BatchSize, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}},
-    {Topic::BatchSizeDesired, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}},
-    {Topic::SamplesFormatted, {MEASUREMENT, MEASUREMENT_VALUES}},
-    {Topic::Rate, {RESULT, RESULT_RATE}},
-    {Topic::ResultFormatted, {RESULT, RESULT_VALUES}},
-    {Topic::IdleRate, {RESULT, RESULT_IDLE_RATE}},
-    {Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE}},
-    {Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP}},
-    {Topic::FreeStackSampler, {DEVICE, DEVICE_FREE_STACK_SAMPLER}},
-    {Topic::FreeStackCommunicator, {DEVICE, DEVICE_FREE_STACK_COMMUNICATOR}},
-    {Topic::FreeStackConnector, {DEVICE, DEVICE_FREE_STACK_CONNECTOR}},
-    {Topic::FreeQueue, {DEVICE, DEVICE_FREE_QUEUE}},
-    {Topic::SamplingError, {DEVICE, DEVICE_ERROR}},
-    {Topic::Info, {DEVICE, DEVICE_INFO}},
-    {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}}
-};
 
 class MqttGateway : public EventClient {
 public:

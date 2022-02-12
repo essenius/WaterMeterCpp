@@ -53,9 +53,10 @@ typedef union {
 
 struct SensorDataQueuePayload  {
     Topic topic;
-    Timestamp timestamp;
+    Timestamp timestamp{};
     Content buffer;
     size_t size() const ;
+    SensorDataQueuePayload() : topic(), buffer() {}
 };
 
 #endif

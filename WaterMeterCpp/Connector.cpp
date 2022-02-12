@@ -45,6 +45,8 @@ void Connector::setup() {
     _eventServer->subscribe(_samplerQueueClient, Topic::ResetSensor);
 
     _eventServer->subscribe(_communicatorDataQueue, Topic::Result);
+    _eventServer->subscribe(_communicatorDataQueue, Topic::ConnectionError);
+    _eventServer->subscribe(_communicatorDataQueue, Topic::Info);
     _eventServer->subscribe(_serializer, Topic::SensorData);
 
     // what can be sent to the communicator
@@ -241,6 +243,7 @@ void Connector::handleMqttReady() {
     }
 
     while (_samplerQueueClient->receive()) {}
+    while (_communicatorQueueClient->receive()) {}
 
     // returns false if disconnected, minimizing risk of losing data from the queue
     if (!_mqttGateway->handleQueue()) {

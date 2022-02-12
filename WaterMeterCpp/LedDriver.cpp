@@ -29,8 +29,7 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
-    _eventServer->subscribe(this, Topic::SamplingError);
-    _eventServer->subscribe(this, Topic::CommunicationError);
+    _eventServer->subscribe(this, Topic::ConnectionError);
     _eventServer->subscribe(this, Topic::Exclude);
     _eventServer->subscribe(this, Topic::Flow);
     _eventServer->subscribe(this, Topic::Peak);
@@ -47,7 +46,7 @@ void LedDriver::begin() {
 
 void LedDriver::update(const Topic topic, const char* payload) {
     // red led has two functions: error and overrun
-    if (topic == Topic::SamplingError || topic == Topic::CommunicationError) {
+    if (topic == Topic::ConnectionError) {
         Led::set(Led::RED, Led::ON);
     }
 }

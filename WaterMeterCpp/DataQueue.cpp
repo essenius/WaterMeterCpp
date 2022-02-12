@@ -11,8 +11,7 @@
 
 #include "EventServer.h"
 #include "DataQueue.h"
-#include <cstring>
-
+#include "SafeCString.h"
 #include "SensorDataQueuePayload.h"
 
 #ifdef ESP32
@@ -73,4 +72,12 @@ bool DataQueue::send(const SensorDataQueuePayload* payload) {
     const size_t size = payload->size();
     if (requiredSize(size) > freeSpace()) return false;
     return (xRingbufferSend(_bufferHandle, payload, size, 0) == pdTRUE);
+}
+
+void DataQueue::update(Topic topic, const char* payload) {
+    SensorDataQueuePayload payloadToSend{};
+    payloadToSend.topic = topic;
+    // timestamp is ignored for strings
+    safeStrcpy(payloadToSend.buffer.message, payload);
+    send(&payloadToSend);
 }

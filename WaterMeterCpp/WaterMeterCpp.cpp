@@ -48,7 +48,9 @@ constexpr const char* const BUILD_VERSION = "0.100.3";
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
 // This is where you would normally use an injector framework,
-// but defining globally to not use the heap.
+// We define the objects globally to avoid using (and fragmenting) the heap.
+// we do use dependency injection to hide this design decision as much as possible
+// (and make testing easier).
 
 QMC5883LCompass compass;
 EventServer samplerEventServer;
@@ -83,8 +85,8 @@ QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20);
 QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20);
 QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100);
 
-// send only, but 1 is the minimum size for a queue
-QueueClient connectorSamplerQueueClient(&connectorEventServer, 1);
+// Nothing to send from sampler to connector
+QueueClient connectorSamplerQueueClient(&connectorEventServer, 0);
 SensorDataQueuePayload connectorDataQueuePayload;
 SensorDataQueuePayload communicatorQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);

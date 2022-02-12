@@ -27,22 +27,22 @@ public:
     bool canSend() const;
     virtual void flush();
     long getFlushRate();
-    SensorDataQueuePayload* getPayload() const;
-    virtual bool shouldSend(bool force = false);
     bool newMessage();
+    SensorDataQueuePayload* getPayload() const;
     virtual bool send();
     virtual void setDesiredFlushRate(long flushRate);
+    virtual bool shouldSend(bool force = false);
 
 protected:
     static long convertToLong(const char* stringParam, long defaultValue = 0L);
     static long limit(long input, long min, long max);
     Clock* _clock;
     DataQueue* _dataQueue;
-    long _desiredFlushRate = 0;
     SensorDataQueuePayload* _payload;
-    long _messageCount = 0;
     ChangePublisher<long> _flushRate;
     ChangePublisher<long> _blocked;
+    long _desiredFlushRate = 0;
+    long _messageCount = 0;
 };
 
 #endif

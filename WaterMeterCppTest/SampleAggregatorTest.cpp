@@ -110,7 +110,6 @@ namespace WaterMeterCppTest {
             aggregator.addSample(-3000);
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer flushed since we can't write");
 
-
             // reconnect
             setRingBufferBufferFull(dataQueue.handle(), false);
             aggregator.addSample(-4000);

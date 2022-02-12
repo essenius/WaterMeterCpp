@@ -23,6 +23,21 @@ namespace WaterMeterCppTest {
     public:
         static EventServer eventServer;
 
+        TEST_METHOD(flowMeterEarlyOutlierTest) {
+            FlowMeter actual(&eventServer);
+            actual.addSample(5000);
+            assertResult(&actual, L"Fist measurement", 5000.0f, 0.0f, 0.0f);
+
+            actual.addSample(2500);
+            // an early outlier should result in a reset with the last value as seed.
+            assertResult(&actual, L"Early first outlier",
+                2500.0f, 0.0f, 0.0f, false, true, true, true);
+
+            // we're starting from scratch using the next value
+            actual.addSample(2510);
+            assertResult(&actual, L"first after outlier reset", 2510.0f, 0.0f, 0.0f);
+        }
+
         TEST_METHOD(flowMeterGoodFlowTest) {
             FlowMeter flowMeter(&eventServer);
             flowMeter.begin();
@@ -79,21 +94,6 @@ namespace WaterMeterCppTest {
             measurements.close();
             std::cout.rdbuf(backup);
         }
-        TEST_METHOD(flowMeterEarlyOutlierTest) {
-            FlowMeter actual(&eventServer);
-            actual.addSample(5000);
-            assertResult(&actual, L"Fist measurement", 5000.0f, 0.0f, 0.0f);
-
-            actual.addSample(2500);
-            // an early outlier should result in a reset with the last value as seed.
-            assertResult(&actual, L"Early first outlier",
-                         2500.0f, 0.0f, 0.0f, false, true, true, true);
-
-            // we're starting from scratch using the next value
-            actual.addSample(2510);
-            assertResult(&actual, L"first after outlier reset", 2510.0f, 0.0f, 0.0f);
-        }
-
         TEST_METHOD(flowMeterSingleOutlierIgnoredTest) {
             FlowMeter actual(&eventServer);
             actual.addSample(1001);

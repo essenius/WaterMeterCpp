@@ -31,6 +31,7 @@ void Sampler::setup(const unsigned long samplePeriod) {
     _eventServer->subscribe(_queueClient, Topic::ResultWritten);    
     _eventServer->subscribe(_queueClient, Topic::Sample);
     _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
+    _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
 }
 
 void Sampler::begin() {
@@ -40,7 +41,6 @@ void Sampler::begin() {
     _scheduledStartTime = micros();
 }
 
-// TODO: fix wrong use of nextMeasureTime
 void Sampler::loop() {
     const int16_t measure = _sensorReader->read();
     const auto startTime = micros();

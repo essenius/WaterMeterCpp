@@ -32,6 +32,7 @@ public:
     static size_t requiredSize(size_t realSize);
 
     bool send(const SensorDataQueuePayload* payload); 
+    void update(Topic topic, const char* payload) override;
 
     SensorDataQueuePayload* receive() const;
     RingbufHandle_t handle() const;

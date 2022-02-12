@@ -19,10 +19,10 @@
 #include "MagnetoSensorReader.h"
 
 
-MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass) : _eventServer(eventServer),
-    _compass(compass) {}
+MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass) : 
+    EventClient(eventServer), _compass(compass) {}
 
-void MagnetoSensorReader::begin() const {
+void MagnetoSensorReader::begin() {
     _compass->setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
     _compass->init();
     // ignore the first measurements, often outliers
@@ -31,6 +31,7 @@ void MagnetoSensorReader::begin() const {
     _compass->read();
     delay(10);
     _compass->read();
+    _eventServer->subscribe(this, Topic::ResetSensor);
 }
 
 int16_t MagnetoSensorReader::read() {
@@ -41,8 +42,7 @@ int16_t MagnetoSensorReader::read() {
     if (sample == _previousSample) {
         _streakCount++;
         // if we have too many of the same results in a row, reset the sensor
-        if (_streakCount > FLATLINE_STREAK) {
-            _eventServer->publish(Topic::ResetSensor, LONG_TRUE);
+        if (_streakCount >= FLATLINE_STREAK) {
             reset();
         }
     }
@@ -60,7 +60,6 @@ void MagnetoSensorReader::reset() {
     // If we have done this a number of times in a row, we post an alert
     if (_consecutiveStreakCount >= MAX_STREAKS_TO_ALERT) {
         _eventServer->publish(Topic::Alert, LONG_TRUE);
-        _eventServer->publish(Topic::SamplingError, "Sensor does not return values");
         _consecutiveStreakCount = 0;
     }
     // reset the sensor
@@ -68,4 +67,11 @@ void MagnetoSensorReader::reset() {
     // reset puts the sensor into standby mode, so set it back to continuous
     _compass->setMode(0x01, 0x0C, 0x10, 0X00);
     _streakCount = 1;
+    _eventServer->publish(Topic::SensorWasReset, LONG_TRUE);
+}
+
+void MagnetoSensorReader::update(Topic topic, long payload) {
+    if (topic == Topic::ResetSensor) {
+        reset();
+    }
 }

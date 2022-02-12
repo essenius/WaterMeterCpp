@@ -43,7 +43,7 @@ namespace WaterMeterCppTest {
         static SensorDataQueue dataQueue;
 
         TEST_CLASS_INITIALIZE(mqttGatewayClassInitialize) {
-            eventServer.subscribe(&errorListener, Topic::CommunicationError);
+            eventServer.subscribe(&errorListener, Topic::ConnectionError);
             eventServer.subscribe(&infoListener, Topic::Info);
             mqttClient.reset();
         }
@@ -87,7 +87,7 @@ namespace WaterMeterCppTest {
                 Assert::IsTrue(gateway.publishNextAnnouncement(), (L"Announcement #" + std::to_wstring(count)).c_str());
                 count++;
             }
-            Assert::AreEqual(60, count, L"announcement count");
+            Assert::AreEqual(56, count, L"announcement count");
             gateway.publishNextAnnouncement();
             Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
             Assert::AreEqual(0, infoListener.getCallCount(), L"Info not called");
@@ -95,9 +95,9 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(MQTT_CONFIG_WITH_USER.user, mqttClient.user());
             Assert::AreEqual("client1", mqttClient.id());
             // check if the homie init events were sent 
-            Assert::AreEqual(static_cast<size_t>(2307), strlen(mqttClient.getTopics()), L"Topic lenght OK");
-            Assert::AreEqual(static_cast<size_t>(708), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
-            Assert::AreEqual(60, mqttClient.getCallCount(), L"Call count");
+            Assert::AreEqual(static_cast<size_t>(2169), strlen(mqttClient.getTopics()), L"Topic lenght OK");
+            Assert::AreEqual(static_cast<size_t>(656), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
+            Assert::AreEqual(56, mqttClient.getCallCount(), L"Call count");
 
             gateway.announceReady();
 
@@ -108,6 +108,14 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::Rate, 7);
             Assert::AreEqual("homie/client1/result/rate\n", mqttClient.getTopics(), L"Payload OK");
             Assert::AreEqual("7\n", mqttClient.getPayloads(), L"Payload OK");
+
+            mqttClient.reset();
+
+            // a topic that shouldn't be retained
+
+            eventServer.publish(Topic::SensorWasReset, 1);
+            Assert::AreEqual("homie/client1/device/reset-sensor\n", mqttClient.getTopics(), L"Payload OK");
+            Assert::AreEqual("1[x]\n", mqttClient.getPayloads(), L"Payload OK");
 
             // Incoming valid callback from MQTT should get passed on to the event server
 
@@ -150,30 +158,6 @@ namespace WaterMeterCppTest {
             mqttClient.setCanConnect(false);
             gateway.handleQueue();
             Assert::AreEqual(1, mqttClient.getLoopCount(), L"Loop count still 1 after disconnect");
-
-            /*mqttClient.reset();
-            mqttClient.setCanConnect(false);
-
-            gateway.update(Topic::BatchSize, 23);
-            Assert::AreEqual("", mqttClient.getPayloads(), L"Nothing sent");
-            errorListener.reset();
-            gateway.update(Topic::Error, "Error message");
-            Assert::AreEqual("", mqttClient.getPayloads(), L"Nothing sent");
-            mqttClient.setCanConnect(true);
-            Assert::AreEqual("23\n", mqttClient.getPayloads(), L"sent payload OK");
-            Assert::AreEqual("homie/client1/measurement/batch-size\n", mqttClient.getTopics(), L"sent topic OK");
-            mqttClient.reset();
-
-            Assert::IsTrue(dataQueue.receive(), L"Received item from queue");
-            Assert::AreEqual(" Error: Error message\n", mqttClient.getPayloads() + 26, L"sent payload OK");
-            Assert::AreEqual("homie/client1/device/error\n", mqttClient.getTopics(), L"sent topic OK");
-            Assert::IsFalse(dataQueue.receive(), L"No more items in the quue");
-
-            mqttClient.reset();
-            eventServer.publish(Topic::Alert, 1);
-            Assert::AreEqual("homie/client1/$state\n", mqttClient.getTopics(), L"alert topic OK");
-            Assert::AreEqual("alert\n", mqttClient.getPayloads(), L"alert payload OK"); */
-
         }
     };
 

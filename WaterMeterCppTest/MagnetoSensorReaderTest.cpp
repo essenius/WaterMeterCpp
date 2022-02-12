@@ -31,21 +31,21 @@ namespace WaterMeterCppTest {
             EventServer eventServer;
             TestEventClient resetSensorEventClient(&eventServer);
             TestEventClient alertEventClient(&eventServer);
-            eventServer.subscribe(&resetSensorEventClient, Topic::ResetSensor);
+            eventServer.subscribe(&resetSensorEventClient, Topic::SensorWasReset);
             eventServer.subscribe(&alertEventClient, Topic::Alert);
             MagnetoSensorReader reader(&eventServer, &compass);
             compass.resetSucceeds(false);
             reader.begin();
 
-            for (int streaks = 0; streaks < 20; streaks++) {
-                for (int sample = 0; sample < 25; sample++) {
+            for (int streaks = 0; streaks < 10; streaks++) {
+                for (int sample = 0; sample < 249; sample++) {
                     reader.read();
                     Assert::AreEqual(streaks, resetSensorEventClient.getCallCount(), L"right number of events fired");
                     Assert::AreEqual(0, alertEventClient.getCallCount(), L"Alert event not fired");
                 }
             }
             reader.read();
-            Assert::AreEqual(20, resetSensorEventClient.getCallCount(), L"ResetSensor event fired 20 times");
+            Assert::AreEqual(10, resetSensorEventClient.getCallCount(), L"ResetSensor event fired 10 times");
             Assert::AreEqual(1, alertEventClient.getCallCount(), L"Alert event fired");
         }
     };

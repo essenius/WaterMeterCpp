@@ -24,6 +24,50 @@ namespace WaterMeterCppTest {
 
     public:
         static EventServer eventServer;
+
+        TEST_METHOD(ledDriverCycleInterruptTest) {
+            LedDriver ledDriver(&eventServer);
+            ledDriver.begin();
+            Led::set(Led::RUNNING, Led::OFF);
+            // go partway into a cycle
+            for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL / 5; i++) {
+                eventServer.publish(Topic::Sample, 512);
+                assertRunningLed(Led::ON, L"In first part", i);
+            }
+            // set a new state. Check whether it kicks in right away
+            eventServer.publish(Topic::Flow, true);
+            for (unsigned int i = 0; i < LedDriver::FLOW_INTERVAL; i++) {
+                eventServer.publish(Topic::Sample, 511);
+                assertRunningLed(Led::ON, L"Started new cycle high", i);
+            }
+            for (unsigned int i = 0; i < LedDriver::FLOW_INTERVAL; i++) {
+                eventServer.publish(Topic::Sample, 510);
+                assertRunningLed(Led::OFF, L"Started new cycle low", i);
+            }
+            // just into new cycle
+            eventServer.publish(Topic::Sample, 513);
+            assertRunningLed(Led::ON, L"Started second cycle high", 1);
+
+            // ending flow. Check whether the cycle adapts
+            eventServer.publish(Topic::Flow, false);
+            for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
+                eventServer.publish(Topic::Sample, 514);
+                assertRunningLed(Led::ON, L"Started new idle cycle high", i);
+            }
+            for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
+                eventServer.publish(Topic::Sample, 509);
+                assertRunningLed(Led::OFF, L"Started new idle cycle high", i);
+            }
+        }
+
+        TEST_METHOD(ledDriverCycleTest) {
+            LedDriver ledDriver(&eventServer);
+            ledDriver.begin();
+            assertLedCycle(&ledDriver, Topic::Exclude, true, LedDriver::EXCLUDE_INTERVAL, L"Exclude");
+            assertLedCycle(&ledDriver, Topic::Flow, true, LedDriver::FLOW_INTERVAL, L"Flow");
+            assertLedCycle(&ledDriver, Topic::Exclude, false, LedDriver::IDLE_INTERVAL, L"Wait");
+        }
+
         TEST_METHOD(ledDriverTestEvents) {
             LedDriver ledDriver(&eventServer);
             ledDriver.begin();
@@ -64,7 +108,7 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::Peak, false);
             assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"No peak (blue stays off)");
 
-            eventServer.publish(Topic::SamplingError, "Problem");
+            eventServer.publish(Topic::ConnectionError, "Problem");
             assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"Error (red on)");
 
             eventServer.publish(Topic::Blocked, LONG_FALSE);
@@ -78,49 +122,6 @@ namespace WaterMeterCppTest {
             for (unsigned int i = 0; i < LedDriver::CONNECTING_INTERVAL; i++) {
                 publishConnectionState(Topic::Connection, ConnectionState::WifiConnecting);
                 assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, (L"looping ConnectingWifi OFF - " + std::to_wstring(i)).c_str());
-            }
-        }
-
-        TEST_METHOD(ledDriverCycleTest) {
-            LedDriver ledDriver(&eventServer);
-            ledDriver.begin();
-            assertLedCycle(&ledDriver, Topic::Exclude, true, LedDriver::EXCLUDE_INTERVAL, L"Exclude");
-            assertLedCycle(&ledDriver, Topic::Flow, true, LedDriver::FLOW_INTERVAL, L"Flow");
-            assertLedCycle(&ledDriver, Topic::Exclude, false, LedDriver::IDLE_INTERVAL, L"Wait");
-        }
-
-        TEST_METHOD(ledDriverCycleInterruptTest) {
-            LedDriver ledDriver(&eventServer);
-            ledDriver.begin();
-            Led::set(Led::RUNNING, Led::OFF);
-            // go partway into a cycle
-            for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL / 5; i++) {
-                eventServer.publish(Topic::Sample, 512);
-                assertRunningLed(Led::ON, L"In first part", i);
-            }
-            // set a new state. Check whether it kicks in right away
-            eventServer.publish(Topic::Flow, true);
-            for (unsigned int i = 0; i < LedDriver::FLOW_INTERVAL; i++) {
-                eventServer.publish(Topic::Sample, 511);
-                assertRunningLed(Led::ON, L"Started new cycle high", i);
-            }
-            for (unsigned int i = 0; i < LedDriver::FLOW_INTERVAL; i++) {
-                eventServer.publish(Topic::Sample, 510);
-                assertRunningLed(Led::OFF, L"Started new cycle low", i);
-            }
-            // just into new cycle
-            eventServer.publish(Topic::Sample, 513);
-            assertRunningLed(Led::ON, L"Started second cycle high", 1);
-
-            // ending flow. Check whether the cycle adapts
-            eventServer.publish(Topic::Flow, false);
-            for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
-                eventServer.publish(Topic::Sample, 514);
-                assertRunningLed(Led::ON, L"Started new idle cycle high", i);
-            }
-            for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
-                eventServer.publish(Topic::Sample, 509);
-                assertRunningLed(Led::OFF, L"Started new idle cycle high", i);
             }
         }
 

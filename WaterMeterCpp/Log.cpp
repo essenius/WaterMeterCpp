@@ -37,19 +37,19 @@ Log::Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder) :
     EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {}
 
 void Log::begin() {
-    update(Topic::Info,"Starting");
+    update(Topic::MessageFormatted,"Starting");
     _eventServer->subscribe(this, Topic::Alert);
+    _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
-    _eventServer->subscribe(this, Topic::SamplingError);
     _eventServer->subscribe(this, Topic::FreeHeap);
     _eventServer->subscribe(this, Topic::FreeStackSampler);
     _eventServer->subscribe(this, Topic::FreeStackCommunicator);
     _eventServer->subscribe(this, Topic::FreeStackConnector);
     _eventServer->subscribe(this, Topic::FreeQueue);
-    _eventServer->subscribe(this, Topic::Info);
-    _eventServer->subscribe(this, Topic::Result);
+    _eventServer->subscribe(this, Topic::MessageFormatted);
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::ResultWritten);
+    _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::TimeOverrun);
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
 }
@@ -58,11 +58,16 @@ void Log::update(Topic topic, const char* payload) {
     const char* timestamp = _eventServer->request(Topic::Time, "");
     Serial.printf("[%s] ", timestamp);
     switch (topic) {
+    case Topic::Alert:
+        Serial.println("Alert!");
+        break;
+    case Topic::Blocked:
+        Serial.printf("Blocked: %s\n", payload);
+        break;
     case Topic::Connection:
         Serial.println(payload);
         break;
-    case Topic::SamplingError:
-    case Topic::CommunicationError:
+    case Topic::ConnectionError:
         Serial.printf("Error: '%s'\n", payload);
         break;
     case Topic::FreeHeap:
@@ -80,17 +85,17 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::FreeQueue:
         Serial.printf("Free DataQueue space: %s\n", payload);
         break;
-    case Topic::Info:
+    case Topic::MessageFormatted:
         Serial.println(payload);
         break;
-    case Topic::Alert:
-        Serial.println("Alert!");
+    case Topic::ResultFormatted:
+        Serial.printf("Result: %s\n", payload);
         break;
     case Topic::ResultWritten:
         Serial.printf("Result Written: %s\n", payload);
         break;
-    case Topic::ResultFormatted:
-        Serial.printf("Result: %s\n", payload);
+    case Topic::SensorWasReset:
+        Serial.println("Sensor was reset");
         break;
     case Topic::TimeOverrun:
         Serial.printf("Time overrun: %s\n", payload);

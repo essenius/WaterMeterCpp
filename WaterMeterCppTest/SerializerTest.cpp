@@ -89,12 +89,12 @@ namespace WaterMeterCppTest {
                 "Formatted empty sample payload OK");
 
             testEventClient.reset();
-            payload.topic = Topic::SamplingError;
+            payload.topic = Topic::ConnectionError;
             safeStrcpy(payload.buffer.message, "Not sure what went wrong here...");
             eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
             Assert::AreEqual(1, testEventClient.getCallCount(), L"Test client called once error");
             Assert::AreEqual(
-                R"(1970-01-01T00:00:00.000000 Error: Not sure what went wrong here...)",
+                "Error: Not sure what went wrong here...",
                 testEventClient.getPayload(),
                 "Formatted Error payload OK");
 
@@ -103,16 +103,7 @@ namespace WaterMeterCppTest {
             safeStrcpy(payload.buffer.message, "About to close down");
             eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
             Assert::AreEqual(1, testEventClient.getCallCount(), L"Test client called once info");
-            Assert::AreEqual(
-                R"(1970-01-01T00:00:00.000000 About to close down)",
-                testEventClient.getPayload(),
-                "Formatted Info payload OK");
-
-            //Assert::AreEqual(" Error: Not sure what went wrong here...", errorEventClient.getPayload()+26);
-            //Assert::AreEqual(" Info: About to close down...", infoEventClient.getPayload()+26);
-            //Assert::AreEqual(5, sampleEventClient.getCallCount());
-            //Assert::AreEqual(R"([475,476,477,478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520]})", sampleEventClient.getPayload()+55);
-            //Assert::AreEqual(R"(,"lastValue":0,"summaryCount":{"samples":81,"peaks":3,"flows":27,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":0}})", resultEventClient.getPayload()+39);
+            Assert::AreEqual("About to close down", testEventClient.getPayload(), "Formatted Info payload OK");
         }
     };
 }

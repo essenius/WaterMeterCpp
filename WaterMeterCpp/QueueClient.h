@@ -16,6 +16,7 @@
 #include <ESP.h>
 #else
 #include "FreeRtosMock.h"
+#include "ArduinoMock.h"
 #endif
 
 #include "EventClient.h"
@@ -25,6 +26,7 @@ public:
     QueueClient(EventServer* eventServer, uint16_t size);
     void begin(QueueHandle_t sendQueue = nullptr);
     QueueHandle_t getQueueHandle() const;
+    void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
     bool receive();
 private:

@@ -20,17 +20,17 @@
 
 #include "EventServer.h"
 
-class MagnetoSensorReader {
+class MagnetoSensorReader : public EventClient {
 public:
     MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass);
-    void begin() const;
+    void begin();
     int16_t read();
     void reset();
+    void update(Topic topic, long payload) override;
 
 private:
-    static constexpr int FLATLINE_STREAK = 25;
-    static constexpr int MAX_STREAKS_TO_ALERT = 20;
-    EventServer* _eventServer;
+    static constexpr int FLATLINE_STREAK = 250;
+    static constexpr int MAX_STREAKS_TO_ALERT = 10;
     QMC5883LCompass* _compass;
     int16_t _previousSample = -32768;
     int _streakCount = 0;

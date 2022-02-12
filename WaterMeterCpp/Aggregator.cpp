@@ -59,17 +59,6 @@ long Aggregator::limit(const long input, const long min, const long max) {
     return (input < min) ? min : (input > max) ? max : input;
 }
 
-
-bool Aggregator::shouldSend(const bool force) {
-    if (_flushRate == 0L || _messageCount == 0) {
-        return false;
-    }
-    if (_messageCount % _flushRate != 0 && !force) {
-        return false;
-    }
-    return true;
-}
-
 bool Aggregator::newMessage() {
     if (_flushRate == 0) return false;
     _messageCount++;
@@ -94,4 +83,14 @@ void Aggregator::setDesiredFlushRate(long flushRate) {
     if (_messageCount == 0 || _flushRate == 0) {
         _flushRate = _desiredFlushRate;
     }
+}
+
+bool Aggregator::shouldSend(const bool force) {
+    if (_flushRate == 0L || _messageCount == 0) {
+        return false;
+    }
+    if (_messageCount % _flushRate != 0 && !force) {
+        return false;
+    }
+    return true;
 }

@@ -59,6 +59,8 @@ BaseType_t xQueueSendToToFront(QueueHandle_t xQueue, const void* pvItemToQueue, 
 
 BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait);
 
+UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle);
+
 BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, configSTACK_DEPTH_TYPE usStackDepth,
                                    void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
                                    BaseType_t xCoreID);

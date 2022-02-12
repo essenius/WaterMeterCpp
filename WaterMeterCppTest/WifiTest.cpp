@@ -28,7 +28,7 @@ namespace WaterMeterCppTest {
         //static TestEventClient infoListener;
 
         TEST_CLASS_INITIALIZE(wifiTestClassInitialize) {
-            eventServer.subscribe(&errorListener, Topic::CommunicationError);
+            eventServer.subscribe(&errorListener, Topic::ConnectionError);
         }
 
         TEST_METHOD_INITIALIZE(wifiTestMethodInitialize) {
@@ -38,6 +38,76 @@ namespace WaterMeterCppTest {
 
         TEST_CLASS_CLEANUP(wifiTestClassCleanup) {
             eventServer.unsubscribe(&errorListener);
+        }
+
+        TEST_METHOD(wifiAutomaticLocalIpTest) {
+            const IPAddress local(10, 0, 0, 2);
+            const IPAddress gateway(10, 0, 0, 1);
+            const IPAddress dns1(8, 8, 8, 8);
+            const IPAddress dns2(8, 8, 4, 4);
+            constexpr WifiConfig wifiConfig{ "ssid", "password", "hostname", nullptr };
+            PayloadBuilder payloadBuilder;
+            TestEventClient client1(&eventServer);
+            eventServer.subscribe(&client1, Topic::WifiSummaryReady);
+            Wifi wifi(&eventServer, &wifiConfig, &payloadBuilder);
+            wifi.begin();
+            Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit as disconnected");
+
+            while (!wifi.isConnected()) {}
+            Assert::IsTrue(wifi.needsReinit(), L"Needs reinit");
+            wifi.begin();
+            Assert::AreEqual(0, client1.getCallCount(), L"'Summary ready' not published yet");
+
+            wifi.announceReady();
+            Assert::AreEqual(1, client1.getCallCount(), L"'Summary ready' was published");
+            Assert::AreEqual<uint32_t>(local, WiFi.localIP(), L"Local IP OK");
+            Assert::AreEqual<uint32_t>(gateway, WiFi.gatewayIP(), L"Gateway IP OK");
+            Assert::AreEqual<uint32_t>(IPAddress(255, 255, 0, 0), WiFi.subnetMask(), L"Subnet mask IP OK");
+            Assert::AreEqual<uint32_t>(dns1, WiFi.dnsIP(), L"Primary DNS OK");
+            Assert::AreEqual<uint32_t>(dns2, WiFi.dnsIP(1), L"Secondary DNS OK");
+            Assert::AreEqual(
+                R"({"ssid":"ssid","hostname":"hostname","mac-address":"00:11:22:33:44:55",)"
+                R"("rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2",)"
+                R"("gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4",)"
+                R"("subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"})",
+                payloadBuilder.toString(), L"Info OK");
+        }
+
+        TEST_METHOD(wifiFailSetNameTest) {
+            constexpr WifiConfig config{ "ssid", "password", "", nullptr };
+            PayloadBuilder payloadBuilder;
+            Wifi wifi(&eventServer, &config, &payloadBuilder);
+            wifi.begin();
+            // just showing intended usage
+            wifi.setCertificates("", "", "");
+            Assert::AreEqual(1, errorListener.getCallCount(), L"Error called");
+            Assert::AreEqual("Could not set host name", errorListener.getPayload(), L"Error message OK");
+        }
+
+        TEST_METHOD(wifiGetUnknownTopicTestTest) {
+
+            constexpr WifiConfig config{ "ssid", "password", "hostname", nullptr };
+            PayloadBuilder payloadBuilder;
+            Wifi wifi(&eventServer, &config, &payloadBuilder);
+            Assert::AreEqual("x", wifi.get(Topic::Flow, "x"), L"Unexpected topic returns default");
+        }
+
+        TEST_METHOD(wifiNullNameTest) {
+            WiFi.setHostname("esp32_001122334455");
+            constexpr WifiConfig config{ "ssid", "password", nullptr, nullptr };
+            PayloadBuilder payloadBuilder;
+
+            Wifi wifi(&eventServer, &config, &payloadBuilder);
+            wifi.begin();
+
+            Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
+            Assert::AreEqual("esp32_001122334455", WiFi.getHostname(), L"Default hostname set");
+            WiFi.connectIn(1);
+            while (!wifi.isConnected()) {}
+            wifi.disconnect();
+            Assert::IsFalse(wifi.isConnected(), L"Disconnected");
+            wifi.reconnect();
+            while (!wifi.isConnected()) {}
         }
 
         TEST_METHOD(wifiPredefinedLocalIpTest) {
@@ -68,68 +138,6 @@ namespace WaterMeterCppTest {
                 "00:11:22:33:44:55", eventServer.request(Topic::MacFormatted, ""),
                 L"Mac address formatted ok");
             Assert::AreEqual("192.168.1.2", wifi.get(Topic::IpAddress, ""), L"IP address ok2");
-        }
-
-        TEST_METHOD(wifiAutomaticLocalIpTest) {
-            const IPAddress local(10, 0, 0, 2);
-            const IPAddress gateway(10, 0, 0, 1);
-            const IPAddress dns1(8, 8, 8, 8);
-            const IPAddress dns2(8, 8, 4, 4);
-            constexpr WifiConfig wifiConfig{"ssid", "password", "hostname", nullptr};
-            PayloadBuilder payloadBuilder;
-            TestEventClient client1(&eventServer);
-            eventServer.subscribe(&client1, Topic::WifiSummaryReady);
-            Wifi wifi(&eventServer, &wifiConfig, &payloadBuilder);
-            wifi.begin();
-            Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit as disconnected");
-
-            while (!wifi.isConnected()) {}
-            Assert::IsTrue(wifi.needsReinit(), L"Needs reinit");
-            wifi.begin();
-            Assert::AreEqual(0, client1.getCallCount(), L"'Summary ready' not published yet");
-
-            wifi.announceReady();
-            Assert::AreEqual(1, client1.getCallCount(), L"'Summary ready' was published");
-            Assert::AreEqual<uint32_t>(local, WiFi.localIP(), L"Local IP OK");
-            Assert::AreEqual<uint32_t>(gateway, WiFi.gatewayIP(), L"Gateway IP OK");
-            Assert::AreEqual<uint32_t>(IPAddress(255, 255, 0, 0), WiFi.subnetMask(), L"Subnet mask IP OK");
-            Assert::AreEqual<uint32_t>(dns1, WiFi.dnsIP(), L"Primary DNS OK");
-            Assert::AreEqual<uint32_t>(dns2, WiFi.dnsIP(1), L"Secondary DNS OK");
-            Assert::AreEqual(
-                R"({"ssid":"ssid","hostname":"hostname","mac-address":"00:11:22:33:44:55",)"
-                R"("rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2",)"
-                R"("gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4",)"
-                R"("subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"})",
-                payloadBuilder.toString(), L"Info OK");
-        }
-
-        TEST_METHOD(wifiFailSetNameTest) {
-            constexpr WifiConfig config{"ssid", "password", "", nullptr};
-            PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &config, &payloadBuilder);
-            wifi.begin();
-            // just showing intended usage
-            wifi.setCertificates("", "", "");
-            Assert::AreEqual(1, errorListener.getCallCount(), L"Error called");
-            Assert::AreEqual("Could not set host name", errorListener.getPayload(), L"Error message OK");
-        }
-
-        TEST_METHOD(wifiNullNameTest) {
-            WiFi.setHostname("esp32_001122334455");
-            constexpr WifiConfig config{"ssid", "password", nullptr, nullptr};
-            PayloadBuilder payloadBuilder;
-
-            Wifi wifi(&eventServer, &config, &payloadBuilder);
-            wifi.begin();
-
-            Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
-            Assert::AreEqual("esp32_001122334455", WiFi.getHostname(), L"Default hostname set");
-            WiFi.connectIn(1);
-            while (!wifi.isConnected()) {}
-            wifi.disconnect();
-            Assert::IsFalse(wifi.isConnected(), L"Disconnected");
-            wifi.reconnect();
-            while (!wifi.isConnected()) {}
         }
 
         TEST_METHOD(wifiPredefinedPrimaryDnsTest) {
@@ -181,14 +189,6 @@ namespace WaterMeterCppTest {
                 R"("subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"})",
                 payloadBuilder.toString(),
                 L"Info OK");
-        }
-
-        TEST_METHOD(wifiGetUnknownTopicTestTest) {
-
-            constexpr WifiConfig config{"ssid", "password", "hostname", nullptr};
-            PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &config, &payloadBuilder);
-            Assert::AreEqual("x", wifi.get(Topic::Flow, "x"), L"Unexpected topic returns default");
         }
     };
 

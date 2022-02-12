@@ -18,6 +18,7 @@ struct ShortMessage {
 };
 
 QueueHandle_t QueueClient::createQueue(const uint16_t length) {
+    if (length == 0) return nullptr;
     return xQueueCreate(length, sizeof(ShortMessage));
 }
 
@@ -31,18 +32,28 @@ QueueHandle_t QueueClient::getQueueHandle() const {
     return _receiveQueue;
 }
 
-void QueueClient::update(Topic topic, long payload) {
-    if (_sendQueue == nullptr) return;
-    const ShortMessage message = {topic, static_cast<int32_t>(payload)};
-    if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {
-        // TODO: handle error
-    }
-}
-
 bool QueueClient::receive() {
     if (_receiveQueue == nullptr || uxQueueMessagesWaiting(_receiveQueue) == 0) return false;
     ShortMessage message{};
     if (xQueueReceive(_receiveQueue, &message, 0) == pdFALSE) return false;
     _eventServer->publish(this, message.topic, message.payload);
     return true;
+}
+
+// Queue client can only handle longs, so convert strings to long
+void QueueClient::update(Topic topic, const char* payload) {
+    update(topic, strtol(payload, nullptr, 10));
+}
+
+void QueueClient::update(Topic topic, long payload) {
+    if (_sendQueue == nullptr) return;
+    const ShortMessage message = {topic, static_cast<int32_t>(payload)};
+    if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {
+        // Catch 22 - we may need a queue to send an error and that fails. So we're using a direct print
+        Serial.printf("Error in QueueClient %p update: %d/%ld\n", this, topic, payload);
+        // TODO: handle error
+    }
+    auto spaces = uxQueueSpacesAvailable(_sendQueue);
+    // TODO: change this into a change publisher
+    if (spaces < 5) { Serial.printf("Low space in %p: %d\n", this, spaces); }
 }

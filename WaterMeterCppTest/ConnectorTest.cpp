@@ -46,33 +46,6 @@ namespace WaterMeterCppTest {
             queueClient2.begin();
         }
 
-        TEST_METHOD(connectorWifiInitTest) {
-            connector.setup();
-
-            wifiMock.setNeedsReconnect(true);
-            wifiMock.setIsConnected(true);
-            timeServer.reset();
-
-            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Connecting");
-            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Connected");
-            Assert::AreEqual(ConnectionState::Init, connector.connect(), L"Disconnected (reconnect)");
-            wifiMock.setNeedsReconnect(false);
-            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Reconnecting");
-            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Reconnected");
-            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Requesting time");
-            // disconnected just after time was requested. Time still comes in
-            wifiMock.setIsConnected(false);
-            Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Setting time");
-
-            Assert::AreEqual(ConnectionState::Disconnected, connector.connect(), L"Disconnected");
-            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Connecting");
-            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Still Connecting");
-            wifiMock.setIsConnected(true);
-            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Connected 2");
-            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Requesting time 2");
-            Assert::AreEqual(ConnectionState::CheckFirmware, connector.connect(), L"Checking firmware");
-        }
-
         TEST_METHOD(connectorMaxWifiFailuresTest) {
             connector.setup();
             wifiMock.setIsConnected(false);
@@ -103,29 +76,6 @@ namespace WaterMeterCppTest {
             wifiMock.setIsConnected(false);
             Assert::AreEqual(ConnectionState::Disconnected, connector.connect(), L"Disconnected");
         }
-
-        TEST_METHOD(connectorTimeFailTest) {
-            connector.setup();
-            wifiMock.setIsConnected(true);
-            wifiMock.setNeedsReconnect(false);
-
-            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Connecting");
-            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Connected");
-            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Request time 1");
-            // make sure time was not set
-            timeServer.reset();
-            Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Waiting for time to be set 1");
-            // and again, since the standard mock mechanism switches it on
-            timeServer.reset();
-            Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Waiting for time to be set 2");
-            delay(10000);
-            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Back to Connected");
-            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Request time 2");
-            // now let timeServer succeed
-            timeServer.setTime();
-            Assert::AreEqual(ConnectionState::CheckFirmware, connector.connect(), L"Time was set");
-        }
-
 
         TEST_METHOD(connectorScriptTest) {
             timeServer.reset();
@@ -203,6 +153,55 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(ConnectionState::MqttConnecting, connector.connect(), L"Connecting to MQTT 5");
             Assert::AreEqual(ConnectionState::MqttConnected, connector.connect(), L"Connected to MQTT 5");
             Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Final MQTT Ready");
+        }
+
+        TEST_METHOD(connectorTimeFailTest) {
+            connector.setup();
+            wifiMock.setIsConnected(true);
+            wifiMock.setNeedsReconnect(false);
+
+            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Connecting");
+            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Connected");
+            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Request time 1");
+            // make sure time was not set
+            timeServer.reset();
+            Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Waiting for time to be set 1");
+            // and again, since the standard mock mechanism switches it on
+            timeServer.reset();
+            Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Waiting for time to be set 2");
+            delay(10000);
+            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Back to Connected");
+            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Request time 2");
+            // now let timeServer succeed
+            timeServer.setTime();
+            Assert::AreEqual(ConnectionState::CheckFirmware, connector.connect(), L"Time was set");
+        }
+
+        TEST_METHOD(connectorWifiInitTest) {
+            connector.setup();
+
+            wifiMock.setNeedsReconnect(true);
+            wifiMock.setIsConnected(true);
+            timeServer.reset();
+
+            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Connecting");
+            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Connected");
+            Assert::AreEqual(ConnectionState::Init, connector.connect(), L"Disconnected (reconnect)");
+            wifiMock.setNeedsReconnect(false);
+            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Reconnecting");
+            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Reconnected");
+            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Requesting time");
+            // disconnected just after time was requested. Time still comes in
+            wifiMock.setIsConnected(false);
+            Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Setting time");
+
+            Assert::AreEqual(ConnectionState::Disconnected, connector.connect(), L"Disconnected");
+            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Connecting");
+            Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Still Connecting");
+            wifiMock.setIsConnected(true);
+            Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Connected 2");
+            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Requesting time 2");
+            Assert::AreEqual(ConnectionState::CheckFirmware, connector.connect(), L"Checking firmware");
         }
     };
 

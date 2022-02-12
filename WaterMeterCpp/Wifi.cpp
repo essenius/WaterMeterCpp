@@ -55,7 +55,7 @@ void Wifi::configure(const IpConfig* ipConfig) {
         }
     }
     if (!result) {
-        _eventServer->publish(Topic::CommunicationError, "Could not configure Wifi with static IP");
+        _eventServer->publish(Topic::ConnectionError, "Could not configure Wifi with static IP");
     }
 }
 
@@ -76,7 +76,7 @@ bool Wifi::needsReinit() {
 void Wifi::begin() {
     // need to set the host name before setting the mode
     if (_hostName != nullptr && !WiFi.setHostname(_hostName)) {
-        _eventServer->publish(Topic::CommunicationError, "Could not set host name");
+        _eventServer->publish(Topic::ConnectionError, "Could not set host name");
     }
     safeStrcpy(_hostNameBuffer, WiFi.getHostname());
     _hostName = _hostNameBuffer;

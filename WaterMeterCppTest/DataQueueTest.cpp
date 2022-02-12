@@ -38,7 +38,7 @@ public:
 
         eventServer.subscribe(&resultEventClient, Topic::Result);
         eventServer.subscribe(&sampleEventClient, Topic::Samples);
-        eventServer.subscribe(&errorEventClient, Topic::SamplingError);
+        eventServer.subscribe(&errorEventClient, Topic::ConnectionError);
         eventServer.subscribe(&infoEventClient, Topic::Info);
 
         PayloadBuilder payloadBuilder;
@@ -70,7 +70,7 @@ public:
         payload.buffer.result.smoothAbsDerivativeSmooth = 23.2f;
         dataQueue.send(&payload);
 
-        payload.topic = Topic::SamplingError;
+        payload.topic = Topic::ConnectionError;
         safeStrcpy(payload.buffer.message, "Not sure what went wrong here...");
         dataQueue.send(&payload);
 
@@ -89,7 +89,7 @@ public:
 
         auto payloadReceive3 = dataQueue.receive();
         Assert::IsNotNull(payloadReceive3, L"PayloadReceive not null 3");
-        Assert::AreEqual(Topic::SamplingError, payloadReceive3->topic, L"Topic 3 is SamplingError");
+        Assert::AreEqual(Topic::ConnectionError, payloadReceive3->topic, L"Topic 3 is SamplingError");
         Assert::AreEqual("Not sure what went wrong here...", payloadReceive3->buffer.message, L"error message ok");
 
     }

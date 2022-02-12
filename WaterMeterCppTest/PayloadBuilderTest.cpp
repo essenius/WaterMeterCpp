@@ -18,6 +18,20 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(PayloadBuilderTest) {
     public:
+        TEST_METHOD(payloadBuilderAlmostFullTest) {
+            PayloadBuilder builder;
+            builder.initialize();
+            // fill with just under the limit of 492 characters
+            for (int i = 0; i < 49; i++) {
+                builder.writeParam("x", 12345);
+            }
+            Assert::IsFalse(builder.isAlmostFull());
+
+            // take it across the limit
+            builder.writeParam("x", "1234");
+            Assert::IsTrue(builder.isAlmostFull());
+        }
+
         TEST_METHOD(payloadBuilderParamTest) {
             PayloadBuilder builder;
             builder.initialize();
@@ -33,20 +47,6 @@ namespace WaterMeterCppTest {
             builder.writeGroupEnd();
             Assert::AreEqual(R"({"array":[],"testdata":{"pi":3.14,"float":1,"int":1,"long":2,"unsigned long":3}})",
                              builder.toString());
-        }
-
-        TEST_METHOD(payloadBuilderAlmostFullTest) {
-            PayloadBuilder builder;
-            builder.initialize();
-            // fill with just under the limit of 492 characters
-            for (int i = 0; i < 49; i++) {
-                builder.writeParam("x", 12345);
-            }
-            Assert::IsFalse(builder.isAlmostFull());
-
-            // take it across the limit
-            builder.writeParam("x", "1234");
-            Assert::IsTrue(builder.isAlmostFull());
         }
     };
 }

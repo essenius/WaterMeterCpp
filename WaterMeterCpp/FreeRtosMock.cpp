@@ -97,10 +97,11 @@ BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, v
     return pdTRUE;
 }
 
+constexpr short MAX_ELEMENTS = 10;
 class Queue {
 public:
     short currentIndex;
-    long long element[10];
+    long long element[MAX_ELEMENTS];
 };
 
 constexpr short MAX_QUEUES = 5;
@@ -137,9 +138,14 @@ BaseType_t xQueueSendToToFront(QueueHandle_t xQueue, const void* pvItemToQueue, 
 BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
     const auto queue1 = static_cast<Queue*>(xQueue);
 
-    if (queue1->currentIndex > 9) return pdFALSE;
+    if (queue1->currentIndex >= MAX_ELEMENTS) return pdFALSE;
     queue1->element[queue1->currentIndex++] = *static_cast<const long long*>(pvItemToQueue);
     return pdTRUE;
+}
+
+UBaseType_t uxQueueSpacesAvailable(QueueHandle_t xQueue) {
+    const auto queue1 = static_cast<Queue*>(xQueue);
+    return MAX_ELEMENTS - queue1->currentIndex;
 }
 
 unsigned long taskHandle = 100;

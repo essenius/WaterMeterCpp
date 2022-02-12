@@ -23,7 +23,7 @@
 class Communicator : public EventClient {
 public:
     Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device, 
-        DataQueue* dataQueuem, Serializer* serializer, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
+        DataQueue* dataQueue, Serializer* serializer, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
     void setup() const;
     void loop() const;
     static void task(void* parameter);

@@ -11,7 +11,7 @@ size_t SensorDataQueuePayload::size() const {
     case Topic::Samples:
         size += sizeof(Samples::count) + buffer.samples.count * sizeof(Samples::value[0]);
         break;
-        case Topic::SamplingError:
+    case Topic::ConnectionError:
     case Topic::Info:
         size += strlen(buffer.message);
         break; 

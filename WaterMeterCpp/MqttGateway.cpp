@@ -25,6 +25,27 @@
 
 using namespace std::placeholders;
 
+static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
+    {Topic::BatchSize, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}},
+    {Topic::BatchSizeDesired, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}},
+    {Topic::SamplesFormatted, {MEASUREMENT, MEASUREMENT_VALUES}},
+    {Topic::Rate, {RESULT, RESULT_RATE}},
+    {Topic::ResultFormatted, {RESULT, RESULT_VALUES}},
+    {Topic::IdleRate, {RESULT, RESULT_IDLE_RATE}},
+    {Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE}},
+    {Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP}},
+    {Topic::FreeStackSampler, {DEVICE, DEVICE_FREE_STACK_SAMPLER}},
+    {Topic::FreeStackCommunicator, {DEVICE, DEVICE_FREE_STACK_COMMUNICATOR}},
+    {Topic::FreeStackConnector, {DEVICE, DEVICE_FREE_STACK_CONNECTOR}},
+    {Topic::FreeQueue, {DEVICE, DEVICE_FREE_QUEUE}},
+    //{Topic::ConnectionError, {DEVICE, DEVICE_ERROR}}, // TODO: check if needed
+    {Topic::SensorWasReset, {DEVICE, DEVICE_RESET_SENSOR}},
+    //{Topic::Info, {DEVICE, DEVICE_INFO}},
+    {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}}
+};
+
+static const std::set<Topic> NON_RETAINED_TOPICS{ Topic::ResetSensor, Topic::SensorWasReset };
+
 constexpr const char* const RATE_RANGE = "0:8640000";
 constexpr const char* const TYPE_INTEGER = "integer";
 constexpr const char* const TYPE_STRING = "string";
@@ -55,12 +76,12 @@ void MqttGateway::announceReady() {
     _eventServer->subscribe(this, Topic::FreeStackConnector); // long
     _eventServer->subscribe(this, Topic::FreeQueue); // long
     _eventServer->subscribe(this, Topic::IdleRate); // long
-    _eventServer->subscribe(this, Topic::SamplesFormatted); // string
     _eventServer->subscribe(this, Topic::NonIdleRate); // long
     _eventServer->subscribe(this, Topic::Rate); // long  
     _eventServer->subscribe(this, Topic::ResultFormatted); // string
-    _eventServer->subscribe(this, Topic::SamplingError); // string 
-    _eventServer->subscribe(this, Topic::Info); // string
+    _eventServer->subscribe(this, Topic::SamplesFormatted); // string
+    _eventServer->subscribe(this, Topic::SensorWasReset); // long     
+    //_eventServer->subscribe(this, Topic::Info); // string
 }
 
 void MqttGateway::begin(Client* client, const char* clientName) {
@@ -168,15 +189,13 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK_SAMPLER, DEVICE_FREE_STACK_COMMUNICATOR, DEVICE_FREE_STACK_CONNECTOR, DEVICE_FREE_QUEUE, DEVICE_ERROR, DEVICE_INFO, DEVICE_BUILD, DEVICE_MAC);
+    safeSprintf(payload, "%s,%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK_SAMPLER, DEVICE_FREE_STACK_COMMUNICATOR, DEVICE_FREE_STACK_CONNECTOR, DEVICE_FREE_QUEUE, DEVICE_BUILD, DEVICE_MAC);
     prepareNode(DEVICE, "Device", "1", payload);
     prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_FREE_STACK_SAMPLER, "Free Stack Sampler", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_FREE_STACK_COMMUNICATOR, "Free Stack Communicator", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_FREE_STACK_CONNECTOR, "Free Stack Connector", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_FREE_QUEUE, "Free Queue Space", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_ERROR, "Error message", TYPE_STRING);
-    prepareProperty(DEVICE, DEVICE_INFO, "Info message", TYPE_STRING);
     prepareProperty(DEVICE, DEVICE_BUILD, "Firmware version", TYPE_STRING);
     prepareProperty(DEVICE, DEVICE_MAC, "Mac address", TYPE_STRING);
     prepareProperty(DEVICE, DEVICE_RESET_SENSOR, "Reset Sensor", TYPE_INTEGER, "1", SETTABLE);
@@ -229,7 +248,7 @@ bool MqttGateway::publishEntity(const char* baseTopic, const char* entity, const
 
 void MqttGateway::publishError(const char* message) {
     safeSprintf(_topicBuffer, "MQTT: %s [state = %d]", message, _mqttClient->state());
-    _eventServer->publish<const char*>(Topic::CommunicationError, _topicBuffer);
+    _eventServer->publish<const char*>(Topic::ConnectionError, _topicBuffer);
 }
 
 bool MqttGateway::publishNextAnnouncement() {
@@ -256,7 +275,11 @@ void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
     const auto entry = TOPIC_MAP.find(topic);
     if (entry != TOPIC_MAP.end()) {
         const auto topicPair = entry->second;
-        publishProperty(topicPair.first, topicPair.second, payload);
+        publishProperty(
+            topicPair.first, 
+            topicPair.second, 
+            payload, 
+            NON_RETAINED_TOPICS.find(topic) == NON_RETAINED_TOPICS.end());
     }
 }
 

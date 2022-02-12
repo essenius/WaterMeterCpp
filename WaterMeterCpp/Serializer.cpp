@@ -25,7 +25,7 @@ void Serializer::update(Topic topic, const char* payload) {
         convertMeasurements(sensorPayload);
         newTopic = Topic::SamplesFormatted;
         break;
-    case Topic::SamplingError:
+    case Topic::ConnectionError:
     case Topic::Info:
         convertString(sensorPayload);
         newTopic = Topic::MessageFormatted;
@@ -81,10 +81,8 @@ void Serializer::convertResult(const SensorDataQueuePayload* payload) const {
 
 void Serializer::convertString(const SensorDataQueuePayload* data) const {
     _payloadBuilder->initialize(0);
-    _payloadBuilder->writeTimestamp(data->timestamp);
-    if (data->topic == Topic::SamplingError) {
-        _payloadBuilder->writeText(" Error:");
+    if (data->topic == Topic::ConnectionError) {
+        _payloadBuilder->writeText("Error: ");
     }
-    _payloadBuilder->writeText(" ");
     _payloadBuilder->writeText(data->buffer.message);
 }

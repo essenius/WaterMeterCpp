@@ -21,7 +21,24 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(EventServerTest) {
     public:
-        TEST_METHOD(pubSubScriptTest) {
+
+        TEST_METHOD(eventServerDefaultGetTest) {
+            EventServer server;
+            EventClient client1(&server);
+            Assert::AreEqual("x", client1.get(Topic::ConnectionError, "x"), L"Default get char* OK");
+            Assert::AreEqual(25L, client1.get(Topic::Info, 25L), L"default get long ok");
+        }
+
+        TEST_METHOD(eventServerErrorTest) {
+            EventServer server;
+            TestEventClient client1(&server);
+            server.subscribe(&client1, Topic::ConnectionError);
+            server.publish(nullptr, Topic::ConnectionError, "My Error");
+            Assert::AreEqual("My Error", client1.getPayload(), L"error received");
+            Assert::AreEqual(1, client1.getCallCount(), L"one call to client1");
+        }
+
+        TEST_METHOD(eventServerScriptTest) {
             EventServer server;
             TestEventClient
                 client1(&server),
@@ -90,22 +107,6 @@ namespace WaterMeterCppTest {
             server.publish(&client3, Topic::BatchSize, 0L);
             Assert::AreEqual(0, client1.getCallCount(), L"Client 1 not subscribed anymore");
             Assert::AreEqual(1, client3.getCallCount(), L"client3 still subscribed");
-        }
-
-        TEST_METHOD(eventServerErrorTest) {
-            EventServer server;
-            TestEventClient client1(&server);
-            server.subscribe(&client1, Topic::SamplingError);
-            server.publish(nullptr, Topic::SamplingError, "My Error");
-            Assert::AreEqual("My Error", client1.getPayload(), L"error received");
-            Assert::AreEqual(1, client1.getCallCount(), L"one call to client1");
-        }
-
-        TEST_METHOD(eventServerDefaultGetTest) {
-            EventServer server;
-            EventClient client1(&server);
-            Assert::AreEqual("x", client1.get(Topic::SamplingError, "x"), L"Default get char* OK");
-            Assert::AreEqual(25L, client1.get(Topic::Info, 25L), L"default get long ok");
         }
     };
 }
