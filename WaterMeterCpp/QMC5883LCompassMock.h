@@ -35,14 +35,13 @@ public:
     void setMode(int i, int i1, int i2, int i3) {}
 
     // testing purposes
-    void setY(const int16_t value) { _y = value; }
-    void resetSucceeds(const bool succeeds) { _resetSucceeds = succeeds; }
     int resetCount() { return _resetCount; }
+    void resetSucceeds(const bool succeeds) { _resetSucceeds = succeeds; }
+    void setY(const int16_t value) { _y = value; }
 private:
-    int _y = 0;
-    bool _resetSucceeds = true;
     int _resetCount = 0;
-
+    bool _resetSucceeds = true;
+    int _y = 0;
 };
 #endif
 

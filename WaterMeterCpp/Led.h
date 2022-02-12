@@ -33,19 +33,20 @@
 
 class Led {
 public:
+    static constexpr unsigned char AUX = 19; // now red
+    static constexpr unsigned char BLUE = 16;
+    static constexpr unsigned char ERROR = 4; /// unused
+    static constexpr unsigned char GREEN = 17;
+    static constexpr unsigned char RED = 18;
+    static constexpr unsigned char RUNNING = 23; //TODO: must become LED_BUILTIN
+    static constexpr unsigned char YELLOW = 2; // overrun
+    static constexpr uint8_t ON = HIGH;
+    static constexpr uint8_t OFF = LOW;
+
+    static uint8_t get(uint8_t port);
     static void init(uint8_t port, uint8_t value = OFF);
     static void set(uint8_t port, uint8_t value);
     static void toggle(uint8_t port);
-    static uint8_t get(uint8_t port);
-    static constexpr unsigned char RUNNING = 23; //TODO: must become LED_BUILTIN
-    static constexpr unsigned char AUX = 19; // now red
-    static constexpr unsigned char BLUE = 16;
-    static constexpr unsigned char GREEN = 17;
-    static constexpr unsigned char RED = 18;
-    static constexpr unsigned char YELLOW = 2; // overrun
-    static constexpr unsigned char ERROR = 4; /// unused
-    static constexpr uint8_t ON = HIGH;
-    static constexpr uint8_t OFF = LOW;
 private:
     static uint8_t convert(uint8_t port, uint8_t value);
     static bool needsInvert(uint8_t port);

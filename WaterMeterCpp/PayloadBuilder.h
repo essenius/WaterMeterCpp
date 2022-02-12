@@ -26,13 +26,6 @@ public:
     void updatePosition();
     void writeArrayEnd();
     void writeArrayStart(const char* label);
-    void writeDelimiter(char delimiter);
-    void writeGroupEnd();
-    void writeGroupStart(const char* label);
-    void writeLabel(const char* label);
-    void writeTimestamp(Timestamp timestampIn);
-    void writeTimestampParam(const char* label, Timestamp timestampIn);
-    void writeText(const char* text);
 
     template <class T>
     void writeArrayValue(T value) {
@@ -44,6 +37,11 @@ public:
         _needsDelimiter = true;
     }
 
+    void writeDelimiter(char delimiter);
+    void writeGroupEnd();
+    void writeGroupStart(const char* label);
+    void writeLabel(const char* label);
+
     template <class T>
     void writeParam(const char* label, T value) {
         writeLabel(label);
@@ -52,17 +50,21 @@ public:
         _needsDelimiter = true;
     }
 
+    void writeTimestamp(Timestamp timestampIn);
+    void writeTimestampParam(const char* label, Timestamp timestampIn);
+    void writeText(const char* text);
+
 private:
-    static constexpr int RESULT_BUFFER_SIZE = 512;
     static constexpr int NUMBER_BUFFER_SIZE = 16;
     static constexpr int RESULT_BUFFER_MARGIN = 20;
+    static constexpr int RESULT_BUFFER_SIZE = 512;
 
     void writeString(const char* input);
     void writeString(float input);
     void writeString(int input);
     void writeString(long input);
-    void writeString(unsigned long input);
     void writeString(uint32_t input);
+    void writeString(unsigned long input);
 
     Clock* _clock;
     char* _currentPosition = _resultBuffer;

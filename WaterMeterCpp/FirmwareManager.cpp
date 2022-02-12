@@ -30,6 +30,40 @@ void FirmwareManager::begin(WiFiClient* client, const char* machineId) {
     safeStrcpy(_machineId, machineId);
 }
 
+void FirmwareManager::loadUpdate() const {
+    char buffer[BASE_URL_SIZE];
+    safeStrcpy(buffer, _baseUrl);
+    safeStrcat(buffer, IMAGE_EXTENSION);
+
+    // This should normally result in a reboot.
+    const t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
+
+    if (returnValue == HTTP_UPDATE_FAILED) {
+        safeSprintf(
+            buffer,
+            "Firmware update failed (%d): %s",
+            httpUpdate.getLastError(),
+            httpUpdate.getLastErrorString().c_str());
+        _eventServer->publish(Topic::ConnectionError, buffer);
+        return;
+    }
+    safeSprintf(
+        buffer,
+        "Firmware not updated (%d/%d): %s",
+        returnValue,
+        httpUpdate.getLastError(),
+        httpUpdate.getLastErrorString().c_str());
+    _eventServer->publish(Topic::Info, buffer);
+}
+
+void FirmwareManager::tryUpdate() {
+    // Make sure this is only done just after rebooting. We don't want reboots in the middle of a flow.
+    if (_justRebooted && updateAvailable()) {
+        loadUpdate();
+    }
+    _justRebooted = false;
+}
+
 bool FirmwareManager::updateAvailable() const {
     char versionUrl[BASE_URL_SIZE];
     safeStrcpy(versionUrl, _baseUrl);
@@ -54,42 +88,7 @@ bool FirmwareManager::updateAvailable() const {
         safeSprintf(buffer, "Firmware version check failed with response code %d. URL:", httpCode);
         _eventServer->publish(Topic::ConnectionError, buffer);
         _eventServer->publish(Topic::Info, versionUrl);
-
     }
     httpClient.end();
     return newBuildAvailable;
-}
-
-void FirmwareManager::loadUpdate() const {
-    char buffer[BASE_URL_SIZE];
-    safeStrcpy(buffer, _baseUrl);
-    safeStrcat(buffer, IMAGE_EXTENSION);
-
-    // This should normally result in a reboot.
-    const t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
-
-    if (returnValue == HTTP_UPDATE_FAILED) {
-        safeSprintf(
-            buffer, 
-            "Firmware update failed (%d): %s", 
-            httpUpdate.getLastError(),
-            httpUpdate.getLastErrorString().c_str());
-        _eventServer->publish(Topic::ConnectionError, buffer);
-        return;
-    }
-    safeSprintf(
-        buffer, 
-        "Firmware not updated (%d/%d): %s", 
-        returnValue, 
-        httpUpdate.getLastError(),
-        httpUpdate.getLastErrorString().c_str());
-    _eventServer->publish(Topic::Info, buffer);
-}
-
-void FirmwareManager::tryUpdate() {
-    // Make sure this is only done just after rebooting. We don't want reboots in the middle of a flow.
-    if (_justRebooted && updateAvailable()) {
-        loadUpdate();
-    }
-    _justRebooted = false;
 }

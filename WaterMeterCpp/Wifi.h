@@ -27,35 +27,36 @@ class Wifi : public EventClient {
 
 public:
     Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder);
-    virtual void begin();
-    const char* getHostName() const;
-    const char* get(Topic topic, const char* defaultValue) override;
     virtual void announceReady();
-    virtual bool isConnected();
-    virtual void reconnect();
+    virtual void begin();
+    void configure(const IpConfig* ipConfig = &IP_AUTO_CONFIG);
     virtual void disconnect();
+    const char* get(Topic topic, const char* defaultValue) override;
+    WiFiClient* getClient();
+    const char* getHostName() const;
+    virtual bool isConnected();
+    virtual bool needsReinit();
+    virtual void reconnect();
     void setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey);
     void setStatusSummary() const;
-    WiFiClient* getClient();
-    void configure(const IpConfig* ipConfig = &IP_AUTO_CONFIG);
-    virtual bool needsReinit();
 
 private:
     static constexpr int HOSTNAME_LENGTH = 64;
-    char _hostNameBuffer[HOSTNAME_LENGTH] = {0};
-    const WifiConfig* _wifiConfig;
+    static constexpr int MAC_ADDRESS_SIZE = 20;
+    static constexpr int IP_ADDRESS_SIZE = 16;
+
     PayloadBuilder* _payloadBuilder;
+    const WifiConfig* _wifiConfig;
     WiFiClientSecure _wifiClient;
     IPAddress _localIp = NO_IP;
     IPAddress _gatewayIp = NO_IP;
     IPAddress _subnetMaskIp = NO_IP;
     IPAddress _dns1Ip = NO_IP;
     IPAddress _dns2Ip = NO_IP;
+    char _hostNameBuffer[HOSTNAME_LENGTH] = { 0 };
     char* _hostName = _hostNameBuffer;
-    bool _needsReconnect = true;
-    static constexpr int MAC_ADDRESS_SIZE = 20;
-    char _macAddress[MAC_ADDRESS_SIZE] = "";
-    static constexpr int IP_ADDRESS_SIZE = 16;
     char _ipAddress[IP_ADDRESS_SIZE] = "";
+    char _macAddress[MAC_ADDRESS_SIZE] = "";
+    bool _needsReconnect = true;
 };
 #endif

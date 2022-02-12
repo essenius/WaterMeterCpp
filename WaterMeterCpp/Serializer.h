@@ -23,8 +23,8 @@ public:
     void update(Topic topic, const char* payload) override;
 
 private:
-    void convertResult(const SensorDataQueuePayload* payload) const;
     void convertMeasurements(const SensorDataQueuePayload* payload) const;
+    void convertResult(const SensorDataQueuePayload* payload) const;
     void convertString(const SensorDataQueuePayload* data) const;
     PayloadBuilder* _payloadBuilder;
 };

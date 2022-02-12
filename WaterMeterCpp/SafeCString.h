@@ -15,14 +15,15 @@
 #include <cstring>
 #include <cstdio>
 
-template <size_t BufferSize>
-void safeStrcpy(char (&buffer)[BufferSize], const char* source) {
-    strncpy(buffer, source, BufferSize);
-    buffer[BufferSize - 1] = 0;
+template <size_t BufferSize, typename... Arguments>
+void safePointerSprintf(char* const pointer, char(&buffer)[BufferSize], const char* format, Arguments ... arguments) {
+    auto charactersUsed = pointer - buffer;
+    if (charactersUsed < 0 || charactersUsed > BufferSize) return;
+    snprintf(pointer, BufferSize - charactersUsed, format, arguments...);
 }
 
 template <size_t BufferSize>
-void safePointerStrcpy(char* const pointer, char (&buffer)[BufferSize], const char* source) {
+void safePointerStrcpy(char* const pointer, char(&buffer)[BufferSize], const char* source) {
     auto charactersUsed = pointer - buffer;
     // if the pointer is not in the right range, do nothing
     if (charactersUsed < 0 || charactersUsed >= BufferSize) return;
@@ -31,20 +32,19 @@ void safePointerStrcpy(char* const pointer, char (&buffer)[BufferSize], const ch
 }
 
 template <size_t BufferSize, typename... Arguments>
-void safeSprintf(char (&buffer)[BufferSize], const char* format, Arguments ... arguments) {
+void safeSprintf(char(&buffer)[BufferSize], const char* format, Arguments ... arguments) {
     snprintf(buffer, BufferSize, format, arguments...);
 }
 
-template <size_t BufferSize, typename... Arguments>
-void safePointerSprintf(char* const pointer, char (&buffer)[BufferSize], const char* format, Arguments ... arguments) {
-    auto charactersUsed = pointer - buffer;
-    if (charactersUsed < 0 || charactersUsed > BufferSize) return;
-    snprintf(pointer, BufferSize - charactersUsed, format, arguments...);
+template <size_t BufferSize>
+void safeStrcat(char(&buffer)[BufferSize], const char* source) {
+    strncat(buffer, source, BufferSize - strlen(buffer) - 1);
+    buffer[BufferSize - 1] = 0;
 }
 
 template <size_t BufferSize>
-void safeStrcat(char (&buffer)[BufferSize], const char* source) {
-    strncat(buffer, source, BufferSize - strlen(buffer) - 1);
+void safeStrcpy(char (&buffer)[BufferSize], const char* source) {
+    strncpy(buffer, source, BufferSize);
     buffer[BufferSize - 1] = 0;
 }
 

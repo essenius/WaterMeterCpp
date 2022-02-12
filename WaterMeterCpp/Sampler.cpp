@@ -16,27 +16,9 @@ Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, Fl
     _eventServer(eventServer), _sensorReader(sensorReader), _flowMeter(flowMeter),
     _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {}
 
-void Sampler::setup(const unsigned long samplePeriod) {
-    _samplePeriod = samplePeriod;
-    _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
-    _sensorReader->begin();
-    _flowMeter->begin();
-    // what can be sent to the communicator (note: must be numerical payload)
-    _eventServer->subscribe(_queueClient, Topic::Alert);
-    _eventServer->subscribe(_queueClient, Topic::BatchSize);
-    _eventServer->subscribe(_queueClient, Topic::Blocked);
-    _eventServer->subscribe(_queueClient, Topic::Exclude);
-    _eventServer->subscribe(_queueClient, Topic::Flow);
-    _eventServer->subscribe(_queueClient, Topic::Peak);
-    _eventServer->subscribe(_queueClient, Topic::ResultWritten);    
-    _eventServer->subscribe(_queueClient, Topic::Sample);
-    _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
-    _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
-}
-
 void Sampler::begin() {
     // These two publish, so we need to run them when both threads finished setting up the event listeners
-    _sampleAggregator->begin(); 
+    _sampleAggregator->begin();
     _resultAggregator->begin();
     _scheduledStartTime = micros();
 }
@@ -75,4 +57,22 @@ void Sampler::loop() {
         } while (duration < _samplePeriod);
         _scheduledStartTime += _samplePeriod;
     }
+}
+
+void Sampler::setup(const unsigned long samplePeriod) {
+    _samplePeriod = samplePeriod;
+    _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
+    _sensorReader->begin();
+    _flowMeter->begin();
+    // what can be sent to the communicator (note: must be numerical payload)
+    _eventServer->subscribe(_queueClient, Topic::Alert);
+    _eventServer->subscribe(_queueClient, Topic::BatchSize);
+    _eventServer->subscribe(_queueClient, Topic::Blocked);
+    _eventServer->subscribe(_queueClient, Topic::Exclude);
+    _eventServer->subscribe(_queueClient, Topic::Flow);
+    _eventServer->subscribe(_queueClient, Topic::Peak);
+    _eventServer->subscribe(_queueClient, Topic::ResultWritten);
+    _eventServer->subscribe(_queueClient, Topic::Sample);
+    _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
+    _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
 }

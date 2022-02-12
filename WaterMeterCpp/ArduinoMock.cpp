@@ -22,7 +22,12 @@
 Esp ESP;
 
 HardwareSerial Serial;
+
 auto startTime = std::chrono::high_resolution_clock::now();
+
+long long microShift = 0;
+
+void configTime(int i, int i1, const char* str, const char* text) {}
 
 /* char* dtostrf(float value, signed char width, unsigned char precision, char* buffer) {
 		char fmt[20];
@@ -31,33 +36,29 @@ auto startTime = std::chrono::high_resolution_clock::now();
 		return buffer;
 }*/
 
+void shiftMicros(long long shift) {
+	microShift = shift;
+}
+
+void delayMicroseconds(int delay) { microShift += delay; }
+
+void delay(int delay) { microShift += delay * 1000LL; }
+
 constexpr uint8_t PIN_COUNT = 36;
 uint8_t pinValue[PIN_COUNT];
 uint8_t pinModeValue[PIN_COUNT];
 
-uint8_t getPinMode(uint8_t pin) {
-	return pinModeValue[pin];
-}
-
-void pinMode(uint8_t pin, uint8_t mode) {
-	pinModeValue[pin] = mode;
+uint8_t digitalRead(uint8_t pin) {
+	return pinValue[pin];
 }
 
 void digitalWrite(uint8_t pin, uint8_t value) {
 	pinValue[pin] = value;
 }
 
-uint8_t digitalRead(uint8_t pin) {
-	return pinValue[pin];
+uint8_t getPinMode(uint8_t pin) {
+	return pinModeValue[pin];
 }
-
-long long microShift = 0;
-
-void shiftMicros(long long shift) {
-	microShift = shift;
-}
-
-void configTime(int i, int i1, const char* str, const char* text) {}
 
 unsigned long millis() {
 	const auto now = std::chrono::high_resolution_clock::now();
@@ -65,14 +66,13 @@ unsigned long millis() {
 }
 
 unsigned long micros() {
-    const auto now = std::chrono::high_resolution_clock::now() ;
+	const auto now = std::chrono::high_resolution_clock::now();
 	return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::microseconds>(now - startTime).count() + microShift);
 }
 
-
-void delayMicroseconds(int delay) { microShift += delay;  }
-
-void delay(int delay) { microShift += delay * 1000LL;  }
+void pinMode(uint8_t pin, uint8_t mode) {
+	pinModeValue[pin] = mode;
+}
 
 int HardwareSerial::available() {
 	return static_cast<int>(strlen(_bufferPointer));

@@ -36,11 +36,12 @@ protected:
     static constexpr long FLUSH_RATE_INTERESTING = 100L;
 
     ResultData* _result;
-    uint32_t _streak = 1;
-    uint32_t _measureIntervalMicros = 0;
     ChangePublisher<long> _overrun;
     long _idleFlushRate = FLUSH_RATE_IDLE;
+    uint32_t _measureIntervalMicros = 0;
     long _nonIdleFlushRate = FLUSH_RATE_INTERESTING;
+    uint32_t _streak = 1;
+
     void setIdleFlushRate(long rate);
     void setNonIdleFlushRate(long rate);
 };

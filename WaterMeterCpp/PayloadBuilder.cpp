@@ -130,13 +130,12 @@ void PayloadBuilder::writeString(long input) {
     updatePosition();
 }
 
-
-void PayloadBuilder::writeString(unsigned long input) {
+void PayloadBuilder::writeString(uint32_t input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
     updatePosition();
 }
 
-void PayloadBuilder::writeString(uint32_t input) {
+void PayloadBuilder::writeString(unsigned long input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
     updatePosition();
 }

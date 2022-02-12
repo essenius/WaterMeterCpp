@@ -15,6 +15,11 @@ LedFlasher::LedFlasher(const uint8_t led, const unsigned int interval) : _interv
 
 // since it's flashing anyway, it doesn't really matter if the led is on or off with HIGH
 
+void LedFlasher::reset() {
+    _ledCounter = 0;
+    Led::set(_led, Led::OFF);
+}
+
 void LedFlasher::setInterval(const unsigned int interval) {
     _interval = interval;
     reset();
@@ -26,9 +31,4 @@ void LedFlasher::signal() {
         _ledCounter = _interval;
     }
     _ledCounter--;
-}
-
-void LedFlasher::reset() {
-    _ledCounter = 0;
-    Led::set(_led, Led::OFF);
 }

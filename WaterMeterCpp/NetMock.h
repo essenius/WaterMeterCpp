@@ -26,18 +26,13 @@ class Client {};
 class WiFiClient : public Client {
 public:
     WiFiClient() = default;
-
-    bool isConnected() {
-        return true;
-    }
+    bool isConnected() { return true; }
 };
 
 class WiFiClientSecure : public WiFiClient {
 public:
     void setCACert(const char* cert) { }
-
     void setCertificate(const char* cert) { }
-
     void setPrivateKey(const char* cert) { }
 };
 
@@ -51,16 +46,15 @@ public:
     const char* c_str() { return _value; }
 
 private:
-    char _value[30];
+    char _value[30] {};
 };
 
 class HTTPClient {
 public:
     HTTPClient() = default;
 
-    void end() {}
-
     bool begin(WiFiClient& client, const char* url) { return true; }
+    void end() {}
     int GET() { return ReturnValue; }
     String getString() { return {"0.1.1"}; }
     static int ReturnValue;
@@ -87,10 +81,9 @@ public:
     IPAddress() = default;
     IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4);
     explicit IPAddress(const uint8_t* address);
+    String toString() const;
     IPAddress& operator=(uint32_t address);
     IPAddress& operator=(const uint8_t* address);
-    String toString() const;
-
     operator uint32_t() const { return _address.dword; }
     uint8_t operator[](int index) const { return _address.bytes[index]; }
     uint8_t& operator[](int index) { return _address.bytes[index]; }
@@ -117,30 +110,30 @@ public:
 
     bool config(IPAddress local, IPAddress gateway, IPAddress subnet,
                 IPAddress dns1 = IPAddress(), IPAddress dns2 = IPAddress());
-    bool isConnected();
-    bool setHostname(const char* name);
-    void reconnect() { _connectCountdown = _connectMax; }
+    String BSSIDstr() { return { "55:44:33:22:11:00" }; }
+    int channel() { return 13; }
+    void disconnect() { _connectCountdown = _connectMax; }
+    IPAddress dnsIP(int i = 0) { return i == 0 ? _primaryDNSIP : _secondaryDNSIP; }
+    IPAddress gatewayIP() { return _gatewayIP; }
     const char* getHostname() { return _name; }
-    String SSID() { return {_ssid}; }
+    bool isConnected();
+    IPAddress localIP() { return _localIP; }
     String macAddress();
     void macAddress(uint8_t* mac) { memcpy(mac, _mac, 6); }
+    IPAddress networkID() { return { 192, 168, 1, 0 }; }
+    void reconnect() { _connectCountdown = _connectMax; }
     int RSSI() { return 1; }
-    int channel() { return 13; }
-    IPAddress networkID() { return {192, 168, 1, 0}; }
-    IPAddress localIP() { return _localIP; }
-    IPAddress gatewayIP() { return _gatewayIP; }
-    IPAddress dnsIP(int i = 0) { return i == 0 ? _primaryDNSIP : _secondaryDNSIP; }
+    bool setHostname(const char* name);
+    String SSID() { return {_ssid}; }
     IPAddress subnetMask() const { return _subnetIP; }
-    String BSSIDstr() { return {"55:44:33:22:11:00"}; }
-    void disconnect() { _connectCountdown = _connectMax; }
 
     // testing
-    void reset();
     void connectIn(int connectCount);
+    void reset();
 private:
+    byte _mac[6]{};
     char _name[20] = {0};
     char _ssid[20] = {0};
-    byte _mac[6];
     IPAddress _localIP;
     IPAddress _gatewayIP;
     IPAddress _subnetIP;

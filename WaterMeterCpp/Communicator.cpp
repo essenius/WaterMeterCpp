@@ -25,6 +25,18 @@ Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* led
     _fromSamplerQueueClient(fromSamplerQueueClient),
     _fromConnectorQueueClient(fromConnectorQueueClient) {}
 
+void Communicator::loop() const {
+    while (_fromSamplerQueueClient->receive()) { delay(5); }
+    while (_fromConnectorQueueClient->receive()) { delay(5); }
+    SensorDataQueuePayload* payload;
+    while ((payload = _dataQueue->receive()) != nullptr) {
+        _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
+        delay(5);
+    }
+    _device->reportHealth();
+    delay(10);
+}
+
 void Communicator::setup() const {
     _logger->begin();
     _ledDriver->begin();
@@ -40,18 +52,6 @@ void Communicator::setup() const {
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::Rate);
     _eventServer->subscribe(_fromConnectorQueueClient, Topic::SensorWasReset);
     _eventServer->subscribe(_serializer, Topic::SensorData);
-}
-
-void Communicator::loop() const {
-    while (_fromSamplerQueueClient->receive())  { delay(5); }
-    while (_fromConnectorQueueClient->receive()) { delay(5); }
-    SensorDataQueuePayload* payload;
-    while ((payload =_dataQueue->receive()) != nullptr) {
-        _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
-        delay(5);
-    }
-    _device->reportHealth();
-    delay(10);
 }
 
 void Communicator::task(void* parameter) {

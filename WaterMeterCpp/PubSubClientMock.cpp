@@ -17,18 +17,13 @@
 
 #include "PubSubClientMock.h"
 
-PubSubClient& PubSubClient::setCallback(MQTT_CALLBACK_SIGNATURE) {
-    _callback = callback;
-    return *this;
-}
-
 bool PubSubClient::connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
     safeStrcpy(_id, id);
     return _canConnect;
 }
 
 bool PubSubClient::connect(const char* id, const char* user, const char* pass,
-                           const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
+    const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
     safeStrcpy(_user, user);
     safeStrcpy(_pass, pass);
     return connect(id, willTopic, willQos, willRetain, willMessage);
@@ -56,7 +51,11 @@ void PubSubClient::reset() {
     _canConnect = true;
     _canSubscribe = true;
     _canPublish = true;
+}
 
+PubSubClient& PubSubClient::setCallback(MQTT_CALLBACK_SIGNATURE) {
+    _callback = callback;
+    return *this;
 }
 
 #endif

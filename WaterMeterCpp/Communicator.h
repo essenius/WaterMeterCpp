@@ -11,10 +11,8 @@
 
 #ifndef HEADER_COMMUNICATOR
 #define HEADER_COMMUNICATOR
-#include "Clock.h"
 #include "DataQueue.h"
 #include "Device.h"
-#include "EventServer.h"
 #include "LedDriver.h"
 #include "Log.h"
 #include "QueueClient.h"
@@ -24,8 +22,8 @@ class Communicator : public EventClient {
 public:
     Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device, 
         DataQueue* dataQueue, Serializer* serializer, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
-    void setup() const;
     void loop() const;
+    void setup() const;
     static void task(void* parameter);
 
 private:

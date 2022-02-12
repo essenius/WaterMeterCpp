@@ -19,19 +19,7 @@
 #include "NetMock.h"
 #endif
 
-struct WifiConfig {
-    const char* ssid;
-    const char* password;
-    const char* deviceName;
-    const uint8_t* bssid; // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
-};
-
-struct MqttConfig {
-    const char* broker;
-    const int port;
-    const char* user;
-    const char* password;
-};
+#define CONFIG_USE_TLS
 
 struct IpConfig {
     const IPAddress localIp;
@@ -41,18 +29,29 @@ struct IpConfig {
     const IPAddress secondaryDns;
 };
 
-const IPAddress NO_IP{0, 0, 0, 0};
+const IPAddress NO_IP{ 0, 0, 0, 0 };
 
 // NO_IP means auto-configure
+const IpConfig IP_AUTO_CONFIG{ NO_IP, NO_IP, NO_IP, NO_IP, NO_IP };
 
-const IpConfig IP_AUTO_CONFIG{NO_IP, NO_IP, NO_IP, NO_IP, NO_IP};
-
-#define CONFIG_USE_TLS
+struct MqttConfig {
+    const char* broker;
+    const int port;
+    const char* user;
+    const char* password;
+};
 
 struct TlsConfig {
     const char* rootCaCertificate;
     const char* deviceCertificate;
     const char* devicePrivateKey;
+};
+
+struct WifiConfig {
+    const char* ssid;
+    const char* password;
+    const char* deviceName;
+    const uint8_t* bssid; // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
 };
 
 #endif

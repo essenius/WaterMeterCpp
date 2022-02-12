@@ -11,13 +11,8 @@
 
 #include "Led.h"
 
-void Led::init(const uint8_t port, const uint8_t value) {
-    pinMode(port, OUTPUT);
-    set(port, value);
-}
-
-void Led::set(const uint8_t port, const uint8_t value) {
-    digitalWrite(port, convert(port, value));
+inline uint8_t Led::convert(const uint8_t port, const uint8_t value) {
+    return needsInvert(port) ? !value : value;
 }
 
 uint8_t Led::get(const uint8_t port) {
@@ -25,13 +20,18 @@ uint8_t Led::get(const uint8_t port) {
     return convert(port, result);
 }
 
-inline uint8_t Led::convert(const uint8_t port, const uint8_t value) {
-    return needsInvert(port) ? !value : value;
+void Led::init(const uint8_t port, const uint8_t value) {
+    pinMode(port, OUTPUT);
+    set(port, value);
 }
 
 inline bool Led::needsInvert(const uint8_t port) {
     // the RGB led is common anode, so off HIGH
     return port == RED || port == GREEN || port == BLUE;
+}
+
+void Led::set(const uint8_t port, const uint8_t value) {
+    digitalWrite(port, convert(port, value));
 }
 
 void Led::toggle(const uint8_t port) {

@@ -16,21 +16,14 @@
 
 #include "NetMock.h"
 
-WiFiClass::WiFiClass(): _name("esp32_001122334455") {
-    reset();
-    for (byte i = 0; i < 6; i++) {
-        _mac[i] = i * 17;
-    }
-}
+// HTTPCLient and HTTPUpdate
 
 int HTTPClient::ReturnValue = 400;
 int HTTPUpdate::ReturnValue = HTTP_UPDATE_NO_UPDATES;
 
 HTTPUpdate httpUpdate;
 
-WiFiClass WiFi;
-
-WiFiClientSecure testWifiClientSecure;
+// IPAddress
 
 IPAddress::IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4) {
     _address.bytes[0] = oct1;
@@ -59,6 +52,18 @@ String IPAddress::toString() const {
     return {buffer};
 }
 
+// WiFiClass
+
+WiFiClass WiFi;
+
+WiFiClientSecure testWifiClientSecure;
+
+WiFiClass::WiFiClass() : _name("esp32_001122334455") {
+    reset();
+    for (byte i = 0; i < 6; i++) {
+        _mac[i] = i * 17;
+    }
+}
 
 String WiFiClass::macAddress() {
     char buffer[20];

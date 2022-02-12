@@ -18,8 +18,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <cstdint>
-
-
 #include <string>
 
 typedef uint8_t byte;
@@ -27,10 +25,8 @@ typedef uint8_t byte;
 constexpr uint8_t INPUT = 0x0;
 constexpr uint8_t OUTPUT = 0x1;
 constexpr uint8_t INPUT_PULLUP = 0x2;
-
 constexpr uint8_t LOW = 0x0;
 constexpr uint8_t HIGH = 0x1;
-
 constexpr uint8_t LED_BUILTIN = 13;
 
 // emulation of Arduino capabilities
@@ -51,6 +47,7 @@ public:
 	void println(const char* input);
 	char read();
 	void setTimeout(long timeout);
+
 	// test support, not in original Serial object (i.e. don't use in production code)
 	void clearInput();
 	void clearOutput();
@@ -67,19 +64,19 @@ private:
 
 extern HardwareSerial Serial;
 
-char* dtostrf(float value, signed char width, unsigned char precision, char* buffer);
-void pinMode(uint8_t pin, uint8_t mode);
-void digitalWrite(uint8_t pin, uint8_t val);
+void configTime(int i, int i1, const char* str, const char* text);
+
+void delay(int delay);
+//char* dtostrf(float value, signed char width, unsigned char precision, char* buffer);
 uint8_t digitalRead(uint8_t pin);
+void digitalWrite(uint8_t pin, uint8_t val);
 unsigned long micros();
 unsigned long millis();
-void delay(int delay);
+void pinMode(uint8_t pin, uint8_t mode);
 
 // for testing only
 uint8_t getPinMode(uint8_t pin);
 void shiftMicros(long long shift);
-
-void configTime(int i, int i1, const char* str, const char* text);
 
 #endif
 

@@ -26,9 +26,6 @@ public:
     void provides(EventClient* client, Topic topic);
     void cannotProvide(EventClient* client, Topic topic);
     void cannotProvide(EventClient* client);
-    void subscribe(EventClient* client, Topic topic);
-    void unsubscribe(EventClient* client, Topic topic);
-    void unsubscribe(EventClient* client);
 
     // Request a topic. There can be only one provider
     template <class PayloadType>
@@ -60,10 +57,14 @@ public:
         publish(NULL, topic, payload);
     }
 
+    void subscribe(EventClient* client, Topic topic);
+    void unsubscribe(EventClient* client, Topic topic);
+    void unsubscribe(EventClient* client);
+
 private:
-    std::map<Topic, std::set<EventClient*>> _subscribers;
-    std::map<Topic, EventClient*> _providers;
     char _numberBuffer[10];
+    std::map<Topic, EventClient*> _providers;
+    std::map<Topic, std::set<EventClient*>> _subscribers;
 };
 
 #endif

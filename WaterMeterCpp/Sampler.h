@@ -29,9 +29,9 @@ class Sampler {
 public:
     Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter,
             SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient);
-    void setup(unsigned long samplePeriod = 10000UL);
     void begin();
     void loop();
+    void setup(unsigned long samplePeriod = 10000UL);
 
 private:
     EventServer* _eventServer;
@@ -40,10 +40,10 @@ private:
     SampleAggregator* _sampleAggregator;
     ResultAggregator* _resultAggregator;
     QueueClient* _queueClient;
-    unsigned long _scheduledStartTime = 0;
     unsigned long _additionalDuration = 0;
-    unsigned long _samplePeriod = 10000;
     unsigned long _maxDurationForChecks = 8000;
+    unsigned long _samplePeriod = 10000;
+    unsigned long _scheduledStartTime = 0;
 };
 
 #endif

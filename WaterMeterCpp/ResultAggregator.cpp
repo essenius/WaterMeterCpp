@@ -17,8 +17,8 @@ ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, Da
                                    const uint32_t measureIntervalMicros) :
     Aggregator(eventServer, theClock, dataQueue, payload),
     _result(&payload->buffer.result),
-    _measureIntervalMicros(measureIntervalMicros),
-    _overrun(eventServer, this, Topic::TimeOverrun, 0L) {
+    _overrun(eventServer, this, Topic::TimeOverrun, 0L),
+    _measureIntervalMicros(measureIntervalMicros) {
     _desiredFlushRate = _idleFlushRate;
 }
 
@@ -98,15 +98,6 @@ bool ResultAggregator::send() {
     return wasSuccessful;
 }
 
-bool ResultAggregator::shouldSend(const bool endOfFile) {
-    // We set the flush rate regardless of whether we still need to write something. This can end an idle batch early.
-    const bool isInteresting = _result->flowCount > 0 || _result->excludeCount > 0;
-    if (isInteresting) {
-        _flushRate = _nonIdleFlushRate;
-    }
-    return Aggregator::shouldSend(endOfFile);
-}
-
 void ResultAggregator::setIdleFlushRate(long rate) {
     if (rate != _idleFlushRate) {
         _idleFlushRate = rate;
@@ -118,6 +109,15 @@ void ResultAggregator::setNonIdleFlushRate(long rate) {
     if (rate != _nonIdleFlushRate) {
         _nonIdleFlushRate = rate;
     }
+}
+
+bool ResultAggregator::shouldSend(const bool endOfFile) {
+    // We set the flush rate regardless of whether we still need to write something. This can end an idle batch early.
+    const bool isInteresting = _result->flowCount > 0 || _result->excludeCount > 0;
+    if (isInteresting) {
+        _flushRate = _nonIdleFlushRate;
+    }
+    return Aggregator::shouldSend(endOfFile);
 }
 
 void ResultAggregator::update(Topic topic, const char* payload) {

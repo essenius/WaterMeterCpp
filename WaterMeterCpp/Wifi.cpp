@@ -18,7 +18,7 @@
 #include "EventServer.h"
 
 Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder) :
-    EventClient(eventServer), _wifiConfig(wifiConfig), _payloadBuilder(payloadBuilder) {
+    EventClient(eventServer), _payloadBuilder(payloadBuilder), _wifiConfig(wifiConfig) {
     if (wifiConfig->deviceName == nullptr) {
         _hostName = nullptr;
     }
@@ -29,7 +29,25 @@ Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilde
     _macAddress[0] = 0;
 }
 
-WiFiClient* Wifi::getClient() { return &_wifiClient; }
+void Wifi::announceReady() {
+    setStatusSummary();
+    _eventServer->publish(this, Topic::WifiSummaryReady, LONG_TRUE);
+    _eventServer->provides(this, Topic::IpAddress);
+    _eventServer->provides(this, Topic::MacFormatted);
+    _eventServer->provides(this, Topic::MacRaw);
+}
+
+void Wifi::begin() {
+    // need to set the host name before setting the mode
+    if (_hostName != nullptr && !WiFi.setHostname(_hostName)) {
+        _eventServer->publish(Topic::ConnectionError, "Could not set host name");
+    }
+    safeStrcpy(_hostNameBuffer, WiFi.getHostname());
+    _hostName = _hostNameBuffer;
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(_wifiConfig->ssid, _wifiConfig->password, 0, _wifiConfig->bssid);
+}
 
 void Wifi::configure(const IpConfig* ipConfig) {
     _localIp = ipConfig->localIp;
@@ -59,47 +77,9 @@ void Wifi::configure(const IpConfig* ipConfig) {
     }
 }
 
-// There is an issue on ESP32 with DHCP, timing out after 12032 seconds. Workaround is setting a fixed IP
-// address so we don't need DHCP. So, if we still want a dynamic IP, we first connect without config to
-// get valid addresses, and then we disconnect, and reconnect using the just obtained addresses, fixed.
-bool Wifi::needsReinit() {
-    if (!isConnected()) return false;
-    _needsReconnect = _localIp == NO_IP;
-    if (_needsReconnect) _localIp = WiFi.localIP();
-    if (_gatewayIp == NO_IP) _gatewayIp = WiFi.gatewayIP();
-    if (_subnetMaskIp == NO_IP) _subnetMaskIp = WiFi.subnetMask();
-    if (_dns1Ip == NO_IP) _dns1Ip = WiFi.dnsIP(0);
-    if (_dns2Ip == NO_IP) _dns2Ip = WiFi.dnsIP(1);
-    return _needsReconnect;
+void Wifi::disconnect() {
+    WiFi.disconnect();
 }
-
-void Wifi::begin() {
-    // need to set the host name before setting the mode
-    if (_hostName != nullptr && !WiFi.setHostname(_hostName)) {
-        _eventServer->publish(Topic::ConnectionError, "Could not set host name");
-    }
-    safeStrcpy(_hostNameBuffer, WiFi.getHostname());
-    _hostName = _hostNameBuffer;
-
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(_wifiConfig->ssid, _wifiConfig->password, 0, _wifiConfig->bssid);
-}
-
-void Wifi::setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey) {
-    _wifiClient.setCACert(rootCaCertificate);
-    _wifiClient.setCertificate(deviceCertificate);
-    _wifiClient.setPrivateKey(devicePrivateKey);
-}
-
-void Wifi::announceReady() {
-    setStatusSummary();
-    _eventServer->publish(this, Topic::WifiSummaryReady, LONG_TRUE);
-    _eventServer->provides(this, Topic::IpAddress);
-    _eventServer->provides(this, Topic::MacFormatted);
-    _eventServer->provides(this, Topic::MacRaw);
-}
-
-const char* Wifi::getHostName() const { return _hostName; }
 
 const char* Wifi::get(const Topic topic, const char* defaultValue) {
     switch (topic) {
@@ -121,12 +101,36 @@ const char* Wifi::get(const Topic topic, const char* defaultValue) {
     }
 }
 
+WiFiClient* Wifi::getClient() { return &_wifiClient; }
+
+const char* Wifi::getHostName() const { return _hostName; }
+
+// There is an issue on ESP32 with DHCP, timing out after 12032 seconds. Workaround is setting a fixed IP
+// address so we don't need DHCP. So, if we still want a dynamic IP, we first connect without config to
+// get valid addresses, and then we disconnect, and reconnect using the just obtained addresses, fixed.
+bool Wifi::needsReinit() {
+    if (!isConnected()) return false;
+    _needsReconnect = _localIp == NO_IP;
+    if (_needsReconnect) _localIp = WiFi.localIP();
+    if (_gatewayIp == NO_IP) _gatewayIp = WiFi.gatewayIP();
+    if (_subnetMaskIp == NO_IP) _subnetMaskIp = WiFi.subnetMask();
+    if (_dns1Ip == NO_IP) _dns1Ip = WiFi.dnsIP(0);
+    if (_dns2Ip == NO_IP) _dns2Ip = WiFi.dnsIP(1);
+    return _needsReconnect;
+}
+
+bool Wifi::isConnected() {
+    return WiFi.isConnected();
+}
+
 void Wifi::reconnect() {
     WiFi.reconnect();
 }
 
-void Wifi::disconnect() {
-    WiFi.disconnect();
+void Wifi::setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey) {
+    _wifiClient.setCACert(rootCaCertificate);
+    _wifiClient.setCertificate(deviceCertificate);
+    _wifiClient.setPrivateKey(devicePrivateKey);
 }
 
 void Wifi::setStatusSummary() const {
@@ -144,8 +148,4 @@ void Wifi::setStatusSummary() const {
     _payloadBuilder->writeParam("subnet-mask", WiFi.subnetMask().toString().c_str());
     _payloadBuilder->writeParam("bssid", WiFi.BSSIDstr().c_str());
     _payloadBuilder->writeGroupEnd();
-}
-
-bool Wifi::isConnected() {
-    return WiFi.isConnected();
 }

@@ -20,31 +20,31 @@ public:
     void begin();
     void addSample(int measurement);
     bool areAllExcluded() const;
-    float getSmoothValue() const;
     float getDerivative() const;
     float getSmoothAbsDerivative() const;
     float getSmoothDerivative() const;
-    bool isPeak() const;
+    float getSmoothValue() const;
     bool hasFlow() const;
     bool isExcluded() const;
     bool isOutlier() const;
+    bool isPeak() const;
     void update(Topic topic, long payload) override;
 
 protected:
-    static constexpr int STARTUP_SAMPLES = 10;
     static constexpr int MIN_DERIVATIVE_PEAK = -9;
+    static constexpr int STARTUP_SAMPLES = 10;
     ChangePublisher<bool> _exclude;
-    bool _excludeAll = false;
-    float _derivative = 0.0f;
-    float _smoothValue = 0.0f;
-    float _smoothDerivative = 0.0f;
-    float _smoothAbsDerivative = 0.0f;
-    float _minDerivative = MIN_DERIVATIVE_PEAK;
-    float _previousSmoothDerivative = 0.0f;
-    float _previousSmoothValue = 0.0f;
     ChangePublisher<bool> _flow;
     ChangePublisher<bool> _peak;
+    float _derivative = 0.0f;
+    bool _excludeAll = false;
+    float _minDerivative = MIN_DERIVATIVE_PEAK;
     bool _outlier = false;
+    float _previousSmoothDerivative = 0.0f;
+    float _previousSmoothValue = 0.0f;
+    float _smoothAbsDerivative = 0.0f;
+    float _smoothDerivative = 0.0f;
+    float _smoothValue = 0.0f;
     unsigned int _startupSamplesLeft = STARTUP_SAMPLES;
 
     void detectOutlier(int measurement);

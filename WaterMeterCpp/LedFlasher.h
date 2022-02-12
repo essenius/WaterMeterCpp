@@ -17,9 +17,9 @@
 class LedFlasher {
 public:
     LedFlasher(uint8_t led, unsigned int interval);
+    void reset();
     void setInterval(unsigned int interval);
     void signal();
-    void reset();
 private:
     unsigned int _interval;
     uint8_t _led;

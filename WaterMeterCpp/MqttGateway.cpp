@@ -67,6 +67,7 @@ MqttGateway::MqttGateway(
 
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
+    // TODO: it's probably OK to do this just once and leave on. Validate.
     _eventServer->subscribe(this, Topic::Alert); // long
     _eventServer->subscribe(this, Topic::BatchSize); // long
     _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
@@ -81,7 +82,6 @@ void MqttGateway::announceReady() {
     _eventServer->subscribe(this, Topic::ResultFormatted); // string
     _eventServer->subscribe(this, Topic::SamplesFormatted); // string
     _eventServer->subscribe(this, Topic::SensorWasReset); // long     
-    //_eventServer->subscribe(this, Topic::Info); // string
 }
 
 void MqttGateway::begin(Client* client, const char* clientName) {
@@ -157,12 +157,12 @@ bool MqttGateway::handleQueue() {
     return isConnected() && _mqttClient->loop();
 }
 
-bool MqttGateway::isConnected() {
-    return _mqttClient->connected();
-}
-
 bool MqttGateway::hasAnnouncement() {
     return strlen(_announcementPointer) != 0;
+}
+
+bool MqttGateway::isConnected() {
+    return _mqttClient->connected();
 }
 
 void MqttGateway::prepareAnnouncementBuffer() {

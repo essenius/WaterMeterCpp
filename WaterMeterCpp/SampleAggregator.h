@@ -19,8 +19,8 @@ class SampleAggregator : public Aggregator {
 public:
     SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, SensorDataQueuePayload* payload);
     using Aggregator::begin;
-    virtual void begin();
     void addSample(int16_t measure);
+    virtual void begin();
     void flush() override;
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;

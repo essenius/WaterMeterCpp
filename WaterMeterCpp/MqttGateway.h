@@ -30,13 +30,11 @@
 
 constexpr const char* const EMPTY = "";
 constexpr const char* const DEVICE = "device";
-//constexpr const char* const DEVICE_ERROR = "error";
 constexpr const char* const DEVICE_FREE_HEAP = "free-heap";
 constexpr const char* const DEVICE_FREE_STACK_SAMPLER = "free-stack-sampler";
 constexpr const char* const DEVICE_FREE_STACK_COMMUNICATOR = "free-stack-communicator";
 constexpr const char* const DEVICE_FREE_STACK_CONNECTOR = "free-stack-connector";
 constexpr const char* const DEVICE_FREE_QUEUE = "free-queue";
-//constexpr const char* const DEVICE_INFO = "info";
 constexpr const char* const DEVICE_BUILD = "firmware-version";
 constexpr const char* const DEVICE_MAC = "mac-address";
 constexpr const char* const DEVICE_RESET_SENSOR = "reset-sensor";
@@ -67,18 +65,18 @@ public:
     void publishUpdate(Topic topic, const char* payload);
 
 protected:
+    static constexpr int TOPIC_BUFFER_SIZE = 255;
+    static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2500;
     PubSubClient* _mqttClient{};
+    const MqttConfig* _mqttConfig;
+    const DataQueue* _dataQueue;
+    int _announceIndex = 0;
+    char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = { 0 };
+    char* _announcementPointer = _announcementBuffer;
+    const char* _buildVersion;
     const char* _clientName = nullptr;
     unsigned long _reconnectTimestamp = 0UL;
-    const MqttConfig* _mqttConfig;
-    int _announceIndex = 0;
-    const DataQueue* _dataQueue;
-    const char* _buildVersion;
-    static constexpr int TOPIC_BUFFER_SIZE = 255;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = {0};
-    static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2500; 
-    char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = {0};
-    char* _announcementPointer = _announcementBuffer;
 
     void callback(const char* topic, const byte* payload, unsigned length);
     void prepareAnnouncementBuffer();

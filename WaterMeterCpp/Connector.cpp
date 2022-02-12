@@ -16,10 +16,9 @@
 
 constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
 
-Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer, 
-                     FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue, 
+Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
+                     FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
                      Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
-
     EventClient(eventServer),
     _wifi(wifi),
     _mqttGateway(mqttGatway),
@@ -31,6 +30,12 @@ Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatw
     _samplerQueueClient(samplerQueueClient),
     _communicatorQueueClient(communicatorQueueClient),
     _state(eventServer, this, Topic::Connection) {}
+
+ConnectionState Connector::loop() {
+    connect();
+    delay(50);
+    return _state;
+}
 
 void Connector::setup() {
 
@@ -59,12 +64,6 @@ void Connector::setup() {
     _wifi->setCertificates(CONFIG_ROOTCA_CERTIFICATE, CONFIG_DEVICE_CERTIFICATE, CONFIG_DEVICE_PRIVATE_KEY);
 #endif
 
-}
-
-ConnectionState Connector::loop() {
-    connect();
-    delay(50);
-    return _state;
 }
 
 void Connector::task(void* parameter) {
@@ -116,71 +115,7 @@ ConnectionState Connector::connect() {
     return _state;
 }
 
-void Connector::handleInit() {
-    _wifi->disconnect();
-    _wifi->begin();
-    _state = ConnectionState::WifiConnecting;
-    _waitDuration = WIFI_INITIAL_WAIT_DURATION;
-    _wifiConnectTimestamp = micros();
-}
-
-void Connector::handleWifiConnecting() {
-    if (_wifi->isConnected()) {
-        _state = ConnectionState::WifiConnected;
-        _wifiConnectionFailureCount = 0;
-        _wifi->announceReady();
-        return;
-    }
-    const unsigned long wifiWaitDuration = micros() - _wifiConnectTimestamp;
-    if (wifiWaitDuration > _waitDuration) {
-        _wifiConnectionFailureCount++;
-        if (_wifiConnectionFailureCount > MAX_RECONNECT_FAILURES) {
-            _state = ConnectionState::Init;
-            _wifiConnectionFailureCount = 0;
-            return;
-        }
-        _state = ConnectionState::Disconnected;
-    }
-}
-
-void Connector::handleWifiConnected() {
-    if (_wifi->needsReinit()) {
-        _state = ConnectionState::Init;
-        return;
-    }
-    if (!_wifi->isConnected()) {
-        _state = ConnectionState::Disconnected;
-        return;
-    }
-    _state = ConnectionState::RequestTime;
-    _wifiConnectionFailureCount = 0;
-}
-
-void Connector::handleRequestTime() {
-    if (_timeServer->timeWasSet()) {
-        _state = ConnectionState::CheckFirmware;
-        return;
-    }
-    _timeServer->setTime();
-    _state = ConnectionState::SettingTime;
-    _requestTimeTimestamp = micros();
-}
-
-void Connector::handleSettingTime() {
-    if (!_wifi->isConnected()) {
-        _state = ConnectionState::Disconnected;
-        return;
-    }
-    if (_timeServer->timeWasSet()) {
-        _state = ConnectionState::CheckFirmware;
-        return;
-    }
-    const unsigned long timesetWaitDuration = micros() - _requestTimeTimestamp;
-    if (timesetWaitDuration > TIMESERVER_WAIT_DURATION) {
-        // setting time failed. Retry.
-        _state = ConnectionState::WifiConnected;
-    }
-}
+// private methods
 
 void Connector::handleCheckFirmware() {
     _firmwareManager->begin(_wifi->getClient(), _eventServer->request(Topic::MacRaw, ""));
@@ -188,31 +123,18 @@ void Connector::handleCheckFirmware() {
     _state = ConnectionState::WifiReady;
 }
 
-void Connector::handleWifiReady() {
-    if (_wifi->isConnected()) {
-        _state = ConnectionState::MqttConnecting;
-        _mqttConnectTimestamp = micros();
-        // this is a synchronous call, takes a lot of time
-        _mqttGateway->begin(_wifi->getClient(), _wifi->getHostName());
-        return;
-    }
-
-    _state = ConnectionState::Disconnected;
+void Connector::handleDisconnected() {
+    _state = ConnectionState::WifiConnecting;
+    _waitDuration = WIFI_RECONNECT_WAIT_DURATION;
+    _wifi->reconnect();
 }
 
-void Connector::handleMqttConnecting() {
-    if (_mqttGateway->isConnected()) {
-        _state = ConnectionState::MqttConnected;
-        return;
-    }
-    _state = ConnectionState::WaitingForMqttReconnect;
-}
-
-void Connector::handleWaitingForMqttReconnect() {
-    const unsigned long mqttWaitDuration = micros() - _mqttConnectTimestamp;
-    if (mqttWaitDuration >= MQTT_RECONNECT_WAIT_DURATION) {
-        _state = ConnectionState::WifiReady;
-    }
+void Connector::handleInit() {
+    _wifi->disconnect();
+    _wifi->begin();
+    _state = ConnectionState::WifiConnecting;
+    _waitDuration = WIFI_INITIAL_WAIT_DURATION;
+    _wifiConnectTimestamp = micros();
 }
 
 void Connector::handleMqttConnected() {
@@ -230,6 +152,14 @@ void Connector::handleMqttConnected() {
     }
     _mqttGateway->announceReady();
     _state = ConnectionState::MqttReady;
+}
+
+void Connector::handleMqttConnecting() {
+    if (_mqttGateway->isConnected()) {
+        _state = ConnectionState::MqttConnected;
+        return;
+    }
+    _state = ConnectionState::WaitingForMqttReconnect;
 }
 
 void Connector::handleMqttReady() {
@@ -259,8 +189,79 @@ void Connector::handleMqttReady() {
     }
 }
 
-void Connector::handleDisconnected() {
-    _state = ConnectionState::WifiConnecting;
-    _waitDuration = WIFI_RECONNECT_WAIT_DURATION;
-    _wifi->reconnect();
+void Connector::handleRequestTime() {
+    if (_timeServer->timeWasSet()) {
+        _state = ConnectionState::CheckFirmware;
+        return;
+    }
+    _timeServer->setTime();
+    _state = ConnectionState::SettingTime;
+    _requestTimeTimestamp = micros();
+}
+
+void Connector::handleSettingTime() {
+    if (!_wifi->isConnected()) {
+        _state = ConnectionState::Disconnected;
+        return;
+    }
+    if (_timeServer->timeWasSet()) {
+        _state = ConnectionState::CheckFirmware;
+        return;
+    }
+    const unsigned long timesetWaitDuration = micros() - _requestTimeTimestamp;
+    if (timesetWaitDuration > TIMESERVER_WAIT_DURATION) {
+        // setting time failed. Retry.
+        _state = ConnectionState::WifiConnected;
+    }
+}
+
+void Connector::handleWaitingForMqttReconnect() {
+    const unsigned long mqttWaitDuration = micros() - _mqttConnectTimestamp;
+    if (mqttWaitDuration >= MQTT_RECONNECT_WAIT_DURATION) {
+        _state = ConnectionState::WifiReady;
+    }
+}
+
+void Connector::handleWifiConnected() {
+    if (_wifi->needsReinit()) {
+        _state = ConnectionState::Init;
+        return;
+    }
+    if (!_wifi->isConnected()) {
+        _state = ConnectionState::Disconnected;
+        return;
+    }
+    _state = ConnectionState::RequestTime;
+    _wifiConnectionFailureCount = 0;
+}
+
+void Connector::handleWifiConnecting() {
+    if (_wifi->isConnected()) {
+        _state = ConnectionState::WifiConnected;
+        _wifiConnectionFailureCount = 0;
+        _wifi->announceReady();
+        return;
+    }
+    const unsigned long wifiWaitDuration = micros() - _wifiConnectTimestamp;
+    if (wifiWaitDuration > _waitDuration) {
+        _wifiConnectionFailureCount++;
+        if (_wifiConnectionFailureCount > MAX_RECONNECT_FAILURES) {
+            _state = ConnectionState::Init;
+            _wifiConnectionFailureCount = 0;
+            return;
+        }
+        _state = ConnectionState::Disconnected;
+    }
+}
+
+void Connector::handleWifiReady() {
+    if (_wifi->isConnected()) {
+        _state = ConnectionState::MqttConnecting;
+        _mqttConnectTimestamp = micros();
+        // this is a synchronous call, takes a lot of time
+        _mqttGateway->begin(_wifi->getClient(), _wifi->getHostName());
+        return;
+    }
+
+    _state = ConnectionState::Disconnected;
 }

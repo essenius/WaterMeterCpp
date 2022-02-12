@@ -21,12 +21,13 @@ using SemaphoreHandle_t = void*;
 
 using UBaseType_t = unsigned long;
 using BaseType_t = long;
+using TickType_t = uint32_t;
+using TaskFunction_t = void(*)(void*);
 
 #define pdFALSE ((BaseType_t)0)
 #define pdTRUE  ((BaseType_t)1)
-using TickType_t = uint32_t;
+constexpr unsigned long portMAX_DELAY = ULONG_MAX;
 #define configSTACK_DEPTH_TYPE    uint16_t
-using TaskFunction_t = void(*)(void*);
 
 #define configTICK_RATE_HZ			(1000)
 #define portTICK_PERIOD_MS			((TickType_t)1000 / configTICK_RATE_HZ)
@@ -37,40 +38,39 @@ enum RingbufferType_t { RINGBUF_TYPE_NOSPLIT = 0, RINGBUF_TYPE_ALLOWSPLIT, RINGB
 // test function
 void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull);
 
+QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize);
+
+BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait);
+
+BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait);
+
+BaseType_t xQueueSendToFront(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait);
+
+UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle);
+
+UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue);
+
+inline int uxTaskGetStackHighWaterMark(void* handle) { return 100000; }
+
+inline void vRingbufferReturnItem(RingbufHandle_t bufferHandle, void* item1) {}
+
 RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType);
 
 size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle);
 
+BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
+    size_t* item2Size, uint32_t ticksToWait);
+
 UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t ticksToWait);
 
-BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
-                                   size_t* item2Size, uint32_t ticksToWait);
-
-inline void vRingbufferReturnItem(RingbufHandle_t bufferHandle, void* item1) {}
-
-inline int uxTaskGetStackHighWaterMark(void* handle) { return 100000; }
-
-QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize);
-
-UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue);
-
-BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait);
-BaseType_t xQueueSendToToFront(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait);
-
-BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait);
-
-UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle);
-
-BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, configSTACK_DEPTH_TYPE usStackDepth,
-                                   void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
-                                   BaseType_t xCoreID);
-
-
-
-constexpr unsigned long portMAX_DELAY = ULONG_MAX;
 inline SemaphoreHandle_t xSemaphoreCreateMutex() { return nullptr; }
 inline void xSemaphoreTake(SemaphoreHandle_t handle, unsigned long delay) {}
 inline void xSemaphoreGive(SemaphoreHandle_t handle) {}
+
+BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, configSTACK_DEPTH_TYPE usStackDepth,
+    void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
+    BaseType_t xCoreID);
+
 TaskHandle_t xTaskGetCurrentTaskHandle();
 
 // testing only, does not exist in FreeRTOS

@@ -22,11 +22,12 @@ public:
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
 
-    // number of samples for led blinking intervals
-    // intervals of 10 ms
-    static constexpr unsigned int EXCLUDE_INTERVAL = 25;
+    // number of samples for led blinking intervals (* 10 ms)
+    static constexpr unsigned int EXCLUDE_INTERVAL = 25; 
     static constexpr unsigned int FLOW_INTERVAL = 50;
     static constexpr unsigned int IDLE_INTERVAL = 100;
+
+    // matches interval of connect process
     static constexpr unsigned int CONNECTING_INTERVAL = 50;
 
 private:

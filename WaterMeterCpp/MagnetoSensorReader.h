@@ -32,9 +32,9 @@ private:
     static constexpr int FLATLINE_STREAK = 250;
     static constexpr int MAX_STREAKS_TO_ALERT = 10;
     QMC5883LCompass* _compass;
+    int _consecutiveStreakCount = 0;
     int16_t _previousSample = -32768;
     int _streakCount = 0;
-    int _consecutiveStreakCount = 0;
 };
 
 #endif

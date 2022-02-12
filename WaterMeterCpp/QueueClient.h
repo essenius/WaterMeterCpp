@@ -26,9 +26,9 @@ public:
     QueueClient(EventServer* eventServer, uint16_t size);
     void begin(QueueHandle_t sendQueue = nullptr);
     QueueHandle_t getQueueHandle() const;
+    bool receive();
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
-    bool receive();
 private:
     static QueueHandle_t createQueue(uint16_t length);
     QueueHandle_t _receiveQueue;

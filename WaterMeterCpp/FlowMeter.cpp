@@ -17,11 +17,15 @@
 
 #include "EventServer.h"
 
-// Wee need the line smooth enough to eliminate noise. Averaging over 20 seems to work OK
-constexpr float LOW_PASS_ALPHA = 0.05f;
+// if the smooth absolute of the derivative is larger than the threshold, we have flow.
+constexpr float FLOW_THRESHOLD = 1.0f;
 
 // Empirically found that this gives a reasonably accurate derivative
 constexpr float HIGH_PASS_ALPHA = 0.8f;
+
+// We need the line smooth enough to eliminate noise. Averaging over 20 seems to work OK
+constexpr float LOW_PASS_ALPHA = 0.05f;
+
 // Eliminate much of the noise on the derivative
 constexpr float LOW_PASS_ON_HIGH_PASS_ALPHA = 0.05f;
 
@@ -31,19 +35,11 @@ constexpr float OUTLIER_THRESHOLD = 200.0f;
 // The troughs are usually around -8. Take 25% of that for the zero check, to eliminate much of the noise
 constexpr float ZEROCHECK_THESHOLD = -2.0f;
 
-// if the smooth absolute of the derivative is larger than the threshold, we have flow.
-constexpr float FLOW_THRESHOLD = 1.0f;
-
-
 FlowMeter::FlowMeter(EventServer* eventServer):
     EventClient(eventServer),
     _exclude(eventServer, this, Topic::Exclude, false),
     _flow(eventServer, this, Topic::Flow, false),
     _peak(eventServer, this, Topic::Peak, false) {}
-
-void FlowMeter::begin() {
-    _eventServer->subscribe(this, Topic::Sample);
-}
 
 void FlowMeter::addSample(int measurement) {
     const bool firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
@@ -64,6 +60,10 @@ void FlowMeter::addSample(int measurement) {
 
 bool FlowMeter::areAllExcluded() const {
     return _excludeAll;
+}
+
+void FlowMeter::begin() {
+    _eventServer->subscribe(this, Topic::Sample);
 }
 
 void FlowMeter::detectOutlier(const int measurement) {
@@ -92,10 +92,6 @@ void FlowMeter::detectPeaks(const int measurement) {
     _previousSmoothDerivative = _smoothDerivative;
 }
 
-float FlowMeter::getSmoothValue() const {
-    return _smoothValue;
-}
-
 float FlowMeter::getDerivative() const {
     return _derivative;
 }
@@ -108,8 +104,8 @@ float FlowMeter::getSmoothDerivative() const {
     return _smoothDerivative;
 }
 
-bool FlowMeter::isPeak() const {
-    return _peak;
+float FlowMeter::getSmoothValue() const {
+    return _smoothValue;
 }
 
 bool FlowMeter::hasFlow() const {
@@ -126,6 +122,10 @@ bool FlowMeter::isExcluded() const {
 
 bool FlowMeter::isOutlier() const {
     return _outlier;
+}
+
+bool FlowMeter::isPeak() const {
+    return _peak;
 }
 
 float FlowMeter::lowPassFilter(float measure, float filterValue, float alpha) {

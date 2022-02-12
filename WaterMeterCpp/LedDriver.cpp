@@ -36,12 +36,12 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::TimeOverrun);
-    Led::init(Led::RUNNING, Led::OFF);
     Led::init(Led::AUX, Led::OFF);
-    Led::init(Led::YELLOW, Led::OFF);
-    Led::init(Led::RED, Led::OFF);
-    Led::init(Led::GREEN, Led::OFF);
     Led::init(Led::BLUE, Led::OFF);
+    Led::init(Led::GREEN, Led::OFF);
+    Led::init(Led::RED, Led::OFF);
+    Led::init(Led::RUNNING, Led::OFF);
+    Led::init(Led::YELLOW, Led::OFF);
 }
 
 void LedDriver::update(const Topic topic, const char* payload) {
@@ -54,17 +54,11 @@ void LedDriver::update(const Topic topic, const char* payload) {
 void LedDriver::update(Topic topic, long payload) {
     const uint8_t state = payload ? Led::ON : Led::OFF;
     switch (topic) {
-    // flow and exclude change the flash rate 
-    case Topic::Flow:
-    case Topic::Exclude: {
-        unsigned int interval = IDLE_INTERVAL;
-        if (payload) {
-            interval = topic == Topic::Flow ? FLOW_INTERVAL : EXCLUDE_INTERVAL;
-        }
-        _sampleFlasher.setInterval(interval);
-        return;
-    }
     // no connection causes a flashing green led, and blue while firmware is checked
+    case Topic::Alert:
+    case Topic::Blocked:
+        Led::toggle(Led::RED);
+        return;
     case Topic::Connection:
         switch (static_cast<ConnectionState>(payload)) {
         case ConnectionState::Disconnected:
@@ -85,21 +79,27 @@ void LedDriver::update(Topic topic, long payload) {
             _connectingFlasher.signal();
         }
         return;
-    case Topic::Sample:
-        _sampleFlasher.signal();
+        // flow and exclude change the flash rate 
+    case Topic::Exclude:
+    case Topic::Flow: {
+        unsigned int interval = IDLE_INTERVAL;
+        if (payload) {
+            interval = topic == Topic::Flow ? FLOW_INTERVAL : EXCLUDE_INTERVAL;
+        }
+        _sampleFlasher.setInterval(interval);
         return;
-    case Topic::Blocked:
-    case Topic::Alert:
-        Led::toggle(Led::RED);
-        return;
+    }
+    case Topic::Peak:
+        Led::set(Led::BLUE, state);
+        break;
     case Topic::ResultWritten:
         Led::toggle(Led::AUX);
         return;
+    case Topic::Sample:
+        _sampleFlasher.signal();
+        return;
     case Topic::TimeOverrun:
         Led::set(Led::YELLOW, state);
-        return;
-    case Topic::Peak:
-        Led::set(Led::BLUE, state);
         break;
     default:
         break;
