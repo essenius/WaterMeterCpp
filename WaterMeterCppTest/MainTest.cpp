@@ -166,7 +166,10 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(Led::ON, Led::get(Led::RUNNING), L"RUNNING on");
             Assert::AreEqual(R"([] Starting
 [] Topic '6': 0
+[] Free Spaces Queue #2: 9
+[] Free Spaces Queue #0: 9
 [] Wifi summary: {"ssid":"","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
+[] Free Spaces Queue #3: 9
 [] Free Memory DataQueue #0: 12800
 [] Free Heap: 32000
 [] Free Stack #0: 1500
@@ -197,6 +200,7 @@ namespace WaterMeterCppTest {
             communicator.loop();
             auto expected = R"([] Wifi summary: {"ssid":"essenii30n","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
 [] Wifi summary: {"ssid":"essenii30n","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
+[] Free Spaces Queue #3: 3
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://nas:8443/static/fota/watermeter/001122334455.version
 [] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}

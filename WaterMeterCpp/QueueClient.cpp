@@ -24,7 +24,8 @@ QueueHandle_t QueueClient::createQueue(const uint16_t length) {
 
 QueueClient::QueueClient(EventServer* eventServer, const uint16_t size, const int8_t index) :
     EventClient(eventServer),
-    _freeSpaces(eventServer, Topic::FreeQueueSpaces, 1, 5, index),
+    // being careful with reporting on spaces as it may use them as well, so just every 5
+    _freeSpaces(eventServer, Topic::FreeQueueSpaces, 5, 0, index),
     _receiveQueue(createQueue(size)) {}
 
 void QueueClient::begin(QueueHandle_t sendQueue) {
@@ -53,10 +54,9 @@ void QueueClient::update(Topic topic, long payload) {
     const ShortMessage message = {topic, static_cast<int32_t>(payload)};
     if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {
         // Catch 22 - we may need a queue to send an error and that fails. So we're using a direct print
+        // This is not supposed to happen.
         Serial.printf("Error in QueueClient %p update: %d/%ld\n", this, topic, payload);
-        // TODO: handle error
     }
-    auto spaces = uxQueueSpacesAvailable(_sendQueue);
-    // TODO: change this into a change publisher
-    if (spaces < 5) { Serial.printf("Low space in %p: %d\n", this, spaces); }
+    // conversion should not be a problem - values don't get large
+    _freeSpaces = static_cast<long>(uxQueueSpacesAvailable(_sendQueue));
 }
