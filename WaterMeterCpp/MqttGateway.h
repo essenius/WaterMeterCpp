@@ -31,10 +31,9 @@
 constexpr const char* const EMPTY = "";
 constexpr const char* const DEVICE = "device";
 constexpr const char* const DEVICE_FREE_HEAP = "free-heap";
-constexpr const char* const DEVICE_FREE_STACK_SAMPLER = "free-stack-sampler";
-constexpr const char* const DEVICE_FREE_STACK_COMMUNICATOR = "free-stack-communicator";
-constexpr const char* const DEVICE_FREE_STACK_CONNECTOR = "free-stack-connector";
-constexpr const char* const DEVICE_FREE_QUEUE = "free-queue";
+constexpr const char* const DEVICE_FREE_STACK = "free-stack";
+constexpr const char* const DEVICE_FREE_QUEUE_SIZE = "free-queue-size";
+constexpr const char* const DEVICE_FREE_QUEUE_SPACES = "free-queue-spaces";
 constexpr const char* const DEVICE_BUILD = "firmware-version";
 constexpr const char* const DEVICE_MAC = "mac-address";
 constexpr const char* const DEVICE_RESET_SENSOR = "reset-sensor";

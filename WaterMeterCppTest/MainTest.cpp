@@ -167,9 +167,9 @@ namespace WaterMeterCppTest {
 [] Wifi summary: {"ssid":"","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
 [] Free Memory DataQueue #0: 12800
 [] Free Heap: 32000
-[] Free Stack Sampler: 1500
-[] Free Stack Communicator: 3750
-[] Free Stack Connector: 5250
+[] Free Stack #0: 1500
+[] Free Stack #1: 3750
+[] Free Stack #2: 5250
 [] Connecting to Wifi
 )", Serial.getOutput());
             // reduce the noise in the logger 
@@ -198,7 +198,7 @@ namespace WaterMeterCppTest {
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://nas:8443/static/fota/watermeter/001122334455.version
 [] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
-[] Free Stack Sampler: 1564
+[] Free Stack #0: 1564
 )";
             Assert::AreEqual(expected, Serial.getOutput(), L"Formatted result came through");
             Serial.clearOutput();

@@ -24,9 +24,9 @@ Device::Device(EventServer* eventServer) :
     // Only catch larger variations or alarmingly low values to avoid very frequent updates
     _freeHeap(eventServer, Topic::FreeHeap, 5000L, 25000L),
     // catch all changes as this is not expected to change
-    _freeStackSampler(eventServer, Topic::FreeStackSampler, 0L, 0L),
-    _freeStackCommunicator(eventServer, Topic::FreeStackCommunicator, 0L, 0L),
-    _freeStackConnector(eventServer, Topic::FreeStackConnector, 0L, 0L) {}
+    _freeStackSampler(eventServer, Topic::FreeStack, 0L, 0L, 0),
+    _freeStackCommunicator(eventServer, Topic::FreeStack, 0L, 0L, 1),
+    _freeStackConnector(eventServer, Topic::FreeStack, 0L, 0L, 2) {}
 
 void Device::begin(
     const TaskHandle_t samplerHandle, 

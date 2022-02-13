@@ -42,9 +42,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::FreeHeap);
-    _eventServer->subscribe(this, Topic::FreeStackSampler);
-    _eventServer->subscribe(this, Topic::FreeStackCommunicator);
-    _eventServer->subscribe(this, Topic::FreeStackConnector);
+    _eventServer->subscribe(this, Topic::FreeStack);
     _eventServer->subscribe(this, Topic::FreeQueueSize);
     _eventServer->subscribe(this, Topic::FreeQueueSpaces);
     _eventServer->subscribe(this, Topic::MessageFormatted);
@@ -74,15 +72,6 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::FreeHeap:
         Serial.printf("Free Heap: %s\n", payload);
-        break;
-    case Topic::FreeStackSampler:
-        Serial.printf("Free Stack Sampler: %s\n", payload);
-        break;
-    case Topic::FreeStackCommunicator:
-        Serial.printf("Free Stack Communicator: %s\n", payload);
-        break;
-    case Topic::FreeStackConnector:
-        Serial.printf("Free Stack Connector: %s\n", payload);
         break;
     case Topic::MessageFormatted:
         Serial.println(payload);
@@ -120,6 +109,9 @@ void Log::update(const Topic topic, const long payload) {
         return;
     case Topic::FreeQueueSpaces:
         printIndexedPayload("Free Spaces Queue #%d: %ld\n", payload);
+        return;
+    case Topic::FreeStack:
+        printIndexedPayload("Free Stack #%d: %ld\n", payload);
         return;
     default:
         EventClient::update(topic, payload);

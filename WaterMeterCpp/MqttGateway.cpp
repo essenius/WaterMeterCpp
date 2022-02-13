@@ -34,10 +34,9 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::IdleRate, {RESULT, RESULT_IDLE_RATE}},
     {Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE}},
     {Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP}},
-    {Topic::FreeStackSampler, {DEVICE, DEVICE_FREE_STACK_SAMPLER}},
-    {Topic::FreeStackCommunicator, {DEVICE, DEVICE_FREE_STACK_COMMUNICATOR}},
-    {Topic::FreeStackConnector, {DEVICE, DEVICE_FREE_STACK_CONNECTOR}},
-    {Topic::FreeQueueSize, {DEVICE, DEVICE_FREE_QUEUE}},
+    {Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK}},
+    {Topic::FreeQueueSize, {DEVICE, DEVICE_FREE_QUEUE_SIZE}},
+    {Topic::FreeQueueSpaces, {DEVICE, DEVICE_FREE_QUEUE_SPACES}},
     //{Topic::ConnectionError, {DEVICE, DEVICE_ERROR}}, // TODO: check if needed
     {Topic::SensorWasReset, {DEVICE, DEVICE_RESET_SENSOR}},
     //{Topic::Info, {DEVICE, DEVICE_INFO}},
@@ -72,10 +71,9 @@ void MqttGateway::announceReady() {
     _eventServer->subscribe(this, Topic::BatchSize); // long
     _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
     _eventServer->subscribe(this, Topic::FreeHeap); // long
-    _eventServer->subscribe(this, Topic::FreeStackSampler); // long
-    _eventServer->subscribe(this, Topic::FreeStackCommunicator); // long
-    _eventServer->subscribe(this, Topic::FreeStackConnector); // long
+    _eventServer->subscribe(this, Topic::FreeStack); // long
     _eventServer->subscribe(this, Topic::FreeQueueSize); // long
+    _eventServer->subscribe(this, Topic::FreeQueueSpaces); // long
     _eventServer->subscribe(this, Topic::IdleRate); // long
     _eventServer->subscribe(this, Topic::NonIdleRate); // long
     _eventServer->subscribe(this, Topic::Rate); // long  
@@ -189,13 +187,12 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK_SAMPLER, DEVICE_FREE_STACK_COMMUNICATOR, DEVICE_FREE_STACK_CONNECTOR, DEVICE_FREE_QUEUE, DEVICE_BUILD, DEVICE_MAC);
+    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_FREE_QUEUE_SIZE, DEVICE_FREE_QUEUE_SPACES, DEVICE_BUILD, DEVICE_MAC);
     prepareNode(DEVICE, "Device", "1", payload);
     prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_FREE_STACK_SAMPLER, "Free Stack Sampler", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_FREE_STACK_COMMUNICATOR, "Free Stack Communicator", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_FREE_STACK_CONNECTOR, "Free Stack Connector", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_FREE_QUEUE, "Free Queue Space", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_FREE_STACK, "Free Stack", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_FREE_QUEUE_SIZE, "Free Queue Size", TYPE_INTEGER);
+    prepareProperty(DEVICE, DEVICE_FREE_QUEUE_SPACES, "Free Queue Spaces", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_BUILD, "Firmware version", TYPE_STRING);
     prepareProperty(DEVICE, DEVICE_MAC, "Mac address", TYPE_STRING);
     prepareProperty(DEVICE, DEVICE_RESET_SENSOR, "Reset Sensor", TYPE_INTEGER, "1", SETTABLE);
