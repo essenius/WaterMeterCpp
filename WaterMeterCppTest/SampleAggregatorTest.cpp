@@ -13,8 +13,8 @@
 
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
+#include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
-#include "../WaterMeterCpp/SensorDataQueue.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -25,7 +25,7 @@ namespace WaterMeterCppTest {
             EventServer eventServer;
             SensorDataQueuePayload payload{};
             Clock theClock(&eventServer);
-            SensorDataQueue dataQueue(&eventServer, &payload);
+            DataQueue dataQueue(&eventServer, &payload);
 
             SampleAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
             aggregator.begin();
@@ -59,7 +59,7 @@ namespace WaterMeterCppTest {
             EventServer eventServer;
             Clock theClock(&eventServer);
             SensorDataQueuePayload payload{};
-            SensorDataQueue dataQueue(&eventServer, &payload);
+            DataQueue dataQueue(&eventServer, &payload);
 
             TestEventClient batchSizeListener(&eventServer);
             eventServer.subscribe(&batchSizeListener, Topic::BatchSize);

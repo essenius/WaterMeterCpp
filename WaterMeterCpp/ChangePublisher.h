@@ -14,34 +14,44 @@
 
 #include "EventServer.h"
 
+// ChangePublisher records a value and publishes the value only when it changes.
+// The (8 bit) index is used to be able to share the same topic for multiple entities, e.g. different queues.
+// This works by using the highest significant byte of the (4 byte) long to store the index.
+// That means 3 bytes (max value 8,388,608 for long) are left for the payload if the index is used.
+
 template <class payloadType>
 class ChangePublisher {
 public:
-    ChangePublisher(EventServer* eventServer, EventClient* eventClient, Topic topic, payloadType defaultValue = {}) {
+    ChangePublisher(EventServer* eventServer, /*EventClient* eventClient, */ Topic topic, int8_t index = 0) {
         _eventServer = eventServer;
-        _eventClient = eventClient;
+        /*_eventClient = eventClient;*/
+        _index = index << 24;
         _topic = topic;
-        _payload = defaultValue;
     }
 
+    ChangePublisher(const ChangePublisher&) = default;
+    ChangePublisher(ChangePublisher&&) = default;
+    ChangePublisher& operator=(const ChangePublisher&) = default;
+    ChangePublisher& operator=(ChangePublisher&&) = default;
     virtual ~ChangePublisher() = default;
 
     operator payloadType() const { return _payload; }
 
     void reset() { _payload = payloadType(); }
-    void setTopic(Topic topic) { _topic = topic; }
+    void setTopic(const Topic topic) { _topic = topic; }
 
     virtual ChangePublisher& operator=(payloadType payload) {
         if (payload != _payload) {
             _payload = payload;
-            _eventServer->publish(_eventClient, _topic, static_cast<long>(payload));
+            _eventServer->publish(/*_eventClient,*/ _topic, static_cast<long>(payload) + _index);
         }
         return *this;
     }
 
 protected:
     EventServer* _eventServer;
-    EventClient* _eventClient;
+    /*EventClient* _eventClient;*/
+    long _index;
     payloadType _payload{};
     Topic _topic;
 };

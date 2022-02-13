@@ -18,8 +18,8 @@ Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dat
     EventClient(eventServer),
     _clock(theClock),
     _dataQueue(dataQueue), _payload(payload),
-    _flushRate(eventServer, this, Topic::Rate),
-    _blocked(eventServer, this, Topic::Blocked, false) {}
+    _flushRate(eventServer, Topic::Rate),
+    _blocked(eventServer, Topic::Blocked) {}
 
 void Aggregator::begin(long desiredFlushRate) {
     setDesiredFlushRate(desiredFlushRate);

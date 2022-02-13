@@ -16,7 +16,7 @@
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Aggregator.h"
 #include "../WaterMeterCpp/Clock.h"
-#include "../WaterMeterCpp/SensorDataQueue.h"
+#include "../WaterMeterCpp/DataQueue.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -28,7 +28,7 @@ namespace WaterMeterCppTest {
             Clock theClock(&eventServer);
             theClock.begin();
             SensorDataQueuePayload payload{};
-            SensorDataQueue dataQueue(&eventServer, &payload);
+            DataQueue dataQueue(&eventServer, &payload);
             Assert::AreEqual(0ULL, payload.timestamp);
             Aggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
             aggregator.begin(0);

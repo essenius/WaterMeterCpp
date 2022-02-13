@@ -23,7 +23,7 @@
 
 class QueueClient : public EventClient {
 public:
-    QueueClient(EventServer* eventServer, uint16_t size);
+    QueueClient(EventServer* eventServer, uint16_t size, uint8_t index = 0);
     void begin(QueueHandle_t sendQueue = nullptr);
     QueueHandle_t getQueueHandle() const;
     bool receive();
@@ -31,6 +31,7 @@ public:
     void update(Topic topic, long payload) override;
 private:
     static QueueHandle_t createQueue(uint16_t length);
+
     QueueHandle_t _receiveQueue;
     QueueHandle_t _sendQueue = nullptr;
 };

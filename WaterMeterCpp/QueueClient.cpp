@@ -22,7 +22,9 @@ QueueHandle_t QueueClient::createQueue(const uint16_t length) {
     return xQueueCreate(length, sizeof(ShortMessage));
 }
 
-QueueClient::QueueClient(EventServer* eventServer, uint16_t size): EventClient(eventServer), _receiveQueue(createQueue(size)) {}
+QueueClient::QueueClient(EventServer* eventServer, uint16_t size, uint8_t index):
+    EventClient(eventServer),
+    _receiveQueue(createQueue(size)) {}
 
 void QueueClient::begin(QueueHandle_t sendQueue) {
     _sendQueue = sendQueue;
@@ -40,7 +42,7 @@ bool QueueClient::receive() {
     return true;
 }
 
-// Queue client can only handle longs, so convert strings to long
+// Queue client can only handle longs, so convert strings to long (becomes 0 if that fails)
 void QueueClient::update(Topic topic, const char* payload) {
     update(topic, strtol(payload, nullptr, 10));
 }

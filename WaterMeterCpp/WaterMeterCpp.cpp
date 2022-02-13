@@ -22,23 +22,23 @@
 #endif
 
 #include "Communicator.h"
+#include "Connector.h"
+#include "DataQueue.h"
 #include "Device.h"
+#include "EventServer.h"
+#include "FirmwareManager.h"
 #include "FlowMeter.h"
 #include "LedDriver.h"
+#include "Log.h"
 #include "MagnetoSensorReader.h"
 #include "MqttGateway.h"
-#include "EventServer.h"
 #include "ResultAggregator.h"
+#include "SampleAggregator.h"
+#include "Sampler.h"
 #include "TimeServer.h"
 #include "Wifi.h"
-#include "Connector.h"
-#include "FirmwareManager.h"
-#include "Log.h"
-#include "SampleAggregator.h"
 #include "QueueClient.h"
-#include "Sampler.h"
 #include "secrets.h" // includes config.h
-#include "SensorDataQueue.h"
 
 // For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "0.100.3";
@@ -64,7 +64,7 @@ Clock theClock(&communicatorEventServer);
 PayloadBuilder serializePayloadBuilder(&theClock);
 Serializer serializer(&connectorEventServer, &serializePayloadBuilder);
 SensorDataQueuePayload connectorPayload;
-SensorDataQueue sensorDataQueue(&connectorEventServer, &connectorPayload);
+DataQueue sensorDataQueue(&connectorEventServer, &connectorPayload, 0, 40960, 1024, 2048);
 SensorDataQueuePayload measurementPayload;
 SensorDataQueuePayload resultPayload;
 SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &measurementPayload);
@@ -92,7 +92,7 @@ SensorDataQueuePayload communicatorQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);
 Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
-DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1024);
+DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
 Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2, &communicatorSamplerQueueClient,
                           &communicatorConnectorQueueClient);

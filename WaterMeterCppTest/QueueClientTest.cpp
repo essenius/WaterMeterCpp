@@ -29,7 +29,6 @@ namespace WaterMeterCppTest {
         TEST_METHOD(queueClientTest1) {
             uxQueueReset();
             eventServer.subscribe(&testEventClient, Topic::Exclude);
-            //QueueHandle_t qHandle = QueueClient::createQueue(10);
             constexpr uint16_t QUEUE_SIZE = 10;
             QueueClient qClient(&eventServer, QUEUE_SIZE);
             qClient.begin(qClient.getQueueHandle());

@@ -19,7 +19,7 @@
 #include "../WaterMeterCpp/ArduinoMock.h"
 #include "StateHelper.h"
 #include "TimeServerMock.h"
-#include "../WaterMeterCpp/SensorDataQueue.h"
+#include "../WaterMeterCpp/DataQueue.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -38,7 +38,7 @@ namespace WaterMeterCppTest {
         static QueueHandle_t queueHandle;
         static QueueClient queueClient1;
         static QueueClient queueClient2;
-        static SensorDataQueue dataQueue;
+        static DataQueue dataQueue;
         static DataQueue commsDataQueue;
 
         TEST_CLASS_INITIALIZE(connectorTestInitialize) {
@@ -214,8 +214,8 @@ namespace WaterMeterCppTest {
     PayloadBuilder ConnectorTest::payloadBuilder;
     Serializer ConnectorTest::serializer(&eventServer, &payloadBuilder);
     SensorDataQueuePayload payload;
-    SensorDataQueue ConnectorTest::dataQueue(&eventServer, &payload);
-    DataQueue ConnectorTest::commsDataQueue(&eventServer, &payload, 2);
+    DataQueue ConnectorTest::dataQueue(&eventServer, &payload);
+    DataQueue ConnectorTest::commsDataQueue(&eventServer, &payload, 1, 2, 1, 2);
 
     QueueHandle_t ConnectorTest::queueHandle = nullptr;
     QueueClient ConnectorTest::queueClient1(&eventServer, 10);

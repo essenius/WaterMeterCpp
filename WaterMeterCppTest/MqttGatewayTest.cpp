@@ -16,7 +16,7 @@
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/PayloadBuilder.h"
-#include "../WaterMeterCpp/SensorDataQueue.h"
+#include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/Serializer.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -40,7 +40,7 @@ namespace WaterMeterCppTest {
         static PayloadBuilder payloadBuilder;
         static Serializer serializer;
         static SensorDataQueuePayload payload;
-        static SensorDataQueue dataQueue;
+        static DataQueue dataQueue;
 
         TEST_CLASS_INITIALIZE(mqttGatewayClassInitialize) {
             eventServer.subscribe(&errorListener, Topic::ConnectionError);
@@ -169,5 +169,5 @@ namespace WaterMeterCppTest {
     PubSubClient MqttGatewayTest::mqttClient;
     PayloadBuilder MqttGatewayTest::payloadBuilder;
     SensorDataQueuePayload MqttGatewayTest::payload;
-    SensorDataQueue MqttGatewayTest::dataQueue(&eventServer, &payload);
+    DataQueue MqttGatewayTest::dataQueue(&eventServer, &payload);
 }

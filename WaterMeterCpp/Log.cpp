@@ -54,9 +54,13 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
 }
 
-void Log::update(Topic topic, const char* payload) {
+void Log::printTimestamp() const {
     const char* timestamp = _eventServer->request(Topic::Time, "");
     Serial.printf("[%s] ", timestamp);
+}
+
+void Log::update(Topic topic, const char* payload) {
+    printTimestamp();
     switch (topic) {
     case Topic::Alert:
         Serial.println("Alert!");
@@ -81,9 +85,6 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::FreeStackConnector:
         Serial.printf("Free Stack Connector: %s\n", payload);
-        break;
-    case Topic::FreeQueue:
-        Serial.printf("Free DataQueue space: %s\n", payload);
         break;
     case Topic::MessageFormatted:
         Serial.println(payload);
@@ -115,6 +116,13 @@ void Log::update(Topic topic, const long payload) {
         update(topic, MESSAGES[payload]);
       }
       return;
+    }
+    if (topic == Topic::FreeQueue) {
+        printTimestamp();
+        const int index = payload >> 24;
+        const long value = payload & 0x00FFFFFF;
+        Serial.printf("Free DataQueue #%d space: %ld\n", index, value);
+        return;
     }
     EventClient::update(topic, payload);
 }

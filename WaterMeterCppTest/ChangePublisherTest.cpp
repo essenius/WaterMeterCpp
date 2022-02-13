@@ -8,22 +8,27 @@
 //    Unless required by applicable law or agreed to in writing, software distributed under the License
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
-#ifndef HEADER_LOG_H
-#define HEADER_LOG_H
 
-#include "EventServer.h"
-#include "PayloadBuilder.h"
+#include "pch.h"
 
-class Log : public EventClient {
+#include <regex>
+
+#include "CppUnitTest.h"
+#include "TestEventClient.h"
+#include "../WaterMeterCpp/Device.h"
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+namespace WaterMeterCppTest {
+    TEST_CLASS(ChangePublisherTest) {
 public:
-    using EventClient::update;
-    Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder);
-    void begin();
-    void update(Topic topic, const char* payload) override;
-    void update(Topic topic, long payload) override;
-private:
-    PayloadBuilder* _wifiPayloadBuilder;
-    long _previousConnectionTopic = -1;
-    void printTimestamp() const;
-};
-#endif
+    TEST_METHOD(changePublisherTest1) {
+        long test = 1 << 24;
+        Assert::AreEqual<long>(0x1000000, test, L"test");
+        test += 8192;
+        Assert::AreEqual<long>(0x1002000, test, L"test");
+        test += 65536;
+        Assert::AreEqual<long>(0x1012000, test, L"test");
+    }
+    };
+}

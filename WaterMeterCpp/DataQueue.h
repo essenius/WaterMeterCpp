@@ -20,22 +20,24 @@
 #endif
 
 #include "EventClient.h"
+#include "LongChangePublisher.h"
 #include "SensorDataQueuePayload.h"
 
 class DataQueue : public EventClient {
 public:
-    DataQueue(EventServer* eventServer, SensorDataQueuePayload* payload, size_t queueSize);
+    DataQueue(EventServer* eventServer, SensorDataQueuePayload* payload, int8_t index = 0, long queueSize = 40960, long epsilon = 1024, long lowThreshold = 2048);
 
     bool canSend(const SensorDataQueuePayload* payload);
-    virtual size_t freeSpace();
+    size_t freeSpace();
     RingbufHandle_t handle() const;
-    static size_t requiredSize(size_t realSize);
     SensorDataQueuePayload* receive() const;
+    static size_t requiredSize(size_t realSize);
     bool send(const SensorDataQueuePayload* payload);
     void update(Topic topic, const char* payload) override;
 
 private:
     RingbufHandle_t _bufferHandle = nullptr;
+    LongChangePublisher _freeSpace;
     SensorDataQueuePayload* _payload;
 };
 

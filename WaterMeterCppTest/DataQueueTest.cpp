@@ -15,7 +15,7 @@
 
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
-#include "../WaterMeterCpp/SensorDataQueue.h"
+#include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/FreeRtosMock.h"
@@ -44,7 +44,7 @@ public:
         PayloadBuilder payloadBuilder;
         Serializer serializer(&eventServer, &payloadBuilder);
         SensorDataQueuePayload payload{};
-        SensorDataQueue dataQueue(&eventServer, &payload);
+        DataQueue dataQueue(&eventServer, &payload);
         payload.topic = Topic::Samples;
         for (uint16_t times = 0; times < 5; times++) {
             payload.buffer.samples.count = MAX_SAMPLES - times;

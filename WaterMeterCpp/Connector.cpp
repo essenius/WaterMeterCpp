@@ -29,7 +29,7 @@ Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatw
     _serializer(serializer),
     _samplerQueueClient(samplerQueueClient),
     _communicatorQueueClient(communicatorQueueClient),
-    _state(eventServer, this, Topic::Connection) {}
+    _state(eventServer, Topic::Connection) {}
 
 ConnectionState Connector::loop() {
     connect();

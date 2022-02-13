@@ -20,9 +20,10 @@
 #include "ArduinoMock.h"
 #endif
 
-DataQueue::DataQueue(EventServer* eventServer, SensorDataQueuePayload* payload, const size_t queueSize) :
+DataQueue::DataQueue(EventServer* eventServer, SensorDataQueuePayload* payload, const int8_t index, const long queueSize, const long epsilon, const long lowThreshold) :
     EventClient(eventServer),
     _bufferHandle(xRingbufferCreate(queueSize, RINGBUF_TYPE_ALLOWSPLIT)),
+    _freeSpace(eventServer, Topic::FreeQueue, epsilon, lowThreshold),
     _payload(payload){}
 
 bool DataQueue::canSend(const SensorDataQueuePayload* payload) {
@@ -31,6 +32,7 @@ bool DataQueue::canSend(const SensorDataQueuePayload* payload) {
  
 size_t DataQueue::freeSpace() {
     const auto space = xRingbufferGetCurFreeSize(_bufferHandle);
+    _freeSpace = static_cast<long>(space);
     return space;
 }
 

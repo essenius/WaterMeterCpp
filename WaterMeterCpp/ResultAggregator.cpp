@@ -17,7 +17,7 @@ ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, Da
                                    const uint32_t measureIntervalMicros) :
     Aggregator(eventServer, theClock, dataQueue, payload),
     _result(&payload->buffer.result),
-    _overrun(eventServer, this, Topic::TimeOverrun, 0L),
+    _overrun(eventServer, Topic::TimeOverrun),
     _measureIntervalMicros(measureIntervalMicros) {
     _desiredFlushRate = _idleFlushRate;
 }

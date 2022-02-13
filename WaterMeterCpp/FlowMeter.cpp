@@ -37,9 +37,9 @@ constexpr float ZEROCHECK_THESHOLD = -2.0f;
 
 FlowMeter::FlowMeter(EventServer* eventServer):
     EventClient(eventServer),
-    _exclude(eventServer, this, Topic::Exclude, false),
-    _flow(eventServer, this, Topic::Flow, false),
-    _peak(eventServer, this, Topic::Peak, false) {}
+    _exclude(eventServer, Topic::Exclude),
+    _flow(eventServer, Topic::Flow),
+    _peak(eventServer, Topic::Peak) {}
 
 void FlowMeter::addSample(int measurement) {
     const bool firstCall = _startupSamplesLeft == STARTUP_SAMPLES;

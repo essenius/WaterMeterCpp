@@ -20,6 +20,7 @@
 #endif
 
 #include "../WaterMeterCpp/Device.h"
+#include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/FlowMeter.h"
 #include "../WaterMeterCpp/LedDriver.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
@@ -37,7 +38,6 @@
 #include "../WaterMeterCpp/QueueClient.h"
 #include "../WaterMeterCpp/secrets.h"
 #include "../WaterMeterCpp/Sampler.h"
-#include "../WaterMeterCpp/SensorDataQueue.h"
 #include "TopicHelper.h"
 #include "StateHelper.h"
 
@@ -75,7 +75,7 @@ namespace WaterMeterCppTest {
             PayloadBuilder serializePayloadBuilder(&theClock);
             Serializer serializer(&connectorEventServer, &serializePayloadBuilder);
             SensorDataQueuePayload connectorPayload;
-            SensorDataQueue sensorDataQueue(&connectorEventServer, &connectorPayload);
+            DataQueue sensorDataQueue(&connectorEventServer, &connectorPayload);
             SensorDataQueuePayload measurementPayload;
             SensorDataQueuePayload resultPayload;
             SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &measurementPayload);
@@ -98,17 +98,16 @@ namespace WaterMeterCppTest {
             QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100);
 
             // send only, but 1 is the minimum size for a queue
-            QueueClient connectorSamplerQueueClient(&connectorEventServer, 1);
+            QueueClient connectorSamplerQueueClient(&connectorEventServer, 0);
             SensorDataQueuePayload communicatorQueuePayload;
             PayloadBuilder serialize2PayloadBuilder(&theClock);
             Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
-            DataQueue connectorDataQueue(&communicatorEventServer, &communicatorQueuePayload, 1024);
+            DataQueue connectorDataQueue(&communicatorEventServer, &communicatorQueuePayload, 1, 1024, 128, 256);
             Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator,
                             &samplerQueueClient);
             Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2,
-                                      &communicatorSamplerQueueClient,
-                                      &communicatorConnectorQueueClient);
+                                      &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
             TimeServer timeServer;
             Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &sensorDataQueue,
@@ -166,7 +165,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(R"([] Starting
 [] Topic '6': 0
 [] Wifi summary: {"ssid":"","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
-[] Free DataQueue space: 12800
+[] Free DataQueue #0 space: 12800
 [] Free Heap: 32000
 [] Free Stack Sampler: 1500
 [] Free Stack Communicator: 3750

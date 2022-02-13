@@ -12,7 +12,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/ResultAggregator.h"
-#include "../WaterMeterCpp/SensorDataQueue.h"
+#include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/Serializer.h"
 #include "FlowMeterDriver.h"
 #include <iostream>
@@ -31,7 +31,7 @@ namespace WaterMeterCppTest {
         static TestEventClient rateListener;
         static PayloadBuilder payloadBuilder;
         static Serializer serializer;
-        static SensorDataQueue dataQueue;
+        static DataQueue dataQueue;
         static Clock theClock;
 
         TEST_CLASS_INITIALIZE(resultAggregatorTestClassInitialize) {
@@ -272,5 +272,5 @@ namespace WaterMeterCppTest {
     Clock ResultAggregatorTest::theClock(&eventServer);
     SensorDataQueuePayload ResultAggregatorTest::payload;
     TestEventClient ResultAggregatorTest::rateListener(&eventServer);
-    SensorDataQueue ResultAggregatorTest::dataQueue(&eventServer, &payload);
+    DataQueue ResultAggregatorTest::dataQueue(&eventServer, &payload);
 }
