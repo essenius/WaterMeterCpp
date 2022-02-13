@@ -38,8 +38,10 @@
 #include "../WaterMeterCpp/QueueClient.h"
 #include "../WaterMeterCpp/secrets.h"
 #include "../WaterMeterCpp/Sampler.h"
+// ReSharper disable CppUnusedIncludeDirective - false positive
 #include "TopicHelper.h"
 #include "StateHelper.h"
+// ReSharper restore CppUnusedIncludeDirective
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

@@ -94,19 +94,19 @@ void uxQueueReset() {
         queueHandle[i] = nullptr;
         queue[i].currentIndex = 0;
     }
-    for (int i = 0; i < MAX_RINGBUFFERS; i++) {
-        container[i].ringbufHandle = nullptr;
-        container[i].nextBufferItem = 0;
-        container[i].nextReadBufferItem = 0;
-        container[i].bufferIsFull = false;
-        for (int j = 0; j < MAX_ITEMS; j++) {
-            container[i].itemSize[j] = 0;
+    for (auto& i : container) {
+        i.ringbufHandle = nullptr;
+        i.nextBufferItem = 0;
+        i.nextReadBufferItem = 0;
+        i.bufferIsFull = false;
+        for (unsigned long long& j : i.itemSize) {
+            j = 0;
         }
     }
 }
 
-UBaseType_t uxQueueSpacesAvailable(QueueHandle_t xQueue) {
-    const auto queue1 = static_cast<Queue*>(xQueue);
+UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle) {
+    const auto queue1 = static_cast<Queue*>(handle);
     return MAX_ELEMENTS - queue1->currentIndex;
 }
 
@@ -153,7 +153,7 @@ UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, s
     if (bufferHandle == nullptr) return pdFALSE;
     const int i = getIndex(bufferHandle);
     if (container[i].nextBufferItem >= MAX_ITEMS) return pdFALSE;
-    if (size > 2 * MAX_ITEM_SIZE) return pdFALSE;
+    if (size > 2LL * MAX_ITEM_SIZE) return pdFALSE;
     if (size > MAX_ITEM_SIZE) {
         const auto startItem2Pointer = static_cast<const char*>(payload) + MAX_ITEM_SIZE;
         memcpy(&container[i].ringBuffer[container[i].nextBufferItem][0], payload, MAX_ITEM_SIZE);

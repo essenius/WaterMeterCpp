@@ -11,7 +11,6 @@
 
 #ifndef HEADER_MQTTGATEWAY
 #define HEADER_MQTTGATEWAY
-#include <map>
 #include "EventServer.h"
 #include "config.h"
 #include "DataQueue.h"

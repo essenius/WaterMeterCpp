@@ -24,7 +24,7 @@
 class Device : public EventClient {
 public:
     explicit Device(EventServer* eventServer);
-    void begin(const TaskHandle_t samplerHandle, const TaskHandle_t communicatorHandle, const TaskHandle_t connectorHandle);
+    void begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle);
     void reportHealth();
 private:
     TaskHandle_t _samplerHandle{};

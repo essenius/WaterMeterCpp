@@ -163,7 +163,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AggregatorTest.cpp" />
-    <ClCompile Include="ChangePublisherTest.cpp" />
     <ClCompile Include="ClockTest.cpp" />
     <ClCompile Include="ConnectorTest.cpp" />
     <ClCompile Include="DataQueueTest.cpp" />

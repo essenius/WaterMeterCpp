@@ -17,6 +17,7 @@
 #include "WifiMock.h"
 #include "../WaterMeterCpp/Connector.h"
 #include "../WaterMeterCpp/ArduinoMock.h"
+// ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include "StateHelper.h"
 #include "TimeServerMock.h"
 #include "../WaterMeterCpp/DataQueue.h"
@@ -109,7 +110,6 @@ namespace WaterMeterCppTest {
 
             // disconnecting Wifi should change state to Disconnected
             wifiMock.setIsConnected(false);
-            const auto timestampDisconnected = micros();
             Assert::AreEqual(ConnectionState::Disconnected, connector.loop(), L"Disconnects if wifi is down");
 
             Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Reconnecting Wifi");

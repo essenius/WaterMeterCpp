@@ -25,8 +25,6 @@ namespace WaterMeterCppTest {
     TEST_CLASS(MagnetoSensorReaderTest) {
     public:
         TEST_METHOD(magnetoSensorReaderTest1) {
-            constexpr int16_t zero = 0;
-            constexpr int16_t one = 1;
             QMC5883LCompass compass;
             EventServer eventServer;
             TestEventClient resetSensorEventClient(&eventServer);

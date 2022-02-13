@@ -22,12 +22,12 @@ Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* led
     _device(device),
     _dataQueue(dataQueue),
     _serializer(serializer),
-    _fromSamplerQueueClient(fromSamplerQueueClient),
-    _fromConnectorQueueClient(fromConnectorQueueClient) {}
+    _samplerQueueClient(fromSamplerQueueClient),
+    _connectorQueueClient(fromConnectorQueueClient) {}
 
 void Communicator::loop() const {
-    while (_fromSamplerQueueClient->receive()) { delay(5); }
-    while (_fromConnectorQueueClient->receive()) { delay(5); }
+    while (_samplerQueueClient->receive()) { delay(5); }
+    while (_connectorQueueClient->receive()) { delay(5); }
     SensorDataQueuePayload* payload;
     while ((payload = _dataQueue->receive()) != nullptr) {
         _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
@@ -41,18 +41,17 @@ void Communicator::setup() const {
     _logger->begin();
     _ledDriver->begin();
 
-    // TODO rename queues
     // what can be sent to mqtt (note: nothing sent to the sampler)
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::Alert);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::BatchSize);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeHeap);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::FreeStack);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::Rate);
-    _eventServer->subscribe(_fromConnectorQueueClient, Topic::SensorWasReset);
+    _eventServer->subscribe(_connectorQueueClient, Topic::Alert);
+    _eventServer->subscribe(_connectorQueueClient, Topic::BatchSize);
+    _eventServer->subscribe(_connectorQueueClient, Topic::FreeHeap);
+    _eventServer->subscribe(_connectorQueueClient, Topic::FreeStack);
+    _eventServer->subscribe(_connectorQueueClient, Topic::Rate);
+    _eventServer->subscribe(_connectorQueueClient, Topic::SensorWasReset);
     _eventServer->subscribe(_serializer, Topic::SensorData);
 }
 
-void Communicator::task(void* parameter) {
+[[ noreturn ]] void Communicator::task(void* parameter) {
     const auto me = static_cast<Communicator*>(parameter);
     for (;;) {
         me->loop();

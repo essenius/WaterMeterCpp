@@ -40,6 +40,10 @@ class EventClient {
 public:
     explicit EventClient(EventServer* eventServer);
     virtual ~EventClient();
+    EventClient(const EventClient&) = default;
+    EventClient(EventClient&&) = default;
+    EventClient& operator=(const EventClient&) = default;
+    EventClient& operator=(EventClient&&) = default;
 
     // can't use generics on virtual functions, which we would need here.
     // Since we use only a limited set of types, type erasure seems overkill 

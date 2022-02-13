@@ -20,7 +20,6 @@
 #endif
 
 #include "SafeCString.h"
-
 #include "MqttGateway.h"
 
 using namespace std::placeholders;
@@ -37,9 +36,7 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK}},
     {Topic::FreeQueueSize, {DEVICE, DEVICE_FREE_QUEUE_SIZE}},
     {Topic::FreeQueueSpaces, {DEVICE, DEVICE_FREE_QUEUE_SPACES}},
-    //{Topic::ConnectionError, {DEVICE, DEVICE_ERROR}}, // TODO: check if needed
     {Topic::SensorWasReset, {DEVICE, DEVICE_RESET_SENSOR}},
-    //{Topic::Info, {DEVICE, DEVICE_INFO}},
     {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}}
 };
 

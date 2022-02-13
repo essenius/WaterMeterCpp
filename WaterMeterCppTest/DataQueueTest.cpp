@@ -20,6 +20,7 @@
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/FreeRtosMock.h"
 #include "../WaterMeterCpp/SafeCString.h"
+// ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include "TopicHelper.h"
 #include "../WaterMeterCpp/Serializer.h"
 
@@ -50,7 +51,7 @@ public:
         payload.topic = Topic::Samples;
         for (uint16_t times = 0; times < 5; times++) {
             payload.buffer.samples.count = MAX_SAMPLES - times;
-            for (int16_t i = 0; i < payload.buffer.samples.count; i++) {
+            for (uint16_t i = 0; i < payload.buffer.samples.count; i++) {
                 payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
             }
             auto size = DataQueue::requiredSize(payload.size());

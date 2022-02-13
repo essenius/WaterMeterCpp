@@ -68,7 +68,7 @@ void Connector::setup() {
 
 }
 
-void Connector::task(void* parameter) {
+[[ noreturn]] void Connector::task(void* parameter) {
     const auto me = static_cast<Connector*>(parameter);
 
     for (;;) {

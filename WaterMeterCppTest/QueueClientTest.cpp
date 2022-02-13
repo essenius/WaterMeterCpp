@@ -14,7 +14,6 @@
 #include <CppUnitTest.h>
 
 #include "../WaterMeterCpp/QueueClient.h"
-#include "../WaterMeterCpp/ArduinoMock.h"
 #include "StateHelper.h"
 #include "TestEventClient.h"
 

@@ -16,8 +16,6 @@
 
 #include "Log.h"
 
-#include "ConnectionState.h"
-
 // expects the same size and order as the ConnectionState enum
 constexpr static const char* const MESSAGES[] = {
     "Initializing connection",

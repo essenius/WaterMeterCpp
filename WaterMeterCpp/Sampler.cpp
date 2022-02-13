@@ -25,8 +25,6 @@ void Sampler::begin() {
 
 void Sampler::loop() {
     const int16_t measure = _sensorReader->read();
-    const auto startTime = micros();
-    const auto slack = startTime - _scheduledStartTime;
     // this triggers flowMeter and measurementWriter as well as the comms thread
     _eventServer->publish(Topic::Sample, measure);
     _resultAggregator->addMeasurement(measure, _flowMeter);

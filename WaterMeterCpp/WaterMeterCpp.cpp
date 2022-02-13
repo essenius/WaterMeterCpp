@@ -11,6 +11,10 @@
 
 // ReSharper disable CppClangTidyClangDiagnosticExitTimeDestructors
 
+// This project implements a water meter using a QMC5883L compass sensor on an ESP32 board.
+// you will see these ifdef preprocessor statements often. This is done to be able to test the application
+// on Visual Studio. They enable the mocks you see in this project if we're not on the actual ESP32 devices.
+
 #ifdef ESP32
 #include <ESP.h>
 #include <PubSubClient.h>
@@ -23,7 +27,6 @@
 
 #include "Communicator.h"
 #include "Connector.h"
-#include "DataQueue.h"
 #include "Device.h"
 #include "EventServer.h"
 #include "FirmwareManager.h"
@@ -94,11 +97,12 @@ Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2, &communicatorSamplerQueueClient,
-                          &communicatorConnectorQueueClient);
+Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2,
+                          &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
 TimeServer timeServer;
-Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &sensorDataQueue, &connectorDataQueue, &serializer, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
+Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &sensorDataQueue,
+                    &connectorDataQueue, &serializer, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
 
 TaskHandle_t communicatorTaskHandle;
 TaskHandle_t connectorTaskHandle;
@@ -128,7 +132,7 @@ void setup() {
 
     // start the communication task which takes care of logging and leds, as well as passing on data to the connector if there is a connection
     xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
-    
+
     device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 
     // begin can only run when both sampler and connector have finished setup, since it can start publishing right away

@@ -32,7 +32,7 @@ private:
     Device* _device;
     DataQueue* _dataQueue;
     Serializer* _serializer;
-    QueueClient* _fromSamplerQueueClient;
-    QueueClient* _fromConnectorQueueClient;
+    QueueClient* _samplerQueueClient;
+    QueueClient* _connectorQueueClient;
 };
 #endif

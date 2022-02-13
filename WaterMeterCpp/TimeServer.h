@@ -12,10 +12,15 @@
 #ifndef HEADER_TIMESERVER_H
 #define HEADER_TIMESERVER_H
 
-#include "EventServer.h"
-
 class TimeServer {
 public:
+    TimeServer() = default;
+    virtual ~TimeServer() = default;
+    TimeServer(const TimeServer&) = default;
+    TimeServer(TimeServer&&) = default;
+    TimeServer& operator=(const TimeServer&) = default;
+    TimeServer& operator=(TimeServer&&) = default;
+
     virtual void setTime();
     virtual bool timeWasSet() const;
 

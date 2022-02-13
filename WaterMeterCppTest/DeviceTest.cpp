@@ -32,8 +32,6 @@ namespace WaterMeterCppTest {
 
             Device device(&eventServer);
             device.begin(xTaskGetCurrentTaskHandle(), handle1, handle2);
-            handle1 = reinterpret_cast<TaskHandle_t>(53);
-            handle2 = reinterpret_cast<TaskHandle_t>(33);
             device.reportHealth();
 
             Assert::AreEqual(3, stackListener.getCallCount(), L"Stack called three times");

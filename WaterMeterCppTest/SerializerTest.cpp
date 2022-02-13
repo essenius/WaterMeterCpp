@@ -52,7 +52,7 @@ namespace WaterMeterCppTest {
             testEventClient.reset();
             payload.topic = Topic::Samples;
             payload.buffer.samples.count = MAX_SAMPLES;
-            for (int16_t i = 0; i < payload.buffer.samples.count; i++) {
+            for (uint16_t i = 0; i < payload.buffer.samples.count; i++) {
                 payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
             }
             eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
