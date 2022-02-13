@@ -24,6 +24,7 @@ public:
 private:
     PayloadBuilder* _wifiPayloadBuilder;
     long _previousConnectionTopic = -1;
+    void printIndexedPayload(const char* format, long payload) const;
     void printTimestamp() const;
 };
 #endif

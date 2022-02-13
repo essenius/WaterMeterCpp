@@ -22,8 +22,9 @@ QueueHandle_t QueueClient::createQueue(const uint16_t length) {
     return xQueueCreate(length, sizeof(ShortMessage));
 }
 
-QueueClient::QueueClient(EventServer* eventServer, uint16_t size, uint8_t index):
+QueueClient::QueueClient(EventServer* eventServer, const uint16_t size, const int8_t index) :
     EventClient(eventServer),
+    _freeSpaces(eventServer, Topic::FreeQueueSpaces, 1, 5, index),
     _receiveQueue(createQueue(size)) {}
 
 void QueueClient::begin(QueueHandle_t sendQueue) {

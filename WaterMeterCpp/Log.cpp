@@ -45,7 +45,8 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::FreeStackSampler);
     _eventServer->subscribe(this, Topic::FreeStackCommunicator);
     _eventServer->subscribe(this, Topic::FreeStackConnector);
-    _eventServer->subscribe(this, Topic::FreeQueue);
+    _eventServer->subscribe(this, Topic::FreeQueueSize);
+    _eventServer->subscribe(this, Topic::FreeQueueSpaces);
     _eventServer->subscribe(this, Topic::MessageFormatted);
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::ResultWritten);
@@ -70,9 +71,6 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::Connection:
         Serial.println(payload);
-        break;
-    case Topic::ConnectionError:
-        Serial.printf("Error: '%s'\n", payload);
         break;
     case Topic::FreeHeap:
         Serial.printf("Free Heap: %s\n", payload);
@@ -109,20 +107,29 @@ void Log::update(Topic topic, const char* payload) {
     }
 }
 
-void Log::update(Topic topic, const long payload) {
-    if (topic == Topic::Connection) {
+void Log::update(const Topic topic, const long payload) {
+    switch (topic) {
+    case Topic::Connection:
       if (_previousConnectionTopic != payload) {
         _previousConnectionTopic = payload;
         update(topic, MESSAGES[payload]);
       }
       return;
-    }
-    if (topic == Topic::FreeQueue) {
-        printTimestamp();
-        const int index = payload >> 24;
-        const long value = payload & 0x00FFFFFF;
-        Serial.printf("Free DataQueue #%d space: %ld\n", index, value);
+    case Topic::FreeQueueSize:
+        printIndexedPayload("Free Memory DataQueue #%d: %ld\n", payload);
         return;
+    case Topic::FreeQueueSpaces:
+        printIndexedPayload("Free Spaces Queue #%d: %ld\n", payload);
+        return;
+    default:
+        EventClient::update(topic, payload);
     }
-    EventClient::update(topic, payload);
+}
+
+void Log::printIndexedPayload(const char* format, long payload) const {
+    printTimestamp();
+    const int index = payload >> 24;
+    const long value = payload & 0x00FFFFFF;
+    Serial.printf(format, index, value);
+
 }

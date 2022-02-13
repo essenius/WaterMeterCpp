@@ -70,6 +70,7 @@ void Sampler::setup(const unsigned long samplePeriod) {
     _eventServer->subscribe(_queueClient, Topic::Blocked);
     _eventServer->subscribe(_queueClient, Topic::Exclude);
     _eventServer->subscribe(_queueClient, Topic::Flow);
+    _eventServer->subscribe(_queueClient, Topic::FreeQueueSpaces);
     _eventServer->subscribe(_queueClient, Topic::Peak);
     _eventServer->subscribe(_queueClient, Topic::ResultWritten);
     _eventServer->subscribe(_queueClient, Topic::Sample);

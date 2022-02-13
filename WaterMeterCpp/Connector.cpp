@@ -57,7 +57,9 @@ void Connector::setup() {
     // what can be sent to the communicator
     _eventServer->subscribe(_communicatorQueueClient, Topic::Connection);
     _eventServer->subscribe(_communicatorQueueClient, Topic::WifiSummaryReady);
-    _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueue);
+    _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSize);
+    _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSpaces);
+
     _wifi->configure(&IP_CONFIG);
 
 #ifdef CONFIG_USE_TLS

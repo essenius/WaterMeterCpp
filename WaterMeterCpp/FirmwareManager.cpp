@@ -81,6 +81,9 @@ bool FirmwareManager::updateAvailable() const {
         if (newBuildAvailable) {
             safeSprintf(buffer, "Current firmware: '%s'; available: '%s'", _buildVersion, newVersion.c_str());
             _eventServer->publish(Topic::Info, buffer);
+        } else {
+            safeSprintf(buffer, "Already on latest firmware: '%s'", _buildVersion);
+            _eventServer->publish(Topic::Info, buffer);          
         }
     }
     else {

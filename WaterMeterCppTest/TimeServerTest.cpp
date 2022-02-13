@@ -23,6 +23,7 @@ namespace WaterMeterCppTest {
     public:
         TEST_METHOD(timeServerScriptTest) {
             TimeServer timeServer;
+            timeServer.setTime();
             Assert::IsTrue(timeServer.timeWasSet(), L"Time is set on Windows devices");
         }
     };

@@ -37,7 +37,7 @@ static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
     {Topic::FreeStackSampler, {DEVICE, DEVICE_FREE_STACK_SAMPLER}},
     {Topic::FreeStackCommunicator, {DEVICE, DEVICE_FREE_STACK_COMMUNICATOR}},
     {Topic::FreeStackConnector, {DEVICE, DEVICE_FREE_STACK_CONNECTOR}},
-    {Topic::FreeQueue, {DEVICE, DEVICE_FREE_QUEUE}},
+    {Topic::FreeQueueSize, {DEVICE, DEVICE_FREE_QUEUE}},
     //{Topic::ConnectionError, {DEVICE, DEVICE_ERROR}}, // TODO: check if needed
     {Topic::SensorWasReset, {DEVICE, DEVICE_RESET_SENSOR}},
     //{Topic::Info, {DEVICE, DEVICE_INFO}},
@@ -75,7 +75,7 @@ void MqttGateway::announceReady() {
     _eventServer->subscribe(this, Topic::FreeStackSampler); // long
     _eventServer->subscribe(this, Topic::FreeStackCommunicator); // long
     _eventServer->subscribe(this, Topic::FreeStackConnector); // long
-    _eventServer->subscribe(this, Topic::FreeQueue); // long
+    _eventServer->subscribe(this, Topic::FreeQueueSize); // long
     _eventServer->subscribe(this, Topic::IdleRate); // long
     _eventServer->subscribe(this, Topic::NonIdleRate); // long
     _eventServer->subscribe(this, Topic::Rate); // long  

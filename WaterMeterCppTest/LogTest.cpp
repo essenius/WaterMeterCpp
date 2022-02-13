@@ -73,6 +73,14 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::Blocked, LONG_TRUE);
             Assert::AreEqual(" Blocked: 1\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Blocked handled OK");
 
+            Serial.clearOutput();
+            eventServer.publish(Topic::SensorWasReset, LONG_TRUE);
+            Assert::AreEqual(" Sensor was reset\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Sensor reset handled OK");
+
+            Serial.clearOutput();
+            eventServer.publish(Topic::FreeQueueSpaces, 0x03000010);
+            Assert::AreEqual(" Free Spaces Queue #3: 16\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Sensor reset handled OK");
+
         }
 private:
         void publishConnectionState(const Topic topic, ConnectionState connectionState) {

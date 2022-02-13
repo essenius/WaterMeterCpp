@@ -47,6 +47,10 @@ namespace WaterMeterCppTest {
             reader.read();
             Assert::AreEqual(10, resetSensorEventClient.getCallCount(), L"ResetSensor event fired 10 times");
             Assert::AreEqual(1, alertEventClient.getCallCount(), L"Alert event fired");
+
+            resetSensorEventClient.reset();
+            eventServer.publish(Topic::ResetSensor, LONG_TRUE);
+            Assert::AreEqual(1, resetSensorEventClient.getCallCount(), L"Sensor was reset called after ResetSensor command");
         }
     };
 }

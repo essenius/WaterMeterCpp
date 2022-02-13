@@ -22,9 +22,8 @@
 template <class payloadType>
 class ChangePublisher {
 public:
-    ChangePublisher(EventServer* eventServer, /*EventClient* eventClient, */ Topic topic, int8_t index = 0) {
+    ChangePublisher(EventServer* eventServer, const Topic topic, const int8_t index = 0) {
         _eventServer = eventServer;
-        /*_eventClient = eventClient;*/
         _index = index << 24;
         _topic = topic;
     }
@@ -50,7 +49,6 @@ public:
 
 protected:
     EventServer* _eventServer;
-    /*EventClient* _eventClient;*/
     long _index;
     payloadType _payload{};
     Topic _topic;

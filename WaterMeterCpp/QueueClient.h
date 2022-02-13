@@ -20,10 +20,11 @@
 #endif
 
 #include "EventClient.h"
+#include "LongChangePublisher.h"
 
 class QueueClient : public EventClient {
 public:
-    QueueClient(EventServer* eventServer, uint16_t size, uint8_t index = 0);
+    QueueClient(EventServer* eventServer, uint16_t size, int8_t index = 0);
     void begin(QueueHandle_t sendQueue = nullptr);
     QueueHandle_t getQueueHandle() const;
     bool receive();
@@ -31,7 +32,7 @@ public:
     void update(Topic topic, long payload) override;
 private:
     static QueueHandle_t createQueue(uint16_t length);
-
+    LongChangePublisher _freeSpaces;
     QueueHandle_t _receiveQueue;
     QueueHandle_t _sendQueue = nullptr;
 };

@@ -15,15 +15,13 @@
 #endif
 
 LongChangePublisher::LongChangePublisher(
-    EventServer* eventServer, /*EventClient* eventClient,*/ const Topic topic, const long epsilon, const long lowThreshold, int8_t index) :
-    ChangePublisher(eventServer, /*eventClient,*/ topic, index), _epsilon(epsilon), _lowThreshold(lowThreshold) {}
+    EventServer* eventServer, const Topic topic, const long epsilon, const long lowThreshold, int8_t index) :
+    ChangePublisher(eventServer, topic, index), _epsilon(epsilon), _lowThreshold(lowThreshold) {}
 
 LongChangePublisher& LongChangePublisher::operator=(long payload) {
     // Only catch larger variations or values close to a critical value to avoid very frequent updates
     if (abs(_payload - payload) > _epsilon || payload < _lowThreshold) {
         ChangePublisher::operator=(payload);
-/*        _eventServer->publish(_topic, payload);
-        _payload = payload; */
     }
     return *this;
 }

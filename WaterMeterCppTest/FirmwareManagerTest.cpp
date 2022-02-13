@@ -44,7 +44,8 @@ namespace WaterMeterCppTest {
             HTTPClient::ReturnValue = 200;
             HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
             manager.tryUpdate();
-            Assert::AreEqual(0, infoListener.getCallCount(), L"no info on check without update");
+            Assert::AreEqual(1, infoListener.getCallCount(), L"info on check without update");
+            Assert::AreEqual("Already on latest firmware: '0.1.1'", infoListener.getPayload(), "info on check without update OK");
             Assert::AreEqual(0, errorListener.getCallCount(), L"no error on check without update");
         }
 
@@ -84,7 +85,7 @@ namespace WaterMeterCppTest {
             // Successful check, same version
             HTTPClient::ReturnValue = 200;
             Assert::IsFalse(manager.updateAvailable(), L"No update for version 0.1.1");
-            Assert::AreEqual(0, infoListener.getCallCount(), L"No info");
+            Assert::AreEqual(1, infoListener.getCallCount(), L"info");
             Assert::AreEqual(0, errorListener.getCallCount(), L"No error");
         }
 

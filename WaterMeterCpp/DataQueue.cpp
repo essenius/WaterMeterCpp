@@ -23,7 +23,7 @@
 DataQueue::DataQueue(EventServer* eventServer, SensorDataQueuePayload* payload, const int8_t index, const long queueSize, const long epsilon, const long lowThreshold) :
     EventClient(eventServer),
     _bufferHandle(xRingbufferCreate(queueSize, RINGBUF_TYPE_ALLOWSPLIT)),
-    _freeSpace(eventServer, Topic::FreeQueue, epsilon, lowThreshold),
+    _freeSpace(eventServer, Topic::FreeQueueSize, epsilon, lowThreshold),
     _payload(payload){}
 
 bool DataQueue::canSend(const SensorDataQueuePayload* payload) {

@@ -92,13 +92,13 @@ namespace WaterMeterCppTest {
             MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &MQTT_CONFIG, &sensorDataQueue, BUILD_VERSION);
             FirmwareManager firmwareManager(&connectorEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
 
-            QueueClient samplerQueueClient(&samplerEventServer, 20);
-            QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20);
-            QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20);
-            QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100);
+            QueueClient samplerQueueClient(&samplerEventServer, 20, 0);
+            QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20, 1);
+            QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20, 2);
+            QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100, 3);
 
-            // send only, but 1 is the minimum size for a queue
-            QueueClient connectorSamplerQueueClient(&connectorEventServer, 0);
+            // send only
+            QueueClient connectorSamplerQueueClient(&connectorEventServer, 0, 4);
             SensorDataQueuePayload communicatorQueuePayload;
             PayloadBuilder serialize2PayloadBuilder(&theClock);
             Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
@@ -165,7 +165,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(R"([] Starting
 [] Topic '6': 0
 [] Wifi summary: {"ssid":"","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
-[] Free DataQueue #0 space: 12800
+[] Free Memory DataQueue #0: 12800
 [] Free Heap: 32000
 [] Free Stack Sampler: 1500
 [] Free Stack Communicator: 3750

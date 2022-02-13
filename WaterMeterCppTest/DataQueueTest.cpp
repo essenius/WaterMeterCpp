@@ -35,16 +35,18 @@ public:
         TestEventClient sampleEventClient(&eventServer);
         TestEventClient errorEventClient(&eventServer);
         TestEventClient infoEventClient(&eventServer);
+        TestEventClient freeSpaceEventClient(&eventServer);
 
         eventServer.subscribe(&resultEventClient, Topic::Result);
         eventServer.subscribe(&sampleEventClient, Topic::Samples);
         eventServer.subscribe(&errorEventClient, Topic::ConnectionError);
         eventServer.subscribe(&infoEventClient, Topic::Info);
+        eventServer.subscribe(&freeSpaceEventClient, Topic::FreeQueueSize);
 
         PayloadBuilder payloadBuilder;
         Serializer serializer(&eventServer, &payloadBuilder);
         SensorDataQueuePayload payload{};
-        DataQueue dataQueue(&eventServer, &payload);
+        DataQueue dataQueue(&eventServer, &payload, 0, 40960, 512, 4096);
         payload.topic = Topic::Samples;
         for (uint16_t times = 0; times < 5; times++) {
             payload.buffer.samples.count = MAX_SAMPLES - times;
@@ -55,6 +57,8 @@ public:
             Assert::IsTrue(size <= 128, (L"Payload didn't max out: " + std::to_wstring(size)).c_str());
             Assert::IsTrue(dataQueue.send(&payload), (L"Send works for sample " + std::to_wstring(times)).c_str());
             Serial.printf("<<P%d Stack size: %d>>", times, uxTaskGetStackHighWaterMark(nullptr));
+            Assert::AreEqual(1, freeSpaceEventClient.getCallCount(),L"Free called once");
+            Assert::AreEqual("12800", freeSpaceEventClient.getPayload(), L"12800 bytes free");
             delay(50);
         }
         payload.topic = Topic::Result;
@@ -79,6 +83,9 @@ public:
             Assert::IsNotNull(payloadReceive, L"PayloadReceive not null 1");
             Assert::AreEqual(Topic::Samples, payloadReceive->topic, L"Topic 1 is Samples");
         }
+        Assert::AreEqual(2, freeSpaceEventClient.getCallCount(), L"Free called twice");
+        Assert::AreEqual("12160", freeSpaceEventClient.getPayload(), L"Difference more than 512");
+
         auto payloadReceive2 = dataQueue.receive();
         Assert::IsNotNull(payloadReceive2, L"PayloadReceive not null 2");
         Assert::AreEqual(Topic::Result, payloadReceive2->topic, L"Topic 2 is Result");

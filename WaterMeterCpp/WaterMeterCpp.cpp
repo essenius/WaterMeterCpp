@@ -64,7 +64,7 @@ Clock theClock(&communicatorEventServer);
 PayloadBuilder serializePayloadBuilder(&theClock);
 Serializer serializer(&connectorEventServer, &serializePayloadBuilder);
 SensorDataQueuePayload connectorPayload;
-DataQueue sensorDataQueue(&connectorEventServer, &connectorPayload, 0, 40960, 1024, 2048);
+DataQueue sensorDataQueue(&connectorEventServer, &connectorPayload);
 SensorDataQueuePayload measurementPayload;
 SensorDataQueuePayload resultPayload;
 SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &measurementPayload);
@@ -80,19 +80,19 @@ PubSubClient mqttClient;
 MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &MQTT_CONFIG, &sensorDataQueue, BUILD_VERSION);
 FirmwareManager firmwareManager(&connectorEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
 
-QueueClient samplerQueueClient(&samplerEventServer, 20);
-QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20);
-QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20);
-QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100);
+QueueClient samplerQueueClient(&samplerEventServer, 20, 0);
+QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20, 1);
+QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20, 2);
+QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100, 3);
 
 // Nothing to send from sampler to connector
-QueueClient connectorSamplerQueueClient(&connectorEventServer, 0);
+QueueClient connectorSamplerQueueClient(&connectorEventServer, 0, 4);
 SensorDataQueuePayload connectorDataQueuePayload;
 SensorDataQueuePayload communicatorQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);
 Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
-DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1);
+DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
 Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2, &communicatorSamplerQueueClient,
                           &communicatorConnectorQueueClient);

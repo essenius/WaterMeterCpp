@@ -37,7 +37,7 @@ namespace WaterMeterCppTest {
                 eventServer.publish(Topic::Exclude, i * 11);
             }
             // should not get saved
-            eventServer.publish(Topic::Exclude, 111);
+            eventServer.publish(Topic::Exclude, "111");
             testEventClient.reset();
             for (int i = 0; i < QUEUE_SIZE; i++) {
                 char numbuf[10];
