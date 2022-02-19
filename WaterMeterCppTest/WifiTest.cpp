@@ -25,7 +25,6 @@ namespace WaterMeterCppTest {
     public:
         static EventServer eventServer;
         static TestEventClient errorListener;
-        //static TestEventClient infoListener;
 
         TEST_CLASS_INITIALIZE(wifiTestClassInitialize) {
             eventServer.subscribe(&errorListener, Topic::ConnectionError);

@@ -91,7 +91,6 @@ bool ResultAggregator::send() {
     const auto wasSuccessful = Aggregator::send();
     if (wasSuccessful) {
         _eventServer->publish(this, Topic::ResultWritten, LONG_TRUE);
-        /*_eventServer->publish(this, Topic::TimeOverrun, LONG_FALSE);*/
     }
     return wasSuccessful;
 }

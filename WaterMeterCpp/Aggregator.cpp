@@ -39,7 +39,6 @@ long Aggregator::convertToLong(const char* stringParam, const long defaultValue)
 
 void Aggregator::flush() {
     _messageCount = 0;
-    //_payload->timestamp = _clock->getTimestamp();
     for (short& i : _payload->buffer.samples.value) {
         i = 0;
     }

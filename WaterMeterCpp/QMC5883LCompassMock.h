@@ -21,7 +21,7 @@
 
 class QMC5883LCompass {
 public:
-    //mock existing interface
+    // mock existing interface
     void init() {}
     void read() {}
     void setCalibration(int a, int b, int c, int d, int e, int f) {}

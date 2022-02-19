@@ -100,7 +100,7 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
     // TODO find alternative for strtok (which is a bit tricky)
     // if the topic is invalid, ignore the message
     if (strtok(copyTopic, "/") == nullptr) return; // homie, ignore
-    if (strtok(nullptr, "/") == nullptr) return; //device ID, ignore
+    if (strtok(nullptr, "/") == nullptr) return; // device ID, ignore
     const char* node = strtok(nullptr, "/");
     const char* property = strtok(nullptr, "/");
     const char* set = strtok(nullptr, "/");

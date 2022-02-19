@@ -41,7 +41,6 @@ void LedDriver::begin() {
     Led::init(Led::GREEN, Led::OFF);
     Led::init(Led::RED, Led::OFF);
     Led::init(Led::RUNNING, Led::OFF);
-    //Led::init(Led::YELLOW, Led::OFF);
 }
 
 void LedDriver::update(const Topic topic, const char* payload) {
