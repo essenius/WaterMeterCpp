@@ -14,7 +14,7 @@
 #define HEADER_SERIALIZER
 
 #include "PayloadBuilder.h"
-#include "SensorDataQueuePayload.h"
+#include "DataQueuePayload.h"
 
 
 class Serializer : public EventClient {
@@ -23,9 +23,9 @@ public:
     void update(Topic topic, const char* payload) override;
 
 private:
-    void convertMeasurements(const SensorDataQueuePayload* payload) const;
-    void convertResult(const SensorDataQueuePayload* payload) const;
-    void convertString(const SensorDataQueuePayload* data) const;
+    void convertMeasurements(const DataQueuePayload* payload) const;
+    void convertResult(const DataQueuePayload* payload) const;
+    void convertString(const DataQueuePayload* data) const;
     PayloadBuilder* _payloadBuilder;
 };
 #endif

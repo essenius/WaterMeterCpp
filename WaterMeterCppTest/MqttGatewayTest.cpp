@@ -39,7 +39,7 @@ namespace WaterMeterCppTest {
         static PubSubClient mqttClient;
         static PayloadBuilder payloadBuilder;
         static Serializer serializer;
-        static SensorDataQueuePayload payload;
+        static DataQueuePayload payload;
         static DataQueue dataQueue;
 
         TEST_CLASS_INITIALIZE(mqttGatewayClassInitialize) {
@@ -158,6 +158,12 @@ namespace WaterMeterCppTest {
             mqttClient.setCanConnect(false);
             gateway.handleQueue();
             Assert::AreEqual(1, mqttClient.getLoopCount(), L"Loop count still 1 after disconnect");
+
+            mqttClient.reset();
+
+            eventServer.publish(Topic::Alert, LONG_TRUE);
+            Assert::AreEqual("homie/client1/$state\n", mqttClient.getTopics(), L"Payload OK");
+            Assert::AreEqual("alert\n", mqttClient.getPayloads(), L"Payload OK");
         }
     };
 
@@ -168,6 +174,6 @@ namespace WaterMeterCppTest {
     TestEventClient MqttGatewayTest::infoListener(&eventServer);
     PubSubClient MqttGatewayTest::mqttClient;
     PayloadBuilder MqttGatewayTest::payloadBuilder;
-    SensorDataQueuePayload MqttGatewayTest::payload;
+    DataQueuePayload MqttGatewayTest::payload;
     DataQueue MqttGatewayTest::dataQueue(&eventServer, &payload);
 }

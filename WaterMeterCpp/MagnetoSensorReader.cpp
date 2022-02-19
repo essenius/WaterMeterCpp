@@ -20,7 +20,7 @@
 
 
 MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass) : 
-    EventClient(eventServer), _compass(compass) {}
+    EventClient(eventServer), _compass(compass), _alert(eventServer, Topic::Alert) {}
 
 void MagnetoSensorReader::begin() {
     _compass->setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
@@ -48,9 +48,11 @@ int16_t MagnetoSensorReader::read() {
     }
     else {
         // all good, reset the statistics
-        _streakCount = 1;
+        _streakCount = 0;
         _consecutiveStreakCount = 0;
         _previousSample = sample;
+        _alert = false;
+
     }
     return sample;
 }
@@ -59,14 +61,17 @@ void MagnetoSensorReader::reset() {
     _consecutiveStreakCount++;
     // If we have done this a number of times in a row, we post an alert
     if (_consecutiveStreakCount >= MAX_STREAKS_TO_ALERT) {
-        _eventServer->publish(Topic::Alert, LONG_TRUE);
+        _alert = true;
         _consecutiveStreakCount = 0;
+    } else if (_consecutiveStreakCount == MAX_STREAKS_TO_ALERT / 2){
+      // stop the alert halfway through
+        _alert = false;
     }
     // reset the sensor
     _compass->setReset();
     // reset puts the sensor into standby mode, so set it back to continuous
     _compass->setMode(0x01, 0x0C, 0x10, 0X00);
-    _streakCount = 1;
+    _streakCount = 0;
     _eventServer->publish(Topic::SensorWasReset, LONG_TRUE);
 }
 

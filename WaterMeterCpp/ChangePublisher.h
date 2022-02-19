@@ -35,14 +35,15 @@ public:
     virtual ~ChangePublisher() = default;
 
     operator payloadType() const { return _payload; }
-
+    payloadType get() const { return _payload; }
+    
     void reset() { _payload = payloadType(); }
     void setTopic(const Topic topic) { _topic = topic; }
 
     virtual ChangePublisher& operator=(payloadType payload) {
         if (payload != _payload) {
             _payload = payload;
-            _eventServer->publish(/*_eventClient,*/ _topic, static_cast<long>(payload) + _index);
+            _eventServer->publish( _topic, static_cast<long>(payload) + _index);
         }
         return *this;
     }

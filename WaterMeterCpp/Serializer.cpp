@@ -14,7 +14,7 @@
 Serializer::Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder) : EventClient(eventServer), _payloadBuilder(payloadBuilder) {}
 
 void Serializer::update(Topic topic, const char* payload) {
-    const auto sensorPayload = reinterpret_cast<const SensorDataQueuePayload*>(payload);
+    const auto sensorPayload = reinterpret_cast<const DataQueuePayload*>(payload);
     Topic newTopic;
     switch (sensorPayload->topic) {
     case Topic::Result:
@@ -36,7 +36,7 @@ void Serializer::update(Topic topic, const char* payload) {
     _eventServer->publish(this, newTopic, _payloadBuilder->toString());
 }
 
-void Serializer::convertMeasurements(const SensorDataQueuePayload* payload) const {
+void Serializer::convertMeasurements(const DataQueuePayload* payload) const {
     _payloadBuilder->initialize();
     _payloadBuilder->writeTimestampParam("timestamp", payload->timestamp);
     _payloadBuilder->writeArrayStart("measurements");
@@ -48,7 +48,7 @@ void Serializer::convertMeasurements(const SensorDataQueuePayload* payload) cons
     _payloadBuilder->writeGroupEnd();
 }
 
-void Serializer::convertResult(const SensorDataQueuePayload* payload) const {
+void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->initialize();
     _payloadBuilder->writeTimestampParam("timestamp", payload->timestamp);
 
@@ -79,7 +79,7 @@ void Serializer::convertResult(const SensorDataQueuePayload* payload) const {
     _payloadBuilder->writeGroupEnd();
 }
 
-void Serializer::convertString(const SensorDataQueuePayload* data) const {
+void Serializer::convertString(const DataQueuePayload* data) const {
     _payloadBuilder->initialize(0);
     if (data->topic == Topic::ConnectionError) {
         _payloadBuilder->writeText("Error: ");

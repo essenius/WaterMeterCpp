@@ -26,7 +26,9 @@ QueueClient::QueueClient(EventServer* eventServer, const uint16_t size, const in
     EventClient(eventServer),
     // being careful with reporting on spaces as it may use them as well, so just every 5
     _freeSpaces(eventServer, Topic::FreeQueueSpaces, 5, 0, index),
-    _receiveQueue(createQueue(size)) {}
+    _receiveQueue(createQueue(size)) {
+    _freeSpaces = size;
+}
 
 void QueueClient::begin(QueueHandle_t sendQueue) {
     _sendQueue = sendQueue;
@@ -41,6 +43,8 @@ bool QueueClient::receive() {
     ShortMessage message{};
     if (xQueueReceive(_receiveQueue, &message, 0) == pdFALSE) return false;
     _eventServer->publish(this, message.topic, message.payload);
+    // conversion should not be a problem - values don't get large
+    _freeSpaces = static_cast<long>(uxQueueSpacesAvailable(_receiveQueue));
     return true;
 }
 
@@ -57,6 +61,4 @@ void QueueClient::update(Topic topic, long payload) {
         // This is not supposed to happen.
         Serial.printf("Error in QueueClient %p update: %d/%ld\n", this, topic, payload);
     }
-    // conversion should not be a problem - values don't get large
-    _freeSpaces = static_cast<long>(uxQueueSpacesAvailable(_sendQueue));
 }

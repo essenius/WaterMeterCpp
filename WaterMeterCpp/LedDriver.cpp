@@ -22,7 +22,7 @@
 
 LedDriver::LedDriver(EventServer* eventServer) :
     EventClient(eventServer),
-    _connectingFlasher(Led::GREEN, CONNECTING_INTERVAL),
+    _connectingFlasher(Led::AUX, CONNECTING_INTERVAL),
     _sampleFlasher(Led::RUNNING, IDLE_INTERVAL) {}
 
 void LedDriver::begin() {
@@ -41,7 +41,7 @@ void LedDriver::begin() {
     Led::init(Led::GREEN, Led::OFF);
     Led::init(Led::RED, Led::OFF);
     Led::init(Led::RUNNING, Led::OFF);
-    Led::init(Led::YELLOW, Led::OFF);
+    //Led::init(Led::YELLOW, Led::OFF);
 }
 
 void LedDriver::update(const Topic topic, const char* payload) {
@@ -56,19 +56,22 @@ void LedDriver::update(Topic topic, long payload) {
     switch (topic) {
     // no connection causes a flashing green led, and blue while firmware is checked
     case Topic::Alert:
+        Led::set(Led::RED, state);
+        Led::set(Led::GREEN, state);
+        return;
     case Topic::Blocked:
-        Led::toggle(Led::RED);
+        Led::set(Led::RED, state);
         return;
     case Topic::Connection:
         switch (static_cast<ConnectionState>(payload)) {
         case ConnectionState::Disconnected:
             _connectingFlasher.reset();
-            Led::set(Led::GREEN, Led::OFF);
+            Led::set(Led::AUX, Led::OFF);
             Led::set(Led::BLUE, Led::OFF);
             return;
         case ConnectionState::MqttReady:
             _connectingFlasher.reset();
-            Led::set(Led::GREEN, Led::ON);
+            Led::set(Led::AUX, Led::ON);
             Led::set(Led::BLUE, Led::OFF);
             return;
         case ConnectionState::CheckFirmware:
@@ -93,13 +96,17 @@ void LedDriver::update(Topic topic, long payload) {
         Led::set(Led::BLUE, state);
         break;
     case Topic::ResultWritten:
-        Led::toggle(Led::AUX);
+        Led::set(Led::GREEN, Led::OFF);
+        Led::set(Led::RED, Led::OFF);
+        Led::set(Led::BLUE, Led::OFF);
+        
         return;
     case Topic::Sample:
         _sampleFlasher.signal();
         return;
     case Topic::TimeOverrun:
-        Led::set(Led::YELLOW, state);
+        Led::set(Led::RED, Led::ON);
+        Led::set(Led::BLUE, Led::ON);
         break;
     default:
         break;

@@ -82,42 +82,40 @@ namespace WaterMeterCppTest {
             assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"Initial values");
 
             publishConnectionState(Topic::Connection, ConnectionState::CheckFirmware);
-            assertLeds(Led::OFF, Led::ON, Led::ON, Led::OFF, Led::OFF, L"Firmware check (blue on, green blinking)");
+            assertLeds(Led::OFF, Led::OFF, Led::ON, Led::ON, Led::OFF, L"Firmware check (blue on, aux blinking)");
 
             publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
-            assertLeds(Led::OFF, Led::ON, Led::OFF, Led::OFF, Led::OFF, L"Connected (blue off, green on) ");
-
-            eventServer.publish(Topic::ResultWritten, true);
-            assertLeds(Led::OFF, Led::ON, Led::OFF, Led::ON, Led::OFF, L"Sending (aux on)");
-
-            eventServer.publish(Topic::TimeOverrun, true);
-            assertLeds(Led::OFF, Led::ON, Led::OFF, Led::ON, Led::ON, L"Overrun (yellow on)");
+            assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::ON, Led::OFF, L"Connected (blue off, aux on) ");
 
             eventServer.publish(Topic::Peak, true);
-            assertLeds(Led::OFF, Led::ON, Led::ON, Led::ON, Led::ON, L"Peak (blue on)");
+            assertLeds(Led::OFF, Led::OFF, Led::ON, Led::ON, Led::OFF, L"Peak (blue on)");
 
-            eventServer.publish(Topic::ResultWritten, false);
-            assertLeds(Led::OFF, Led::ON, Led::ON, Led::OFF, Led::ON, L"Stopped sending (aux off");
+            eventServer.publish(Topic::ResultWritten, true);
+            assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::ON, Led::OFF, L"Result written (aux on, RGB off)");
 
-            eventServer.publish(Topic::TimeOverrun, false);
-            assertLeds(Led::OFF, Led::ON, Led::ON, Led::OFF, Led::OFF, L"No overrun (yellow off)");
+            eventServer.publish(Topic::TimeOverrun, true);
+            assertLeds(Led::ON, Led::OFF, Led::ON, Led::ON, Led::OFF, L"Overrun (red/blue on)");
 
             publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
-            assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"Disconnected (green off, blue off)");
+            assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"Disconnected (aux off, blue off)");
 
             eventServer.publish(Topic::Peak, false);
-            assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"No peak (blue stays off)");
+            assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"No peak (blue stays off)");
+
+            eventServer.publish(Topic::Blocked, LONG_FALSE);
+            assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"No more block (red off)");
 
             eventServer.publish(Topic::ConnectionError, "Problem");
             assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"Error (red on)");
 
             eventServer.publish(Topic::Blocked, LONG_FALSE);
             assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"No more block (red off)");
+
             publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
 
             for (unsigned int i = 0; i < LedDriver::CONNECTING_INTERVAL; i++) {
                 publishConnectionState(Topic::Connection, ConnectionState::WifiConnecting);
-                assertLeds(Led::OFF, Led::ON, Led::OFF, Led::OFF, Led::OFF, (L"looping ConnectingWifi ON - " + std::to_wstring(i)).c_str());
+                assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::ON, Led::OFF, (L"looping ConnectingWifi ON - " + std::to_wstring(i)).c_str());
             }
             for (unsigned int i = 0; i < LedDriver::CONNECTING_INTERVAL; i++) {
                 publishConnectionState(Topic::Connection, ConnectionState::WifiConnecting);

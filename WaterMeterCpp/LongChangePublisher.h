@@ -17,12 +17,15 @@
 
 class LongChangePublisher : public ChangePublisher<long> {
 public:
-    LongChangePublisher(EventServer* eventServer, /*EventClient* eventClient,*/ Topic topic, long epsilon, long lowThreshold, int8_t index = 0);
+    LongChangePublisher(EventServer* eventServer, Topic topic, long epsilon, long lowThreshold, int8_t index = 0);
     LongChangePublisher& operator=(long payload) override;
 
 protected:
     long _epsilon;
     long _lowThreshold;
+    long _lowerLimit = LONG_MAX;
+    long _upperLimit = LONG_MIN;
+
 };
 
 #endif

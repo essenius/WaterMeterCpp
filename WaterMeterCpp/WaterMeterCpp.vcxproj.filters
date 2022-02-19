@@ -105,7 +105,7 @@
     <ClCompile Include="Communicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SensorDataQueuePayload.cpp">
+    <ClCompile Include="DataQueuePayload.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -197,7 +197,7 @@
     <ClInclude Include="Serializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SensorDataQueuePayload.h">
+    <ClInclude Include="DataQueuePayload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConnectionState.h">

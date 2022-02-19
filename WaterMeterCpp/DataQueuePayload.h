@@ -9,8 +9,8 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_SENSORDATAQUEUEPAYLOAD
-#define HEADER_SENSORDATAQUEUEPAYLOAD
+#ifndef HEADER_DATAQUEUEPAYLOAD
+#define HEADER_DATAQUEUEPAYLOAD
 
 #include <cstdint>
 
@@ -51,12 +51,12 @@ typedef union {
     uint32_t value;
 } Content; 
 
-struct SensorDataQueuePayload  {
+struct DataQueuePayload  {
     Topic topic;
     Timestamp timestamp{};
     Content buffer;
     size_t size() const ;
-    SensorDataQueuePayload() : topic(), buffer() {}
+    DataQueuePayload() : topic(), buffer() {}
 };
 
 #endif

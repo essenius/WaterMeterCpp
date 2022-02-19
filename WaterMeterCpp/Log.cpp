@@ -60,7 +60,7 @@ void Log::update(Topic topic, const char* payload) {
     printTimestamp();
     switch (topic) {
     case Topic::Alert:
-        Serial.println("Alert!");
+        Serial.printf("Alert: %s\n", payload);
         break;
     case Topic::Blocked:
         Serial.printf("Blocked: %s\n", payload);

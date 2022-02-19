@@ -59,7 +59,7 @@ namespace WaterMeterCppTest {
 
             Serial.clearOutput();
             eventServer.publish(Topic::Alert, 1);
-            Assert::AreEqual(" Alert!\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Alert handled OK");
+            Assert::AreEqual(" Alert: 1\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Alert handled OK");
 
             Serial.clearOutput();
             eventServer.publish(Topic::TimeOverrun, 1234);

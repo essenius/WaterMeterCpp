@@ -22,19 +22,21 @@
 Device::Device(EventServer* eventServer) :
     EventClient(eventServer),
     // Only catch larger variations or alarmingly low values to avoid very frequent updates
-    _freeHeap(eventServer, Topic::FreeHeap, 5000L, 25000L),
+    _freeHeap(eventServer, Topic::FreeHeap, 5000L, 20000L),
     // catch all changes as this is not expected to change
-    _freeStackSampler(eventServer, Topic::FreeStack, 0L, 0L, 0),
-    _freeStackCommunicator(eventServer, Topic::FreeStack, 0L, 0L, 1),
-    _freeStackConnector(eventServer, Topic::FreeStack, 0L, 0L, 2) {}
+    _freeStackSampler(eventServer, Topic::FreeStack, 0),
+    _freeStackCommunicator(eventServer, Topic::FreeStack, 1),
+    _freeStackConnector(eventServer, Topic::FreeStack, 2) {}
 
-void Device::begin(
-    const TaskHandle_t samplerHandle, 
-    const TaskHandle_t communicatorHandle,
-    const TaskHandle_t connectorHandle) {
+void Device::begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle) {
     _samplerHandle = samplerHandle;
     _communicatorHandle = communicatorHandle;
     _connectorHandle = connectorHandle;
+#ifndef ESP32
+    _heapCount = -1;
+    _samplerCount = -1;
+#endif
+
 }
 
 #ifdef ESP32
@@ -54,21 +56,19 @@ long Device::freeStack(TaskHandle_t taskHandle) {
 // mock implementation for testing. Simulate changes as well as staying the same
 
 long Device::freeHeap() {
-    static int count = -1;
-    count++;
-    if (count <= 2) return 32000L - count * 3000L;
-    if (count <= 4) return 26000L;
-    count = -1;
-    return 23000L;
+    _heapCount++;
+    if (_heapCount <= 6) return 32000L - _heapCount * 3000L;
+    if (_heapCount == 7) return 14000;
+    _heapCount = -1;
+    return 11000L;
 }
 
 long Device::freeStack(TaskHandle_t taskHandle) {
     if (taskHandle == _samplerHandle) {
-        static int count = -1;
-        count++;
-        if (count <= 2) return 1500L + count * 64L;
-        if (count <= 4) return 1628L;
-        count = -1;
+        _samplerCount++;
+        if (_samplerCount <= 2) return 1500L + _samplerCount * 64L;
+        if (_samplerCount <= 4) return 1628L;
+        _samplerCount = -1;
         return 1500;
     }
     if (taskHandle == _communicatorHandle) return 3750;

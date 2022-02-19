@@ -23,7 +23,7 @@ namespace WaterMeterCppTest {
     public:
         TEST_METHOD(sampleAggregatorAddSampleTest) {
             EventServer eventServer;
-            SensorDataQueuePayload payload{};
+            DataQueuePayload payload{};
             Clock theClock(&eventServer);
             DataQueue dataQueue(&eventServer, &payload);
 
@@ -58,7 +58,7 @@ namespace WaterMeterCppTest {
         TEST_METHOD(sampleAggregatorZeroFlushRateTest) {
             EventServer eventServer;
             Clock theClock(&eventServer);
-            SensorDataQueuePayload payload{};
+            DataQueuePayload payload{};
             DataQueue dataQueue(&eventServer, &payload);
 
             TestEventClient batchSizeListener(&eventServer);
@@ -88,18 +88,20 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(2L, aggregator.getFlushRate(), L"Flush rate not changed");
             aggregator.addSample(3000);
             Assert::IsTrue(aggregator.shouldSend(), L"Must send after two measurements");
-            const auto currentTimestamp = payload.timestamp;
-            Assert::AreNotEqual(0ULL, currentTimestamp, L"Timestamp set");
+            auto currentTimestamp = payload.timestamp;
+            Assert::AreEqual(0ULL, currentTimestamp, L"Timestamp not set");
             Assert::AreEqual(static_cast<int16_t>(1000), payload.buffer.samples.value[0], L"First value OK");
             Assert::AreEqual(static_cast<int16_t>(3000), payload.buffer.samples.value[1], L"Second value OK");
 
             Assert::IsTrue(aggregator.send(), L"Send successful");
+            currentTimestamp = payload.timestamp;
+            Assert::AreNotEqual(0ULL, currentTimestamp, L"Timestamp set");
 
             Assert::AreEqual(0L, aggregator.getFlushRate(), L"Flush rate changed");
             aggregator.flush();
             aggregator.addSample(5000);
             Assert::IsFalse(aggregator.shouldSend(), L"No need to send");
-            Assert::AreNotEqual(currentTimestamp, payload.timestamp, L"Timestamp set");
+            Assert::AreEqual(currentTimestamp, payload.timestamp, L"Timestamp not set");
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer empty");
 
             // check whether failure to write is handled OK

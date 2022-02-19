@@ -181,7 +181,7 @@ void Connector::handleMqttReady() {
     if (!_mqttGateway->handleQueue()) {
         return;
     }
-    SensorDataQueuePayload* payload;
+    DataQueuePayload* payload;
     while ((payload = _samplerDataQueue->receive()) != nullptr) {
         _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
         if (payload->topic == Topic::Result) {

@@ -20,8 +20,14 @@ LongChangePublisher::LongChangePublisher(
 
 LongChangePublisher& LongChangePublisher::operator=(long payload) {
     // Only catch larger variations or values close to a critical value to avoid very frequent updates
-    if (abs(_payload - payload) > _epsilon || payload < _lowThreshold) {
+    if (_epsilon == 1 && _payload != payload) {
         ChangePublisher::operator=(payload);
+        return *this;
+    }
+    if (payload < _lowerLimit || payload > _upperLimit || payload < _lowThreshold) {
+        ChangePublisher::operator=(payload);
+        _lowerLimit = (_payload / _epsilon) * _epsilon;
+        _upperLimit = _lowerLimit + _epsilon;
     }
     return *this;
 }

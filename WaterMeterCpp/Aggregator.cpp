@@ -14,7 +14,7 @@
 #include "Aggregator.h"
 #include "DataQueue.h"
 
-Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, SensorDataQueuePayload* payload) :
+Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload) :
     EventClient(eventServer),
     _clock(theClock),
     _dataQueue(dataQueue), _payload(payload),
@@ -39,7 +39,7 @@ long Aggregator::convertToLong(const char* stringParam, const long defaultValue)
 
 void Aggregator::flush() {
     _messageCount = 0;
-    _payload->timestamp = _clock->getTimestamp();
+    //_payload->timestamp = _clock->getTimestamp();
     for (short& i : _payload->buffer.samples.value) {
         i = 0;
     }
@@ -51,7 +51,7 @@ long Aggregator::getFlushRate() {
     return _flushRate;
 }
 
-SensorDataQueuePayload* Aggregator::getPayload() const {
+DataQueuePayload* Aggregator::getPayload() const {
     return _payload;
 }
 
@@ -69,6 +69,7 @@ bool Aggregator::send() {
     if (!shouldSend()) return false;
     _blocked = !canSend();
     if (_blocked) return false;
+    _payload->timestamp = _clock->getTimestamp();
     if (!_dataQueue->send(getPayload())) {
         return false;
     }

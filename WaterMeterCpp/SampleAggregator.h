@@ -17,7 +17,7 @@
 
 class SampleAggregator : public Aggregator {
 public:
-    SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, SensorDataQueuePayload* payload);
+    SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
     using Aggregator::begin;
     void addSample(int16_t measure);
     virtual void begin();

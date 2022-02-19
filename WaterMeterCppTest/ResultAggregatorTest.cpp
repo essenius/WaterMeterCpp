@@ -27,7 +27,7 @@ namespace WaterMeterCppTest {
     TEST_CLASS(ResultAggregatorTest) {
     public:
         static EventServer eventServer;
-        static SensorDataQueuePayload payload;
+        static DataQueuePayload payload;
         static TestEventClient rateListener;
         static PayloadBuilder payloadBuilder;
         static Serializer serializer;
@@ -270,7 +270,7 @@ namespace WaterMeterCppTest {
 
     EventServer ResultAggregatorTest::eventServer;
     Clock ResultAggregatorTest::theClock(&eventServer);
-    SensorDataQueuePayload ResultAggregatorTest::payload;
+    DataQueuePayload ResultAggregatorTest::payload;
     TestEventClient ResultAggregatorTest::rateListener(&eventServer);
     DataQueue ResultAggregatorTest::dataQueue(&eventServer, &payload);
 }

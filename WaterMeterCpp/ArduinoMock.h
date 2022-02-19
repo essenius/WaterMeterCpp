@@ -67,6 +67,7 @@ extern HardwareSerial Serial;
 void configTime(int i, int i1, const char* str, const char* text);
 
 void delay(int delay);
+void delayMicroseconds(int delay);
 //char* dtostrf(float value, signed char width, unsigned char precision, char* buffer);
 uint8_t digitalRead(uint8_t pin);
 void digitalWrite(uint8_t pin, uint8_t val);

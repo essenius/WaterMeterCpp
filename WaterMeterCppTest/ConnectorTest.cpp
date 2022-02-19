@@ -213,7 +213,7 @@ namespace WaterMeterCppTest {
     FirmwareManager ConnectorTest::firmwareManager(&eventServer, "http://localhost", "0.99.3");
     PayloadBuilder ConnectorTest::payloadBuilder;
     Serializer ConnectorTest::serializer(&eventServer, &payloadBuilder);
-    SensorDataQueuePayload payload;
+    DataQueuePayload payload;
     DataQueue ConnectorTest::dataQueue(&eventServer, &payload);
     DataQueue ConnectorTest::commsDataQueue(&eventServer, &payload, 1, 2, 1, 2);
 

@@ -27,7 +27,7 @@ namespace WaterMeterCppTest {
             EventServer eventServer;
             Clock theClock(&eventServer);
             theClock.begin();
-            SensorDataQueuePayload payload{};
+            DataQueuePayload payload{};
             DataQueue dataQueue(&eventServer, &payload);
             Assert::AreEqual(0ULL, payload.timestamp);
             Aggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
@@ -37,7 +37,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(2L, aggregator.getFlushRate(), L"Flush rate OK");
             Assert::IsFalse(aggregator.shouldSend(), L"No need for flush before first message");
             aggregator.newMessage();
-            Assert::AreNotEqual(0ULL, payload.timestamp);
+            Assert::AreEqual(0ULL, payload.timestamp, L"Timestamp not set");
 
             Assert::IsTrue(aggregator.shouldSend(true), L"must send when forced even if not at target size.");
             Assert::IsFalse(aggregator.shouldSend(), L"no need to send before being at target size");
@@ -49,6 +49,8 @@ namespace WaterMeterCppTest {
             Assert::IsTrue(aggregator.shouldSend(), L"Should send");
             Assert::IsFalse(aggregator.canSend(), L"Cannot send when buffer full");
             Assert::IsFalse(aggregator.send(), L"Send fails");
+            Assert::AreEqual(0ULL, payload.timestamp, L"Timestamp not set");
+
             aggregator.newMessage();
             Assert::IsFalse(aggregator.shouldSend(), L"Still can't send when buffer is full");
 
@@ -58,6 +60,8 @@ namespace WaterMeterCppTest {
             Assert::IsTrue(aggregator.canSend(), L"Can now send as there is space in the buffer");
             aggregator.newMessage();
             Assert::IsTrue(aggregator.shouldSend(), L"Must send when at multiple of flush rate");
+            aggregator.send();
+            Assert::AreNotEqual(0ULL, payload.timestamp, L"Timestamp set");
 
         }
     };

@@ -44,24 +44,32 @@ public:
         eventServer.subscribe(&infoEventClient, Topic::Info);
         eventServer.subscribe(&freeSpaceEventClient, Topic::FreeQueueSize);
 
+        // send a number of samples
         PayloadBuilder payloadBuilder;
         Serializer serializer(&eventServer, &payloadBuilder);
-        SensorDataQueuePayload payload{};
+        DataQueuePayload payload{};
         DataQueue dataQueue(&eventServer, &payload, 1, 40960, 512, 4096);
         payload.topic = Topic::Samples;
+
+        for (uint16_t i = 0; i < MAX_SAMPLES; i++) {
+            payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
+        }
+        long freeValues[] = { 12800, 12672, 12672, 12672, 12672 };
+        char numberBuffer[12];
+
         for (uint16_t times = 0; times < 5; times++) {
+            constexpr long index = 0x1000000;
+            safeSprintf(numberBuffer, "%ld", index + freeValues[times]);
             payload.buffer.samples.count = MAX_SAMPLES - times;
-            for (uint16_t i = 0; i < payload.buffer.samples.count; i++) {
-                payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
-            }
             auto size = DataQueue::requiredSize(payload.size());
-            Assert::IsTrue(size <= 128, (L"Payload didn't max out: " + std::to_wstring(size)).c_str());
+            Assert::IsTrue(size <= 128, (L"Payload didn't max out at " + std::to_wstring(size)).c_str());
             Assert::IsTrue(dataQueue.send(&payload), (L"Send works for sample " + std::to_wstring(times)).c_str());
-            Serial.printf("<<P%d Stack size: %d>>", times, uxTaskGetStackHighWaterMark(nullptr));
-            Assert::AreEqual(1, freeSpaceEventClient.getCallCount(),L"Free called once");
-            Assert::AreEqual("16790016", freeSpaceEventClient.getPayload(), L"12800 bytes free (+ index #1)");
+            Assert::AreEqual((times == 0 ? 1 : 2), freeSpaceEventClient.getCallCount(), (L"Free called right times at " + std::to_wstring(times)).c_str());
+            Assert::AreEqual(numberBuffer, freeSpaceEventClient.getPayload(), (L"right bytes free at "+ std::to_wstring(times)).c_str());
             delay(50);
         }
+
+        // send a result
         payload.topic = Topic::Result;
         // clean out buffer to all 0
         for (short& i : payload.buffer.samples.value) {
@@ -75,18 +83,21 @@ public:
         payload.buffer.result.smoothAbsDerivativeSmooth = 23.2f;
         dataQueue.send(&payload);
 
+        // send an error message
         payload.topic = Topic::ConnectionError;
         safeStrcpy(payload.buffer.message, "Not sure what went wrong here...");
         dataQueue.send(&payload);
 
+        // retrieve the samples
         for (int i = 0; i < 5; i++) {
             auto payloadReceive = dataQueue.receive();
             Assert::IsNotNull(payloadReceive, L"PayloadReceive not null 1");
-            Assert::AreEqual(Topic::Samples, payloadReceive->topic, L"Topic 1 is Samples");
+            Assert::AreEqual(Topic::Samples, payloadReceive->topic, L"Topic is Samples");
         }
-        Assert::AreEqual(2, freeSpaceEventClient.getCallCount(), L"Free called twice");
-        Assert::AreEqual("16789376", freeSpaceEventClient.getPayload(), L"Difference more than 512 (12160 + index#1)");
+        Assert::AreEqual(3, freeSpaceEventClient.getCallCount(), L"Free called an extra time");
+        Assert::AreEqual("16789376", freeSpaceEventClient.getPayload(), L"12160 + index #1)");
 
+        // get the result
         auto payloadReceive2 = dataQueue.receive();
         Assert::IsNotNull(payloadReceive2, L"PayloadReceive not null 2");
         Assert::AreEqual(Topic::Result, payloadReceive2->topic, L"Topic 2 is Result");
@@ -95,11 +106,11 @@ public:
         Assert::AreEqual<uint32_t>(3, payloadReceive2->buffer.result.peakCount, L"PeakCount=3");
         Assert::AreEqual(23.2f, payloadReceive2->buffer.result.smoothAbsDerivativeSmooth, L"SmoothAbsDerivativeSmooth=23.2");
 
+        // get the error message
         auto payloadReceive3 = dataQueue.receive();
         Assert::IsNotNull(payloadReceive3, L"PayloadReceive not null 3");
         Assert::AreEqual(Topic::ConnectionError, payloadReceive3->topic, L"Topic 3 is SamplingError");
         Assert::AreEqual("Not sure what went wrong here...", payloadReceive3->buffer.message, L"error message ok");
-
     }
 
     };

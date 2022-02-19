@@ -11,11 +11,11 @@
 
 #include "Communicator.h"
 #include "Connector.h"
-#include "SensorDataQueuePayload.h"
+#include "DataQueuePayload.h"
 
 Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device,
-    DataQueue* dataQueue, Serializer* serializer,
-    QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient) :
+                           DataQueue* dataQueue, Serializer* serializer,
+                           QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient) :
     EventClient(eventServer),
     _logger(logger),
     _ledDriver(ledDriver),
@@ -26,9 +26,12 @@ Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* led
     _connectorQueueClient(fromConnectorQueueClient) {}
 
 void Communicator::loop() const {
-    while (_samplerQueueClient->receive()) { delay(5); }
-    while (_connectorQueueClient->receive()) { delay(5); }
-    SensorDataQueuePayload* payload;
+    int i = 0;
+    while (_samplerQueueClient->receive() || _connectorQueueClient->receive()) { 
+      i++;
+      if (i%5 == 0) delay(5); 
+    }
+    DataQueuePayload* payload;
     while ((payload = _dataQueue->receive()) != nullptr) {
         _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
         delay(5);

@@ -33,7 +33,7 @@ namespace WaterMeterCppTest {
             eventServer.subscribe(&testEventClient, Topic::SamplesFormatted);
             eventServer.subscribe(&testEventClient, Topic::MessageFormatted);
             eventServer.subscribe(&serializer, Topic::SensorData);
-            SensorDataQueuePayload payload{};
+            DataQueuePayload payload{};
             payload.topic = Topic::Result;
             payload.timestamp = 0;
             payload.buffer.result.sampleCount = 81;

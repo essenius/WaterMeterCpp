@@ -25,7 +25,7 @@ void Sampler::begin() {
 
 void Sampler::loop() {
     const int16_t measure = _sensorReader->read();
-    // this triggers flowMeter and measurementWriter as well as the comms thread
+    // this triggers flowMeter, sampleAggregator and the comms task
     _eventServer->publish(Topic::Sample, measure);
     _resultAggregator->addMeasurement(measure, _flowMeter);
     _sampleAggregator->send();
@@ -44,13 +44,20 @@ void Sampler::loop() {
     if (duration > _samplePeriod) {
         // It took too long. If we're still within one interval, we might be able to catch up
         // Intervene if it gets more than that
-        _scheduledStartTime += (duration / _samplePeriod) * _samplePeriod;
+        _scheduledStartTime += ((duration + _samplePeriod / 2) / _samplePeriod) * _samplePeriod;
     }
     else {
         // Wait for the next sample time; read the command queue while we're at it.
-        // No need to use delay since we
+        if (duration < _maxDurationForChecks) {
+          _queueClient->receive();
+        }
+        duration = micros() - _scheduledStartTime;
+        // delayMicroseconds() is less accurate: sometimes up to 300 us too much wait time.
+        long delayTime = _samplePeriod - duration - 500;
+        if (delayTime > 0) {
+            delayMicroseconds(delayTime); 
+        }
         do {
-            _queueClient->receive();
             duration = micros() - _scheduledStartTime;
         } while (duration < _samplePeriod);
         _scheduledStartTime += _samplePeriod;

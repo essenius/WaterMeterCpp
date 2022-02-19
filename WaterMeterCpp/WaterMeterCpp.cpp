@@ -66,10 +66,10 @@ EventServer connectorEventServer;
 Clock theClock(&communicatorEventServer);
 PayloadBuilder serializePayloadBuilder(&theClock);
 Serializer serializer(&connectorEventServer, &serializePayloadBuilder);
-SensorDataQueuePayload connectorPayload;
+DataQueuePayload connectorPayload;
 DataQueue sensorDataQueue(&connectorEventServer, &connectorPayload);
-SensorDataQueuePayload measurementPayload;
-SensorDataQueuePayload resultPayload;
+DataQueuePayload measurementPayload;
+DataQueuePayload resultPayload;
 SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &measurementPayload);
 ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &resultPayload, MEASURE_INTERVAL_MICROS);
 
@@ -90,8 +90,8 @@ QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100, 3);
 
 // Nothing to send from sampler to connector
 QueueClient connectorSamplerQueueClient(&connectorEventServer, 0, 4);
-SensorDataQueuePayload connectorDataQueuePayload;
-SensorDataQueuePayload communicatorQueuePayload;
+DataQueuePayload connectorDataQueuePayload;
+DataQueuePayload communicatorQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);
 Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 

@@ -27,13 +27,17 @@ public:
     void begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle);
     void reportHealth();
 private:
+#ifndef ESP32
+    int _heapCount = -1;
+    int _samplerCount = -1;
+#endif
     TaskHandle_t _samplerHandle{};
     TaskHandle_t _communicatorHandle{};
     TaskHandle_t _connectorHandle{};
     LongChangePublisher _freeHeap;
-    LongChangePublisher _freeStackSampler;
-    LongChangePublisher _freeStackCommunicator;
-    LongChangePublisher _freeStackConnector;
+    ChangePublisher<long> _freeStackSampler;
+    ChangePublisher<long> _freeStackCommunicator;
+    ChangePublisher<long> _freeStackConnector;
 
     long freeHeap();
     long freeStack(TaskHandle_t taskHandle);

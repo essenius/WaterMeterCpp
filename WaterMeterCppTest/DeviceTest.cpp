@@ -40,24 +40,37 @@ namespace WaterMeterCppTest {
             Assert::AreEqual("32000", heapListener.getPayload(), L"Free heap is 32000");
             device.reportHealth();
             Assert::AreEqual(4, stackListener.getCallCount(), L"Stack called again - different value");
-            Assert::AreEqual(1, heapListener.getCallCount(), L"Heap not called again - 29000 is too close");
+            Assert::AreEqual(2, heapListener.getCallCount(), L"Heap called again - 29k passes lower limit of 30k");
             Assert::AreEqual("1564", stackListener.getPayload(), L"Free stack is 1564");
+            Assert::AreEqual("29000", heapListener.getPayload(), L"Free heap is 29000");
+
             device.reportHealth();
             Assert::AreEqual(5, stackListener.getCallCount(), L"Stack called yet again");
-            Assert::AreEqual(2, heapListener.getCallCount(), L"Heap called again - difference too great");
+            Assert::AreEqual(2, heapListener.getCallCount(), L"Heap not called again - did not pass new lower limit of 25k");
             Assert::AreEqual("1628", stackListener.getPayload(), L"Free stack is 1628");
-            Assert::AreEqual("26000", heapListener.getPayload(), L"Free heap is 26000");
             device.reportHealth();
             Assert::AreEqual(5, stackListener.getCallCount(), L"Stack not called as still the same");
-            Assert::AreEqual(2, heapListener.getCallCount(), L"Heap not called as same value");
+            Assert::AreEqual(3, heapListener.getCallCount(), L"Heap called again, passed lower limit of 25k");
+            Assert::AreEqual("23000", heapListener.getPayload(), L"Free heap is 23000");
             device.reportHealth();
             Assert::AreEqual(5, stackListener.getCallCount(), L"Stack still not called as still the same");
-            Assert::AreEqual(2, heapListener.getCallCount(), L"Heap not called as same value");
+            Assert::AreEqual(3, heapListener.getCallCount(), L"Heap not called as same value");
             device.reportHealth();
             Assert::AreEqual(6, stackListener.getCallCount(), L"Stack called as different value");
-            Assert::AreEqual(3, heapListener.getCallCount(), L"Heap called as below low threshold");
+            Assert::AreEqual(4, heapListener.getCallCount(), L"Heap called as below low threshold");
             Assert::AreEqual("1500", stackListener.getPayload(), L"Free stack is 1500");
-            Assert::AreEqual("23000", heapListener.getPayload(), L"Free heap is 25000");
+            Assert::AreEqual("17000", heapListener.getPayload(), L"Free heap is 17000");
+            device.reportHealth();
+            Assert::AreEqual(5, heapListener.getCallCount(), L"Heap called as below low threshold");
+            Assert::AreEqual("14000", heapListener.getPayload(), L"Free heap is 14000");
+            device.reportHealth();
+            Assert::AreEqual(5, heapListener.getCallCount(), L"Heap not called as same value (even below low threshold)");
+            device.reportHealth();
+            Assert::AreEqual(6, heapListener.getCallCount(), L"Heap called as below low threshold");
+            Assert::AreEqual("11000", heapListener.getPayload(), L"Free heap is 11000");
+            device.reportHealth();
+            Assert::AreEqual(7, heapListener.getCallCount(), L"Heap called as large enough difference (up)");
+            Assert::AreEqual("32000", heapListener.getPayload(), L"Free heap is 32000");
         }
     };
 }

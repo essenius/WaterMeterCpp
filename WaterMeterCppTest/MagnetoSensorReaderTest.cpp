@@ -36,7 +36,7 @@ namespace WaterMeterCppTest {
             reader.begin();
 
             for (int streaks = 0; streaks < 10; streaks++) {
-                for (int sample = 0; sample < 249; sample++) {
+                for (int sample = 0; sample < 100; sample++) {
                     reader.read();
                     Assert::AreEqual(streaks, resetSensorEventClient.getCallCount(), L"right number of events fired");
                     Assert::AreEqual(0, alertEventClient.getCallCount(), L"Alert event not fired");

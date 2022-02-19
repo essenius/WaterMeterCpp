@@ -12,7 +12,7 @@
 #include "EventServer.h"
 #include "DataQueue.h"
 #include "SafeCString.h"
-#include "SensorDataQueuePayload.h"
+#include "DataQueuePayload.h"
 
 #ifdef ESP32
 #include <ESP.h>
@@ -20,16 +20,17 @@
 #include "ArduinoMock.h"
 #endif
 
-DataQueue::DataQueue(EventServer* eventServer, SensorDataQueuePayload* payload, const int8_t index, const long queueSize, const long epsilon, const long lowThreshold) :
+DataQueue::DataQueue(EventServer* eventServer, DataQueuePayload* payload, const int8_t index, const long queueSize,
+                     const long epsilon, const long lowThreshold) :
     EventClient(eventServer),
     _bufferHandle(xRingbufferCreate(queueSize, RINGBUF_TYPE_ALLOWSPLIT)),
     _freeSpace(eventServer, Topic::FreeQueueSize, epsilon, lowThreshold, index),
-    _payload(payload){}
+    _payload(payload) {}
 
-bool DataQueue::canSend(const SensorDataQueuePayload* payload) {
+bool DataQueue::canSend(const DataQueuePayload* payload) {
     return freeSpace() >= requiredSize(payload->size());
 }
- 
+
 size_t DataQueue::freeSpace() {
     const auto space = xRingbufferGetCurFreeSize(_bufferHandle);
     _freeSpace = static_cast<long>(space);
@@ -43,7 +44,7 @@ size_t DataQueue::requiredSize(const size_t realSize) {
     return (realSize + 3) / 4 * 4 + 8;
 }
 
-SensorDataQueuePayload* DataQueue::receive() const {
+DataQueuePayload* DataQueue::receive() const {
     char* item1 = nullptr;
     char* item2 = nullptr;
     size_t item1Size;
@@ -69,7 +70,7 @@ SensorDataQueuePayload* DataQueue::receive() const {
     return _payload;
 }
 
-bool DataQueue::send(const SensorDataQueuePayload* payload) {
+bool DataQueue::send(const DataQueuePayload* payload) {
     // optimizing the use of the buffer by not sending unused parts
     const size_t size = payload->size();
     if (requiredSize(size) > freeSpace()) return false;
@@ -77,7 +78,7 @@ bool DataQueue::send(const SensorDataQueuePayload* payload) {
 }
 
 void DataQueue::update(Topic topic, const char* payload) {
-    SensorDataQueuePayload payloadToSend{};
+    DataQueuePayload payloadToSend{};
     payloadToSend.topic = topic;
     // timestamp is ignored for strings
     safeStrcpy(payloadToSend.buffer.message, payload);

@@ -13,29 +13,27 @@
 #include <climits>
 #include "ResultAggregator.h"
 
-ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, SensorDataQueuePayload* payload,
+ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
                                    const uint32_t measureIntervalMicros) :
     Aggregator(eventServer, theClock, dataQueue, payload),
     _result(&payload->buffer.result),
-    _overrun(eventServer, Topic::TimeOverrun),
     _measureIntervalMicros(measureIntervalMicros) {
     _desiredFlushRate = _idleFlushRate;
 }
 
-void ResultAggregator::addDuration(const uint32_t duration) {
+void ResultAggregator::addDuration(const long duration) {
     // should only be called once during a message
     _result->totalDuration += duration;
     if (duration > _result->maxDuration) {
         _result->maxDuration = duration;
     }
-    // this works because duration (and measure interval) will not be larger than 2,147 seconds, so will not overflow to negative. 
-    _overrun = std::max(0L, static_cast<long>(duration - _measureIntervalMicros));
-    if (_overrun > 0) {
+    auto overrun = std::max(0L, duration - static_cast<long>(_measureIntervalMicros));
+    if (overrun > 0) {
         _result->overrunCount++;
+        _eventServer->publish(Topic::TimeOverrun, overrun);
     }
     // this could be optimized by only getting it executed at the end of a cycle
     _result->averageDuration = static_cast<uint32_t>((_result->totalDuration * 10 / _messageCount + 5) / 10);
-
 }
 
 void ResultAggregator::addMeasurement(const int16_t value, const FlowMeter* result) {
@@ -93,7 +91,7 @@ bool ResultAggregator::send() {
     const auto wasSuccessful = Aggregator::send();
     if (wasSuccessful) {
         _eventServer->publish(this, Topic::ResultWritten, LONG_TRUE);
-        _eventServer->publish(this, Topic::TimeOverrun, LONG_FALSE);
+        /*_eventServer->publish(this, Topic::TimeOverrun, LONG_FALSE);*/
     }
     return wasSuccessful;
 }
