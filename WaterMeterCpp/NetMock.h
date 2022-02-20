@@ -15,9 +15,10 @@
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppMemberFunctionMayBeStatic
 // ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppNonExplicitConversionOperator
 // ReSharper disable CppParameterNeverUsed
-
 // ReSharper disable CppParameterMayBeConst
+
 #ifndef ESP32
 
 #ifndef HEADER_NETMOCK_H

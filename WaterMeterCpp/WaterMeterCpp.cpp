@@ -44,7 +44,7 @@
 #include "secrets.h" // includes config.h
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.3";
+constexpr const char* const BUILD_VERSION = "0.100.5";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle usually takes quite a bit less than that, unless a write happened.
@@ -86,6 +86,7 @@ FirmwareManager firmwareManager(&connectorEventServer, CONFIG_BASE_FIRMWARE_URL,
 QueueClient samplerQueueClient(&samplerEventServer, 20, 0);
 QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20, 1);
 QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20, 2);
+// This queue needs more space as it won't be read when offline.
 QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100, 3);
 
 // Nothing to send from sampler to connector
