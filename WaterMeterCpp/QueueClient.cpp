@@ -25,9 +25,8 @@ QueueHandle_t QueueClient::createQueue(const uint16_t length) {
 QueueClient::QueueClient(EventServer* eventServer, const uint16_t size, const int8_t index) :
     EventClient(eventServer),
     // being careful with reporting on spaces as it may use them as well, so just every 5
-    _freeSpaces(eventServer, Topic::FreeQueueSpaces, 5, 0, index),
+    _freeSpaces(eventServer, Topic::FreeQueueSpaces, 5, 0, index, size),
     _receiveQueue(createQueue(size)) {
-    _freeSpaces = size;
 }
 
 void QueueClient::begin(QueueHandle_t sendQueue) {
@@ -49,11 +48,11 @@ bool QueueClient::receive() {
 }
 
 // Queue client can only handle longs, so convert strings to long (becomes 0 if that fails)
-void QueueClient::update(Topic topic, const char* payload) {
+void QueueClient::update(const Topic topic, const char* payload) {
     update(topic, strtol(payload, nullptr, 10));
 }
 
-void QueueClient::update(Topic topic, long payload) {
+void QueueClient::update(const Topic topic, const long payload) {
     if (_sendQueue == nullptr) return;
     const ShortMessage message = {topic, static_cast<int32_t>(payload)};
     if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {

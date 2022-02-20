@@ -9,6 +9,16 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
+// Mock implementation for unit testing (not targeting the ESP32)
+
+// Disabling warnings caused by mimicking existing interfaces or mocking hacks
+// ReSharper disable CppInconsistentNaming
+// ReSharper disable CppParameterNeverUsed
+// ReSharper disable CppParameterMayBeConst
+// ReSharper disable CppClangTidyClangDiagnosticVoidPointerToIntCast
+// ReSharper disable CppClangTidyPerformanceNoIntToPtr
+
+#ifndef ESP32
 #include "FreeRtosMock.h"
 
 #include <cstring>
@@ -42,7 +52,8 @@ struct RingBufferContainer {
 RingBufferContainer container[MAX_RINGBUFFERS];
 
 int getIndex(RingbufHandle_t bufferHandle) {
-    return reinterpret_cast<int>(bufferHandle) - 1;
+    // Hack, but good enough for a mock
+    return reinterpret_cast<int>(bufferHandle) - 1;  
 }
 
 // testing only
@@ -118,7 +129,7 @@ RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferTy
         i++;
     }
     if (i > MAX_RINGBUFFERS) return nullptr;
-    container[i].ringbufHandle = reinterpret_cast<RingbufHandle_t>(i+1);
+    container[i].ringbufHandle = reinterpret_cast<RingbufHandle_t>(i+1);  
     return container[i].ringbufHandle;
 }
 
@@ -174,10 +185,12 @@ unsigned long taskHandle = 100;
 BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, uint16_t usStackDepth,
                                    void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
                                    BaseType_t xCoreID) {
-    *pxCreatedTask = (TaskHandle_t)taskHandle++;
+    *pxCreatedTask = (TaskHandle_t)taskHandle++;  
     return pdTRUE;
 }
 
 TaskHandle_t testHandle = reinterpret_cast<TaskHandle_t>(42);
 
 TaskHandle_t xTaskGetCurrentTaskHandle() { return testHandle; }
+
+#endif

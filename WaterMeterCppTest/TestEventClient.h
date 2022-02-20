@@ -10,11 +10,12 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
+
 #include "../WaterMeterCpp/EventServer.h"
 
 class TestEventClient : public EventClient {
 public:
-    TestEventClient(EventServer* eventServer) : EventClient(eventServer) {
+    explicit TestEventClient(EventServer* eventServer) : EventClient(eventServer) {
         _payload[0] = 0;
     }
 

@@ -18,10 +18,11 @@ constexpr unsigned long long MICROSECONDS_PER_SECOND = 1000000ULL;
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+// ReSharper disable once CppParameterNeverUsed -- mimic existing interface
 int gettimeofday(timeval* timeVal, void* ignore) {
     if (timeVal) {
         FILETIME filetime; // 0.1 microsecond intervals since January 1, 1601 00:00 UTC 
-        ULARGE_INTEGER x = {{0, 0}};
+        ULARGE_INTEGER x; 
         ULONGLONG usec;
         static constexpr ULONGLONG EPOCH_OFFSET_MICROS = 11644473600000000ULL;
         // microseconds betweeen Jan 1,1601 and Jan 1,1970 
@@ -59,19 +60,19 @@ Timestamp Clock::getTimestamp() {
     return static_cast<Timestamp>(currentTime.tv_sec) * 1000000ULL + static_cast<Timestamp>(currentTime.tv_usec);
 }
 
-bool Clock::formatTimestamp(Timestamp timestamp, char* destination, size_t size) {
+bool Clock::formatTimestamp(const Timestamp timestamp, char* destination, const size_t size) {
     if (size < 27) return false;
     const auto microseconds = static_cast<long>(timestamp % MICROSECONDS_PER_SECOND);
     const auto seconds = static_cast<time_t>(timestamp / MICROSECONDS_PER_SECOND);
     xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
-    strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds));
+    strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds));  // NOLINT(concurrency-mt-unsafe)
     xSemaphoreGive(_formatTimeMutex);
     char* currentPosition = destination + strlen(destination);
     snprintf(currentPosition, size - strlen(destination), "%06ld", microseconds);
     return true;
 }
 
-const char* Clock::get(Topic topic, const char* defaultValue) {
+const char* Clock::get(const Topic topic, const char* defaultValue) {
     if (topic == Topic::Time) {
         const auto currentTime = getTimestamp();
         formatTimestamp(currentTime, _buffer, BUFFER_SIZE);

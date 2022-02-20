@@ -44,14 +44,14 @@ void SampleAggregator::flush() {
     _payload->buffer.samples.count = 0;
 }
 
-void SampleAggregator::update(Topic topic, const char* payload) {
+void SampleAggregator::update(const Topic topic, const char* payload) {
     if (topic == Topic::BatchSizeDesired) {
         const auto desiredRate = convertToLong(payload, DEFAULT_FLUSH_RATE);
         update(topic, desiredRate);
     }
 }
 
-void SampleAggregator::update(Topic topic, long payload) {
+void SampleAggregator::update(const Topic topic, const long payload) {
     if (topic == Topic::BatchSizeDesired) {
         const auto desiredRate = static_cast<unsigned char>(limit(payload, 0L, MAX_FLUSH_RATE));
         setDesiredFlushRate(desiredRate);

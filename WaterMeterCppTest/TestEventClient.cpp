@@ -19,13 +19,13 @@ void TestEventClient::reset() {
     _payload[0] = 0;
 }
 
-void TestEventClient::update(Topic topic, const char* payload) {
+void TestEventClient::update(const Topic topic, const char* payload) {
     _callCount++;
     _topic = topic;
     safeStrcpy(_payload, payload);
 }
 
-void TestEventClient::update(Topic topic, long payload) {
+void TestEventClient::update(const Topic topic, const long payload) {
     _callCount++;
     _topic = topic;
     safeSprintf(_payload, "%ld", payload);

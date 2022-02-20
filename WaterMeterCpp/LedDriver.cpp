@@ -9,6 +9,8 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
+// ReSharper disable CppClangTidyReadabilitySuspiciousCallArgument -- false positive on LED_BLUE
+
 #ifdef ESP32
 #include <ESP.h>
 #else
@@ -50,7 +52,7 @@ void LedDriver::update(const Topic topic, const char* payload) {
     }
 }
 
-void LedDriver::update(Topic topic, long payload) {
+void LedDriver::update(const Topic topic, long payload) {
     const uint8_t state = payload ? Led::ON : Led::OFF;
     switch (topic) {
     // no connection causes a flashing green led, and blue while firmware is checked

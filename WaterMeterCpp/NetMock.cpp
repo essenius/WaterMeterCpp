@@ -9,10 +9,14 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-// ReSharper disable CppMemberFunctionMayBeConst -- mimic existing interface
-// ReSharper disable CppInconsistentNaming -- same here
-#ifndef ESP32
+// Mock implementation for unit testing (not targeting the ESP32)
 
+// Disabling warnings caused by mimicking existing interface
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppInconsistentNaming
+
+// ReSharper disable CppParameterMayBeConst
+#ifndef ESP32
 
 #include "NetMock.h"
 
@@ -60,7 +64,7 @@ WiFiClientSecure testWifiClientSecure;
 
 WiFiClass::WiFiClass() : _name("esp32_001122334455") {
     reset();
-    for (byte i = 0; i < 6; i++) {
+    for (Byte i = 0; i < 6; i++) {
         _mac[i] = i * 17;
     }
 }

@@ -24,13 +24,13 @@ public:
     bool needsReinit() override { return _needsReconnect; }
     void announceReady() override {}
 
-    void setIsConnected(bool connected) { _isConnected = connected; }
-    void setNeedsReconnect(bool needsReconnect) { _needsReconnect = needsReconnect; }
+    void setIsConnected(const bool connected) { _isConnected = connected; }
+    void setNeedsReconnect(const bool needsReconnect) { _needsReconnect = needsReconnect; }
 
 private:
     bool _isConnected = false;
     bool _needsReconnect = true;
-    static constexpr WifiConfig _config{ "ssid", "password", nullptr, nullptr };
+    static constexpr WifiConfig CONFIG{ "ssid", "password", nullptr, nullptr };
 };
 
 

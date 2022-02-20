@@ -38,13 +38,12 @@ void Sampler::loop() {
 
     unsigned long duration = micros() - _scheduledStartTime;
     _additionalDuration = duration - durationSoFar;
-
-    // not using delayMicroseconds() as that is less accurate. Sometimes up to 300 us too much wait time.
-    // This is the only task on this core, so no need to yield either.
     if (duration > _samplePeriod) {
-        // It took too long. If we're still within one interval, we might be able to catch up
-        // Intervene if it gets more than that
-        _scheduledStartTime += ((duration + _samplePeriod / 2) / _samplePeriod) * _samplePeriod;
+        // It took too long, see if we need to skip measurements to catch up. The shift period is always less than the duration.
+        // integer mathematics, i.e. no fractions
+        const auto shiftPeriod = (duration / _samplePeriod) * _samplePeriod;
+        _scheduledStartTime += shiftPeriod;
+        // immediately start the next loop in an attempt to catch up.
     }
     else {
         // Wait for the next sample time; read the command queue while we're at it.
@@ -53,7 +52,7 @@ void Sampler::loop() {
         }
         duration = micros() - _scheduledStartTime;
         // delayMicroseconds() is less accurate: sometimes up to 300 us too much wait time.
-        long delayTime = _samplePeriod - duration - 500;
+        const long delayTime = static_cast<long>(_samplePeriod - duration) - 500L;
         if (delayTime > 0) {
             delayMicroseconds(delayTime); 
         }

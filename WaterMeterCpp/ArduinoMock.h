@@ -11,6 +11,10 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
+// Disabling warnings caused by mimicking existing interfaces
+// ReSharper disable CppInconsistentNaming
+// ReSharper disable CppMemberFunctionMayBeStatic
+
 #ifndef ESP32
 
 #ifndef HEADER_ARDUINOMOCK
@@ -20,7 +24,7 @@
 #include <cstdint>
 #include <string>
 
-typedef uint8_t byte;
+typedef uint8_t Byte;
 
 constexpr uint8_t INPUT = 0x0;
 constexpr uint8_t OUTPUT = 0x1;
@@ -70,7 +74,7 @@ void delay(int delay);
 void delayMicroseconds(int delay);
 //char* dtostrf(float value, signed char width, unsigned char precision, char* buffer);
 uint8_t digitalRead(uint8_t pin);
-void digitalWrite(uint8_t pin, uint8_t val);
+void digitalWrite(uint8_t pin, uint8_t value);
 unsigned long micros();
 unsigned long millis();
 void pinMode(uint8_t pin, uint8_t mode);

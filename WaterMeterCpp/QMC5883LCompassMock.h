@@ -9,19 +9,21 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-// Mock implementation for if we are not targeting the Arduino
+// Mock implementation for unit testing (not targeting the ESP32)
 
-// ReSharper disable CppMemberFunctionMayBeStatic -- need to mimic existing interface
-// ReSharper disable CppMemberFunctionMayBeConst -- same here
+// Disabling warnings caused by mimicking existing interfaces
+// ReSharper disable CppMemberFunctionMayBeStatic 
+// ReSharper disable CppMemberFunctionMayBeConst 
+// ReSharper disable CppInconsistentNaming
+// ReSharper disable CppParameterNeverUsed
 
 #ifndef ESP32
 
-#ifndef HEADER_QMC5883LCOMPASS
-#define HEADER_QMC5883LCOMPASS
+#ifndef HEADER_QMC5883L_COMPASS
+#define HEADER_QMC5883L_COMPASS
 
 class QMC5883LCompass {
 public:
-    // mock existing interface
     void init() {}
     void read() {}
     void setCalibration(int a, int b, int c, int d, int e, int f) {}

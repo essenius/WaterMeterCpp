@@ -75,7 +75,7 @@ void MagnetoSensorReader::reset() {
     _eventServer->publish(Topic::SensorWasReset, LONG_TRUE);
 }
 
-void MagnetoSensorReader::update(Topic topic, long payload) {
+void MagnetoSensorReader::update(const Topic topic, long payload) {
     if (topic == Topic::ResetSensor) {
         reset();
     }

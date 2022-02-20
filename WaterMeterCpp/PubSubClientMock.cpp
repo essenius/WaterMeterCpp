@@ -9,12 +9,17 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#include "SafeCString.h"
+// Mock implementation for unit testing (not targeting the ESP32)
+
+// Disabling warnings caused by mimicking existing interfaces
+// ReSharper disable CppMemberFunctionMayBeStatic
+// ReSharper disable CppMemberFunctionMayBeConst 
+// ReSharper disable CppParameterNeverUsed
+
+// ReSharper disable CppParameterMayBeConst
 #ifndef ESP32
 
-// ReSharper disable CppMemberFunctionMayBeStatic -- need to mimic existing interface
-// ReSharper disable CppMemberFunctionMayBeConst -- same here
-
+#include "SafeCString.h"
 #include "PubSubClientMock.h"
 
 bool PubSubClient::connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {

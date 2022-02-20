@@ -10,14 +10,14 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
+
 #include "../WaterMeterCpp/TimeServer.h"
 
 class TimeServerMock : public TimeServer
 {
 public:
-    void begin();
-    void setTime() override;
-    bool timeWasSet() const override;
-    void reset();
+    void setTime() override { _wasSet = true; }
+    bool timeWasSet() const override { return _wasSet; }
+    void reset() { _wasSet = false; }
 };
     

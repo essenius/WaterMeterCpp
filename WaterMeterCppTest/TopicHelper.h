@@ -10,6 +10,7 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
+
 #include "pch.h"
 #include "CppUnitTest.h"
 #include <string>
@@ -20,8 +21,8 @@ namespace Microsoft {
         namespace CppUnitTestFramework {
 
             template <>
-            static std::wstring ToString<Topic>(const Topic& topic) {
-                return std::to_wstring(static_cast<int>(topic));
+            inline std::wstring ToString<Topic>(const Topic& t) { 
+                RETURN_WIDE_STRING(static_cast<int>(t));
             }
         }
     }

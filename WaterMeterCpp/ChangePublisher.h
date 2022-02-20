@@ -19,13 +19,18 @@
 // This works by using the highest significant byte of the (4 byte) long to store the index.
 // That means 3 bytes (max value 8,388,608 for long) are left for the payload if the index is used.
 
-template <class payloadType>
+template <class PayloadType>
 class ChangePublisher {
 public:
-    ChangePublisher(EventServer* eventServer, const Topic topic, const int8_t index = 0) {
+    ChangePublisher(
+        EventServer* eventServer,
+        const Topic topic,
+        const int8_t index = 0,
+        PayloadType defaultValue = PayloadType()) {
         _eventServer = eventServer;
         _index = index << 24;
         _topic = topic;
+        _payload = defaultValue;
     }
 
     ChangePublisher(const ChangePublisher&) = default;
@@ -34,16 +39,16 @@ public:
     ChangePublisher& operator=(ChangePublisher&&) = default;
     virtual ~ChangePublisher() = default;
 
-    operator payloadType() const { return _payload; }
-    payloadType get() const { return _payload; }
-    
-    void reset() { _payload = payloadType(); }
+    operator PayloadType() const { return _payload; }
+    PayloadType get() const { return _payload; }
+
+    void reset() { _payload = PayloadType(); }
     void setTopic(const Topic topic) { _topic = topic; }
 
-    virtual ChangePublisher& operator=(payloadType payload) {
+    virtual ChangePublisher& operator=(PayloadType payload) {
         if (payload != _payload) {
             _payload = payload;
-            _eventServer->publish( _topic, static_cast<long>(payload) + _index);
+            _eventServer->publish(_topic, static_cast<long>(payload) + _index);
         }
         return *this;
     }
@@ -51,7 +56,7 @@ public:
 protected:
     EventServer* _eventServer;
     long _index;
-    payloadType _payload{};
+    PayloadType _payload;
     Topic _topic;
 };
 

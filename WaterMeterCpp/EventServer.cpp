@@ -19,7 +19,7 @@
 
 EventServer::EventServer() : _numberBuffer{0} {}
 
-void EventServer::cannotProvide(EventClient* client, Topic topic) {
+void EventServer::cannotProvide(EventClient* client, const Topic topic) {
     if (_providers[topic] == client) {
         _providers.erase(topic);
     }
@@ -36,7 +36,7 @@ void EventServer::cannotProvide(EventClient* client) {
     }
 }
 
-void EventServer::provides(EventClient* client, Topic topic) {
+void EventServer::provides(EventClient* client, const Topic topic) {
     _providers[topic] = client;
 }
 
@@ -69,7 +69,7 @@ void EventServer::unsubscribe(EventClient* client) {
 }
 
 // unsubscribe the subscriber from the topic
-void EventServer::unsubscribe(EventClient* client, Topic topic) {
+void EventServer::unsubscribe(EventClient* client, const Topic topic) {
     for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); ++iterator) {
         if (iterator->first == topic) {
             iterator->second.erase(client);

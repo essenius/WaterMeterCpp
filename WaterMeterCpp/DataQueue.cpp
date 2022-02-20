@@ -74,10 +74,10 @@ bool DataQueue::send(const DataQueuePayload* payload) {
     // optimizing the use of the buffer by not sending unused parts
     const size_t size = payload->size();
     if (requiredSize(size) > freeSpace()) return false;
-    return (xRingbufferSend(_bufferHandle, payload, size, 0) == pdTRUE);
+    return xRingbufferSend(_bufferHandle, payload, size, 0) == pdTRUE;
 }
 
-void DataQueue::update(Topic topic, const char* payload) {
+void DataQueue::update(const Topic topic, const char* payload) {
     DataQueuePayload payloadToSend{};
     payloadToSend.topic = topic;
     // timestamp is ignored for strings

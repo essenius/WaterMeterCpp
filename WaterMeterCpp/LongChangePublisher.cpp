@@ -15,10 +15,15 @@
 #endif
 
 LongChangePublisher::LongChangePublisher(
-    EventServer* eventServer, const Topic topic, const long epsilon, const long lowThreshold, int8_t index) :
-    ChangePublisher(eventServer, topic, index), _epsilon(epsilon), _lowThreshold(lowThreshold) {}
+    EventServer* eventServer, 
+    const Topic topic, 
+    const long epsilon, 
+    const long lowThreshold, 
+    const int8_t index,
+    const long defaultValue) :
+    ChangePublisher(eventServer, topic, index, defaultValue), _epsilon(epsilon), _lowThreshold(lowThreshold) {}
 
-LongChangePublisher& LongChangePublisher::operator=(long payload) {
+LongChangePublisher& LongChangePublisher::operator=(const long payload) {
     // Only catch larger variations or values close to a critical value to avoid very frequent updates
     if (_epsilon == 1 && _payload != payload) {
         ChangePublisher::operator=(payload);
@@ -26,8 +31,10 @@ LongChangePublisher& LongChangePublisher::operator=(long payload) {
     }
     if (payload < _lowerLimit || payload > _upperLimit || payload < _lowThreshold) {
         ChangePublisher::operator=(payload);
-        _lowerLimit = (_payload / _epsilon) * _epsilon;
-        _upperLimit = _lowerLimit + _epsilon;
+        // integer arithmetic. Find the closest multiple of _epsilon
+        const auto roundedValue = (2 * _payload + _epsilon) / (2 * _epsilon) * _epsilon;
+        _lowerLimit = roundedValue - _epsilon;
+        _upperLimit = roundedValue + _epsilon;
     }
     return *this;
 }

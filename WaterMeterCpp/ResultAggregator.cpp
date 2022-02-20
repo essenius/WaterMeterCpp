@@ -21,16 +21,15 @@ ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, Da
     _desiredFlushRate = _idleFlushRate;
 }
 
-void ResultAggregator::addDuration(const long duration) {
+void ResultAggregator::addDuration(const unsigned long duration) const {
     // should only be called once during a message
     _result->totalDuration += duration;
     if (duration > _result->maxDuration) {
         _result->maxDuration = duration;
     }
-    auto overrun = std::max(0L, duration - static_cast<long>(_measureIntervalMicros));
-    if (overrun > 0) {
+    if (duration > _measureIntervalMicros) {
         _result->overrunCount++;
-        _eventServer->publish(Topic::TimeOverrun, overrun);
+        _eventServer->publish(Topic::TimeOverrun, duration - _measureIntervalMicros);
     }
     // this could be optimized by only getting it executed at the end of a cycle
     _result->averageDuration = static_cast<uint32_t>((_result->totalDuration * 10 / _messageCount + 5) / 10);
@@ -95,14 +94,14 @@ bool ResultAggregator::send() {
     return wasSuccessful;
 }
 
-void ResultAggregator::setIdleFlushRate(long rate) {
+void ResultAggregator::setIdleFlushRate(const long rate) {
     if (rate != _idleFlushRate) {
         _idleFlushRate = rate;
     }
     setDesiredFlushRate(rate);
 }
 
-void ResultAggregator::setNonIdleFlushRate(long rate) {
+void ResultAggregator::setNonIdleFlushRate(const long rate) {
     if (rate != _nonIdleFlushRate) {
         _nonIdleFlushRate = rate;
     }
@@ -117,7 +116,7 @@ bool ResultAggregator::shouldSend(const bool endOfFile) {
     return Aggregator::shouldSend(endOfFile);
 }
 
-void ResultAggregator::update(Topic topic, const char* payload) {
+void ResultAggregator::update(const Topic topic, const char* payload) {
     // we only listen to topics with numerical values, so conversion should work
     switch (topic) {
     case Topic::IdleRate:
@@ -131,7 +130,7 @@ void ResultAggregator::update(Topic topic, const char* payload) {
     }
 }
 
-void ResultAggregator::update(Topic topic, long payload) {
+void ResultAggregator::update(const Topic topic, const long payload) {
     const long rate = limit(payload, 0L, LONG_MAX);
     switch (topic) {
     case Topic::IdleRate:
@@ -141,6 +140,7 @@ void ResultAggregator::update(Topic topic, long payload) {
         setNonIdleFlushRate(rate);
         return;
     case Topic::ProcessTime:
+        // safe conversion: process time for once cycle will not be > LONG_MAX (2147 seconds)
         addDuration(payload);
         break;
     default:

@@ -9,7 +9,17 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#pragma once
+// Mock implementation for unit testing (not targeting the ESP32)
+
+// Disabling warnings caused by mimicking existing interfaces
+// ReSharper disable CppInconsistentNaming
+// ReSharper disable CppParameterNeverUsed
+
+#ifndef ESP32
+
+#ifndef HEADER_FREERTOSMOCK
+#define HEADER_FREERTOSMOCK
+
 #include <climits>
 #include <cstdint>
 
@@ -76,3 +86,5 @@ TaskHandle_t xTaskGetCurrentTaskHandle();
 // testing only, does not exist in FreeRTOS
 void uxQueueReset();
 
+#endif
+#endif

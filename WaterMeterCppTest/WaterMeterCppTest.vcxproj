@@ -189,7 +189,6 @@
     <ClCompile Include="ResultAggregatorTest.cpp" />
     <ClCompile Include="SerializerTest.cpp" />
     <ClCompile Include="TestEventClient.cpp" />
-    <ClCompile Include="TimeServerMock.cpp" />
     <ClCompile Include="TimeServerTest.cpp" />
     <ClCompile Include="WifiMock.cpp" />
     <ClCompile Include="WifiTest.cpp" />

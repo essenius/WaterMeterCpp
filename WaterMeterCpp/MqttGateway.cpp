@@ -95,21 +95,35 @@ void MqttGateway::begin(Client* client, const char* clientName) {
     connect();
 }
 
-void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
+// thread safe alternative for strtok
+char* nextToken(char** start, const int delimiter) {
+    char* token = *start;
+    char* nextDelimiter = token != nullptr ? strchr(token, delimiter) : nullptr;
+    if (nextDelimiter == nullptr) {
+        *start = nullptr;
+    }
+    else {
+        *nextDelimiter = '\0';
+        *start = nextDelimiter + 1;
+    }
+    return token;
+}
+
+void MqttGateway::callback(const char* topic, const Byte* payload, const unsigned length) {
     char* copyTopic = strdup(topic);
-    // TODO find alternative for strtok (which is a bit tricky)
+    constexpr int DELIMITER = '/';
     // if the topic is invalid, ignore the message
-    if (strtok(copyTopic, "/") == nullptr) return; // homie, ignore
-    if (strtok(nullptr, "/") == nullptr) return; // device ID, ignore
-    const char* node = strtok(nullptr, "/");
-    const char* property = strtok(nullptr, "/");
-    const char* set = strtok(nullptr, "/");
-    if (strcmp(set, "set") == 0) {
+    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // homie, ignore
+    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // device ID, ignore
+    const char* node = nextToken(&copyTopic, DELIMITER);
+    const char* property = nextToken(&copyTopic, DELIMITER);
+    const char* set = nextToken(&copyTopic, DELIMITER);
+    if (set != nullptr && strcmp(set, "set") == 0) {
         // 1ULL is a trick to avoid C26451
-        const auto payloadStr = new char[1ULL + length];
+        const auto payloadStr = new char[1LL + length];
         for (unsigned int i = 0; i < length; i++) {
             payloadStr[i] = static_cast<char>(payload[i]);
-        }
+        } 
         payloadStr[length] = 0;
         for (const auto& entry : TOPIC_MAP) {
             const auto topicPair = entry.second;

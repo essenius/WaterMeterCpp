@@ -41,7 +41,7 @@ FlowMeter::FlowMeter(EventServer* eventServer):
     _flow(eventServer, Topic::Flow),
     _peak(eventServer, Topic::Peak) {}
 
-void FlowMeter::addSample(int measurement) {
+void FlowMeter::addSample(const int measurement) {
     const bool firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
     if (_startupSamplesLeft > 0) {
         _startupSamplesLeft--;
@@ -112,7 +112,7 @@ bool FlowMeter::hasFlow() const {
     return _flow;
 }
 
-float FlowMeter::highPassFilter(float measure, float previous, float filterValue, float alpha) {
+float FlowMeter::highPassFilter(const float measure, const float previous, const float filterValue, const float alpha) {
     return alpha * (filterValue + measure - previous);
 }
 
@@ -128,11 +128,11 @@ bool FlowMeter::isPeak() const {
     return _peak;
 }
 
-float FlowMeter::lowPassFilter(float measure, float filterValue, float alpha) {
+float FlowMeter::lowPassFilter(const float measure, const float filterValue, const float alpha) {
     return alpha * measure + (1 - alpha) * filterValue;
 }
 
-void FlowMeter::markAnomalies(int measurement) {
+void FlowMeter::markAnomalies(const int measurement) {
     _exclude = _outlier;
     if (!_exclude) {
         return;
@@ -156,7 +156,7 @@ void FlowMeter::resetAnomalies() {
     _excludeAll = false;
 }
 
-void FlowMeter::resetFilters(int initialMeasurement) {
+void FlowMeter::resetFilters(const int initialMeasurement) {
     _smoothValue = static_cast<float>(initialMeasurement);
     _derivative = 0.0f;
     _smoothDerivative = 0.0f;
@@ -165,7 +165,7 @@ void FlowMeter::resetFilters(int initialMeasurement) {
     _previousSmoothValue = _smoothValue;
 }
 
-void FlowMeter::update(Topic topic, long payload) {
+void FlowMeter::update(const Topic topic, const long payload) {
     if (topic == Topic::Sample) {
         addSample(static_cast<int>(payload));
     }

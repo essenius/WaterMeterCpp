@@ -20,7 +20,7 @@ class ResultAggregator : public Aggregator {
 public:
     ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
                      uint32_t measureIntervalMicros);
-    void addDuration(long duration);
+    void addDuration(unsigned long duration) const;
     void addMeasurement(int16_t value, const FlowMeter* result);
     using Aggregator::begin;
     virtual void begin();

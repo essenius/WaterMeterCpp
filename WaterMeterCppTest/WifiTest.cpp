@@ -44,11 +44,11 @@ namespace WaterMeterCppTest {
             const IPAddress gateway(10, 0, 0, 1);
             const IPAddress dns1(8, 8, 8, 8);
             const IPAddress dns2(8, 8, 4, 4);
-            constexpr WifiConfig wifiConfig{ "ssid", "password", "hostname", nullptr };
+            constexpr WifiConfig WIFI_CONFIG{ "ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
             TestEventClient client1(&eventServer);
             eventServer.subscribe(&client1, Topic::WifiSummaryReady);
-            Wifi wifi(&eventServer, &wifiConfig, &payloadBuilder);
+            Wifi wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit as disconnected");
 
@@ -73,9 +73,9 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(wifiFailSetNameTest) {
-            constexpr WifiConfig config{ "ssid", "password", "", nullptr };
+            constexpr WifiConfig CONFIG{ "ssid", "password", "", nullptr };
             PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &config, &payloadBuilder);
+            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             wifi.begin();
             // just showing intended usage
             wifi.setCertificates("", "", "");
@@ -85,18 +85,18 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(wifiGetUnknownTopicTestTest) {
 
-            constexpr WifiConfig config{ "ssid", "password", "hostname", nullptr };
+            constexpr WifiConfig CONFIG{ "ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &config, &payloadBuilder);
+            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             Assert::AreEqual("x", wifi.get(Topic::Flow, "x"), L"Unexpected topic returns default");
         }
 
         TEST_METHOD(wifiNullNameTest) {
             WiFi.setHostname("esp32_001122334455");
-            constexpr WifiConfig config{ "ssid", "password", nullptr, nullptr };
+            constexpr WifiConfig CONFIG{ "ssid", "password", nullptr, nullptr };
             PayloadBuilder payloadBuilder;
 
-            Wifi wifi(&eventServer, &config, &payloadBuilder);
+            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             wifi.begin();
 
             Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
@@ -112,9 +112,9 @@ namespace WaterMeterCppTest {
         TEST_METHOD(wifiPredefinedLocalIpTest) {
             const IPAddress local(192, 168, 1, 2);
             const IPAddress gateway(192, 168, 1, 1);
-            constexpr WifiConfig wifiConfig{"ssid", "password", "hostname", nullptr};
+            constexpr WifiConfig WIFI_CONFIG{"ssid", "password", "hostname", nullptr};
             PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &wifiConfig, &payloadBuilder);
+            Wifi wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, NO_IP, NO_IP, NO_IP, NO_IP};
             wifi.configure(&ipConfig);
             wifi.begin();
@@ -143,9 +143,9 @@ namespace WaterMeterCppTest {
             const IPAddress local(192, 168, 1, 2);
             const IPAddress gateway(192, 168, 1, 253);
             const IPAddress dns(9, 9, 9, 9);
-            constexpr WifiConfig config{"ssid", "password", "hostname", nullptr};
+            constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr};
             PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &config, &payloadBuilder);
+            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, gateway, NO_IP, dns, NO_IP};
             wifi.configure(&ipConfig);
             wifi.begin();
@@ -170,9 +170,9 @@ namespace WaterMeterCppTest {
             const IPAddress dns1(9, 9, 9, 9);
             const IPAddress dns2(1, 1, 1, 1);
 
-            constexpr WifiConfig config{"ssid", "password", "hostname", nullptr};
+            constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr};
             PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &config, &payloadBuilder);
+            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, NO_IP, NO_IP, dns1, dns2};
             wifi.configure(&ipConfig);
             wifi.begin();

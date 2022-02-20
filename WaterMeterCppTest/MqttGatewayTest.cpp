@@ -147,6 +147,11 @@ namespace WaterMeterCppTest {
             safeStrcpy(topic, "bogus");
             mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
 
+            // same with a payload not having a node or a property
+
+            safeStrcpy(topic, "homie/device");
+            mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
+
             // a topic we don't know should be ignored
 
             safeStrcpy(topic, "homie/device_id/bogus/batch-size-desired/set");

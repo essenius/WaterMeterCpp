@@ -120,22 +120,22 @@ void PayloadBuilder::writeString(const float input) {
     *_currentPosition = 0;
 }
 
-void PayloadBuilder::writeString(int input) {
+void PayloadBuilder::writeString(const int input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%i", input);
     updatePosition();
 }
 
-void PayloadBuilder::writeString(long input) {
+void PayloadBuilder::writeString(const long input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%ld", input);
     updatePosition();
 }
 
-void PayloadBuilder::writeString(uint32_t input) {
+void PayloadBuilder::writeString(const uint32_t input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
     updatePosition();
 }
 
-void PayloadBuilder::writeString(unsigned long input) {
+void PayloadBuilder::writeString(const unsigned long input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
     updatePosition();
 }

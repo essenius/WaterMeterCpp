@@ -21,7 +21,7 @@ Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dat
     _flushRate(eventServer, Topic::Rate),
     _blocked(eventServer, Topic::Blocked) {}
 
-void Aggregator::begin(long desiredFlushRate) {
+void Aggregator::begin(const long desiredFlushRate) {
     setDesiredFlushRate(desiredFlushRate);
     flush();
 }
@@ -76,7 +76,7 @@ bool Aggregator::send() {
     return true;
 }
 
-void Aggregator::setDesiredFlushRate(long flushRate) {
+void Aggregator::setDesiredFlushRate(const long flushRate) {
     _desiredFlushRate = flushRate;
     // Immediately apply if we are starting a new round, or aren't logging
     // Otherwise it will be done at the next reset.

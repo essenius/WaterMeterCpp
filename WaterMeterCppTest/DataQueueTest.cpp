@@ -54,18 +54,14 @@ public:
         for (uint16_t i = 0; i < MAX_SAMPLES; i++) {
             payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
         }
-        long freeValues[] = { 12800, 12672, 12672, 12672, 12672 };
-        char numberBuffer[12];
 
         for (uint16_t times = 0; times < 5; times++) {
-            constexpr long index = 0x1000000;
-            safeSprintf(numberBuffer, "%ld", index + freeValues[times]);
             payload.buffer.samples.count = MAX_SAMPLES - times;
             auto size = DataQueue::requiredSize(payload.size());
             Assert::IsTrue(size <= 128, (L"Payload didn't max out at " + std::to_wstring(size)).c_str());
             Assert::IsTrue(dataQueue.send(&payload), (L"Send works for sample " + std::to_wstring(times)).c_str());
-            Assert::AreEqual((times == 0 ? 1 : 2), freeSpaceEventClient.getCallCount(), (L"Free called right times at " + std::to_wstring(times)).c_str());
-            Assert::AreEqual(numberBuffer, freeSpaceEventClient.getPayload(), (L"right bytes free at "+ std::to_wstring(times)).c_str());
+            Assert::AreEqual(1, freeSpaceEventClient.getCallCount(), (L"Free called right times at " + std::to_wstring(times)).c_str());
+            Assert::AreEqual("16790016", freeSpaceEventClient.getPayload(), (L"right bytes free at "+ std::to_wstring(times)).c_str());
             delay(50);
         }
 
@@ -94,7 +90,7 @@ public:
             Assert::IsNotNull(payloadReceive, L"PayloadReceive not null 1");
             Assert::AreEqual(Topic::Samples, payloadReceive->topic, L"Topic is Samples");
         }
-        Assert::AreEqual(3, freeSpaceEventClient.getCallCount(), L"Free called an extra time");
+        Assert::AreEqual(2, freeSpaceEventClient.getCallCount(), L"Free called an extra time");
         Assert::AreEqual("16789376", freeSpaceEventClient.getPayload(), L"12160 + index #1)");
 
         // get the result

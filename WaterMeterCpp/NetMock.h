@@ -9,14 +9,19 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-// ReSharper disable CppMemberFunctionMayBeStatic -- need to mimic existing interface
-// ReSharper disable CppMemberFunctionMayBeConst -- same here
+// Mock implementation for unit testing (not targeting the ESP32)
 
+// Disabling warnings caused by mimicking existing interfaces
+// ReSharper disable CppInconsistentNaming
+// ReSharper disable CppMemberFunctionMayBeStatic
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterNeverUsed
+
+// ReSharper disable CppParameterMayBeConst
 #ifndef ESP32
 
 #ifndef HEADER_NETMOCK_H
 #define HEADER_NETMOCK_H
-
 
 #include "ArduinoMock.h"
 #include "SafeCString.h"
@@ -131,7 +136,7 @@ public:
     void connectIn(int connectCount);
     void reset();
 private:
-    byte _mac[6]{};
+    Byte _mac[6]{};
     char _name[20] = {0};
     char _ssid[20] = {0};
     IPAddress _localIP;

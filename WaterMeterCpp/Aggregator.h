@@ -18,8 +18,6 @@
 #include "ChangePublisher.h"
 #include "DataQueue.h"
 
-using byte = unsigned char;
-
 class Aggregator : public EventClient {
 public:
     Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);

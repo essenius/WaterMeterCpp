@@ -9,8 +9,15 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-// ReSharper disable CppInconsistentNaming -- mimic existing interface
-// ReSharper disable CppMemberFunctionMayBeStatic -- same here
+// Mock implementation for unit testing (not targeting the ESP32)
+
+// Disabling warnings caused by mimicking existing interfaces
+// ReSharper disable CppInconsistentNaming 
+// ReSharper disable CppMemberFunctionMayBeStatic
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConst
+// ReSharper disable CppParameterNeverUsed
+
 #ifndef ESP32
 #include "ArduinoMock.h"
 #include <cstdio>
@@ -98,7 +105,7 @@ const char* HardwareSerial::getOutput() {
 
 void HardwareSerial::print(const char* input) {
 	safeStrcat(_printBuffer, input);
-};
+}
 
 void HardwareSerial::printf(const char* format, ...) {
 	va_list args;

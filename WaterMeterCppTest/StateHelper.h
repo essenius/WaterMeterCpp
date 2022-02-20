@@ -1,5 +1,3 @@
-#pragma once
-
 // Copyright 2021 Rik Essenius
 // 
 //   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -12,6 +10,7 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
+
 #include "pch.h"
 #include "CppUnitTest.h"
 #include <string>
@@ -24,8 +23,8 @@ namespace Microsoft {
         namespace CppUnitTestFramework {
 
             template <> 
-            static std::wstring ToString<ConnectionState>(const ConnectionState& state) {
-                return std::to_wstring(static_cast<int>(state));
+            inline std::wstring ToString<ConnectionState>(const ConnectionState& state) {
+                RETURN_WIDE_STRING(static_cast<int>(state));
             }
         }
     }

@@ -24,7 +24,7 @@ EventClient::~EventClient() {
     _eventServer->cannotProvide(this);
 }
 
-void EventClient::update(Topic topic, long payload) {
+void EventClient::update(const Topic topic, const long payload) {
     char numberBuffer[20];
     safeSprintf(numberBuffer, "%ld", payload);
     update(topic, numberBuffer);

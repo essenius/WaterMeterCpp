@@ -101,7 +101,7 @@ namespace WaterMeterCppTest {
                              L"Info correct");
         }
 
-        TEST_METHOD(FirmwareManagerUpdateCheckFailsTest) {
+        TEST_METHOD(firmwareManagerUpdateCheckFailsTest) {
             FirmwareManager manager(&eventServer, "http://localhost/images/", "0.1.2");
             manager.begin(&client, "001122334455");
             HTTPClient::ReturnValue = 400;

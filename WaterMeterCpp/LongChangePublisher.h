@@ -12,12 +12,19 @@
 #ifndef HEADER_LONGCHANGEPUBLISHER
 #define HEADER_LONGCHANGEPUBLISHER
 
+#include <climits>
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
 class LongChangePublisher : public ChangePublisher<long> {
 public:
-    LongChangePublisher(EventServer* eventServer, Topic topic, long epsilon, long lowThreshold, int8_t index = 0);
+    LongChangePublisher(
+        EventServer* eventServer, 
+        Topic topic, 
+        long epsilon, 
+        long lowThreshold, 
+        int8_t index = 0,
+        long defaultValue = 0);
     LongChangePublisher& operator=(long payload) override;
 
 protected:

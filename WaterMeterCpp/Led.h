@@ -38,8 +38,8 @@ public:
     static constexpr unsigned char ERROR = 4; /// unused
     static constexpr unsigned char GREEN = 17;
     static constexpr unsigned char RED = 18;
-    static constexpr unsigned char RUNNING = 23; // TODO: must become LED_BUILTIN
-    static constexpr unsigned char YELLOW = 2; // overrun
+    static constexpr unsigned char RUNNING = LED_BUILTIN; // Was 23
+    static constexpr unsigned char YELLOW = 2; // unused
     static constexpr uint8_t ON = HIGH;
     static constexpr uint8_t OFF = LOW;
 

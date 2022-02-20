@@ -49,7 +49,7 @@ public:
     // Since we use only a limited set of types, type erasure seems overkill 
 
     virtual const char* get(Topic topic, const char* defaultValue) { return defaultValue; }
-    virtual long get(Topic topic, long defaultValue) { return defaultValue; }
+    virtual long get(Topic topic, const long defaultValue) { return defaultValue; }
     virtual void update(Topic topic, const char* payload) {}
     virtual void update(Topic topic, long payload);
 

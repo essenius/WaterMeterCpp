@@ -162,13 +162,13 @@ namespace WaterMeterCppTest {
             assertRunningLed(Led::ON, messageOn.c_str(), 255);
         }
 
-        void assertRunningLed(uint8_t expected, const wchar_t* description, const unsigned int index) const {
+        void assertRunningLed(const uint8_t expected, const wchar_t* description, const unsigned int index) const {
             std::wstring message(description);
             message += std::wstring(L" # ") + std::to_wstring(index);
             Assert::AreEqual(expected, Led::get(Led::RUNNING), message.c_str());
         }
 
-        static void publishConnectionState(Topic topic, ConnectionState connectionState) {
+        static void publishConnectionState(const Topic topic, ConnectionState connectionState) {
             eventServer.publish(topic, static_cast<long>(connectionState));
         }
     };

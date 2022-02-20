@@ -21,6 +21,8 @@
 #include <ctime>
 #include "FreeRtosMock.h"
 
+// ReSharper disable CppInconsistentNaming -- redefining existing entity in ESP32
+
 struct timeval {
     time_t tv_sec; // seconds 
     long tv_usec; // microseconds

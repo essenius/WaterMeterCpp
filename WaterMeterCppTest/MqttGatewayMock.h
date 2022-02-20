@@ -10,6 +10,7 @@
 //    See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
+
 #include "../WaterMeterCpp/MqttGateway.h"
 
 class MqttGatewayMock : public MqttGateway {
@@ -22,7 +23,7 @@ public:
     bool publishNextAnnouncement() override { return _connect; }
     bool hasAnnouncement() override;
 
-    void setIsConnected(bool isConnected) {
+    void setIsConnected(const bool isConnected) {
         _connect = isConnected;
         _announceCounter = 0;
     }
@@ -30,5 +31,5 @@ public:
 private:
     bool _connect = false;
     int _announceCounter = 0;
-    constexpr static MqttConfig _mqttConfig{ "broker", 1883, "user", "password" };
+    constexpr static MqttConfig MQTT_CONFIG{ "broker", 1883, "user", "password" };
 };

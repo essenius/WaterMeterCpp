@@ -13,7 +13,7 @@
 #include "MqttGatewayMock.h"
 
 MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient) :
-    MqttGateway(eventServer, mqttClient, &_mqttConfig, nullptr, "1.0.0") {}
+    MqttGateway(eventServer, mqttClient, &MQTT_CONFIG, nullptr, "1.0.0") {}
 
 bool MqttGatewayMock::hasAnnouncement() {
     _announceCounter++;

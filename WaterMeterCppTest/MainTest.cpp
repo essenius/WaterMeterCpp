@@ -59,7 +59,7 @@ namespace WaterMeterCppTest {
             uxQueueReset();
 
             // For being able to set the firmware 
-            constexpr const auto BUILD_VERSION = "0.100.3";
+            constexpr auto BUILD_VERSION = "0.100.3";
 
             // We measure every 10 ms. That is about the fastest that the sensor can do reliably
             // Processing one cycle usually takes quite a bit less than that, unless a write happened.
@@ -204,7 +204,6 @@ namespace WaterMeterCppTest {
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://firmwareserver/watermeter/001122334455.version
 [] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
-[] Free Heap: 29000
 [] Free Stack #0: 1564
 )";
             Assert::AreEqual(expected, Serial.getOutput(), L"Formatted result came through");
