@@ -20,10 +20,8 @@
 #include "EventServer.h"
 #include "SafeCString.h"
 
-FirmwareManager::FirmwareManager(EventServer* eventServer, const char* baseUrl, const char* buildVersion) :
-    EventClient(eventServer), _buildVersion(buildVersion) {
-    safeStrcpy(_baseUrl, baseUrl);
-}
+FirmwareManager::FirmwareManager(EventServer* eventServer, const FirmwareConfig* firmwareConfig, const char* buildVersion) :
+    EventClient(eventServer), _buildVersion(buildVersion), _firmwareConfig(firmwareConfig) {}
 
 void FirmwareManager::begin(WiFiClient* client, const char* machineId) {
     _client = client;
@@ -32,7 +30,7 @@ void FirmwareManager::begin(WiFiClient* client, const char* machineId) {
 
 void FirmwareManager::loadUpdate() const {
     char buffer[BASE_URL_SIZE];
-    safeStrcpy(buffer, _baseUrl);
+    safeStrcpy(buffer, _firmwareConfig->baseUrl);
     safeStrcat(buffer, IMAGE_EXTENSION);
 
     // This should normally result in a reboot.
@@ -66,7 +64,7 @@ void FirmwareManager::tryUpdate() {
 
 bool FirmwareManager::updateAvailable() const {
     char versionUrl[BASE_URL_SIZE];
-    safeStrcpy(versionUrl, _baseUrl);
+    safeStrcpy(versionUrl, _firmwareConfig->baseUrl);
     safeStrcat(versionUrl, _machineId);
     safeStrcat(versionUrl, VERSION_EXTENSION);
     HTTPClient httpClient;

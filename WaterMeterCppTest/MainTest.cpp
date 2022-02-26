@@ -13,6 +13,7 @@
 
 #include "pch.h"
 #include "CppUnitTest.h"
+
 #ifdef ESP32
 #include <ESP.h>
 #else
@@ -36,7 +37,6 @@
 #include "../WaterMeterCpp/Log.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
 #include "../WaterMeterCpp/QueueClient.h"
-#include "../WaterMeterCpp/secrets.h"
 #include "../WaterMeterCpp/Sampler.h"
 // ReSharper disable CppUnusedIncludeDirective - false positive
 #include "TopicHelper.h"
@@ -50,7 +50,11 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
 
     TEST_CLASS(MainTest) {
+
     public:
+        static Preferences preferences;
+        static Configuration configuration;
+
         TEST_METHOD(mainTest1) {
             // make the firmware check fail
             HTTPClient::ReturnValue = 400;
@@ -59,13 +63,16 @@ namespace WaterMeterCppTest {
             uxQueueReset();
 
             // For being able to set the firmware 
-            constexpr auto BUILD_VERSION = "0.100.3";
+            constexpr auto BUILD_VERSION = "0.100.5";
 
             // We measure every 10 ms. That is about the fastest that the sensor can do reliably
             // Processing one cycle usually takes quite a bit less than that, unless a write happened.
             constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
             QMC5883LCompass compass;
+            //Preferences preferences;
+            //Configuration configuration(&preferences);
+
             EventServer samplerEventServer;
             MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
             FlowMeter flowMeter(&samplerEventServer);
@@ -89,10 +96,10 @@ namespace WaterMeterCppTest {
             PayloadBuilder wifiPayloadBuilder;
             Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
-            Wifi wifi(&connectorEventServer, &WIFI_CONFIG, &wifiPayloadBuilder);
+            Wifi wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
             PubSubClient mqttClient;
-            MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &MQTT_CONFIG, &sensorDataQueue, BUILD_VERSION);
-            FirmwareManager firmwareManager(&connectorEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
+            MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
+            FirmwareManager firmwareManager(&connectorEventServer, &configuration.firmware, BUILD_VERSION);
 
             QueueClient samplerQueueClient(&samplerEventServer, 20, 0);
             QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20, 1);
@@ -121,6 +128,9 @@ namespace WaterMeterCppTest {
 
             Serial.begin(115200);
             theClock.begin();
+            FirmwareConfig firmwareConfig{ "https://localhost/" };
+            configuration.putFirmwareConfig(&firmwareConfig);
+            configuration.begin(false);
 
             // queue for the sampler process
             samplerQueueClient.begin(communicatorSamplerQueueClient.getQueueHandle());
@@ -139,7 +149,7 @@ namespace WaterMeterCppTest {
 
             communicator.setup();
             sampler.setup(MEASURE_INTERVAL_MICROS);
-            connector.setup();
+            connector.setup(&configuration);
 
             // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (setup and loop run on core 1)
             xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
@@ -167,7 +177,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(R"([] Starting
 [] Topic '6': 0
 [] Free Spaces Queue #1: 9
-[] Wifi summary: {"ssid":"","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
+[] Wifi summary: {"ssid":"","hostname":"","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
 [] Free Spaces Queue #2: 9
 [] Free Memory DataQueue #0: 12800
 [] Free Heap: 32000
@@ -198,11 +208,11 @@ namespace WaterMeterCppTest {
             Serial.clearOutput();
             communicator.loop();
             auto expected = R"([] Free Spaces Queue #2: 1
-[] Wifi summary: {"ssid":"essenii30n","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
-[] Wifi summary: {"ssid":"essenii30n","hostname":"thing1","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
+[] Wifi summary: {"ssid":"","hostname":"esp32_001122334455","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
+[] Wifi summary: {"ssid":"","hostname":"esp32_001122334455","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
 [] Free Spaces Queue #2: 6
 [] Error: Firmware version check failed with response code 400. URL:
-[] https://firmwareserver/watermeter/001122334455.version
+[] https://localhost/001122334455.version
 [] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
 [] Free Stack #0: 1564
 )";
@@ -218,4 +228,8 @@ namespace WaterMeterCppTest {
             sampler.loop();
         }
     };
+
+    Preferences MainTest::preferences;
+    Configuration MainTest::configuration(&preferences);
+    
 }

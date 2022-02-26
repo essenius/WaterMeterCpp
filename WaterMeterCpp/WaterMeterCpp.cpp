@@ -15,6 +15,8 @@
 // you will see these ifdef preprocessor statements often. This is done to be able to test the application
 // on Visual Studio. They enable the mocks you see in this project if we're not on the actual ESP32 devices.
 
+#define CONFIG_USE_SECRETS
+
 #ifdef ESP32
 #include <ESP.h>
 #include <PubSubClient.h>
@@ -25,6 +27,8 @@
 #include "QMC5883LCompassMock.h"
 #endif
 
+
+#include "Configuration.h"
 #include "Communicator.h"
 #include "Connector.h"
 #include "Device.h"
@@ -41,7 +45,6 @@
 #include "TimeServer.h"
 #include "Wifi.h"
 #include "QueueClient.h"
-#include "secrets.h" // includes config.h
 
 // For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "0.100.5";
@@ -56,6 +59,8 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 // (and make testing easier).
 
 QMC5883LCompass compass;
+Preferences preferences;
+Configuration configuration(&preferences);
 EventServer samplerEventServer;
 MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
 FlowMeter flowMeter(&samplerEventServer);
@@ -78,10 +83,10 @@ LedDriver ledDriver(&communicatorEventServer);
 PayloadBuilder wifiPayloadBuilder;
 Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
-Wifi wifi(&connectorEventServer, &WIFI_CONFIG, &wifiPayloadBuilder);
+Wifi wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
 PubSubClient mqttClient;
-MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &MQTT_CONFIG, &sensorDataQueue, BUILD_VERSION);
-FirmwareManager firmwareManager(&connectorEventServer, CONFIG_BASE_FIRMWARE_URL, BUILD_VERSION);
+MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
+FirmwareManager firmwareManager(&connectorEventServer, &configuration.firmware, BUILD_VERSION);
 
 QueueClient samplerQueueClient(&samplerEventServer, 20, 0);
 QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20, 1);
@@ -111,7 +116,7 @@ TaskHandle_t connectorTaskHandle;
 void setup() {
     Serial.begin(115200);
     theClock.begin();
-
+    configuration.begin();
     // queue for the sampler process
     samplerQueueClient.begin(communicatorSamplerQueueClient.getQueueHandle());
 
@@ -126,7 +131,7 @@ void setup() {
 
     communicator.setup();
     sampler.setup(MEASURE_INTERVAL_MICROS);
-    connector.setup();
+    connector.setup(&configuration);
 
     // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (setup and loop run on core 1)
     xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);

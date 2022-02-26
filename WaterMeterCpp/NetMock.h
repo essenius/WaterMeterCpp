@@ -26,6 +26,7 @@
 
 #include "ArduinoMock.h"
 #include "SafeCString.h"
+#include <string>
 
 class Client {};
 
@@ -44,15 +45,17 @@ public:
 
 class String {
 public:
-    String(const char* value) {
-        safeStrcpy(_value, value);
+    String(const char* value) : _string(value) {
+
+        //safeStrcpy(_value, value);
     }
 
-    int toInt() { return strtol(_value, nullptr, 10); }
-    const char* c_str() { return _value; }
+    int toInt() { return std::stoi(_string); }
+    const char* c_str() { return _string.c_str(); }
 
 private:
-    char _value[30] {};
+    std::string _string;
+    //char _value[30] {};
 };
 
 class HTTPClient {
@@ -137,7 +140,7 @@ public:
     void connectIn(int connectCount);
     void reset();
 private:
-    Byte _mac[6]{};
+    byte _mac[6]{};
     char _name[20] = {0};
     char _ssid[20] = {0};
     IPAddress _localIP;

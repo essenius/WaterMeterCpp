@@ -24,7 +24,7 @@
 #include <cstdint>
 #include <string>
 
-typedef uint8_t Byte;
+typedef uint8_t byte;
 
 constexpr uint8_t INPUT = 0x0;
 constexpr uint8_t OUTPUT = 0x1;

@@ -111,6 +111,12 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::Blocked, LONG_FALSE);
             assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"No more block (red off)");
 
+            eventServer.publish(Topic::Alert, LONG_TRUE);
+            assertLeds(Led::ON, Led::ON, Led::OFF, Led::OFF, Led::OFF, L"Alert (red and green on)");
+
+            eventServer.publish(Topic::Alert, LONG_FALSE);
+            assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, L"No more block (red off)");
+
             publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
 
             for (unsigned int i = 0; i < LedDriver::CONNECTING_INTERVAL; i++) {

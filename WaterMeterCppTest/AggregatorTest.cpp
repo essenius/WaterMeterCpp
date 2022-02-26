@@ -62,7 +62,6 @@ namespace WaterMeterCppTest {
             Assert::IsTrue(aggregator.shouldSend(), L"Must send when at multiple of flush rate");
             aggregator.send();
             Assert::AreNotEqual(0ULL, payload.timestamp, L"Timestamp set");
-
         }
     };
 }

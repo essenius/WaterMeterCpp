@@ -127,10 +127,10 @@ void Wifi::reconnect() {
     WiFi.reconnect();
 }
 
-void Wifi::setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey) {
-    _wifiClient.setCACert(rootCaCertificate);
-    _wifiClient.setCertificate(deviceCertificate);
-    _wifiClient.setPrivateKey(devicePrivateKey);
+void Wifi::setCertificates(const TlsConfig* tlsConfig) {
+    _wifiClient.setCACert(tlsConfig->rootCaCertificate);
+    _wifiClient.setCertificate(tlsConfig->deviceCertificate);
+    _wifiClient.setPrivateKey(tlsConfig->devicePrivateKey);
 }
 
 void Wifi::setStatusSummary() const {

@@ -64,7 +64,7 @@ WiFiClientSecure testWifiClientSecure;
 
 WiFiClass::WiFiClass() : _name("esp32_001122334455") {
     reset();
-    for (Byte i = 0; i < 6; i++) {
+    for (byte i = 0; i < 6; i++) {
         _mac[i] = i * 17;
     }
 }

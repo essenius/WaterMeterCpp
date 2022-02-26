@@ -117,7 +117,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator.obj;ArduinoMock.obj;Clock.obj;Communicator.obj;Connector.obj;DataQueue.obj;DataQueuePayload.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;FreeRtosMock.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PubSubClientMock.obj;QueueClient.obj;ResultAggregator.obj;SampleAggregator.obj;Sampler.obj;Serializer.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator.obj;ArduinoMock.obj;Clock.obj;Communicator.obj;Configuration.obj;Connector.obj;DataQueue.obj;DataQueuePayload.obj;Device.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;FreeRtosMock.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensorReader.obj;MqttGateway.obj;NetMock.obj;PayloadBuilder.obj;PreferencesMock.obj;PubSubClientMock.obj;QueueClient.obj;ResultAggregator.obj;SampleAggregator.obj;Sampler.obj;Serializer.obj;TimeServer.obj;Wifi.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>false</Profile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>
@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="AggregatorTest.cpp" />
     <ClCompile Include="ClockTest.cpp" />
+    <ClCompile Include="ConfigurationTest.cpp" />
     <ClCompile Include="ConnectorTest.cpp" />
     <ClCompile Include="DataQueueTest.cpp" />
     <ClCompile Include="DeviceTest.cpp" />
@@ -183,6 +184,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PreferencesMockTest.cpp" />
     <ClCompile Include="SampleAggregatorTest.cpp" />
     <ClCompile Include="EventServerTest.cpp" />
     <ClCompile Include="QueueClientTest.cpp" />
@@ -220,6 +222,11 @@
     <CopyFileToFolders Include="outliertest.txt">
       <DeploymentContent>true</DeploymentContent>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="preferences.txt">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

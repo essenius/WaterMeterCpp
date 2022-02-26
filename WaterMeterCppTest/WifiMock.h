@@ -13,8 +13,7 @@
 
 #include "../WaterMeterCpp/Wifi.h"
 
-class WifiMock : public Wifi
-{
+class WifiMock : public Wifi {
 public:
     explicit WifiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder);
     void begin() override {}
@@ -30,7 +29,5 @@ public:
 private:
     bool _isConnected = false;
     bool _needsReconnect = true;
-    static constexpr WifiConfig CONFIG{ "ssid", "password", nullptr, nullptr };
+    static constexpr WifiConfig CONFIG{"ssid", "password", nullptr, {0, 0, 0, 0, 0, 0}};
 };
-
-

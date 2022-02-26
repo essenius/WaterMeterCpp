@@ -14,7 +14,7 @@
 
 #include "EventClient.h"
 #include "PayloadBuilder.h"
-#include "config.h"
+#include "Configuration.h"
 
 #ifdef ESP32
 #include <WiFi.h>
@@ -37,7 +37,7 @@ public:
     virtual bool isConnected();
     virtual bool needsReinit();
     virtual void reconnect();
-    void setCertificates(const char* rootCaCertificate, const char* deviceCertificate, const char* devicePrivateKey);
+    void setCertificates(const TlsConfig* tlsConfig);
     void setStatusSummary() const;
 
 private:

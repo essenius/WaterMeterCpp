@@ -27,6 +27,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(ConnectorTest) {
     public:
+        static Preferences preferences;
+        static Configuration configuration;
         static EventServer eventServer;
         static WifiMock wifiMock;
         static MqttGatewayMock mqttGatewayMock;
@@ -48,7 +50,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(connectorMaxWifiFailuresTest) {
-            connector.setup();
+            connector.setup(&configuration);
             wifiMock.setIsConnected(false);
 
             Assert::AreEqual(ConnectionState::WifiConnecting, connector.loop(), L"Connecting");
@@ -63,7 +65,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(connectorReInitTest) {
-            connector.setup();
+            connector.setup(&configuration);
             wifiMock.setIsConnected(false);
             wifiMock.setNeedsReconnect(true);
             Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Connecting");
@@ -81,7 +83,7 @@ namespace WaterMeterCppTest {
         TEST_METHOD(connectorScriptTest) {
             timeServer.reset();
             // connect before timeout
-            connector.setup();
+            connector.setup(&configuration);
             wifiMock.setNeedsReconnect(false);
             wifiMock.setIsConnected(false);
             Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Wifi connecting");
@@ -156,7 +158,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(connectorTimeFailTest) {
-            connector.setup();
+            connector.setup(&configuration);
             wifiMock.setIsConnected(true);
             wifiMock.setNeedsReconnect(false);
 
@@ -178,7 +180,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(connectorWifiInitTest) {
-            connector.setup();
+            connector.setup(&configuration);
 
             wifiMock.setNeedsReconnect(true);
             wifiMock.setIsConnected(true);
@@ -205,12 +207,15 @@ namespace WaterMeterCppTest {
         }
     };
 
+    Preferences ConnectorTest::preferences;
+    Configuration ConnectorTest::configuration(&preferences);
     EventServer ConnectorTest::eventServer;
     WifiMock ConnectorTest::wifiMock(&eventServer, nullptr);
     PubSubClient ConnectorTest::mqttClient;
     MqttGatewayMock ConnectorTest::mqttGatewayMock(&eventServer, &mqttClient);
     TimeServerMock ConnectorTest::timeServer;
-    FirmwareManager ConnectorTest::firmwareManager(&eventServer, "http://localhost", "0.99.3");
+    FirmwareConfig firmwareConfig{ "http://localhost/" };
+    FirmwareManager ConnectorTest::firmwareManager(&eventServer, &firmwareConfig, "0.99.3");
     PayloadBuilder ConnectorTest::payloadBuilder;
     Serializer ConnectorTest::serializer(&eventServer, &payloadBuilder);
     DataQueuePayload payload;

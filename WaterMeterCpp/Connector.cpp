@@ -12,7 +12,6 @@
 #include "Connector.h"
 #include "LedDriver.h"
 #include "QueueClient.h"
-#include "secrets.h" // for the CONFIG constants
 
 constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
 
@@ -37,7 +36,7 @@ ConnectionState Connector::loop() {
     return _state;
 }
 
-void Connector::setup() {
+void Connector::setup(Configuration* configuration) {
 
     _state = ConnectionState::Init;
     _waitDuration = WIFI_INITIAL_WAIT_DURATION;
@@ -60,10 +59,10 @@ void Connector::setup() {
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSize);
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSpaces);
 
-    _wifi->configure(&IP_CONFIG);
+    _wifi->configure(&configuration->ip);
 
 #ifdef CONFIG_USE_TLS
-    _wifi->setCertificates(CONFIG_ROOTCA_CERTIFICATE, CONFIG_DEVICE_CERTIFICATE, CONFIG_DEVICE_PRIVATE_KEY);
+    _wifi->setCertificates(&configuration->tls);
 #endif
 
 }

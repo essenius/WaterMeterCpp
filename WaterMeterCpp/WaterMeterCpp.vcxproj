@@ -144,6 +144,7 @@
     <ClCompile Include="ArduinoMock.cpp" />
     <ClCompile Include="Aggregator.cpp" />
     <ClCompile Include="Communicator.cpp" />
+    <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="Connector.cpp" />
     <ClCompile Include="DataQueue.cpp" />
     <ClCompile Include="Device.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MagnetoSensorReader.cpp" />
     <ClCompile Include="DataQueuePayload.cpp" />
+    <ClCompile Include="PreferencesMock.cpp" />
     <ClCompile Include="SampleAggregator.cpp" />
     <ClCompile Include="MqttGateway.cpp" />
     <ClCompile Include="NetMock.cpp" />
@@ -178,7 +180,7 @@
     <ClInclude Include="Aggregator.h" />
     <ClInclude Include="ChangePublisher.h" />
     <ClInclude Include="Communicator.h" />
-    <ClInclude Include="config.h" />
+    <ClInclude Include="Configuration.h" />
     <ClInclude Include="Connector.h" />
     <ClInclude Include="ConnectionState.h" />
     <ClInclude Include="DataQueue.h" />
@@ -194,6 +196,7 @@
     <ClInclude Include="LedFlasher.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MagnetoSensorReader.h" />
+    <ClInclude Include="PreferencesMock.h" />
     <ClInclude Include="SafeCString.h" />
     <ClInclude Include="SampleAggregator.h" />
     <ClInclude Include="MqttGateway.h" />

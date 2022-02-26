@@ -109,7 +109,7 @@ char* nextToken(char** start, const int delimiter) {
     return token;
 }
 
-void MqttGateway::callback(const char* topic, const Byte* payload, const unsigned length) {
+void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
     char* copyTopic = strdup(topic);
     constexpr int DELIMITER = '/';
     // if the topic is invalid, ignore the message
@@ -140,7 +140,7 @@ void MqttGateway::callback(const char* topic, const Byte* payload, const unsigne
 void MqttGateway::connect() {
     _announcementPointer = _announcementBuffer;
     safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, STATE);
-
+    _mqttClient->setKeepAlive(90);
     bool success;
     if (_mqttConfig->user == nullptr || strlen(_mqttConfig->user) == 0) {
         success = _mqttClient->connect(_clientName, _topicBuffer, 0, true, LAST_WILL_MESSAGE);

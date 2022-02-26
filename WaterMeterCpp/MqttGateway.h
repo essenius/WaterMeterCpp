@@ -12,9 +12,8 @@
 #ifndef HEADER_MQTTGATEWAY
 #define HEADER_MQTTGATEWAY
 #include "EventServer.h"
-#include "config.h"
+#include "Configuration.h"
 #include "DataQueue.h"
-
 
 #ifdef ESP32
 #include <ESP.h>
@@ -76,7 +75,7 @@ protected:
     unsigned long _reconnectTimestamp = 0UL;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = {0};
 
-    void callback(const char* topic, const Byte* payload, unsigned length);
+    void callback(const char* topic, const byte* payload, unsigned length);
     void prepareAnnouncementBuffer();
     void prepareEntity(const char* entity, const char* payload);
     void prepareEntity(const char* baseTopic, const char* entity, const char* payload);

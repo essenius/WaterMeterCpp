@@ -24,6 +24,7 @@ void safePointerSprintf(char* const pointer, char(&buffer)[BufferSize], const ch
 
 template <size_t BufferSize>
 void safePointerStrcpy(char* const pointer, char(&buffer)[BufferSize], const char* source) {
+    if (source == nullptr) return;
     auto charactersUsed = pointer - buffer;
     // if the pointer is not in the right range, do nothing
     if (charactersUsed < 0 || charactersUsed >= BufferSize) return;
@@ -38,12 +39,14 @@ void safeSprintf(char(&buffer)[BufferSize], const char* format, Arguments ... ar
 
 template <size_t BufferSize>
 void safeStrcat(char(&buffer)[BufferSize], const char* source) {
+    if (source == nullptr) return;
     strncat(buffer, source, BufferSize - strlen(buffer) - 1);
     buffer[BufferSize - 1] = 0;
 }
 
 template <size_t BufferSize>
 void safeStrcpy(char (&buffer)[BufferSize], const char* source) {
+    if (source == nullptr) return;
     strncpy(buffer, source, BufferSize);
     buffer[BufferSize - 1] = 0;
 }
