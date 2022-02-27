@@ -193,7 +193,7 @@ namespace WaterMeterCppTest {
             WiFi.reset();
             WiFi.connectIn(1);
             while (connector.connect() != ConnectionState::MqttReady) {}
-            Serial.println("");
+            //Serial.println("");
             Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Checking for data");
 
             // emulate the publication of a result from sensor to log

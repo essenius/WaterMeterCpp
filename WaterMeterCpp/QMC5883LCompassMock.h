@@ -34,7 +34,7 @@ public:
     }
 
     int getY() { return _y; }
-    void setMode(int i, int i1, int i2, int i3) {}
+    void setMode(int mode, int outputDataRate, int range, int overSampleRatio) {}
 
     // testing purposes
     int resetCount() { return _resetCount; }

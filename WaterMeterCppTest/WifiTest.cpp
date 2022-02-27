@@ -73,7 +73,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(wifiFailSetNameTest) {
-            constexpr WifiConfig CONFIG{ "ssid", "password", "", {0,0,0,0,0,0} };
+            constexpr WifiConfig CONFIG{ "ssid", "password", "", nullptr };
             PayloadBuilder payloadBuilder;
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             wifi.begin();
@@ -86,7 +86,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(wifiGetUnknownTopicTestTest) {
 
-            constexpr WifiConfig CONFIG{ "ssid", "password", "hostname", {0,0,0,0,0,0} };
+            constexpr WifiConfig CONFIG{ "ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             Assert::AreEqual("x", wifi.get(Topic::Flow, "x"), L"Unexpected topic returns default");
@@ -94,7 +94,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(wifiNullNameTest) {
             WiFi.setHostname("esp32_001122334455");
-            constexpr WifiConfig CONFIG{ "ssid", "password", nullptr, {0,0,0,0,0,0} };
+            constexpr WifiConfig CONFIG{ "ssid", "password", nullptr, nullptr };
             PayloadBuilder payloadBuilder;
 
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
@@ -113,7 +113,7 @@ namespace WaterMeterCppTest {
         TEST_METHOD(wifiPredefinedLocalIpTest) {
             const IPAddress local(192, 168, 1, 2);
             const IPAddress gateway(192, 168, 1, 1);
-            constexpr WifiConfig WIFI_CONFIG{"ssid", "password", "hostname", {0,0,0,0,0,0} };
+            constexpr WifiConfig WIFI_CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
             Wifi wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, NO_IP, NO_IP, NO_IP, NO_IP};
@@ -144,7 +144,7 @@ namespace WaterMeterCppTest {
             const IPAddress local(192, 168, 1, 2);
             const IPAddress gateway(192, 168, 1, 253);
             const IPAddress dns(9, 9, 9, 9);
-            constexpr WifiConfig CONFIG{"ssid", "password", "hostname", {0,0,0,0,0,0} };
+            constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, gateway, NO_IP, dns, NO_IP};
@@ -171,7 +171,7 @@ namespace WaterMeterCppTest {
             const IPAddress dns1(9, 9, 9, 9);
             const IPAddress dns2(1, 1, 1, 1);
 
-            constexpr WifiConfig CONFIG{"ssid", "password", "hostname", {0,0,0,0,0,0} };
+            constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, NO_IP, NO_IP, dns1, dns2};

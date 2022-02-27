@@ -54,7 +54,7 @@ struct WifiConfig {
     const char* ssid;
     const char* password;
     const char* deviceName;
-    uint8_t bssid[6]; // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
+    uint8_t* bssid; // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
 };
 
 

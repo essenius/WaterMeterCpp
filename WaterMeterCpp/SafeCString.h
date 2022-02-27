@@ -16,39 +16,45 @@
 #include <cstdio>
 
 template <size_t BufferSize, typename... Arguments>
-void safePointerSprintf(char* const pointer, char(&buffer)[BufferSize], const char* format, Arguments ... arguments) {
+int safePointerSprintf(char* const pointer, char(&buffer)[BufferSize], const char* format, Arguments ... arguments) {
     auto charactersUsed = pointer - buffer;
-    if (charactersUsed < 0 || charactersUsed > BufferSize) return;
-    snprintf(pointer, BufferSize - charactersUsed, format, arguments...);
+    if (charactersUsed < 0 || charactersUsed > BufferSize) return 0;
+    return snprintf(pointer, BufferSize - charactersUsed, format, arguments...);
 }
 
 template <size_t BufferSize>
-void safePointerStrcpy(char* const pointer, char(&buffer)[BufferSize], const char* source) {
-    if (source == nullptr) return;
+char*  safePointerStrcpy(char* const pointer, char(&buffer)[BufferSize], const char* source) {
     auto charactersUsed = pointer - buffer;
-    // if the pointer is not in the right range, do nothing
-    if (charactersUsed < 0 || charactersUsed >= BufferSize) return;
+    // if the source is null or pointer is not in the right range, do nothing
+    if (source == nullptr || charactersUsed < 0 || charactersUsed >= BufferSize) return pointer;
     strncpy(pointer, source, BufferSize - charactersUsed - 1);
     buffer[BufferSize - 1] = 0;
+    return pointer;
 }
 
 template <size_t BufferSize, typename... Arguments>
-void safeSprintf(char(&buffer)[BufferSize], const char* format, Arguments ... arguments) {
-    snprintf(buffer, BufferSize, format, arguments...);
+int safeSprintf(char(&buffer)[BufferSize], const char* format, Arguments ... arguments) {
+    int size = BufferSize;
+
+    return snprintf(buffer, size, format, arguments...);
 }
 
 template <size_t BufferSize>
-void safeStrcat(char(&buffer)[BufferSize], const char* source) {
-    if (source == nullptr) return;
-    strncat(buffer, source, BufferSize - strlen(buffer) - 1);
-    buffer[BufferSize - 1] = 0;
+char* safeStrcat(char(&buffer)[BufferSize], const char* source) {
+    if (source != nullptr) {
+        strncat(buffer, source, BufferSize - strlen(buffer) - 1);
+        buffer[BufferSize - 1] = 0;
+    }
+    return buffer;
 }
 
 template <size_t BufferSize>
-void safeStrcpy(char (&buffer)[BufferSize], const char* source) {
-    if (source == nullptr) return;
-    strncpy(buffer, source, BufferSize);
-    buffer[BufferSize - 1] = 0;
+char* safeStrcpy(char (&buffer)[BufferSize], const char* source) {
+    if (source != nullptr) {
+        strncpy(buffer, source, BufferSize);
+        buffer[BufferSize - 1] = 0;
+    }
+    return buffer;
 }
 
 #endif

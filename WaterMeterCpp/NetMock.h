@@ -34,6 +34,7 @@ class WiFiClient : public Client {
 public:
     WiFiClient() = default;
     bool isConnected() { return true; }
+    void stop() {};
 };
 
 class WiFiClientSecure : public WiFiClient {

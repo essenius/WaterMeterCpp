@@ -25,7 +25,7 @@ public:
         Preferences prefs;
         prefs.load();
         prefs.begin("test1");
-        Assert::AreEqual(456u, prefs.getUint("int2", 0), L"int works");
+        Assert::AreEqual(456u, prefs.getUInt("int2", 0), L"int works");
         Assert::AreEqual("valueX", prefs.getString("string2").c_str(), L"getString works");
         char buf[6];
         prefs.getBytes("bytes2", buf, sizeof(buf));

@@ -60,11 +60,7 @@ void Connector::setup(Configuration* configuration) {
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSpaces);
 
     _wifi->configure(&configuration->ip);
-
-#ifdef CONFIG_USE_TLS
     _wifi->setCertificates(&configuration->tls);
-#endif
-
 }
 
 [[ noreturn]] void Connector::task(void* parameter) {

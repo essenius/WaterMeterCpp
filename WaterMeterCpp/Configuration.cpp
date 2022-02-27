@@ -29,7 +29,7 @@ constexpr const char* PORT = "port";
 constexpr const char* USER = "user";
 constexpr const char* PASSWORD = "password";
 
-constexpr const char* WIFI = "wifl";
+constexpr const char* WIFI = "wifi";
 constexpr const char* DEVICE_NAME = "deviceName";
 constexpr const char* SSID = "ssid";
 constexpr const char* BSSID = "bssid";
@@ -70,18 +70,18 @@ char* Configuration::getFirmwareConfig(char* start) {
 
 void Configuration::getIpConfig() {
     _preferences->begin(IP, true);
-    ip.localIp = _preferences->getUint(LOCAL, 0);
-    ip.gateway = _preferences->getUint(GATEWAY, 0);
-    ip.subnetMask = _preferences->getUint(SUBNET_MASK, 0);
-    ip.primaryDns = _preferences->getUint(DNS1, 0);
-    ip.secondaryDns = _preferences->getUint(DNS2, 0);
+    ip.localIp = _preferences->getUInt(LOCAL, 0);
+    ip.gateway = _preferences->getUInt(GATEWAY, 0);
+    ip.subnetMask = _preferences->getUInt(SUBNET_MASK, 0);
+    ip.primaryDns = _preferences->getUInt(DNS1, 0);
+    ip.secondaryDns = _preferences->getUInt(DNS2, 0);
     _preferences->end();
 }
 
 char* Configuration::getMqttConfig(char* start) {
     _preferences->begin(MQTT, true);
     mqtt.broker = storeToBuffer(BROKER, &start);
-    mqtt.port = _preferences->getUint(PORT, 1883);
+    mqtt.port = _preferences->getUInt(PORT, 1883);
     mqtt.user = storeToBuffer(USER, &start);
     mqtt.password = storeToBuffer(PASSWORD, &start);
     _preferences->end();
@@ -103,12 +103,12 @@ char* Configuration::getWifiConfig(char* start) {
     wifi.ssid = storeToBuffer(SSID, &start);
     wifi.password = storeToBuffer(PASSWORD, &start);
     if (_preferences->isKey(BSSID)) {
-        _preferences->getBytes(BSSID, wifi.bssid, 6);
+        _preferences->getBytes(BSSID, start, 6);
+        wifi.bssid = reinterpret_cast<uint8_t*>(start);
+        start += 6;
     }
     else {
-        for (unsigned char& i : wifi.bssid) {
-            i = 0;
-        }
+        wifi.bssid = nullptr;
     }
     _preferences->end();
     return start;
@@ -169,7 +169,7 @@ void Configuration::putWifiConfig(const WifiConfig* wifiConfig) const {
     putStringIfNotNull(DEVICE_NAME, wifiConfig->deviceName);
     putStringIfNotNull(SSID, wifiConfig->ssid);
     putStringIfNotNull(PASSWORD, wifiConfig->password);
-    if (wifiConfig->bssid[0] != 0 || wifiConfig->bssid[1] != 0) {
+    if (wifiConfig->bssid != nullptr) {
         _preferences->putBytes(BSSID, wifiConfig->bssid, 6);
     }
     _preferences->end();

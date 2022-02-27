@@ -44,7 +44,7 @@ String Preferences::getString(const char* key) {
     return { (*_cur)[key].c_str()};
 }
 
-unsigned Preferences::getUint(const char* key, int defaultValue) {
+unsigned Preferences::getUInt(const char* key, int defaultValue) {
     if (!isKey(key)) return defaultValue;
     return std::stoi((*_cur)[key]);
 }

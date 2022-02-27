@@ -15,8 +15,6 @@
 // you will see these ifdef preprocessor statements often. This is done to be able to test the application
 // on Visual Studio. They enable the mocks you see in this project if we're not on the actual ESP32 devices.
 
-#define CONFIG_USE_SECRETS
-
 #ifdef ESP32
 #include <ESP.h>
 #include <PubSubClient.h>

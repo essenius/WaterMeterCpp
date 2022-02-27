@@ -70,7 +70,11 @@ void MagnetoSensorReader::reset() {
     // reset the sensor
     _compass->setReset();
     // reset puts the sensor into standby mode, so set it back to continuous
-    _compass->setMode(0x01, 0x0C, 0x10, 0X00);
+    // 0x01 = continuous (0x00 = standby)
+    // 0x0c = data rate 200Hz (0x00=10Hz, 0x04=50Hz,0x08=100Hz)
+    // 0x10 = range 8G (0x00 = 2G)
+    // 0x00 = oversampling ratio 512 (0x40=256, 0x80=128, 0xc0=64)
+    _compass->setMode(0x01, 0x0C, 0x10, 0x00);
     _streakCount = 0;
     _eventServer->publish(Topic::SensorWasReset, LONG_TRUE);
 }

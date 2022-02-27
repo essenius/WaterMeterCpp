@@ -59,6 +59,8 @@ void FirmwareManager::tryUpdate() {
     if (_justRebooted && updateAvailable()) {
         loadUpdate();
     }
+    // this is needed so we can reuse the client for mqtt
+    _client->stop();
     _justRebooted = false;
 }
 

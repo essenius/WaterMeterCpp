@@ -185,6 +185,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PreferencesMockTest.cpp" />
+    <ClCompile Include="SafeCStringTest.cpp" />
     <ClCompile Include="SampleAggregatorTest.cpp" />
     <ClCompile Include="EventServerTest.cpp" />
     <ClCompile Include="QueueClientTest.cpp" />

@@ -79,7 +79,8 @@ public:
 
     TEST_METHOD(configurationTestWifiAndIp) {
         Preferences preferences;
-        constexpr WifiConfig wifiConfig{ "ssid", "password", "deviceName", {0,1,2,3,4,5} };
+        uint8_t bssidConfig[6] = { 0,1,2,3,4,5 };
+        const WifiConfig wifiConfig{ "ssid", "password", "deviceName", bssidConfig };
         const IpConfig ipConfig{ {1,2,3,4},{2,3,4,5}, {3,4,5,6}, {4,5,6,7}, {5,6,7,8} };
         Configuration configuration(&preferences);
         configuration.putWifiConfig(&wifiConfig);
@@ -89,8 +90,9 @@ public:
         Assert::AreEqual("password", configuration.wifi.password, L"Password OK");
         Assert::AreEqual("deviceName", configuration.wifi.deviceName, L"Device name OK");
         const auto bssid = configuration.wifi.bssid;
-        for (uint8_t i=0; i<6; i++) {
-            Assert::AreEqual(i, bssid[i], L"bssid[i] ok");
+        Assert::IsNotNull(bssid, L"BSSID not null");
+        for (unsigned int i = 0; i < sizeof(bssidConfig); i++) {
+            Assert::AreEqual(bssidConfig[i], bssid[i], L"bssid[i] ok");
         }
         Assert::AreEqual<uint32_t>(0x04030201, configuration.ip.localIp, L"localIP 0");
         Assert::AreEqual<uint32_t>(0x05040302, configuration.ip.gateway, L"gateway ok");

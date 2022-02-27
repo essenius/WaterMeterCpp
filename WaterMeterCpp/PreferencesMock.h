@@ -30,7 +30,7 @@ public:
     void end();
     void getBytes(const char* key, void* buf, size_t maxLen);
     String getString(const char* key);
-    unsigned getUint(const char* key, int defaultValue);
+    unsigned getUInt(const char* key, int defaultValue);
     bool isKey(const char* key);
     void putString(const char* key, const char* value);
     void putBytes(const char* key, const void* value, size_t len);

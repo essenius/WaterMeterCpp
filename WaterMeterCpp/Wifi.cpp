@@ -19,14 +19,7 @@
 
 Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder) :
     EventClient(eventServer), _payloadBuilder(payloadBuilder), _wifiConfig(wifiConfig) {
-    if (wifiConfig->deviceName == nullptr) {
-        _hostName = nullptr;
-    }
-    else {
-        safeStrcpy(_hostNameBuffer, wifiConfig->deviceName);
-        _hostName = _hostNameBuffer;
-    }
-    _macAddress[0] = 0;
+
 }
 
 void Wifi::announceReady() {
@@ -39,6 +32,14 @@ void Wifi::announceReady() {
 
 void Wifi::begin() {
     // need to set the host name before setting the mode
+    if (_wifiConfig->deviceName == nullptr) {
+        _hostName = nullptr;
+    }
+    else {
+        safeStrcpy(_hostNameBuffer, _wifiConfig->deviceName);
+        _hostName = _hostNameBuffer;
+    }
+    _macAddress[0] = 0;
     if (_hostName != nullptr && !WiFi.setHostname(_hostName)) {
         _eventServer->publish(Topic::ConnectionError, "Could not set host name");
     }

@@ -29,5 +29,5 @@ public:
 private:
     bool _isConnected = false;
     bool _needsReconnect = true;
-    static constexpr WifiConfig CONFIG{"ssid", "password", nullptr, {0, 0, 0, 0, 0, 0}};
+    static constexpr WifiConfig CONFIG{"ssid", "password", nullptr, nullptr};
 };
