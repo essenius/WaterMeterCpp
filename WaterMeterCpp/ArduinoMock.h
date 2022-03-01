@@ -42,6 +42,7 @@ public:
 
 extern Esp ESP;
 
+
 class HardwareSerial {
 public:
 	int available();
@@ -82,6 +83,39 @@ void pinMode(uint8_t pin, uint8_t mode);
 // for testing only
 uint8_t getPinMode(uint8_t pin);
 void shiftMicros(long long shift);
+
+// testing only too
+enum LogLevel { error = 1, warning, info, debug, verbose };
+
+const char* toString(LogLevel level);
+
+extern LogLevel minLogLevel;
+
+inline void setLogLevel(const LogLevel level) { minLogLevel = level; };
+
+template <typename... Arguments>
+void log_printf(const LogLevel level, const char* format, Arguments ... arguments) {
+	if (minLogLevel >= level) {
+		Serial.printf("[%s] ", toString(level));
+		Serial.printf(format, arguments...);
+		Serial.print("\n");
+	}
+}
+
+template <typename... Arguments>
+void log_e(const char* format, Arguments ... arguments) { log_printf(error, format, arguments...); }
+
+template <typename... Arguments>
+void log_w(const char* format, Arguments ... arguments) { log_printf(warning, format, arguments...); }
+
+template <typename... Arguments>
+void log_i(const char* format, Arguments ... arguments) { log_printf(info, format, arguments...); }
+
+template <typename... Arguments>
+void log_d(const char* format, Arguments ... arguments) { log_printf(debug, format, arguments...); }
+
+template <typename... Arguments>
+void log_v(const char* format, Arguments ... arguments) { log_printf(verbose, format, arguments...); }
 
 #endif
 

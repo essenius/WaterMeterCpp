@@ -31,6 +31,7 @@ void FirmwareManager::begin(WiFiClient* client, const char* machineId) {
 void FirmwareManager::loadUpdate() const {
     char buffer[BASE_URL_SIZE];
     safeStrcpy(buffer, _firmwareConfig->baseUrl);
+    safeStrcat(buffer, _machineId);
     safeStrcat(buffer, IMAGE_EXTENSION);
 
     // This should normally result in a reboot.

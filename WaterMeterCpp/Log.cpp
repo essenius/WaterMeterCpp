@@ -8,13 +8,29 @@
 //    Unless required by applicable law or agreed to in writing, software distributed under the License
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
+
+
+#include "Log.h"
+
+// The ESP32 uses this in log_*. We redefine the default one to reduce the clutter and give a proper timestamp
+
+#ifdef ARDUHAL_LOG_FORMAT
+#undef ARDUHAL_LOG_FORMAT
+#endif
+#define ARDUHAL_LOG_FORMAT(letter, format) "[%s][" #letter "] " format "\r\n", getTimestamp()
+
 #ifdef ESP32
 #include <ESP.h>
 #else 
 #include "ArduinoMock.h"
+
+//for testing the macro
+void Log::testLogMacro() const {
+    Serial.printf(ARDUHAL_LOG_FORMAT(Q,"{%s}"), "hello");
+}
+
 #endif
 
-#include "Log.h"
 
 // expects the same size and order as the ConnectionState enum
 constexpr static const char* const MESSAGES[] = {
@@ -39,6 +55,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
+    _eventServer->subscribe(this, Topic::ErrorFormatted);
     _eventServer->subscribe(this, Topic::FreeHeap);
     _eventServer->subscribe(this, Topic::FreeStack);
     _eventServer->subscribe(this, Topic::FreeQueueSize);
@@ -51,46 +68,47 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
 }
 
-void Log::printTimestamp() const {
-    const char* timestamp = _eventServer->request(Topic::Time, "");
-    Serial.printf("[%s] ", timestamp);
+const char* Log::getTimestamp() const {
+    return _eventServer->request(Topic::Time, "");
 }
 
 void Log::update(Topic topic, const char* payload) {
-    printTimestamp();
     switch (topic) {
     case Topic::Alert:
-        Serial.printf("Alert: %s\n", payload);
+        log_w("Alert: %s", payload);
         break;
     case Topic::Blocked:
-        Serial.printf("Blocked: %s\n", payload);
+        log_e("Blocked: %s", payload);
         break;
     case Topic::Connection:
-        Serial.println(payload);
+        log_i("%s", payload);
+        break;
+    case Topic::ErrorFormatted:
+        log_e("%s", payload);
         break;
     case Topic::FreeHeap:
-        Serial.printf("Free Heap: %s\n", payload);
+        log_i("Free Heap: %s", payload);
         break;
     case Topic::MessageFormatted:
-        Serial.println(payload);
+        log_i("%s", payload);
         break;
     case Topic::ResultFormatted:
-        Serial.printf("Result: %s\n", payload);
+        log_i("Result: %s", payload);
         break;
     case Topic::ResultWritten:
-        Serial.printf("Result Written: %s\n", payload);
+        log_d("Result Written: %s", payload);
         break;
     case Topic::SensorWasReset:
-        Serial.println("Sensor was reset");
+        log_w("Sensor was reset");
         break;
     case Topic::TimeOverrun:
-        Serial.printf("Time overrun: %s\n", payload);
+        log_w("Time overrun: %s", payload);
         break;
     case Topic::WifiSummaryReady:
-        Serial.printf("Wifi summary: %s\n", _wifiPayloadBuilder->toString());
+        log_i("Wifi summary: %s", _wifiPayloadBuilder->toString());
         break;
     default:
-        Serial.printf("Topic '%d': %s\n", static_cast<int>(topic), payload);
+        log_i("Topic '%d': %s", static_cast<int>(topic), payload);
     }
 }
 
@@ -103,23 +121,21 @@ void Log::update(const Topic topic, const long payload) {
       }
       return;
     case Topic::FreeQueueSize:
-        printIndexedPayload("Free Memory DataQueue #%d: %ld\n", payload);
+        printIndexedPayload("Memory DataQueue", payload);
         return;
     case Topic::FreeQueueSpaces:
-        printIndexedPayload("Free Spaces Queue #%d: %ld\n", payload);
+        printIndexedPayload("Spaces Queue", payload);
         return;
     case Topic::FreeStack:
-        printIndexedPayload("Free Stack #%d: %ld\n", payload);
+        printIndexedPayload("Stack", payload);
         return;
     default:
         EventClient::update(topic, payload);
     }
 }
 
-void Log::printIndexedPayload(const char* format, long payload) const {
-    printTimestamp();
+void Log::printIndexedPayload(const char* entity, long payload) const {
     const int index = payload >> 24;
     const long value = payload & 0x00FFFFFF;
-    Serial.printf(format, index, value);
-
+    log_i("Free %s #%d: %ld", entity, index, value);
 }

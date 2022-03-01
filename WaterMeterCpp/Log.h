@@ -21,10 +21,13 @@ public:
     void begin();
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
+#ifndef ESP32
+    void testLogMacro() const;
+#endif
 private:
     PayloadBuilder* _wifiPayloadBuilder;
     long _previousConnectionTopic = -1;
-    void printIndexedPayload(const char* format, long payload) const;
-    void printTimestamp() const;
+    const char* getTimestamp() const;
+    void printIndexedPayload(const char* entity, long payload) const;
 };
 #endif

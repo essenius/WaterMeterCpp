@@ -11,8 +11,6 @@
 
 #include "pch.h"
 
-#include <regex>
-
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Aggregator.h"
 #include "../WaterMeterCpp/Clock.h"

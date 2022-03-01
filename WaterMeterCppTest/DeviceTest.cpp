@@ -11,8 +11,6 @@
 
 #include "pch.h"
 
-#include <regex>
-
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/Device.h"

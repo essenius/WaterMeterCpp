@@ -132,4 +132,17 @@ void HardwareSerial::setInput(const char* input) {
 
 void HardwareSerial::setTimeout(long timeout) {}
 
+const char* toString(LogLevel level) {
+    switch(level) {
+	case error: return "E";
+	case warning: return "W";
+	case info: return "I";
+	case debug: return "D";
+	case verbose:return "V";
+    }
+    return nullptr;
+}
+
+LogLevel minLogLevel = info;
+
 #endif

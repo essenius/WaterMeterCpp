@@ -28,58 +28,69 @@ namespace WaterMeterCppTest {
         EventServer eventServer;
 
         TEST_METHOD(logScriptTest) {
-            constexpr int SKIP_TIMESTAMP = 28;
+            setLogLevel(verbose);
             PayloadBuilder payloadBuilder;
             Log log(&eventServer, &payloadBuilder);
             Clock theClock(&eventServer);
             theClock.begin();
             log.begin();
             Serial.begin(9600);
-            Serial.setInput(""); // just so it's used
+            Serial.setInput(""); // just so it's used and doesn't break
+
+            log.testLogMacro();
+            // the pattern we expect here is [2022-02-22T01:02:03.456789][Q] {hello}\r\n
+            Assert::IsTrue(
+                std::regex_match(
+                    Serial.getOutput(),
+                    std::regex(R"(\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\]\[Q\]\s\{hello\}\r\n)")),
+                L"Log pattern matches");
+            Serial.clearOutput();
+
             publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
-            Assert::AreEqual(" MQTT ready\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Connected logs OK");
+            Assert::AreEqual("[I] MQTT ready\n", Serial.getOutput(), L"Connected logs OK");
 
             Serial.clearOutput();
             eventServer.publish(Topic::MessageFormatted, "My Message");
-            Assert::AreEqual(" My Message\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Message logs OK");
+            Assert::AreEqual("[I] My Message\n", Serial.getOutput(), L"Message logs OK");
 
             Serial.clearOutput();
             publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
-            Assert::AreEqual(" Disconnected\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Disconnected logs OK");
+            Assert::AreEqual("[I] Disconnected\n", Serial.getOutput(), L"Disconnected logs OK");
 
             Serial.clearOutput();
             Assert::AreEqual("", Serial.getOutput());
 
             eventServer.publish(Topic::MessageFormatted, 24);
-            Assert::AreEqual(" 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"MessageFormatted accepts long OK");
+            Assert::AreEqual("[I] 24\n", Serial.getOutput(), L"MessageFormatted accepts long OK");
 
             Serial.clearOutput();
             log.update(Topic::BatchSize, 24L);
-            Assert::AreEqual(" Topic '1': 24\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Unexpected topic handled OK");
+            Assert::AreEqual("[I] Topic '1': 24\n", Serial.getOutput(), L"Unexpected topic handled OK");
 
             Serial.clearOutput();
             eventServer.publish(Topic::Alert, 1);
-            Assert::AreEqual(" Alert: 1\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Alert handled OK");
+            Assert::AreEqual("[W] Alert: 1\n", Serial.getOutput(), L"Alert handled OK");
 
             Serial.clearOutput();
             eventServer.publish(Topic::TimeOverrun, 1234);
-            Assert::AreEqual(" Time overrun: 1234\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Time overrun handled OK");
+            Assert::AreEqual("[W] Time overrun: 1234\n", Serial.getOutput(), L"Time overrun handled OK");
 
             Serial.clearOutput();
             eventServer.publish(Topic::ResultWritten, LONG_TRUE);
-            Assert::AreEqual(" Result Written: 1\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Result Written handled OK");
+            Assert::AreEqual("[D] Result Written: 1\n", Serial.getOutput(), L"Result Written handled OK");
 
             Serial.clearOutput();
             eventServer.publish(Topic::Blocked, LONG_TRUE);
-            Assert::AreEqual(" Blocked: 1\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Blocked handled OK");
+            Assert::AreEqual("[E] Blocked: 1\n", Serial.getOutput(), L"Blocked handled OK");
 
             Serial.clearOutput();
             eventServer.publish(Topic::SensorWasReset, LONG_TRUE);
-            Assert::AreEqual(" Sensor was reset\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Sensor reset handled OK");
+            Assert::AreEqual("[W] Sensor was reset\n", Serial.getOutput(), L"Sensor reset handled OK");
 
             Serial.clearOutput();
             eventServer.publish(Topic::FreeQueueSpaces, 0x03000010);
-            Assert::AreEqual(" Free Spaces Queue #3: 16\n", Serial.getOutput() + SKIP_TIMESTAMP, L"Sensor reset handled OK");
+            Assert::AreEqual("[I] Free Spaces Queue #3: 16\n", Serial.getOutput(), L"Sensor reset handled OK");
+            setLogLevel(info);
 
         }
 private:

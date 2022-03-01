@@ -26,6 +26,9 @@ void Serializer::update(Topic topic, const char* payload) {
         newTopic = Topic::SamplesFormatted;
         break;
     case Topic::ConnectionError:
+        convertString(sensorPayload);
+        newTopic = Topic::ErrorFormatted;
+        break;
     case Topic::Info:
         convertString(sensorPayload);
         newTopic = Topic::MessageFormatted;

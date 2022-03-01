@@ -25,14 +25,12 @@ enum class Topic: uint16_t {
     FreeHeap, FreeStack, FreeQueueSize, FreeQueueSpaces,
     Connection, WifiSummaryReady,
     ResultWritten,
-    ConnectionError, Info, MessageFormatted, Blocked, Alert,
+    ConnectionError, Info, MessageFormatted, ErrorFormatted, Blocked, Alert,
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak,
     Time, IpAddress, MacRaw, MacFormatted,
     ResetSensor, SensorWasReset
 };
-
-enum class LogLevel { Off = 0, On = 1 };
 
 class EventServer;
 

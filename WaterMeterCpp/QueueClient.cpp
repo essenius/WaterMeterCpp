@@ -56,8 +56,8 @@ void QueueClient::update(const Topic topic, const long payload) {
     if (_sendQueue == nullptr) return;
     const ShortMessage message = {topic, static_cast<int32_t>(payload)};
     if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {
-        // Catch 22 - we may need a queue to send an error and that fails. So we're using a direct print
-        // This is not supposed to happen.
-        Serial.printf("Error in QueueClient %p update: %d/%ld\n", this, topic, payload);
+        // Catch 22 - we may need a queue to send an error, and that fails. So we're using a direct log.
+        // That uses the default format which gives more details 
+        log_e("Instance %p: error sending %d/%ld\n", this, topic, payload);
     }
 }

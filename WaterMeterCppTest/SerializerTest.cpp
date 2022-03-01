@@ -11,8 +11,6 @@
 
 #include "pch.h"
 
-#include <regex>
-
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/Serializer.h"
@@ -31,6 +29,7 @@ namespace WaterMeterCppTest {
             TestEventClient testEventClient(&eventServer);
             eventServer.subscribe(&testEventClient, Topic::ResultFormatted);
             eventServer.subscribe(&testEventClient, Topic::SamplesFormatted);
+            eventServer.subscribe(&testEventClient, Topic::ErrorFormatted);
             eventServer.subscribe(&testEventClient, Topic::MessageFormatted);
             eventServer.subscribe(&serializer, Topic::SensorData);
             DataQueuePayload payload{};
