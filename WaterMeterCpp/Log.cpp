@@ -21,16 +21,15 @@
 
 #ifdef ESP32
 #include <ESP.h>
-#else 
+#else
 #include "ArduinoMock.h"
 
 //for testing the macro
 void Log::testLogMacro() const {
-    Serial.printf(ARDUHAL_LOG_FORMAT(Q,"{%s}"), "hello");
+    Serial.printf(ARDUHAL_LOG_FORMAT(Q, "{%s}"), "hello");
 }
 
 #endif
-
 
 // expects the same size and order as the ConnectionState enum
 constexpr static const char* const MESSAGES[] = {
@@ -45,13 +44,14 @@ constexpr static const char* const MESSAGES[] = {
     "MQTT ready",
     "Requesting time",
     "Waiting for time",
-    "Checking for firmware update" };
+    "Checking for firmware update"
+};
 
 Log::Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder) :
     EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {}
 
 void Log::begin() {
-    update(Topic::MessageFormatted,"Starting");
+    update(Topic::MessageFormatted, "Starting");
     _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
@@ -115,11 +115,11 @@ void Log::update(Topic topic, const char* payload) {
 void Log::update(const Topic topic, const long payload) {
     switch (topic) {
     case Topic::Connection:
-      if (_previousConnectionTopic != payload) {
-        _previousConnectionTopic = payload;
-        update(topic, MESSAGES[payload]);
-      }
-      return;
+        if (_previousConnectionTopic != payload) {
+            _previousConnectionTopic = payload;
+            update(topic, MESSAGES[payload]);
+        }
+        return;
     case Topic::FreeQueueSize:
         printIndexedPayload("Memory DataQueue", payload);
         return;

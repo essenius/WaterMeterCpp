@@ -24,7 +24,7 @@
 #include <cstdint>
 #include <string>
 
-typedef uint8_t byte;
+using byte = uint8_t;
 
 constexpr uint8_t INPUT = 0x0;
 constexpr uint8_t OUTPUT = 0x1;
@@ -37,7 +37,7 @@ constexpr uint8_t LED_BUILTIN = 13;
 
 class Esp {
 public:
-	void restart() {}
+    void restart() {}
 };
 
 extern Esp ESP;
@@ -45,25 +45,25 @@ extern Esp ESP;
 
 class HardwareSerial {
 public:
-	int available();
-	void begin(int speed);
-	void print(const char* input);
-	void printf(const char* format, ...);
-	void println(const char* input);
-	char read();
-	void setTimeout(long timeout);
+    int available();
+    void begin(int speed);
+    void print(const char* input);
+    void printf(const char* format, ...);
+    void println(const char* input);
+    char read();
+    void setTimeout(long timeout);
 
-	// test support, not in original Serial object (i.e. don't use in production code)
-	void clearInput();
-	void clearOutput();
-	const char* getOutput();
-	void setInput(const char* input);
+    // test support, not in original Serial object (i.e. don't use in production code)
+    void clearInput();
+    void clearOutput();
+    const char* getOutput();
+    void setInput(const char* input);
 private:
-	static constexpr int PRINTBUFFER_SIZE = 4096;
-	char _printBuffer[PRINTBUFFER_SIZE] = {};
-	static constexpr int INPUTBUFFER_SIZE = 80;
-	char _inputBuffer[INPUTBUFFER_SIZE] = {};
-	char* _bufferPointer = nullptr;
+    static constexpr int PRINTBUFFER_SIZE = 4096;
+    char _printBuffer[PRINTBUFFER_SIZE] = {};
+    static constexpr int INPUTBUFFER_SIZE = 80;
+    char _inputBuffer[INPUTBUFFER_SIZE] = {};
+    char* _bufferPointer = nullptr;
 
 };
 
@@ -95,11 +95,11 @@ inline void setLogLevel(const LogLevel level) { minLogLevel = level; };
 
 template <typename... Arguments>
 void log_printf(const LogLevel level, const char* format, Arguments ... arguments) {
-	if (minLogLevel >= level) {
-		Serial.printf("[%s] ", toString(level));
-		Serial.printf(format, arguments...);
-		Serial.print("\n");
-	}
+    if (minLogLevel >= level) {
+        Serial.printf("[%s] ", toString(level));
+        Serial.printf(format, arguments...);
+        Serial.print("\n");
+    }
 }
 
 template <typename... Arguments>

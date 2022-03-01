@@ -44,7 +44,7 @@ void configTime(int i, int i1, const char* str, const char* text) {}
 }*/
 
 void shiftMicros(long long shift) {
-	microShift = shift;
+    microShift = shift;
 }
 
 void delayMicroseconds(int delay) { microShift += delay; }
@@ -56,89 +56,91 @@ uint8_t pinValue[PIN_COUNT];
 uint8_t pinModeValue[PIN_COUNT];
 
 uint8_t digitalRead(uint8_t pin) {
-	return pinValue[pin];
+    return pinValue[pin];
 }
 
 void digitalWrite(uint8_t pin, uint8_t value) {
-	pinValue[pin] = value;
+    pinValue[pin] = value;
 }
 
 uint8_t getPinMode(uint8_t pin) {
-	return pinModeValue[pin];
+    return pinModeValue[pin];
 }
 
 unsigned long millis() {
-	const auto now = std::chrono::high_resolution_clock::now();
-	return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count() + microShift / 1000);
+    const auto now = std::chrono::high_resolution_clock::now();
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count() +
+        microShift / 1000);
 }
 
 unsigned long micros() {
-	const auto now = std::chrono::high_resolution_clock::now();
-	return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::microseconds>(now - startTime).count() + microShift);
+    const auto now = std::chrono::high_resolution_clock::now();
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::microseconds>(now - startTime).count() +
+        microShift);
 }
 
 void pinMode(uint8_t pin, uint8_t mode) {
-	pinModeValue[pin] = mode;
+    pinModeValue[pin] = mode;
 }
 
 int HardwareSerial::available() {
-	return static_cast<int>(strlen(_bufferPointer));
+    return static_cast<int>(strlen(_bufferPointer));
 }
 
 void HardwareSerial::begin(int speed) {
-	clearInput();
-	clearOutput();
+    clearInput();
+    clearOutput();
 }
 
 void HardwareSerial::clearInput() {
-	_inputBuffer[0] = 0;
-	_bufferPointer = _inputBuffer;
+    _inputBuffer[0] = 0;
+    _bufferPointer = _inputBuffer;
 }
 
 void HardwareSerial::clearOutput() {
-	_printBuffer[0] = 0;
+    _printBuffer[0] = 0;
 }
 
 const char* HardwareSerial::getOutput() {
-	return _printBuffer;
+    return _printBuffer;
 }
 
 void HardwareSerial::print(const char* input) {
-	safeStrcat(_printBuffer, input);
+    safeStrcat(_printBuffer, input);
 }
 
 void HardwareSerial::printf(const char* format, ...) {
-	va_list args;
-  	va_start(args, format);
-  	vsprintf_s(_printBuffer + strlen(_printBuffer), PRINTBUFFER_SIZE - strlen(_printBuffer), format, args);
-	std::cout << _printBuffer;
-  	va_end(args);
+    va_list args;
+    va_start(args, format);
+    vsprintf_s(_printBuffer + strlen(_printBuffer), PRINTBUFFER_SIZE - strlen(_printBuffer), format, args);
+    std::cout << _printBuffer;
+    va_end(args);
 }
 
 void HardwareSerial::println(const char* input) {
-	print(input);
-	safeStrcat(_printBuffer, "\n");
+    print(input);
+    safeStrcat(_printBuffer, "\n");
 }
 
 char HardwareSerial::read() {
-	if (*_bufferPointer == 0) return 0;
-	return *(_bufferPointer++);
+    if (*_bufferPointer == 0) return 0;
+    return *(_bufferPointer++);
 }
 
 void HardwareSerial::setInput(const char* input) {
-	safeStrcpy(_inputBuffer, input);
-	_bufferPointer = _inputBuffer;
+    safeStrcpy(_inputBuffer, input);
+    _bufferPointer = _inputBuffer;
 }
 
 void HardwareSerial::setTimeout(long timeout) {}
 
 const char* toString(LogLevel level) {
-    switch(level) {
-	case error: return "E";
-	case warning: return "W";
-	case info: return "I";
-	case debug: return "D";
-	case verbose:return "V";
+    switch (level) {
+    case error: return "E";
+    case warning: return "W";
+    case info: return "I";
+    case debug: return "D";
+    case verbose: return "V";
     }
     return nullptr;
 }
