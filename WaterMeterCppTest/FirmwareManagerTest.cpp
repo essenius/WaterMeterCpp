@@ -39,8 +39,10 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerCheckSucceedsNoUpdateNeededTest) {
-            FirmwareManager manager(&eventServer, &FIRMWARE_CONFIG, "0.1.1");
-            manager.begin(&client, "001122334455");
+            // TODO: optimize use of const variables
+            const WifiClientFactory wifiClientFactory(nullptr);
+            FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+            manager.begin("001122334455");
             HTTPClient::ReturnValue = 200;
             HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
             manager.tryUpdate();
@@ -51,8 +53,9 @@ namespace WaterMeterCppTest {
 
 
         TEST_METHOD(firmwareManagerCheckSucceedsUpdateFailsTest) {
-            FirmwareManager manager(&eventServer, &FIRMWARE_CONFIG, "0.1.2");
-            manager.begin(&client, "001122334455");
+            const WifiClientFactory wifiClientFactory(nullptr);
+            FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+            manager.begin("001122334455");
             // check succeeds and update fails
             HTTPClient::ReturnValue = 200;
             HTTPUpdate::ReturnValue = HTTP_UPDATE_FAILED;
@@ -66,8 +69,9 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerFailedCheckTest) {
-            FirmwareManager manager(&eventServer, &FIRMWARE_CONFIG, "0.1.1");
-            manager.begin(&client, "001122334455");
+            const WifiClientFactory wifiClientFactory(nullptr);
+            FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+            manager.begin("001122334455");
 
             HTTPClient::ReturnValue = 400;
             Assert::IsFalse(manager.updateAvailable(), L"No update for version 0.1.1");
@@ -79,8 +83,9 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerNoUpdateAvailableTest) {
-            FirmwareManager manager(&eventServer, &FIRMWARE_CONFIG, "0.1.1");
-            manager.begin(&client, "001122334455");
+            const WifiClientFactory wifiClientFactory(nullptr);
+            FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+            manager.begin("001122334455");
 
             // Successful check, same version
             HTTPClient::ReturnValue = 200;
@@ -90,8 +95,9 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerOtherVersionTest) {
-            FirmwareManager manager(&eventServer, &FIRMWARE_CONFIG, "0.1.2");
-            manager.begin(&client, "112233445566");
+            const WifiClientFactory wifiClientFactory(nullptr);
+            FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+            manager.begin("112233445566");
 
             HTTPClient::ReturnValue = 200;
             Assert::IsTrue(manager.updateAvailable(), L"update for version 0.1.2 available");
@@ -102,8 +108,9 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerUpdateCheckFailsTest) {
-            FirmwareManager manager(&eventServer, &FIRMWARE_CONFIG, "0.1.2");
-            manager.begin(&client, "001122334455");
+            const WifiClientFactory wifiClientFactory(nullptr);
+            FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+            manager.begin("001122334455");
             HTTPClient::ReturnValue = 400;
             manager.tryUpdate();
             Assert::AreEqual(1, infoListener.getCallCount(), L"info on check failure");
@@ -119,8 +126,9 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerUpdateTest) {
-            FirmwareManager manager(&eventServer, &FIRMWARE_CONFIG, "0.1.2");
-            manager.begin(&client, "001122334455");
+            const WifiClientFactory wifiClientFactory(nullptr);
+            FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+            manager.begin("001122334455");
 
             // check succeeds, update succeeds (but doesn't reboot, obviously)
             HTTPClient::ReturnValue = 200;

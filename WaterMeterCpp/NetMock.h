@@ -28,13 +28,20 @@
 #include "SafeCString.h"
 #include <string>
 
-class Client {};
+class Client {
+public:
+    virtual ~Client() = default;
+    virtual const char* getType() { return "client"; }
+};
 
 class WiFiClient : public Client {
 public:
     WiFiClient() = default;
     bool isConnected() { return true; }
-    void stop() {};
+    void stop() {}
+
+    //testing
+    const char* getType() override { return "WifiClient"; }
 };
 
 class WiFiClientSecure : public WiFiClient {
@@ -42,21 +49,24 @@ public:
     void setCACert(const char* cert) { }
     void setCertificate(const char* cert) { }
     void setPrivateKey(const char* cert) { }
+    void setInsecure() { _insecure = true; }
+
+    // testing
+    bool isSecure() { return !_insecure; }
+    const char* getType() override { return "WifiClientSecure"; }
+private:
+    bool _insecure = false;
 };
 
 class String {
 public:
-    String(const char* value) : _string(value) {
-
-        //safeStrcpy(_value, value);
-    }
+    String(const char* value) : _string(value) {}
 
     int toInt() { return std::stoi(_string); }
     const char* c_str() { return _string.c_str(); }
 
 private:
     std::string _string;
-    //char _value[30] {};
 };
 
 class HTTPClient {

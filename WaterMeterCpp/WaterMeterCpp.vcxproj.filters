@@ -114,6 +114,9 @@
     <ClCompile Include="PreferencesMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WifiClientFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aggregator.h">
@@ -225,6 +228,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PreferencesMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WifiClientFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

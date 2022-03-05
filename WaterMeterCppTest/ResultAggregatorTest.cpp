@@ -132,7 +132,7 @@ namespace WaterMeterCppTest {
             const auto result = &payload.buffer.result;
 
             // After 10 points, we get a summary with 2 flows.
-            assertSummary(2450, 10, 1, 2, 1, result);
+            assertSummary(2450, 10, 1, 2, 0, result);
             assertExceptions(0, 0, 0, result);
             assertDuration(80045, 8005, 8009, result);
             assertAnalysis(2450.0f, 50.0f, 1.0f, 0.0f, result);
@@ -170,7 +170,7 @@ namespace WaterMeterCppTest {
                 }
                 else if (i == 14) {
                     // At 15 we get the next batch with 5 outliers and excludes
-                    assertSummary(2600, 5, 0, 0, 6, result);
+                    assertSummary(2600, 5, 0, 0, 5, result);
                     assertExceptions(5, 5, 0, result);
                     assertDuration(40025, 8005, 8007, result);
                     assertAnalysis(2600.0f, -3.0f, 1.0f, 0.0f, result);
@@ -212,7 +212,7 @@ namespace WaterMeterCppTest {
                 if (i == 9) {
                     const auto result = &payload.buffer.result;
 
-                    assertSummary(2409, 10, 0, 0, 1, result);
+                    assertSummary(2409, 10, 0, 0, 0, result);
                     assertExceptions(0, 0, 0, result);
                     assertDuration(10090, 1009, 1018, result);
                     assertAnalysis(2409.0f, 5.0f, 7.0f, 0.0f, result);
@@ -233,7 +233,7 @@ namespace WaterMeterCppTest {
             const auto result = &payload.buffer.result;
 
             // 1 point written, flush rate 1, measures contains sensor value, overrun triggered.
-            assertSummary(2398, 1, 0, 0, 1, result);
+            assertSummary(2398, 1, 0, 0, 0, result);
             assertExceptions(0, 0, 1, result);
             assertDuration(10125, 10125, 10125, result);
             assertAnalysis(2400.0f, 0.0f, 1.0f, 0.0f, result);

@@ -15,6 +15,7 @@
 #include "EventClient.h"
 #include "PayloadBuilder.h"
 #include "Configuration.h"
+#include "WifiClientFactory.h"
 
 #ifdef ESP32
 #include <WiFi.h>
@@ -32,12 +33,10 @@ public:
     void configure(const IpConfig* ipConfig = &IP_AUTO_CONFIG);
     virtual void disconnect();
     const char* get(Topic topic, const char* defaultValue) override;
-    WiFiClient* getClient();
     const char* getHostName() const;
     virtual bool isConnected();
     virtual bool needsReinit();
     virtual void reconnect();
-    void setCertificates(const TlsConfig* tlsConfig);
     void setStatusSummary() const;
 
 private:

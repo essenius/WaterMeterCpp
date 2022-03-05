@@ -31,7 +31,11 @@ void Preferences::end() {
     _cur = nullptr;
 }
 
-void Preferences::getBytes(const char* key, void* buf, size_t maxLen) {
+bool Preferences::getBool(const char* key, const bool defaultValue) {
+    return getUInt(key, defaultValue);
+}
+
+void Preferences::getBytes(const char* key, void* buf, const size_t maxLen) {
     if (!isKey(key)) {
         buf = nullptr;
         return;
@@ -44,7 +48,7 @@ String Preferences::getString(const char* key) {
     return { (*_cur)[key].c_str()};
 }
 
-unsigned Preferences::getUInt(const char* key, int defaultValue) {
+unsigned Preferences::getUInt(const char* key, const int defaultValue) {
     if (!isKey(key)) return defaultValue;
     return std::stoi((*_cur)[key]);
 }
@@ -57,6 +61,10 @@ bool Preferences::isKey(const char* key) {
 void Preferences::putString(const char* key, const char* value) {
     if (!_started) return;
     (*_cur)[key] = value;
+}
+
+void Preferences::putBool(const char* key, bool value) {
+    putUInt(key, value);
 }
 
 void Preferences::putBytes(const char* key, const void* value, size_t len) {

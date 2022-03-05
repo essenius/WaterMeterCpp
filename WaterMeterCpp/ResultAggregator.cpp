@@ -82,8 +82,8 @@ void ResultAggregator::begin() {
 void ResultAggregator::flush() {
     Aggregator::flush();
     _payload->topic = Topic::Result;
-    _result->maxStreak = 1;
-    _streak = 1;
+    _result->maxStreak = 0;
+    _streak = 0;
 }
 
 bool ResultAggregator::send() {

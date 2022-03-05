@@ -36,8 +36,7 @@ ConnectionState Connector::loop() {
     return _state;
 }
 
-void Connector::setup(Configuration* configuration) {
-
+void Connector::setup(const Configuration* configuration) {
     _state = ConnectionState::Init;
     _waitDuration = WIFI_INITIAL_WAIT_DURATION;
     _wifiConnectionFailureCount = 0;
@@ -60,7 +59,6 @@ void Connector::setup(Configuration* configuration) {
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSpaces);
 
     _wifi->configure(&configuration->ip);
-    _wifi->setCertificates(&configuration->tls);
 }
 
 [[ noreturn]] void Connector::task(void* parameter) {
@@ -115,8 +113,9 @@ ConnectionState Connector::connect() {
 // private methods
 
 void Connector::handleCheckFirmware() {
-    _firmwareManager->begin(_wifi->getClient(), _eventServer->request(Topic::MacRaw, ""));
+    _firmwareManager->begin(_eventServer->request(Topic::MacRaw, ""));
     _firmwareManager->tryUpdate();
+    _firmwareManager->end();
     _state = ConnectionState::WifiReady;
 }
 
@@ -256,7 +255,7 @@ void Connector::handleWifiReady() {
         _state = ConnectionState::MqttConnecting;
         _mqttConnectTimestamp = micros();
         // this is a synchronous call, takes a lot of time
-        _mqttGateway->begin(_wifi->getClient(), _wifi->getHostName());
+        _mqttGateway->begin(_wifi->getHostName());
         return;
     }
 

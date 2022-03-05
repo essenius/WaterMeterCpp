@@ -20,12 +20,33 @@
 #include "EventServer.h"
 #include "SafeCString.h"
 
-FirmwareManager::FirmwareManager(EventServer* eventServer, const FirmwareConfig* firmwareConfig, const char* buildVersion) :
-    EventClient(eventServer), _buildVersion(buildVersion), _firmwareConfig(firmwareConfig) {}
+FirmwareManager::FirmwareManager(
+    EventServer* eventServer,
+    const WifiClientFactory* wifiClientFactory,
+    const FirmwareConfig* firmwareConfig, 
+    const char* buildVersion) :
 
-void FirmwareManager::begin(WiFiClient* client, const char* machineId) {
-    _client = client;
+    EventClient(eventServer),
+    _wifiClientFactory(wifiClientFactory),
+    _buildVersion(buildVersion),
+    _firmwareConfig(firmwareConfig) {}
+
+FirmwareManager::~FirmwareManager() {
+    end();
+}
+
+void FirmwareManager::begin(const char* machineId) {
+    if (_client == nullptr) {
+        _client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
+    }
     safeStrcpy(_machineId, machineId);
+}
+
+void FirmwareManager::end() {
+    if (_client != nullptr) {
+        delete _client;
+        _client = nullptr;
+    }
 }
 
 void FirmwareManager::loadUpdate() const {
@@ -60,12 +81,11 @@ void FirmwareManager::tryUpdate() {
     if (_justRebooted && updateAvailable()) {
         loadUpdate();
     }
-    // this is needed so we can reuse the client for mqtt
-    _client->stop();
     _justRebooted = false;
 }
 
 bool FirmwareManager::updateAvailable() const {
+    if (!_justRebooted) return false;
     char versionUrl[BASE_URL_SIZE];
     safeStrcpy(versionUrl, _firmwareConfig->baseUrl);
     safeStrcat(versionUrl, _machineId);

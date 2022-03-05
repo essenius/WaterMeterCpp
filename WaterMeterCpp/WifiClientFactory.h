@@ -9,17 +9,24 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
-#include "MqttGatewayMock.h"
+#ifndef HEADER_WIFICLIENTFACTORY_H
+#define HEADER_WIFICLIENTFACTORY_H
 
-MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WifiClientFactory* wifiClientFactory) :
-    MqttGateway(eventServer, mqttClient, wifiClientFactory, &MQTT_CONFIG, nullptr, "1.0.0") {}
+#ifdef ESP32
+#include <WiFiClientSecure.h>
+#else
+#include "NetMock.h"
+#endif
 
-bool MqttGatewayMock::hasAnnouncement() {
-    _announceCounter++;
-    if (_announceCounter == 3) {
-        _announceCounter = 0;
-        return false;
-    }
-    return true;
-}
+#include "Configuration.h"
+
+class WifiClientFactory {
+public:
+    explicit WifiClientFactory(const TlsConfig* config);
+    WiFiClient* create(bool useTls) const;
+    WiFiClient* create(const char* url) const;
+private:
+    const TlsConfig* _config;
+};
+
+#endif

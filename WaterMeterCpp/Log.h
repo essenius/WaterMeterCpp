@@ -11,6 +11,15 @@
 #ifndef HEADER_LOG_H
 #define HEADER_LOG_H
 
+#ifdef ESP32
+#include <ESP.h>  
+#else
+#include "FreeRtosMock.h"
+#include "ArduinoMock.h"
+// hack to redirect printf to capture the output
+#define printf redirectPrintf
+#endif
+
 #include "EventServer.h"
 #include "PayloadBuilder.h"
 
@@ -19,14 +28,24 @@ public:
     using EventClient::update;
     Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder);
     void begin();
+    
+    template <typename... Arguments>
+    void log(const char* format, Arguments ... arguments) const {
+      // printf doesn't seem to influence other tasks (unlike Serial.printf)
+        xSemaphoreTake(_printMutex, portMAX_DELAY);
+        printf("[%s] ", getTimestamp());
+        printf(format, arguments...);
+        printf("\n");
+        xSemaphoreGive(_printMutex);
+    }
+    
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
-#ifndef ESP32
-    void testLogMacro() const;
-#endif
 private:
     PayloadBuilder* _wifiPayloadBuilder;
     long _previousConnectionTopic = -1;
+    static SemaphoreHandle_t _printMutex;
+
     const char* getTimestamp() const;
     void printIndexedPayload(const char* entity, long payload) const;
 };

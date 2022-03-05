@@ -30,6 +30,9 @@ Esp ESP;
 
 HardwareSerial Serial;
 
+char PrintBuffer[2048];
+char* PrintBufferPointer = PrintBuffer;
+
 auto startTime = std::chrono::high_resolution_clock::now();
 
 long long microShift = 0;

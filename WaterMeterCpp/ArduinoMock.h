@@ -19,7 +19,6 @@
 
 #ifndef HEADER_ARDUINOMOCK
 #define HEADER_ARDUINOMOCK
-
 #define WIN32_LEAN_AND_MEAN
 #include <cstdint>
 #include <string>
@@ -68,6 +67,20 @@ private:
 };
 
 extern HardwareSerial Serial;
+
+extern char PrintBuffer[];
+extern char* PrintBufferPointer;
+
+template <typename... Arguments>
+int redirectPrintf(const char* format, Arguments... arguments) {
+    const int length = sprintf(PrintBufferPointer, format, arguments...);
+    PrintBufferPointer += length;
+    return length;
+}
+
+inline char* getPrintOutput() { return PrintBuffer; }
+inline void clearPrintOutput() { PrintBuffer[0] = 0; PrintBufferPointer = PrintBuffer; }
+inline size_t getPrintOutputLength() { return strlen(PrintBuffer); }
 
 void configTime(int i, int i1, const char* str, const char* text);
 

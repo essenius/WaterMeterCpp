@@ -28,11 +28,13 @@ public:
     bool begin(const char* name, bool readOnly = false);
     void clear();
     void end();
+    bool getBool(const char* key, bool defaultValue);
     void getBytes(const char* key, void* buf, size_t maxLen);
     String getString(const char* key);
     unsigned getUInt(const char* key, int defaultValue);
     bool isKey(const char* key);
     void putString(const char* key, const char* value);
+    void putBool(const char* key, bool value);
     void putBytes(const char* key, const void* value, size_t len);
     void putUInt(const char* key, uint32_t value);
     void save();

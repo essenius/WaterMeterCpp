@@ -25,7 +25,6 @@
 #include "QMC5883LCompassMock.h"
 #endif
 
-
 #include "Configuration.h"
 #include "Communicator.h"
 #include "Connector.h"
@@ -43,6 +42,7 @@
 #include "TimeServer.h"
 #include "Wifi.h"
 #include "QueueClient.h"
+#include "WifiClientFactory.h"
 
 // For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "0.100.5";
@@ -59,6 +59,7 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 QMC5883LCompass compass;
 Preferences preferences;
 Configuration configuration(&preferences);
+WifiClientFactory wifiClientFactory(&configuration.tls);
 EventServer samplerEventServer;
 MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
 FlowMeter flowMeter(&samplerEventServer);
@@ -83,17 +84,17 @@ Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
 Wifi wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
 PubSubClient mqttClient;
-MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
-FirmwareManager firmwareManager(&connectorEventServer, &configuration.firmware, BUILD_VERSION);
+MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
+FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);
 
-QueueClient samplerQueueClient(&samplerEventServer, 20, 0);
-QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20, 1);
-QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20, 2);
+QueueClient samplerQueueClient(&samplerEventServer, &logger, 20, 0);
+QueueClient communicatorSamplerQueueClient(&communicatorEventServer, &logger, 20, 1);
+QueueClient communicatorConnectorQueueClient(&communicatorEventServer, &logger, 20, 2);
 // This queue needs more space as it won't be read when offline.
-QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100, 3);
+QueueClient connectorCommunicatorQueueClient(&connectorEventServer, &logger, 100, 3);
 
 // Nothing to send from sampler to connector
-QueueClient connectorSamplerQueueClient(&connectorEventServer, 0, 4);
+QueueClient connectorSamplerQueueClient(&connectorEventServer, &logger, 0, 4);
 DataQueuePayload connectorDataQueuePayload;
 DataQueuePayload communicatorQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);
@@ -131,19 +132,23 @@ void setup() {
     sampler.setup(MEASURE_INTERVAL_MICROS);
     connector.setup(&configuration);
 
-    // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (setup and loop run on core 1)
+    // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
+    sampler.begin();
+
+    // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
     xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
 
-    // start the communication task which takes care of logging and leds, as well as passing on data to the connector if there is a connection
+    // the communicator loop takes care of logging and leds, as well as passing on data to the connector if there is a connection
     xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
 
     device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
-
-    // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
-    sampler.begin();
 }
 
 void loop() {
+    // Start the sampler task which is the only task on core 1 so it should not get interrupted. 
+    // As Wifi runs on core 0, we don't want to run this time critical task there.
+    // One issue: if you run Serial.printf() from core 0, then tasks running on core 1 might get delayed. 
+    // printf() doesn't seem to have that problem, so we use that instead.
     sampler.loop();
 }
 

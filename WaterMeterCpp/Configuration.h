@@ -42,6 +42,7 @@ struct MqttConfig {
     unsigned int port;
     const char* user;
     const char* password;
+    bool useTls;
 };
 
 struct TlsConfig {

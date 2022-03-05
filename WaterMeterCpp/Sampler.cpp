@@ -11,6 +11,8 @@
 
 #include "Sampler.h"
 
+constexpr int MAX_CONSECUTIVE_OVERRUNS = 3;
+
 Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter,
                  SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
     _eventServer(eventServer), _sensorReader(sensorReader), _flowMeter(flowMeter),
@@ -39,22 +41,31 @@ void Sampler::loop() {
     unsigned long duration = micros() - _scheduledStartTime;
     _additionalDuration = duration - durationSoFar;
     if (duration > _samplePeriod) {
-        // It took too long, see if we need to skip measurements to catch up. The shift period is always less than the duration.
-        // integer mathematics, i.e. no fractions
-        const auto shiftPeriod = (duration / _samplePeriod) * _samplePeriod;
+        _consecutiveOverrunCount++;
+        // It took too long, see if we need to skip measurements to catch up. 
+        duration = micros() - _scheduledStartTime;
+        // integer mathematics, i.e. no fractions.
+        // If we have too many consecutive overruns, skip an extra period.
+        auto shiftPeriod = (duration / _samplePeriod) * _samplePeriod + (_consecutiveOverrunCount > MAX_CONSECUTIVE_OVERRUNS ? _samplePeriod : 0);
+        _eventServer->publish(Topic::SkipSamples, shiftPeriod + (_consecutiveOverrunCount-1) * 100000000);
         _scheduledStartTime += shiftPeriod;
         // immediately start the next loop in an attempt to catch up.
     }
     else {
+        _consecutiveOverrunCount = 0;
         // Wait for the next sample time; read the command queue while we're at it.
         if (duration < _maxDurationForChecks) {
           _queueClient->receive();
         }
+
+        // now we have the next scheduled start time, so that is in the future.
         duration = micros() - _scheduledStartTime;
-        // delayMicroseconds() is less accurate: sometimes up to 300 us too much wait time.
-        const long delayTime = static_cast<long>(_samplePeriod - duration) - 500L;
-        if (delayTime > 0) {
-            delayMicroseconds(delayTime); 
+        const long delayTime = static_cast<long>(_samplePeriod - duration);
+
+        // delayMicroseconds() is less accurate: sometimes up to 1000 us too much wait time.
+        
+        if (delayTime > 1000) {
+            delayMicroseconds(delayTime - 1000); 
         }
         do {
             duration = micros() - _scheduledStartTime;
@@ -68,7 +79,8 @@ void Sampler::setup(const unsigned long samplePeriod) {
     _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
     _sensorReader->begin();
     _flowMeter->begin();
-    // what can be sent to the communicator (note: must be numerical payload)
+    
+    // what can be sent to the communicator (note: must be numerical payloads)
     _eventServer->subscribe(_queueClient, Topic::Alert);
     _eventServer->subscribe(_queueClient, Topic::BatchSize);
     _eventServer->subscribe(_queueClient, Topic::Blocked);
@@ -79,6 +91,7 @@ void Sampler::setup(const unsigned long samplePeriod) {
     _eventServer->subscribe(_queueClient, Topic::Peak);
     _eventServer->subscribe(_queueClient, Topic::ResultWritten);
     _eventServer->subscribe(_queueClient, Topic::Sample);
+    _eventServer->subscribe(_queueClient, Topic::SkipSamples);
     _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
     _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
 }

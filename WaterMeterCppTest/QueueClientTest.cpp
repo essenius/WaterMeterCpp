@@ -23,13 +23,14 @@ namespace WaterMeterCppTest {
     TEST_CLASS(QueueClientTest) {
     public:
         static EventServer eventServer;
+        static Log logger;
         static TestEventClient testEventClient;
 
         TEST_METHOD(queueClientTest1) {
             uxQueueReset();
             eventServer.subscribe(&testEventClient, Topic::Exclude);
             constexpr uint16_t QUEUE_SIZE = 10;
-            QueueClient qClient(&eventServer, QUEUE_SIZE);
+            QueueClient qClient(&eventServer, &logger, QUEUE_SIZE);
             qClient.begin(qClient.getQueueHandle());
             eventServer.subscribe(&qClient, Topic::Exclude);
             for (int i = 0; i < QUEUE_SIZE; i++) {
@@ -51,6 +52,7 @@ namespace WaterMeterCppTest {
     };
 
     EventServer QueueClientTest::eventServer;
+    Log QueueClientTest::logger(&eventServer, nullptr);
     TestEventClient QueueClientTest::testEventClient(&eventServer);
 
 }

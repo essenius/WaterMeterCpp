@@ -14,6 +14,7 @@
 #include "EventServer.h"
 #include "Configuration.h"
 #include "DataQueue.h"
+#include "WifiClientFactory.h"
 
 #ifdef ESP32
 #include <ESP.h>
@@ -48,9 +49,16 @@ constexpr const char* const STATE = "$state";
 
 class MqttGateway : public EventClient {
 public:
-    MqttGateway(EventServer* eventServer, PubSubClient* mqttClient, const MqttConfig* mqttConfig, const DataQueue* dataQueue, const char* buildVersion);
+    MqttGateway(
+        EventServer* eventServer, 
+        PubSubClient* mqttClient,
+        WifiClientFactory* wifiClientFactory,
+        const MqttConfig* mqttConfig, 
+        const DataQueue* dataQueue, 
+        const char* buildVersion);
+    ~MqttGateway() override;
     virtual void announceReady();
-    virtual void begin(Client* client, const char* clientName);
+    virtual void begin(const char* clientName);
     virtual void connect();
     bool handleQueue();
     virtual bool hasAnnouncement();
@@ -64,7 +72,9 @@ public:
 protected:
     static constexpr int TOPIC_BUFFER_SIZE = 255;
     static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2500;
-    PubSubClient* _mqttClient{};
+    PubSubClient* _mqttClient;
+    WifiClientFactory* _wifiClientFactory;
+    WiFiClient* _wifiClient = nullptr;
     const MqttConfig* _mqttConfig;
     const DataQueue* _dataQueue;
     int _announceIndex = 0;

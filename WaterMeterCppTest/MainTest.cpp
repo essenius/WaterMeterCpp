@@ -70,8 +70,7 @@ namespace WaterMeterCppTest {
             constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
             QMC5883LCompass compass;
-            //Preferences preferences;
-            //Configuration configuration(&preferences);
+            WifiClientFactory wifiClientFactory(&configuration.tls);
 
             EventServer samplerEventServer;
             MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
@@ -98,16 +97,16 @@ namespace WaterMeterCppTest {
 
             Wifi wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
             PubSubClient mqttClient;
-            MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
-            FirmwareManager firmwareManager(&connectorEventServer, &configuration.firmware, BUILD_VERSION);
+            MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
+            FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);
 
-            QueueClient samplerQueueClient(&samplerEventServer, 20, 0);
-            QueueClient communicatorSamplerQueueClient(&communicatorEventServer, 20, 1);
-            QueueClient communicatorConnectorQueueClient(&communicatorEventServer, 20, 2);
-            QueueClient connectorCommunicatorQueueClient(&connectorEventServer, 100, 3);
+            QueueClient samplerQueueClient(&samplerEventServer, &logger, 20, 0);
+            QueueClient communicatorSamplerQueueClient(&communicatorEventServer, &logger, 20, 1);
+            QueueClient communicatorConnectorQueueClient(&communicatorEventServer, &logger, 20, 2);
+            QueueClient connectorCommunicatorQueueClient(&connectorEventServer, &logger, 100, 3);
 
             // send only
-            QueueClient connectorSamplerQueueClient(&connectorEventServer, 0, 4);
+            QueueClient connectorSamplerQueueClient(&connectorEventServer, &logger, 0, 4);
             DataQueuePayload communicatorQueuePayload;
             PayloadBuilder serialize2PayloadBuilder(&theClock);
             Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
@@ -125,6 +124,8 @@ namespace WaterMeterCppTest {
 
             TaskHandle_t communicatorTaskHandle;
             TaskHandle_t connectorTaskHandle;
+
+            clearPrintOutput();
 
             Serial.begin(115200);
             theClock.begin();
@@ -174,18 +175,18 @@ namespace WaterMeterCppTest {
 
             Assert::AreEqual(Led::ON, Led::get(Led::AUX), L"AUX on");
             Assert::AreEqual(Led::ON, Led::get(Led::RUNNING), L"RUNNING on");
-            Assert::AreEqual(R"([I] Starting
-[I] Topic '6': 0
-[I] Free Spaces Queue #1: 9
-[I] Wifi summary: {"ssid":"","hostname":"","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
-[I] Free Spaces Queue #2: 9
-[I] Free Memory DataQueue #0: 12800
-[I] Free Heap: 32000
-[I] Free Stack #0: 1500
-[I] Free Stack #1: 3750
-[I] Free Stack #2: 5250
-[I] Connecting to Wifi
-)", Serial.getOutput());
+            Assert::AreEqual(R"([] Starting
+[] Topic '6': 0
+[] Free Spaces Queue #1: 9
+[] Wifi summary: {"ssid":"","hostname":"","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
+[] Free Spaces Queue #2: 9
+[] Free Memory DataQueue #0: 12800
+[] Free Heap: 32000
+[] Free Stack #0: 1500
+[] Free Stack #1: 3750
+[] Free Stack #2: 5250
+[] Connecting to Wifi
+)", getPrintOutput());
             // reduce the noise in the logger 
             samplerEventServer.unsubscribe(&logger, Topic::Sample);
             communicatorEventServer.unsubscribe(&logger, Topic::Connection);
@@ -193,7 +194,6 @@ namespace WaterMeterCppTest {
             WiFi.reset();
             WiFi.connectIn(1);
             while (connector.connect() != ConnectionState::MqttReady) {}
-            //Serial.println("");
             Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Checking for data");
 
             // emulate the publication of a result from sensor to log
@@ -205,25 +205,25 @@ namespace WaterMeterCppTest {
             sensorDataQueue.send(&payload1);
             Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Reading queue");
 
-            Serial.clearOutput();
+            clearPrintOutput();
             communicator.loop();
-            auto expected = R"([I] Free Spaces Queue #2: 1
-[I] Wifi summary: {"ssid":"","hostname":"esp32_001122334455","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
-[I] Wifi summary: {"ssid":"","hostname":"esp32_001122334455","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
-[I] Free Spaces Queue #2: 6
-[E] Error: Firmware version check failed with response code 400. URL:
-[I] https://localhost/001122334455.version
-[I] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
-[I] Free Stack #0: 1564
+            auto expected = R"([] Free Spaces Queue #2: 1
+[] Wifi summary: {"ssid":"","hostname":"esp32_001122334455","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
+[] Wifi summary: {"ssid":"","hostname":"esp32_001122334455","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
+[] Free Spaces Queue #2: 6
+[] Error: Firmware version check failed with response code 400. URL:
+[] https://localhost/001122334455.version
+[] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
+[] Free Stack #0: 1564
 )";
-            Assert::AreEqual(expected, Serial.getOutput(), L"Formatted result came through");
-            Serial.clearOutput();
+            Assert::AreEqual(expected, getPrintOutput(), L"Formatted result came through");
+            clearPrintOutput();
             // expect an overrun
             delay(10);
             sampler.loop();
             Assert::AreEqual(ConnectionState::MqttReady, connector.loop(), L"Connector loop");
             communicator.loop();
-            Assert::AreEqual(0, strncmp("[W] Time overrun:", Serial.getOutput(), 16), L"Time overrun");
+            Assert::AreEqual(0, strncmp("[] Time overrun:", getPrintOutput(), 16), L"Time overrun");
             connectorEventServer.publish(Topic::ResetSensor, 2);
             sampler.loop();
         }

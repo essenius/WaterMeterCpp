@@ -22,8 +22,9 @@ QueueHandle_t QueueClient::createQueue(const uint16_t length) {
     return xQueueCreate(length, sizeof(ShortMessage));
 }
 
-QueueClient::QueueClient(EventServer* eventServer, const uint16_t size, const int8_t index) :
+QueueClient::QueueClient(EventServer* eventServer, Log* logger, const uint16_t size, const int8_t index) :
     EventClient(eventServer),
+    _logger(logger),
     // being careful with reporting on spaces as it may use them as well, so just every 5
     _freeSpaces(eventServer, Topic::FreeQueueSpaces, 5, 0, index, size),
     _receiveQueue(createQueue(size)) {
@@ -58,6 +59,6 @@ void QueueClient::update(const Topic topic, const long payload) {
     if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {
         // Catch 22 - we may need a queue to send an error, and that fails. So we're using a direct log.
         // That uses the default format which gives more details 
-        log_e("Instance %p: error sending %d/%ld\n", this, topic, payload);
+        _logger->log("[E] Instance %p: error sending %d/%ld\n", this, topic, payload);
     }
 }

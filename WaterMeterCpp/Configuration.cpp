@@ -28,6 +28,7 @@ constexpr const char* BROKER = "broker";
 constexpr const char* PORT = "port";
 constexpr const char* USER = "user";
 constexpr const char* PASSWORD = "password";
+constexpr const char* USE_TLS = "useTls";
 
 constexpr const char* WIFI = "wifi";
 constexpr const char* DEVICE_NAME = "deviceName";
@@ -84,6 +85,7 @@ char* Configuration::getMqttConfig(char* start) {
     mqtt.port = _preferences->getUInt(PORT, 1883);
     mqtt.user = storeToBuffer(USER, &start);
     mqtt.password = storeToBuffer(PASSWORD, &start);
+    mqtt.useTls = _preferences->getBool(USE_TLS, mqtt.port != 1883);
     _preferences->end();
     return start;
 }
@@ -143,6 +145,7 @@ void Configuration::putMqttConfig(const MqttConfig* mqttConfig) const {
     }
     putStringIfNotNull(USER, mqttConfig->user);
     putStringIfNotNull(PASSWORD, mqttConfig->password);
+    _preferences->putBool(USE_TLS, mqttConfig->useTls);
     _preferences->end();
 }
 

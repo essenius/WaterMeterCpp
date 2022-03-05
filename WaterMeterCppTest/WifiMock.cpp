@@ -11,5 +11,6 @@
 
 #include "pch.h"
 #include "WifiMock.h"
-WifiMock::WifiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder): Wifi(eventServer, &CONFIG, payloadBuilder) {}
+WifiMock::WifiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder):
+Wifi(eventServer, &CONFIG, payloadBuilder) {}
 

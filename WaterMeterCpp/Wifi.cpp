@@ -18,9 +18,7 @@
 #include "EventServer.h"
 
 Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder) :
-    EventClient(eventServer), _payloadBuilder(payloadBuilder), _wifiConfig(wifiConfig) {
-
-}
+    EventClient(eventServer), _payloadBuilder(payloadBuilder), _wifiConfig(wifiConfig) {}
 
 void Wifi::announceReady() {
     setStatusSummary();
@@ -102,8 +100,6 @@ const char* Wifi::get(const Topic topic, const char* defaultValue) {
     }
 }
 
-WiFiClient* Wifi::getClient() { return &_wifiClient; }
-
 const char* Wifi::getHostName() const { return _hostName; }
 
 // There is an issue on ESP32 with DHCP, timing out after 12032 seconds. Workaround is setting a fixed IP
@@ -126,12 +122,6 @@ bool Wifi::isConnected() {
 
 void Wifi::reconnect() {
     WiFi.reconnect();
-}
-
-void Wifi::setCertificates(const TlsConfig* tlsConfig) {
-    _wifiClient.setCACert(tlsConfig->rootCaCertificate);
-    _wifiClient.setCertificate(tlsConfig->deviceCertificate);
-    _wifiClient.setPrivateKey(tlsConfig->devicePrivateKey);
 }
 
 void Wifi::setStatusSummary() const {

@@ -30,6 +30,8 @@ namespace WaterMeterCppTest {
         static Preferences preferences;
         static Configuration configuration;
         static EventServer eventServer;
+        static Log logger;
+        static WifiClientFactory wifiClientFactory;
         static WifiMock wifiMock;
         static MqttGatewayMock mqttGatewayMock;
         static PubSubClient mqttClient;
@@ -210,12 +212,14 @@ namespace WaterMeterCppTest {
     Preferences ConnectorTest::preferences;
     Configuration ConnectorTest::configuration(&preferences);
     EventServer ConnectorTest::eventServer;
+    Log ConnectorTest::logger(&eventServer, nullptr);
+    WifiClientFactory ConnectorTest::wifiClientFactory(nullptr);
     WifiMock ConnectorTest::wifiMock(&eventServer, nullptr);
     PubSubClient ConnectorTest::mqttClient;
-    MqttGatewayMock ConnectorTest::mqttGatewayMock(&eventServer, &mqttClient);
+    MqttGatewayMock ConnectorTest::mqttGatewayMock(&eventServer, &mqttClient, &wifiClientFactory);
     TimeServerMock ConnectorTest::timeServer;
     FirmwareConfig firmwareConfig{ "http://localhost/" };
-    FirmwareManager ConnectorTest::firmwareManager(&eventServer, &firmwareConfig, "0.99.3");
+    FirmwareManager ConnectorTest::firmwareManager(&eventServer, &wifiClientFactory, &firmwareConfig, "0.99.3");
     PayloadBuilder ConnectorTest::payloadBuilder;
     Serializer ConnectorTest::serializer(&eventServer, &payloadBuilder);
     DataQueuePayload payload;
@@ -223,8 +227,8 @@ namespace WaterMeterCppTest {
     DataQueue ConnectorTest::commsDataQueue(&eventServer, &payload, 1, 2, 1, 2);
 
     QueueHandle_t ConnectorTest::queueHandle = nullptr;
-    QueueClient ConnectorTest::queueClient1(&eventServer, 10);
-    QueueClient ConnectorTest::queueClient2(&eventServer, 10);
+    QueueClient ConnectorTest::queueClient1(&eventServer, &logger, 10);
+    QueueClient ConnectorTest::queueClient2(&eventServer, &logger, 10);
     Connector ConnectorTest::connector(&eventServer, &wifiMock, &mqttGatewayMock, &timeServer, &firmwareManager, &dataQueue,
                                        &commsDataQueue, &serializer, &queueClient1, &queueClient2);
 }

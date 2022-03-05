@@ -35,7 +35,7 @@ public:
               Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
     ConnectionState connect();
     ConnectionState loop();
-    void setup(Configuration* configuration);
+    void setup(const Configuration* configuration);
     static void task(void* parameter);
 
 private:

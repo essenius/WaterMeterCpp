@@ -53,14 +53,25 @@ constexpr const char* const NAME = "$name";
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
 MqttGateway::MqttGateway(
-    EventServer* eventServer, PubSubClient* mqttClient, const MqttConfig* mqttConfig, const DataQueue* dataQueue,
+    EventServer* eventServer, 
+    PubSubClient* mqttClient,
+    WifiClientFactory* wifiClientFactory,
+    const MqttConfig* mqttConfig, 
+    const DataQueue* dataQueue,
     const char* buildVersion) :
+
     EventClient(eventServer),
     _mqttClient(mqttClient),
+    _wifiClientFactory(wifiClientFactory),
     _mqttConfig(mqttConfig),
     _dataQueue(dataQueue),
     _buildVersion(buildVersion) {}
 
+MqttGateway::~MqttGateway() {
+    if (_wifiClient != nullptr) {
+        delete _wifiClient;
+    }
+}
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
     // TODO: it's probably OK to do this just once and leave on. Validate.
@@ -79,19 +90,23 @@ void MqttGateway::announceReady() {
     _eventServer->subscribe(this, Topic::SensorWasReset); // long     
 }
 
-void MqttGateway::begin(Client* client, const char* clientName) {
-    _clientName = clientName;
-    _announcementPointer = _announcementBuffer;
+void MqttGateway::begin(const char* clientName) {
     // only do this if it hasn't been done before.
     if (strlen(_announcementBuffer) == 0) {
+        _clientName = clientName;
+        _announcementPointer = _announcementBuffer;
         prepareAnnouncementBuffer();
     }
-    _mqttClient->setClient(*client);
+    if (_wifiClient != nullptr) {
+      delete(_wifiClient);
+    }
+    _wifiClient = _wifiClientFactory->create(_mqttConfig->useTls);
+    _mqttClient->setClient(*_wifiClient);
     _mqttClient->setBufferSize(512);
     _mqttClient->setServer(_mqttConfig->broker, _mqttConfig->port);
     _mqttClient->setCallback([=](const char* topic, const uint8_t* payload, const unsigned int length) {
-        this->callback(topic, payload, length);
-    });
+          this->callback(topic, payload, length);
+         });
     connect();
 }
 

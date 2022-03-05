@@ -21,7 +21,9 @@ constexpr long LONG_FALSE = 0L;
 enum class Topic: uint16_t {
     None = 0,
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
-    Sample, Samples, SamplesFormatted, Result, ResultFormatted, SensorData,
+    Sample, Samples, SkipSamples, SamplesFormatted, 
+    Result, ResultFormatted, 
+    SensorData,
     FreeHeap, FreeStack, FreeQueueSize, FreeQueueSpaces,
     Connection, WifiSummaryReady,
     ResultWritten,

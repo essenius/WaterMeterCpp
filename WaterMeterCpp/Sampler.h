@@ -44,6 +44,7 @@ private:
     unsigned long _maxDurationForChecks = 8000;
     unsigned long _samplePeriod = 10000;
     unsigned long _scheduledStartTime = 0;
+    unsigned long _consecutiveOverrunCount = 0;
 };
 
 #endif

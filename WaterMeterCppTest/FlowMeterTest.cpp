@@ -68,6 +68,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(flowMeterOutlierTest) {
+            // redirect std::cout so you can see it
             std::streambuf* backup = std::cout.rdbuf();
             const std::stringstream ss;
             std::cout.rdbuf(ss.rdbuf());
@@ -92,6 +93,8 @@ namespace WaterMeterCppTest {
             }
             Assert::AreEqual(3, totalOutliers, L"Found 3 outliers");
             measurements.close();
+
+            // restore original buffer for cout
             std::cout.rdbuf(backup);
         }
         TEST_METHOD(flowMeterSingleOutlierIgnoredTest) {

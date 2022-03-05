@@ -9,27 +9,15 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-
 #include "Log.h"
-
-// The ESP32 uses this in log_*. We redefine the default one to reduce the clutter and give a proper timestamp
-
-#ifdef ARDUHAL_LOG_FORMAT
-#undef ARDUHAL_LOG_FORMAT
-#endif
-#define ARDUHAL_LOG_FORMAT(letter, format) "[%s][" #letter "] " format "\r\n", getTimestamp()
 
 #ifdef ESP32
 #include <ESP.h>
 #else
 #include "ArduinoMock.h"
-
-//for testing the macro
-void Log::testLogMacro() const {
-    Serial.printf(ARDUHAL_LOG_FORMAT(Q, "{%s}"), "hello");
-}
-
 #endif
+
+SemaphoreHandle_t Log::_printMutex = xSemaphoreCreateMutex();
 
 // expects the same size and order as the ConnectionState enum
 constexpr static const char* const MESSAGES[] = {
@@ -64,6 +52,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::SensorWasReset);
+    _eventServer->subscribe(this, Topic::SkipSamples);
     _eventServer->subscribe(this, Topic::TimeOverrun);
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
 }
@@ -75,40 +64,43 @@ const char* Log::getTimestamp() const {
 void Log::update(Topic topic, const char* payload) {
     switch (topic) {
     case Topic::Alert:
-        log_w("Alert: %s", payload);
+        log("Alert: %s", payload);
         break;
     case Topic::Blocked:
-        log_e("Blocked: %s", payload);
+        log("Blocked: %s", payload);
         break;
     case Topic::Connection:
-        log_i("%s", payload);
+        log("%s", payload);
         break;
     case Topic::ErrorFormatted:
-        log_e("%s", payload);
+        log("%s", payload);
         break;
     case Topic::FreeHeap:
-        log_i("Free Heap: %s", payload);
+        log("Free Heap: %s", payload);
         break;
     case Topic::MessageFormatted:
-        log_i("%s", payload);
+        log("%s", payload);
         break;
     case Topic::ResultFormatted:
-        log_i("Result: %s", payload);
+        log("Result: %s", payload);
         break;
     case Topic::ResultWritten:
-        log_d("Result Written: %s", payload);
+        log("Result Written: %s", payload);
         break;
     case Topic::SensorWasReset:
-        log_w("Sensor was reset");
+        log("Sensor was reset");
         break;
+    case Topic::SkipSamples:
+        log("Skipped %s samples", payload);
+        break;    
     case Topic::TimeOverrun:
-        log_w("Time overrun: %s", payload);
+        log("Time overrun: %s", payload);
         break;
     case Topic::WifiSummaryReady:
-        log_i("Wifi summary: %s", _wifiPayloadBuilder->toString());
+        log("Wifi summary: %s", _wifiPayloadBuilder->toString());
         break;
     default:
-        log_i("Topic '%d': %s", static_cast<int>(topic), payload);
+        log("Topic '%d': %s", static_cast<int>(topic), payload);
     }
 }
 
@@ -137,5 +129,5 @@ void Log::update(const Topic topic, const long payload) {
 void Log::printIndexedPayload(const char* entity, long payload) const {
     const int index = payload >> 24;
     const long value = payload & 0x00FFFFFF;
-    log_i("Free %s #%d: %ld", entity, index, value);
+    log("Free %s #%d: %ld", entity, index, value);
 }

@@ -48,6 +48,7 @@ namespace WaterMeterCppTest {
             PayloadBuilder payloadBuilder;
             TestEventClient client1(&eventServer);
             eventServer.subscribe(&client1, Topic::WifiSummaryReady);
+            constexpr TlsConfig TLS_CONFIG{ nullptr, nullptr, nullptr};
             Wifi wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit as disconnected");
@@ -75,11 +76,10 @@ namespace WaterMeterCppTest {
         TEST_METHOD(wifiFailSetNameTest) {
             constexpr WifiConfig CONFIG{ "ssid", "password", "", nullptr };
             PayloadBuilder payloadBuilder;
+            constexpr TlsConfig TLS_CONFIG{ "a", "b", "c" };
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             wifi.begin();
             // just showing intended usage
-            constexpr TlsConfig tlsConfig{"a", "b", "c"};
-            wifi.setCertificates(&tlsConfig);
             Assert::AreEqual(1, errorListener.getCallCount(), L"Error called");
             Assert::AreEqual("Could not set host name", errorListener.getPayload(), L"Error message OK");
         }
@@ -88,6 +88,7 @@ namespace WaterMeterCppTest {
 
             constexpr WifiConfig CONFIG{ "ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
+            constexpr TlsConfig TLS_CONFIG{ nullptr, nullptr, nullptr };
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             Assert::AreEqual("x", wifi.get(Topic::Flow, "x"), L"Unexpected topic returns default");
         }
@@ -97,6 +98,7 @@ namespace WaterMeterCppTest {
             constexpr WifiConfig CONFIG{ "ssid", "password", nullptr, nullptr };
             PayloadBuilder payloadBuilder;
 
+            constexpr TlsConfig TLS_CONFIG{ nullptr, nullptr, nullptr };
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             wifi.begin();
 
@@ -115,6 +117,7 @@ namespace WaterMeterCppTest {
             const IPAddress gateway(192, 168, 1, 1);
             constexpr WifiConfig WIFI_CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
+            constexpr TlsConfig TLS_CONFIG{ nullptr, nullptr, nullptr };
             Wifi wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, NO_IP, NO_IP, NO_IP, NO_IP};
             wifi.configure(&ipConfig);
@@ -146,6 +149,7 @@ namespace WaterMeterCppTest {
             const IPAddress dns(9, 9, 9, 9);
             constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
+
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, gateway, NO_IP, dns, NO_IP};
             wifi.configure(&ipConfig);
@@ -173,6 +177,7 @@ namespace WaterMeterCppTest {
 
             constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
+
             Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
             const IpConfig ipConfig{local, NO_IP, NO_IP, dns1, dns2};
             wifi.configure(&ipConfig);

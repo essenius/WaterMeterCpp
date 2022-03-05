@@ -25,11 +25,19 @@
 #endif
 #include "Configuration.h"
 #include "EventClient.h"
+#include "WifiClientFactory.h"
 
 class FirmwareManager : public EventClient {
 public:
-    explicit FirmwareManager(EventServer* eventServer, const FirmwareConfig* firmwareConfig, const char* buildVersion);
-    void begin(WiFiClient* client, const char* machineId);
+    explicit FirmwareManager(
+        EventServer* eventServer, 
+        const WifiClientFactory* wifiClientFactory,
+        const FirmwareConfig* firmwareConfig, 
+        const char* buildVersion);
+
+    ~FirmwareManager() override;
+    void begin(const char* machineId);
+    void end();
     void loadUpdate() const;
     void tryUpdate();
     bool updateAvailable() const;
@@ -37,6 +45,7 @@ private:
     static constexpr int BASE_URL_SIZE = 100;
     static constexpr const char* IMAGE_EXTENSION = ".bin";
     static constexpr const char* VERSION_EXTENSION = ".version";
+    const WifiClientFactory* _wifiClientFactory;
     WiFiClient* _client = nullptr;
     const char* _buildVersion;
     bool _justRebooted = true;

@@ -23,8 +23,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WaterMeterCppTest {
 
-    constexpr MqttConfig MQTT_CONFIG_WITH_USER{ "broker", 1883, "user", "password" };
-    constexpr MqttConfig MQTT_CONFIG_NO_USER{ "broker", 1883, nullptr, "" };
+    constexpr MqttConfig MQTT_CONFIG_WITH_USER{ "broker", 1883, "user", "password", false };
+    constexpr MqttConfig MQTT_CONFIG_NO_USER{ "broker", 1883, nullptr, "", false };
 
     constexpr const char* const BUILD = "1";
 
@@ -61,26 +61,28 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(mqttGatewayCannotSubscribeTest) {
             mqttClient.setCanSubscribe(false);
-            MqttGateway gateway(&eventServer, &mqttClient, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);
-            gateway.begin(&client, "client1");
+            WifiClientFactory wifiClientFactory(nullptr);
+            MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);
+            gateway.begin("client1");
             Assert::AreEqual("MQTT: Could not subscribe to setters [state = 3]", errorListener.getPayload(),
                 "Error happened");
         }
 
         TEST_METHOD(mqttGatewayNoUserTest) {
-            
-            MqttGateway gateway(&eventServer, &mqttClient, &MQTT_CONFIG_NO_USER, &dataQueue, BUILD);
-            gateway.begin(&client, "client1");
+            WifiClientFactory wifiClientFactory(nullptr);
+            MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_NO_USER, &dataQueue, BUILD);
+            gateway.begin("client1");
             Assert::AreEqual("", mqttClient.user(), "User not set");
         }
 
         TEST_METHOD(mqttGatewayScriptTest) {
             // We need to make this a longer test since the init needs to be done for the rest to work
+            WifiClientFactory wifiClientFactory(nullptr);
 
             // Init part
-            MqttGateway gateway(&eventServer, &mqttClient, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);
+            MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);
 
-            gateway.begin(&client, "client1");
+            gateway.begin("client1");
 
             int count = 0;
             while (gateway.hasAnnouncement()) {
