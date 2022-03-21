@@ -1,13 +1,13 @@
 // Copyright 2022 Rik Essenius
 // 
-//   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
-//   except in compliance with the License. You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+// except in compliance with the License. You may obtain a copy of the License at
 // 
-//       http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 // 
-//    Unless required by applicable law or agreed to in writing, software distributed under the License
-//    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and limitations under the License.
+// Unless required by applicable law or agreed to in writing, software distributed under the License
+// is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
@@ -71,7 +71,7 @@ RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferTy
 size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle);
 
 BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
-    size_t* item2Size, uint32_t ticksToWait);
+                                   size_t* item2Size, uint32_t ticksToWait);
 
 UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t ticksToWait);
 
@@ -80,8 +80,8 @@ inline void xSemaphoreTake(SemaphoreHandle_t handle, unsigned long delay) {}
 inline void xSemaphoreGive(SemaphoreHandle_t handle) {}
 
 BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, configSTACK_DEPTH_TYPE usStackDepth,
-    void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
-    BaseType_t xCoreID);
+                                   void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
+                                   BaseType_t xCoreID);
 
 TaskHandle_t xTaskGetCurrentTaskHandle();
 

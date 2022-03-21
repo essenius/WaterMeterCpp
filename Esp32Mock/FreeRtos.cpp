@@ -1,13 +1,13 @@
 // Copyright 2022 Rik Essenius
 // 
-//   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
-//   except in compliance with the License. You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+// except in compliance with the License. You may obtain a copy of the License at
 // 
-//       http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 // 
-//    Unless required by applicable law or agreed to in writing, software distributed under the License
-//    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and limitations under the License.
+// Unless required by applicable law or agreed to in writing, software distributed under the License
+// is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
@@ -17,6 +17,7 @@
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppClangTidyClangDiagnosticVoidPointerToIntCast
 // ReSharper disable CppClangTidyPerformanceNoIntToPtr
+// ReSharper disable CppClangTidyClangDiagnosticIntToVoidPointerCast
 
 #ifndef ESP32
 #include <ESP.h>
@@ -30,6 +31,7 @@ constexpr int16_t MAX_ITEM_SIZE = 64;
 constexpr int MAX_RINGBUFFERS = 10;
 
 constexpr short MAX_ELEMENTS = 10;
+
 class Queue {
 public:
     short currentIndex;
@@ -38,7 +40,7 @@ public:
 
 constexpr short MAX_QUEUES = 5;
 Queue queue[MAX_QUEUES];
-QueueHandle_t queueHandle[MAX_QUEUES] = { nullptr };
+QueueHandle_t queueHandle[MAX_QUEUES] = {nullptr};
 short queueIndex = 0;
 
 struct RingBufferContainer {
@@ -54,7 +56,7 @@ RingBufferContainer container[MAX_RINGBUFFERS];
 
 int getIndex(RingbufHandle_t bufferHandle) {
     // Hack, but good enough for a mock
-    return reinterpret_cast<int>(bufferHandle) - 1;  
+    return reinterpret_cast<int>(bufferHandle) - 1;
 }
 
 // testing only
@@ -159,7 +161,7 @@ RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferTy
         i++;
     }
     if (i > MAX_RINGBUFFERS) return nullptr;
-    container[i].ringbufHandle = reinterpret_cast<RingbufHandle_t>(i+1);  
+    container[i].ringbufHandle = reinterpret_cast<RingbufHandle_t>(i + 1);
     return container[i].ringbufHandle;
 }
 
@@ -171,7 +173,7 @@ size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle) {
 }
 
 BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
-    size_t* item2Size, uint32_t ticksToWait) {
+                                   size_t* item2Size, uint32_t ticksToWait) {
     if (bufferHandle == nullptr) return pdFALSE;
     const int i = getIndex(bufferHandle);
     if (container[i].nextReadBufferItem >= container[i].nextBufferItem) return pdFALSE;
@@ -215,7 +217,7 @@ unsigned long taskHandle = 100;
 BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, uint16_t usStackDepth,
                                    void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
                                    BaseType_t xCoreID) {
-    *pxCreatedTask = (TaskHandle_t)taskHandle++;  
+    *pxCreatedTask = reinterpret_cast<TaskHandle_t>(taskHandle++);
     return pdTRUE;
 }
 

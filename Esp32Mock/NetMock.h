@@ -1,13 +1,13 @@
 // Copyright 2021-2022 Rik Essenius
 // 
-//   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
-//   except in compliance with the License. You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+// except in compliance with the License. You may obtain a copy of the License at
 // 
-//       http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 // 
-//    Unless required by applicable law or agreed to in writing, software distributed under the License
-//    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and limitations under the License.
+// Unless required by applicable law or agreed to in writing, software distributed under the License
+// is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
@@ -125,7 +125,7 @@ public:
 
     bool config(IPAddress local, IPAddress gateway, IPAddress subnet,
                 IPAddress dns1 = IPAddress(), IPAddress dns2 = IPAddress());
-    String BSSIDstr() { return { "55:44:33:22:11:00" }; }
+    String BSSIDstr() { return {"55:44:33:22:11:00"}; }
     int channel() { return 13; }
     void disconnect() { _connectCountdown = _connectMax; }
     IPAddress dnsIP(int i = 0) { return i == 0 ? _primaryDNSIP : _secondaryDNSIP; }
@@ -135,7 +135,7 @@ public:
     IPAddress localIP() { return _localIP; }
     String macAddress();
     void macAddress(uint8_t* mac) { memcpy(mac, _mac, 6); }
-    IPAddress networkID() { return { 192, 168, 1, 0 }; }
+    IPAddress networkID() { return {192, 168, 1, 0}; }
     void reconnect() { _connectCountdown = _connectMax; }
     int RSSI() { return 1; }
     bool setHostname(const char* name);
