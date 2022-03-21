@@ -12,11 +12,7 @@
 #ifndef HEADER_SAMPLER_H
 #define HEADER_SAMPLER_H
 
-#ifdef ESP32
 #include <ESP.h>
-#else
-#include "ArduinoMock.h"
-#endif
 
 #include "EventClient.h"
 #include "FlowMeter.h"

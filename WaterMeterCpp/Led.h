@@ -12,11 +12,7 @@
 #ifndef HEADER_LED
 #define HEADER_LED
 
-#ifdef ESP32
 #include <ESP.h>
-#else
-#include "ArduinoMock.h"
-#endif
 
 // Wait = green (17) / flow = blue (16) exclude = red (18) -- all ok
 // conn = green (4) / upload = blue (5) / block = red (2) -- all OK

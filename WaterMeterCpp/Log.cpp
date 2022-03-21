@@ -11,11 +11,7 @@
 
 #include "Log.h"
 
-#ifdef ESP32
 #include <ESP.h>
-#else
-#include "ArduinoMock.h"
-#endif
 
 SemaphoreHandle_t Log::_printMutex = xSemaphoreCreateMutex();
 

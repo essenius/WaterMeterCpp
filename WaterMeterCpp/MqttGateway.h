@@ -11,19 +11,16 @@
 
 #ifndef HEADER_MQTTGATEWAY
 #define HEADER_MQTTGATEWAY
+
+#include <ESP.h>
+#include <PubSubClient.h>
+
 #include "EventServer.h"
 #include "Configuration.h"
 #include "DataQueue.h"
 #include "WifiClientFactory.h"
 
-#ifdef ESP32
-#include <ESP.h>
-#include "Client.h"
-#include <PubSubClient.h>
-#else
-#include "NetMock.h"
-#include "PubSubClientMock.h"
-#endif
+#include <Client.h>
 
 #define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 

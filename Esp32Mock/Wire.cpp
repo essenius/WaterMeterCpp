@@ -9,22 +9,18 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
+// Mock implementation for unit testing (not targeting the ESP32)
 
-#include "CppUnitTest.h"
+// ReSharper disable CppInconsistentNaming
 
-#include "TimeServerMock.h"
-#include <ESP.h>
+#include "Wire.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+TwoWire Wire;
 
-namespace WaterMeterCppTest {
-    TEST_CLASS(TimeServerTest) {
-    public:
-        TEST_METHOD(timeServerScriptTest) {
-            TimeServer timeServer;
-            timeServer.setTime();
-            Assert::IsTrue(timeServer.timeWasSet(), L"Time is set on Windows devices");
-        }
-    };
-}
+int TwoWire::available() { return 6; }
+int TwoWire::read() { return 0; }
+void TwoWire::begin() {}
+void TwoWire::beginTransmission(uint8_t address) {}
+size_t TwoWire::write(uint8_t reg) { return 0; }
+uint8_t TwoWire::endTransmission() { return 0; }
+uint8_t TwoWire::requestFrom(uint8_t address, uint8_t size) { return 0; }

@@ -12,9 +12,10 @@
 // ReSharper disable CppMemberFunctionMayBeStatic -- mimic existing interface
 
 #ifdef ESP32
-#include "ESP.h"
+#include <ESP.h>
 #else
-#include "FreeRtosMock.h"
+// TODO: check if we can do with FreeRtos here on ESP32
+#include <FreeRtos.h>
 #endif
 
 #include "Device.h"
@@ -32,49 +33,15 @@ void Device::begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, 
     _samplerHandle = samplerHandle;
     _communicatorHandle = communicatorHandle;
     _connectorHandle = connectorHandle;
-#ifndef ESP32
-    _heapCount = -1;
-    _samplerCount = -1;
-#endif
-
 }
 
-#ifdef ESP32
-// running on the device
-#include <ESP.h>
-//#define INCLUDE_uxTaskGetStackHighWaterMark 1
+long Device::freeStack(TaskHandle_t taskHandle) {
+      return static_cast<long>(uxTaskGetStackHighWaterMark(taskHandle));
+}
 
 long  Device::freeHeap() {
     return ESP.getFreeHeap();
 }
-
-long Device::freeStack(TaskHandle_t taskHandle) {
-      return uxTaskGetStackHighWaterMark(taskHandle);
-}
-
-#else
-// mock implementation for testing. Simulate changes as well as staying the same
-
-long Device::freeHeap() {
-    _heapCount++;
-    if (_heapCount <= 6) return 32000L - _heapCount * 3000L;
-    if (_heapCount == 7) return 14000;
-    _heapCount = -1;
-    return 11000L;
-}
-
-long Device::freeStack(TaskHandle_t taskHandle) {
-    if (taskHandle == _samplerHandle) {
-        _samplerCount++;
-        if (_samplerCount <= 2) return 1500L + _samplerCount * 64L;
-        if (_samplerCount <= 4) return 1628L;
-        _samplerCount = -1;
-        return 1500;
-    }
-    if (taskHandle == _communicatorHandle) return 3750;
-    return 5250;
-}
-#endif
 
 void Device::reportHealth() {
     _freeHeap = freeHeap();

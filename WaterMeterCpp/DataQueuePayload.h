@@ -29,6 +29,7 @@ struct Samples {
 struct ResultData {
     int16_t lastSample;
     uint32_t sampleCount;
+    uint32_t resetCount;
     uint32_t peakCount;
     uint32_t flowCount;
     uint32_t maxStreak;

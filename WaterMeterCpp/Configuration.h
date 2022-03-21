@@ -12,12 +12,11 @@
 #ifndef HEADER_CONFIGURATION_H
 #define HEADER_CONFIGURATION_H
 
-#ifdef ESP32
 #include <ESP.h>
 #include <Preferences.h>
-#else
-#include "NetMock.h"
-#include "PreferencesMock.h"
+
+#ifndef ESP32
+#include <NetMock.h>
 #endif
 
 struct IpConfig {

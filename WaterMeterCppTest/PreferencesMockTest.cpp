@@ -14,7 +14,7 @@
 #include "CppUnitTest.h"
 
 
-#include "../WaterMeterCpp/PreferencesMock.h"
+#include <Preferences.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

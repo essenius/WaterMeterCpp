@@ -24,15 +24,10 @@
 #ifndef HEADER_NETMOCK_H
 #define HEADER_NETMOCK_H
 
-#include "ArduinoMock.h"
-#include "SafeCString.h"
+#include <ESP.h>
+#include <Client.h>
+#include "../WaterMeterCpp/SafeCString.h"
 #include <string>
-
-class Client {
-public:
-    virtual ~Client() = default;
-    virtual const char* getType() { return "client"; }
-};
 
 class WiFiClient : public Client {
 public:

@@ -43,7 +43,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(1, testEventClient.getCallCount(), L"Test client called once result");
             Assert::AreEqual(
                 R"({"timestamp":1970-01-01T00:00:00.000000,"lastValue":0,"summaryCount":{"samples":81,"peaks":3,"flows":27,"maxStreak":0},)"
-                R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},)"
+                R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},)"
                 R"("analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.2}})",
                 testEventClient.getPayload(),
                 "Formatted result payload OK");

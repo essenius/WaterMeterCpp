@@ -17,8 +17,8 @@
 
 #ifndef ESP32
 
-#ifndef HEADER_FREERTOSMOCK
-#define HEADER_FREERTOSMOCK
+#ifndef HEADER_FREERTOS
+#define HEADER_FREERTOS
 
 #include <climits>
 #include <cstdint>
@@ -60,7 +60,9 @@ UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle);
 
 UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue);
 
-inline int uxTaskGetStackHighWaterMark(void* handle) { return 100000; }
+UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t handle);
+
+void uxTaskGetStackHighWaterMarkReset();
 
 inline void vRingbufferReturnItem(RingbufHandle_t bufferHandle, void* item1) {}
 

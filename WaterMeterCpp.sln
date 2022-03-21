@@ -12,7 +12,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CodeCoverage.runsettings = CodeCoverage.runsettings
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Esp32Mock", "Esp32Mock\Esp32Mock.vcxitems", "{BB523B57-D28B-4C96-840A-E3B3386C014C}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Esp32Mock\Esp32Mock.vcxitems*{260f3be9-4567-4acc-8f1e-01b48e9fbdc9}*SharedItemsImports = 4
+		Esp32Mock\Esp32Mock.vcxitems*{bb523b57-d28b-4c96-840a-e3b3386c014c}*SharedItemsImports = 9
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86

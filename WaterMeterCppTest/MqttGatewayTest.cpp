@@ -12,7 +12,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
-#include "../WaterMeterCpp/PubSubClientMock.h"
+#include <PubSubClient.h>
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/PayloadBuilder.h"

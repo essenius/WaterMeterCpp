@@ -19,8 +19,8 @@
 // ReSharper disable CppParameterMayBeConst
 #ifndef ESP32
 
-#include "SafeCString.h"
-#include "PubSubClientMock.h"
+#include "../WaterMeterCpp/SafeCString.h"
+#include <PubSubClient.h>
 
 bool PubSubClient::connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
     safeStrcpy(_id, id);

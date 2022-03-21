@@ -12,11 +12,7 @@
 #ifndef HEADER_DEVICE_H
 #define HEADER_DEVICE_H
 
-#ifdef ESP32
-#include "ESP.h"
-#else
-#include "FreeRtosMock.h"
-#endif
+#include <ESP.h>
 
 #include "EventServer.h"
 #include "LongChangePublisher.h"
@@ -27,10 +23,6 @@ public:
     void begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle);
     void reportHealth();
 private:
-#ifndef ESP32
-    int _heapCount = -1;
-    int _samplerCount = -1;
-#endif
     TaskHandle_t _samplerHandle{};
     TaskHandle_t _communicatorHandle{};
     TaskHandle_t _connectorHandle{};

@@ -17,11 +17,12 @@
 
 #ifndef ESP32
 
-#ifndef HEADER_ARDUINOMOCK
-#define HEADER_ARDUINOMOCK
+#ifndef HEADER_ESP
+#define HEADER_ESP
 #define WIN32_LEAN_AND_MEAN
 #include <cstdint>
 #include <string>
+#include <FreeRtos.h>
 
 using byte = uint8_t;
 
@@ -32,11 +33,14 @@ constexpr uint8_t LOW = 0x0;
 constexpr uint8_t HIGH = 0x1;
 constexpr uint8_t LED_BUILTIN = 13;
 
-// emulation of Arduino capabilities
+// emulation of the relevant Arduino capabilities
 
 class Esp {
 public:
-    void restart() {}
+    void restart() { _heapCount = -1; }
+    int getFreeHeap();
+private:
+    int _heapCount = -1;
 };
 
 extern Esp ESP;
@@ -60,7 +64,7 @@ public:
 private:
     static constexpr int PRINTBUFFER_SIZE = 4096;
     char _printBuffer[PRINTBUFFER_SIZE] = {};
-    static constexpr int INPUTBUFFER_SIZE = 80;
+    static constexpr int INPUTBUFFER_SIZE = 100;
     char _inputBuffer[INPUTBUFFER_SIZE] = {};
     char* _bufferPointer = nullptr;
 

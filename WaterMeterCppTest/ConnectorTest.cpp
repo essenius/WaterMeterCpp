@@ -13,10 +13,10 @@
 
 #include <CppUnitTest.h>
 
+#include <ESP.h>
 #include "MqttGatewayMock.h"
 #include "WifiMock.h"
 #include "../WaterMeterCpp/Connector.h"
-#include "../WaterMeterCpp/ArduinoMock.h"
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include "StateHelper.h"
 #include "TimeServerMock.h"

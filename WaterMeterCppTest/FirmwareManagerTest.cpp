@@ -14,7 +14,7 @@
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/FirmwareManager.h"
-#include "../WaterMeterCpp/NetMock.h"
+#include <NetMock.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

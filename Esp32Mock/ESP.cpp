@@ -19,14 +19,23 @@
 // ReSharper disable CppParameterNeverUsed
 
 #ifndef ESP32
-#include "ArduinoMock.h"
+#include <ESP.h>
 #include <cstdio>
 #include <chrono>
 #include <cstdarg>
 #include <iostream>
-#include "SafeCString.h"
+#include "../WaterMeterCpp/SafeCString.h"
 
 Esp ESP;
+
+// Simulate changes as well as staying the same
+int Esp::getFreeHeap() {
+    _heapCount++;
+    if (_heapCount <= 6) return 32000L - _heapCount * 3000L;
+    if (_heapCount == 7) return 14000;
+    _heapCount = -1;
+    return 11000L;
+}
 
 HardwareSerial Serial;
 

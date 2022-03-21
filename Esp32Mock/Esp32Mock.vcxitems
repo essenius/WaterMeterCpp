@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{bb523b57-d28b-4c96-840a-e3b3386c014c}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ESP.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FreeRtos.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NetMock.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Preferences.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PubSubClient.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Wire.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Client.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ESP.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FreeRtos.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NetMock.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Preferences.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PubSubClient.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)QMC5883LCompass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Wire.h" />
+  </ItemGroup>
+</Project>

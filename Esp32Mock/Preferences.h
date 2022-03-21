@@ -17,11 +17,11 @@
 
 #ifndef ESP32
 
-#ifndef HEADER_PREFERENCESMOCK
-#define HEADER_PREFERENCESMOCK
+#ifndef HEADER_PREFERENCES
+#define HEADER_PREFERENCES
 #include <map>
 
-#include "NetMock.h"
+#include <NetMock.h>
 
 class Preferences {
 public:

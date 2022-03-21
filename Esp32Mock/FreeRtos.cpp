@@ -19,7 +19,8 @@
 // ReSharper disable CppClangTidyPerformanceNoIntToPtr
 
 #ifndef ESP32
-#include "FreeRtosMock.h"
+#include <ESP.h>
+#include <FreeRtos.h>
 
 #include <cstring>
 
@@ -67,6 +68,35 @@ void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull) {
 
 UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue) {
     return static_cast<Queue*>(xQueue)->currentIndex >= 0 ? pdTRUE : pdFALSE;
+}
+
+TaskHandle_t firstWaterMarkHandle = nullptr;
+TaskHandle_t secondWaterMarkHandle = nullptr;
+int waterMarkSamplerCount = -1;
+
+// test function
+void uxTaskGetStackHighWaterMarkReset() {
+    firstWaterMarkHandle = nullptr;
+    secondWaterMarkHandle = nullptr;
+    waterMarkSamplerCount = -1;
+}
+
+UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t taskHandle) {
+    if (firstWaterMarkHandle == nullptr) {
+        firstWaterMarkHandle = taskHandle;
+    }
+    if (taskHandle == firstWaterMarkHandle) {
+        waterMarkSamplerCount++;
+        if (waterMarkSamplerCount <= 2) return 1500L + waterMarkSamplerCount * 64L;
+        if (waterMarkSamplerCount <= 4) return 1628L;
+        waterMarkSamplerCount = -1;
+        return 1500;
+    };
+    if (secondWaterMarkHandle == nullptr) {
+        secondWaterMarkHandle = taskHandle;
+    }
+    if (taskHandle == secondWaterMarkHandle) return 3750;
+    return 5250;
 }
 
 QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize) {

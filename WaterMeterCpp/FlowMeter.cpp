@@ -42,12 +42,12 @@ FlowMeter::FlowMeter(EventServer* eventServer):
     _peak(eventServer, Topic::Peak) {}
 
 void FlowMeter::addSample(const int measurement) {
-    const bool firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
+    _firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
     if (_startupSamplesLeft > 0) {
         _startupSamplesLeft--;
     }
     // if we don't have a previous measurement yet, use defaults.
-    if (firstCall) {
+    if (_firstCall) {
         // since the filters need initial values, set those. Also initialize the anomaly indicators.
         resetAnomalies();
         resetFilters(measurement);
@@ -64,6 +64,7 @@ bool FlowMeter::areAllExcluded() const {
 
 void FlowMeter::begin() {
     _eventServer->subscribe(this, Topic::Sample);
+    _eventServer->subscribe(this, Topic::SensorWasReset);
 }
 
 void FlowMeter::detectOutlier(const int measurement) {
@@ -168,5 +169,12 @@ void FlowMeter::resetFilters(const int initialMeasurement) {
 void FlowMeter::update(const Topic topic, const long payload) {
     if (topic == Topic::Sample) {
         addSample(static_cast<int>(payload));
+    } else if (topic == Topic::SensorWasReset) {
+        // If we needed to reset the sensor, also reset the measurement process when the next sample comes in
+       _startupSamplesLeft = STARTUP_SAMPLES;
     }
+}
+
+bool FlowMeter::wasReset() const {
+    return _firstCall;
 }

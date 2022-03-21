@@ -12,11 +12,7 @@
 #ifndef HEADER_MAGNETOSENSORREADER
 #define HEADER_MAGNETOSENSORREADER
 
-#ifdef ESP32
 #include <QMC5883LCompass.h>
-#else
-#include "QMC5883LCompassMock.h"
-#endif
 
 #include "EventServer.h"
 #include "ChangePublisher.h"

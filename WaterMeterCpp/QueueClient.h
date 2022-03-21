@@ -12,12 +12,7 @@
 #ifndef HEADER_QUEUECLIENT
 #define HEADER_QUEUECLIENT
 
-#ifdef ESP32
 #include <ESP.h>
-#else
-#include "FreeRtosMock.h"
-#include "ArduinoMock.h"
-#endif
 
 #include "EventClient.h"
 #include "Log.h" // exception: log from here only if buffer is full

@@ -11,13 +11,8 @@
 
 // following homie convention, see https://homieiot.github.io/specification
 
-#ifdef ESP32
 #include <ESP.h>
 #include <PubSubClient.h>
-#else
-#include "ArduinoMock.h"
-#include "PubSubClientMock.h"
-#endif
 
 #include "SafeCString.h"
 #include "MqttGateway.h"

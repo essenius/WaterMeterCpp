@@ -11,11 +11,9 @@
 #ifndef HEADER_LOG_H
 #define HEADER_LOG_H
 
-#ifdef ESP32
 #include <ESP.h>  
-#else
-#include "FreeRtosMock.h"
-#include "ArduinoMock.h"
+
+#ifndef ESP32
 // hack to redirect printf to capture the output
 #define printf redirectPrintf
 #endif

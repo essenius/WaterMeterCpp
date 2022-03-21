@@ -11,10 +11,10 @@
 
 #include "pch.h"
 
+#include <ESP.h>
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/ArduinoMock.h"
 #include "../WaterMeterCpp/Wifi.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

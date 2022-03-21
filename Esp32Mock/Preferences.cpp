@@ -11,7 +11,7 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
-#include "PreferencesMock.h"
+#include <Preferences.h>
 
 #include <fstream>
 #include <sstream>

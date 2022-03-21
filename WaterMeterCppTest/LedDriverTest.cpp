@@ -11,8 +11,9 @@
 
 #include "pch.h"
 #include "CppUnitTest.h"
+#include <ESP.h>
+
 #include "../WaterMeterCpp/LedDriver.h"
-#include "../WaterMeterCpp/ArduinoMock.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/ConnectionState.h"
 

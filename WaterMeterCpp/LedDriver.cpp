@@ -11,11 +11,7 @@
 
 // ReSharper disable CppClangTidyReadabilitySuspiciousCallArgument -- false positive on LED_BLUE
 
-#ifdef ESP32
 #include <ESP.h>
-#else
-#include "ArduinoMock.h"
-#endif
 
 #include "LedDriver.h"
 #include "ConnectionState.h"

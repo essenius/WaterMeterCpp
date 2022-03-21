@@ -15,15 +15,9 @@
 // you will see these ifdef preprocessor statements often. This is done to be able to test the application
 // on Visual Studio. They enable the mocks you see in this project if we're not on the actual ESP32 devices.
 
-#ifdef ESP32
 #include <ESP.h>
 #include <PubSubClient.h>
 #include <QMC5883LCompass.h>
-#else
-#include "ArduinoMock.h"
-#include "PubSubClientMock.h"
-#include "QMC5883LCompassMock.h"
-#endif
 
 #include "Configuration.h"
 #include "Communicator.h"
@@ -45,7 +39,7 @@
 #include "WifiClientFactory.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.5";
+constexpr const char* const BUILD_VERSION = "0.100.6";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle usually takes quite a bit less than that, unless a write happened.

@@ -14,11 +14,7 @@
 #include "SafeCString.h"
 #include "DataQueuePayload.h"
 
-#ifdef ESP32
 #include <ESP.h>
-#else
-#include "ArduinoMock.h"
-#endif
 
 DataQueue::DataQueue(EventServer* eventServer, DataQueuePayload* payload, const int8_t index, const long queueSize,
                      const long epsilon, const long lowThreshold) :

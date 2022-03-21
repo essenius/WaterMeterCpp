@@ -67,6 +67,7 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeParam("outliers", result.outlierCount);
     _payloadBuilder->writeParam("excludes", result.excludeCount);
     _payloadBuilder->writeParam("overruns", result.overrunCount);
+    _payloadBuilder->writeParam("resets", result.resetCount);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("duration");
     _payloadBuilder->writeParam("total", result.totalDuration);

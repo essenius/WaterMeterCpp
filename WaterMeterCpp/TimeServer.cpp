@@ -9,12 +9,12 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#ifdef ESP32
 #include <ESP.h>  
+
+#ifdef ESP32
 #include <sys/time.h>
 #else
 #include <ctime>
-#include "ArduinoMock.h"
 #endif
 
 #include "TimeServer.h"

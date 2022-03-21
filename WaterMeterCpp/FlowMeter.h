@@ -29,6 +29,7 @@ public:
     bool isOutlier() const;
     bool isPeak() const;
     void update(Topic topic, long payload) override;
+    bool wasReset() const;
 
 protected:
     static constexpr int MIN_DERIVATIVE_PEAK = -9;
@@ -38,6 +39,7 @@ protected:
     ChangePublisher<bool> _peak;
     float _derivative = 0.0f;
     bool _excludeAll = false;
+    bool _firstCall = true;
     float _minDerivative = MIN_DERIVATIVE_PEAK;
     bool _outlier = false;
     float _previousSmoothDerivative = 0.0f;

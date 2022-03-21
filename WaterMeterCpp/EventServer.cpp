@@ -11,11 +11,7 @@
 
 #include "EventServer.h"
 
-#ifdef ESP32
 #include <ESP.h>
-#else
-#include "ArduinoMock.h"
-#endif
 
 EventServer::EventServer() : _numberBuffer{0} {}
 

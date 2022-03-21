@@ -9,22 +9,15 @@
 //    is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
+// Mock implementation for unit testing (not targeting the ESP32)
 
-#include "CppUnitTest.h"
+#ifndef HEADER_CLIENT_H
+#define HEADER_CLIENT_H
 
-#include "TimeServerMock.h"
-#include <ESP.h>
+class Client {
+public:
+    virtual ~Client() = default;
+    virtual const char* getType() { return "client"; }
+};
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-namespace WaterMeterCppTest {
-    TEST_CLASS(TimeServerTest) {
-    public:
-        TEST_METHOD(timeServerScriptTest) {
-            TimeServer timeServer;
-            timeServer.setTime();
-            Assert::IsTrue(timeServer.timeWasSet(), L"Time is set on Windows devices");
-        }
-    };
-}
+#endif

@@ -25,14 +25,14 @@ namespace WaterMeterCppTest {
             TestEventClient stackListener(&eventServer), heapListener(&eventServer);
             eventServer.subscribe(&heapListener, Topic::FreeHeap);
             eventServer.subscribe(&stackListener, Topic::FreeStack);
-
+            uxTaskGetStackHighWaterMarkReset();
             Device device(&eventServer);
             device.begin(xTaskGetCurrentTaskHandle(), nullptr, nullptr);
             device.reportHealth();
 
             Assert::AreEqual(3, stackListener.getCallCount(), L"Stack called three times");
             Assert::AreEqual(1, heapListener.getCallCount(), L"Heap called once");
-            Assert::AreEqual("33558182", stackListener.getPayload(), L"Free stack for sampler is 2-1500");
+            Assert::AreEqual("33558182", stackListener.getPayload(), L"Free stack for sampler is 2-3750 (due to nullptr handles)");
             Assert::AreEqual("32000", heapListener.getPayload(), L"Free heap is 32k");
             device.reportHealth();
             Assert::AreEqual(4, stackListener.getCallCount(), L"Stack called again - different value");

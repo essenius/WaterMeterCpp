@@ -36,9 +36,6 @@
     <ClCompile Include="LedDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ArduinoMock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -63,9 +60,6 @@
     <ClCompile Include="Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PubSubClientMock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EventClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -85,9 +79,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Clock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FreeRtosMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QueueClient.cpp">
@@ -111,10 +102,10 @@
     <ClCompile Include="Configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PreferencesMock.cpp">
+    <ClCompile Include="WifiClientFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WifiClientFactory.cpp">
+    <ClCompile Include="MagnetoSensorQmc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -135,12 +126,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LedDriver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ArduinoMock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="QMC5883LCompassMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ChangePublisher.h">
@@ -167,12 +152,6 @@
     <ClInclude Include="Wifi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PubSubClientMock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NetMock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -192,9 +171,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FreeRtosMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Clock.h">
@@ -227,10 +203,10 @@
     <ClInclude Include="Communicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PreferencesMock.h">
+    <ClInclude Include="WifiClientFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WifiClientFactory.h">
+    <ClInclude Include="MagnetoSensorQmc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

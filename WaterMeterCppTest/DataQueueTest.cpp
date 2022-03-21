@@ -12,13 +12,13 @@
 #include "pch.h"
 
 #include <cstdlib>
+#include <ESP.h>
+#include <FreeRtos.h>
 
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/DataQueue.h"
-#include "../WaterMeterCpp/ArduinoMock.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/FreeRtosMock.h"
 #include "../WaterMeterCpp/SafeCString.h"
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include "TopicHelper.h"

@@ -19,11 +19,11 @@
 // ReSharper disable CppParameterMayBeConst
 #ifndef ESP32
 
-#ifndef HEADER_PUBSUBCLIENT_MOCK
-#define HEADER_PUBSUBCLIENT_MOCK
+#ifndef HEADER_PUBSUBCLIENT
+#define HEADER_PUBSUBCLIENT
 
 #include <functional>
-#include "NetMock.h"
+#include <NetMock.h>
 
 #define MQTT_CALLBACK_SIGNATURE std::function<void(char*, uint8_t*, unsigned int)> callback
 

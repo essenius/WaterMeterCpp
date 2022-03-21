@@ -18,7 +18,7 @@
 // ReSharper disable CppParameterMayBeConst
 #ifndef ESP32
 
-#include "NetMock.h"
+#include <NetMock.h>
 
 // HTTPCLient and HTTPUpdate
 

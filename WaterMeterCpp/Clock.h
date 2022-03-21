@@ -14,12 +14,13 @@
 
 #include "EventServer.h"
 
+// We omit ESP32 on purpose on Windows. the ESP32 mock defines INPUT which is also defined in windows.h.
 #ifdef ESP32
 #include <ESP.h>  
 #include <sys/time.h>
 #else
 #include <ctime>
-#include "FreeRtosMock.h"
+#include <FreeRtos.h>
 
 // ReSharper disable CppInconsistentNaming -- redefining existing entity in ESP32
 

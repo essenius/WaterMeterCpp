@@ -14,11 +14,11 @@
 #include <iostream>
 #include <regex>
 
+#include <ESP.h>
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/Log.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/Clock.h"
-#include "../WaterMeterCpp/ArduinoMock.h"
 #include "../WaterMeterCpp/ConnectionState.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

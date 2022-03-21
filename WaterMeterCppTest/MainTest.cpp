@@ -14,11 +14,9 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 
-#ifdef ESP32
 #include <ESP.h>
-#else
-#include "../WaterMeterCpp/ArduinoMock.h"
-#endif
+#include <PubSubClient.h>
+#include <QMC5883LCompass.h>
 
 #include "../WaterMeterCpp/Device.h"
 #include "../WaterMeterCpp/DataQueue.h"
@@ -27,7 +25,6 @@
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/PubSubClientMock.h"
 #include "../WaterMeterCpp/ResultAggregator.h"
 #include "../WaterMeterCpp/TimeServer.h"
 #include "../WaterMeterCpp/Wifi.h"
@@ -58,8 +55,9 @@ namespace WaterMeterCppTest {
         TEST_METHOD(mainTest1) {
             // make the firmware check fail
             HTTPClient::ReturnValue = 400;
-
-            // this is needed because other tests might have been running before.
+            // Other tests might have run before, so reset stacks and queues
+            ESP.restart();
+            uxTaskGetStackHighWaterMarkReset();
             uxQueueReset();
 
             // For being able to set the firmware 
@@ -213,7 +211,7 @@ namespace WaterMeterCppTest {
 [] Free Spaces Queue #2: 6
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://localhost/001122334455.version
-[] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
+[] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
 [] Free Stack #0: 1564
 )";
             Assert::AreEqual(expected, getPrintOutput(), L"Formatted result came through");
