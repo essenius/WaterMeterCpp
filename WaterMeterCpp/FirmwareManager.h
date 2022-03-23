@@ -18,6 +18,8 @@
 #ifndef HEADER_FIRMWAREMANAGER
 #define HEADER_FIRMWAREMANAGER
 
+
+// TODO: eliminate ifdef
 #ifdef ESP32
 #include <WiFiClient.h>
 #else

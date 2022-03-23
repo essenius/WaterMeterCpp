@@ -12,6 +12,7 @@
 #ifndef HEADER_WIFICLIENTFACTORY_H
 #define HEADER_WIFICLIENTFACTORY_H
 
+// TODO: eliminate ifdef
 #ifdef ESP32
 #include <WiFiClientSecure.h>
 #else

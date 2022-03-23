@@ -12,6 +12,7 @@
 #ifndef HEADER_MAGNETOSENSORREADER
 #define HEADER_MAGNETOSENSORREADER
 
+// TODO eliminate and replace by MagnetoSensorQmc
 #include <QMC5883LCompass.h>
 
 #include "EventServer.h"
