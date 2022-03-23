@@ -15,6 +15,7 @@
 
 #ifndef ESP32
 // hack to redirect printf to capture the output
+// ReSharper disable once CppInconsistentNaming
 #define printf redirectPrintf
 #endif
 

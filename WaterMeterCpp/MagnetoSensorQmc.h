@@ -74,9 +74,9 @@ private:
     byte getRegister(SensorRegister sensorRegister);
     void setRegister(SensorRegister sensorRegister, byte value);
 
-    SensorRange _range = SensorRange::Range8G;
-    SensorRate _rate = SensorRate::Rate100Hz;
-    SensorOverSampling _overSampling = SensorOverSampling::Sampling512;
+    SensorRange _range = Range8G;
+    SensorRate _rate = Rate100Hz;
+    SensorOverSampling _overSampling = Sampling512;
 };
 
 #endif

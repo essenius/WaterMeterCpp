@@ -23,15 +23,14 @@ template <class PayloadType>
 class ChangePublisher {
 public:
     ChangePublisher(
-        EventServer* eventServer,
-        const Topic topic,
+        EventServer* eventServer, 
+        const Topic topic, 
         const int8_t index = 0,
-        PayloadType defaultValue = PayloadType()) {
-        _eventServer = eventServer;
-        _index = index << 24;
-        _topic = topic;
-        _payload = defaultValue;
-    }
+        PayloadType defaultValue = PayloadType()):
+        _eventServer(eventServer),
+        _index(index << 24),
+        _payload(defaultValue),
+        _topic(topic) {}
 
     ChangePublisher(const ChangePublisher&) = default;
     ChangePublisher(ChangePublisher&&) = default;
@@ -39,6 +38,7 @@ public:
     ChangePublisher& operator=(ChangePublisher&&) = default;
     virtual ~ChangePublisher() = default;
 
+    // ReSharper disable once CppNonExplicitConversionOperator -- done on purpose to be able to use as variable
     operator PayloadType() const { return _payload; }
     PayloadType get() const { return _payload; }
 

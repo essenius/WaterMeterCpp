@@ -12,6 +12,8 @@
 // Mock implementation for unit testing (not targeting the ESP32)
 
 // ReSharper disable CppInconsistentNaming
+// ReSharper disable CppParameterNeverUsed
+// ReSharper disable CppMemberFunctionMayBeStatic
 
 #include <Wire.h>
 

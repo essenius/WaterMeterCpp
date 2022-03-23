@@ -15,8 +15,8 @@
 #include "EventClient.h"
 #include "PayloadBuilder.h"
 #include "Configuration.h"
-#include "WifiClientFactory.h"
 
+// TODO: refactor NetMock to WiFi and WiFiClientSecure
 #ifdef ESP32
 #include <WiFi.h>
 #include <WiFiClientSecure.h>

@@ -44,7 +44,7 @@ public:
     PubSubClient& setCallback(MQTT_CALLBACK_SIGNATURE);
     PubSubClient& setClient(Client& client) { return *this; }
     PubSubClient& setKeepAlive(uint16_t period) { return *this; }
-    PubSubClient& setServer(const char* broker, const int port) { return *this; }
+    PubSubClient& setServer(const char* broker, uint16_t port) { return *this; }
     bool subscribe(const char* topic) { return _canSubscribe; }
     int state() { return 3; }
 

@@ -44,7 +44,7 @@ private:
 
     std::map<std::string, std::string>* _cur = nullptr;
     //std::map<std::string, std::map<std::string, std::string>>::mapped_type _current;
-    bool _started = false;;
+    bool _started = false;
 };
 
 #endif

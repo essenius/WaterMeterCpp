@@ -93,7 +93,7 @@ UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t taskHandle) {
         if (waterMarkSamplerCount <= 4) return 1628L;
         waterMarkSamplerCount = -1;
         return 1500;
-    };
+    }
     if (secondWaterMarkHandle == nullptr) {
         secondWaterMarkHandle = taskHandle;
     }

@@ -34,7 +34,7 @@ char*  safePointerStrcpy(char* const pointer, char(&buffer)[BufferSize], const c
 
 template <size_t BufferSize, typename... Arguments>
 int safeSprintf(char(&buffer)[BufferSize], const char* format, Arguments ... arguments) {
-    int size = BufferSize;
+    const int size = BufferSize;
 
     return snprintf(buffer, size, format, arguments...);
 }

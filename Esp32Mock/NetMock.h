@@ -55,6 +55,7 @@ private:
 
 class String {
 public:
+    // ReSharper disable once CppNonExplicitConvertingConstructor -- done on purpose to be able to use initialization
     String(const char* value) : _string(value) {}
 
     int toInt() { return std::stoi(_string); }

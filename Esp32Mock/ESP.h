@@ -113,7 +113,7 @@ const char* toString(LogLevel level);
 
 extern LogLevel minLogLevel;
 
-inline void setLogLevel(const LogLevel level) { minLogLevel = level; };
+inline void setLogLevel(const LogLevel level) { minLogLevel = level; }
 
 template <typename... Arguments>
 void log_printf(const LogLevel level, const char* format, Arguments ... arguments) {

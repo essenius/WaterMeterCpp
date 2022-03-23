@@ -21,7 +21,7 @@ void MagnetoSensor::begin() {
     configure();
 }
 
-void MagnetoSensor::begin(SensorRange range) {
+void MagnetoSensor::begin(const SensorRange range) {
     _range = range;
     begin();
 }

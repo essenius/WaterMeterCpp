@@ -31,5 +31,5 @@ public:
 private:
     bool _connect = false;
     int _announceCounter = 0;
-    constexpr static MqttConfig MQTT_CONFIG{ "broker", 1883, "user", "password" };
+    constexpr static MqttConfig MQTT_CONFIG{ "broker", 1883, "user", "password", false };
 };

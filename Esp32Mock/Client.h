@@ -16,6 +16,11 @@
 
 class Client {
 public:
+    Client() = default;
+    Client(const Client&) = default;
+    Client(Client&&) = default;
+    Client& operator=(const Client&) = default;
+    Client& operator=(Client&&) = default;
     virtual ~Client() = default;
     virtual const char* getType() { return "client"; }
 };

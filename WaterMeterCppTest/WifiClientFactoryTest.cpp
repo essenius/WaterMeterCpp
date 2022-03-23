@@ -13,7 +13,6 @@
 
 #include "CppUnitTest.h"
 #include "../WaterMeterCpp/WifiClientFactory.h"
-#include <typeinfo>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -29,7 +28,7 @@ public:
         const auto secureClient = factory.create(true);
         Assert::AreEqual("WifiClient", normalClient->getType(), L"normalClient has type WifiClient");
         Assert::AreEqual("WifiClientSecure", secureClient->getType(), L"secureClient has type SecureWifiClient");
-        Assert::IsFalse(static_cast<WiFiClientSecure*>(secureClient)->isSecure());
+        Assert::IsFalse(dynamic_cast<WiFiClientSecure*>(secureClient)->isSecure());
     }
 
     TEST_METHOD(wifiClientFactorySecureClientTest) {
@@ -39,7 +38,7 @@ public:
         const auto secureClient = factory.create("https");
         Assert::AreEqual("WifiClient", normalClient->getType());
         Assert::AreEqual("WifiClientSecure", secureClient->getType());
-        Assert::IsTrue(static_cast<WiFiClientSecure*>(secureClient)->isSecure());
+        Assert::IsTrue(dynamic_cast<WiFiClientSecure*>(secureClient)->isSecure());
     }
 
     };

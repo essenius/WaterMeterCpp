@@ -30,6 +30,7 @@ QueueClient::QueueClient(EventServer* eventServer, Log* logger, const uint16_t s
     _receiveQueue(createQueue(size)) {
 }
 
+// ReSharper disable once CppParameterMayBeConst -- introduces misplaced const
 void QueueClient::begin(QueueHandle_t sendQueue) {
     _sendQueue = sendQueue;
 }

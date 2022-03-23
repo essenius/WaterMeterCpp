@@ -29,7 +29,9 @@ Device::Device(EventServer* eventServer) :
     _freeStackCommunicator(eventServer, Topic::FreeStack, 1),
     _freeStackConnector(eventServer, Topic::FreeStack, 2) {}
 
+// ReSharper disable CppParameterMayBeConst -- introduces misplaced const
 void Device::begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle) {
+    // ReSharper restore CppParameterMayBeConst
     _samplerHandle = samplerHandle;
     _communicatorHandle = communicatorHandle;
     _connectorHandle = connectorHandle;

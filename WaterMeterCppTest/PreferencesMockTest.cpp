@@ -33,8 +33,8 @@ public:
         prefs.begin("test");
         prefs.putString("string1", "value1");
         prefs.putUInt("int1", 123);
-        char buffer[6] { 0x31, 0x40, 0x25, 0x3a, 0x65, 0x7e };
-        prefs.putBytes("bytes1", buffer, 6);
+        constexpr char BUFFER[6] { 0x31, 0x40, 0x25, 0x3a, 0x65, 0x7e };
+        prefs.putBytes("bytes1", BUFFER, 6);
         prefs.end();
         prefs.begin("test", true);
         prefs.getBytes("bytes1", buf, sizeof(buf));

@@ -20,8 +20,6 @@
 #include "DataQueue.h"
 #include "WifiClientFactory.h"
 
-#include <Client.h>
-
 #define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 
 constexpr const char* const EMPTY = "";

@@ -39,13 +39,13 @@ public:
 
     TEST_METHOD(safeCStringSafeSprintfTest) {
         char target[10] = { 0 };
-        char testUpper[5] = { 0 };
+        constexpr char TEST_UPPER[5] = { 0 };
         Assert::AreEqual(2, safeSprintf(target, "x%d", 7), L"Right number of characters written");
         Assert::AreEqual("x7", target, "right string written");
 
         Assert::AreEqual(12, safeSprintf(target, "'%s'", "1234567890"), L"Returns written bytes if we had enough space");
         Assert::AreEqual("'12345678", target, "right string written (not enough space)");
-        Assert::AreEqual("", testUpper, "TestUpper not changed");
+        Assert::AreEqual("", TEST_UPPER, "TestUpper not changed");
     }
 
     TEST_METHOD(safeCStringsafePointerSprintfTest) {
@@ -76,7 +76,7 @@ public:
         Assert::AreEqual("94", pointer, "right string in pointer 2 (cut)");
         pointer += 10;
         char currentContent = *pointer;
-        char* result =  safePointerStrcpy(pointer, target, "vwxyz");
+        const char* result =  safePointerStrcpy(pointer, target, "vwxyz");
         Assert::AreEqual<char>(currentContent, *result, L"Nothing written as above upper bound");
         pointer -= 30;
         currentContent = *pointer;

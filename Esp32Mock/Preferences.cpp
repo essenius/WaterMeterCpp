@@ -11,6 +11,10 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConst
+// ReSharper disable CppParameterNeverUsed
+
 #include <Preferences.h>
 
 #include <fstream>
@@ -72,7 +76,7 @@ void Preferences::putBytes(const char* key, const void* value, size_t len) {
     if (!_started) return;
 
     (*_cur)[key] = std::string(len, 0);
-    auto p = static_cast<const char*>(value);
+    const auto p = static_cast<const char*>(value);
     (*_cur)[key].assign(p, len);
 }
 
@@ -86,7 +90,6 @@ void Preferences::save() {
     stream.open("preferences.txt");
     for (const auto& categories : _prefs) {
         stream << categories.first << "\n";
-        auto& entries = categories.second;
         for (auto& entry : categories.second) {
             stream << entry.first << "=" << entry.second << "\n";
         }
@@ -103,7 +106,7 @@ void Preferences::load() {
     std::string line;
     while (std::getline(stream, line)) {
         if (line.length() == 0) continue;
-        size_t equalsSign = line.find('=');
+        const size_t equalsSign = line.find('=');
         if (equalsSign == std::string::npos) {
             categoryKey = line;
             continue;

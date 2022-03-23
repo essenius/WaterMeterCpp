@@ -60,7 +60,7 @@ UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle);
 
 UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue);
 
-UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t handle);
+UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t taskHandle);
 
 void uxTaskGetStackHighWaterMarkReset();
 

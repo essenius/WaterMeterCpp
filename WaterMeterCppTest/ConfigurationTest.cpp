@@ -33,13 +33,13 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(configurationTestMqttAndTls) {
             Preferences preferences;
-            constexpr MqttConfig mqttConfig{"broker", 2048, "user", "password"};
-            constexpr TlsConfig tlsConfig{"abc", "defg", "hijkl"};
+            constexpr MqttConfig MQTT_CONFIG{"broker", 2048, "user", "password", false};
+            constexpr TlsConfig TLS_CONFIG{"abc", "defg", "hijkl"};
             Configuration configuration(&preferences);
-            configuration.putMqttConfig(&mqttConfig);
-            configuration.putTlsConfig(&tlsConfig);
-            constexpr FirmwareConfig firmwareConfig{"http://localhost/firmware"};
-            configuration.putFirmwareConfig(&firmwareConfig);
+            configuration.putMqttConfig(&MQTT_CONFIG);
+            configuration.putTlsConfig(&TLS_CONFIG);
+            constexpr FirmwareConfig FIRMWARE_CONFIG{"http://localhost/firmware"};
+            configuration.putFirmwareConfig(&FIRMWARE_CONFIG);
 
             configuration.begin(false);
             Assert::AreEqual("broker", configuration.mqtt.broker, L"Broker OK");

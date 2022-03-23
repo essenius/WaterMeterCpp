@@ -63,10 +63,9 @@ MqttGateway::MqttGateway(
     _buildVersion(buildVersion) {}
 
 MqttGateway::~MqttGateway() {
-    if (_wifiClient != nullptr) {
-        delete _wifiClient;
-    }
+    delete _wifiClient;
 }
+
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
     // TODO: it's probably OK to do this just once and leave on. Validate.
@@ -92,9 +91,7 @@ void MqttGateway::begin(const char* clientName) {
         _announcementPointer = _announcementBuffer;
         prepareAnnouncementBuffer();
     }
-    if (_wifiClient != nullptr) {
-      delete(_wifiClient);
-    }
+    delete(_wifiClient);
     _wifiClient = _wifiClientFactory->create(_mqttConfig->useTls);
     _mqttClient->setClient(*_wifiClient);
     _mqttClient->setBufferSize(512);

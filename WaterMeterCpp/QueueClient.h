@@ -20,7 +20,7 @@
 
 class QueueClient : public EventClient {
 public:
-    QueueClient(EventServer* eventServer, Log* log, uint16_t size, int8_t index = 0);
+    QueueClient(EventServer* eventServer, Log* logger, uint16_t size, int8_t index = 0);
     void begin(QueueHandle_t sendQueue = nullptr);
     QueueHandle_t getQueueHandle() const;
     bool receive();
