@@ -12,13 +12,14 @@
 #ifndef HEADER_WIFIMANAGER
 #define HEADER_WIFIMANAGER
 
+#include <IPAddress.h>
+#include <WiFiClientSecure.h>
+
 #include "EventClient.h"
 #include "PayloadBuilder.h"
 #include "Configuration.h"
 
-#include <IPAddress.h>
-#include <WiFiManager.h>
-#include <WiFiClientSecure.h>
+const IPAddress NO_IP(0,0,0,0);
 
 class WiFiManager : public EventClient {
 
@@ -43,11 +44,11 @@ private:
     PayloadBuilder* _payloadBuilder;
     const WifiConfig* _wifiConfig;
     WiFiClientSecure _wifiClient;
-    IPAddress _localIp = INADDR_NONE;
-    IPAddress _gatewayIp = INADDR_NONE;
-    IPAddress _subnetMaskIp = INADDR_NONE;
-    IPAddress _dns1Ip = INADDR_NONE;
-    IPAddress _dns2Ip = INADDR_NONE;
+    IPAddress _localIp = NO_IP;
+    IPAddress _gatewayIp = NO_IP;
+    IPAddress _subnetMaskIp = NO_IP;
+    IPAddress _dns1Ip = NO_IP;
+    IPAddress _dns2Ip = NO_IP;
     char _hostNameBuffer[HOSTNAME_LENGTH] = { 0 };
     char* _hostName = _hostNameBuffer;
     char _ipAddress[IP_ADDRESS_SIZE] = "";

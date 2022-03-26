@@ -115,7 +115,7 @@ namespace WaterMeterCppTest {
             constexpr WifiConfig WIFI_CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
             WiFiManager wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
-            const IpConfig ipConfig{local, INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE};
+            const IpConfig ipConfig{local, NO_IP, NO_IP, NO_IP, NO_IP};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit");
@@ -147,7 +147,7 @@ namespace WaterMeterCppTest {
             PayloadBuilder payloadBuilder;
 
             WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
-            const IpConfig ipConfig{local, gateway, INADDR_NONE, dns, INADDR_NONE};
+            const IpConfig ipConfig{local, gateway, NO_IP, dns, NO_IP};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit");
@@ -175,7 +175,7 @@ namespace WaterMeterCppTest {
             PayloadBuilder payloadBuilder;
 
             WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
-            const IpConfig ipConfig{local, INADDR_NONE, INADDR_NONE, dns1, dns2};
+            const IpConfig ipConfig{local, NO_IP, NO_IP, dns1, dns2};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"does not need reinit");
