@@ -12,7 +12,7 @@
 #ifndef HEADER_CONNECTION
 #define HEADER_CONNECTION
 #include "MqttGateway.h"
-#include "Wifi.h"
+#include "WiFiManager.h"
 #include "FirmwareManager.h"
 #include "ChangePublisher.h"
 #include "TimeServer.h"
@@ -30,7 +30,7 @@ constexpr unsigned long WIFI_RECONNECT_WAIT_DURATION = 10UL * SECONDS;
 
 class Connector : public EventClient {
 public:
-    Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
+    Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
               FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
               Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
     ConnectionState connect();
@@ -44,7 +44,7 @@ private:
     unsigned long _requestTimeTimestamp = 0UL;
     unsigned long _lastAnnouncementTimestampMillis = 0UL;
 
-    Wifi* _wifi;
+    WiFiManager* _wifi;
     MqttGateway* _mqttGateway;
     TimeServer* _timeServer;
     FirmwareManager* _firmwareManager;

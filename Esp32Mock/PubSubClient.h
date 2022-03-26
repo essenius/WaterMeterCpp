@@ -15,15 +15,14 @@
 // ReSharper disable CppMemberFunctionMayBeStatic 
 // ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppParameterNeverUsed
-
 // ReSharper disable CppParameterMayBeConst
-#ifndef ESP32
 
 #ifndef HEADER_PUBSUBCLIENT
 #define HEADER_PUBSUBCLIENT
 
 #include <functional>
-#include <NetMock.h>
+
+#include "Client.h"
 
 #define MQTT_CALLBACK_SIGNATURE std::function<void(char*, uint8_t*, unsigned int)> callback
 
@@ -78,5 +77,4 @@ private:
     char _user[FIELD_SIZE] = {};
 };
 
-#endif
 #endif

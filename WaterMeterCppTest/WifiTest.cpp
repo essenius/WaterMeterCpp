@@ -14,14 +14,15 @@
 #include <ESP.h>
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
+#include "WiFi.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/Wifi.h"
+#include "../WaterMeterCpp/WiFiManager.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WaterMeterCppTest {
 
-    TEST_CLASS(WifiTest) {
+    TEST_CLASS(WiFiTest) {
     public:
         static EventServer eventServer;
         static TestEventClient errorListener;
@@ -48,7 +49,7 @@ namespace WaterMeterCppTest {
             PayloadBuilder payloadBuilder;
             TestEventClient client1(&eventServer);
             eventServer.subscribe(&client1, Topic::WifiSummaryReady);
-            Wifi wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
+            WiFiManager wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit as disconnected");
 
@@ -75,7 +76,7 @@ namespace WaterMeterCppTest {
         TEST_METHOD(wifiFailSetNameTest) {
             constexpr WifiConfig CONFIG{ "ssid", "password", "", nullptr };
             PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
+            WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
             wifi.begin();
             // just showing intended usage
             Assert::AreEqual(1, errorListener.getCallCount(), L"Error called");
@@ -86,7 +87,7 @@ namespace WaterMeterCppTest {
 
             constexpr WifiConfig CONFIG{ "ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
+            WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
             Assert::AreEqual("x", wifi.get(Topic::Flow, "x"), L"Unexpected topic returns default");
         }
 
@@ -95,7 +96,7 @@ namespace WaterMeterCppTest {
             constexpr WifiConfig CONFIG{ "ssid", "password", nullptr, nullptr };
             PayloadBuilder payloadBuilder;
 
-            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
+            WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
             wifi.begin();
 
             Assert::AreEqual(0, errorListener.getCallCount(), L"Error not called");
@@ -113,8 +114,8 @@ namespace WaterMeterCppTest {
             const IPAddress gateway(192, 168, 1, 1);
             constexpr WifiConfig WIFI_CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
-            Wifi wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
-            const IpConfig ipConfig{local, NO_IP, NO_IP, NO_IP, NO_IP};
+            WiFiManager wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
+            const IpConfig ipConfig{local, INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit");
@@ -145,8 +146,8 @@ namespace WaterMeterCppTest {
             constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
 
-            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
-            const IpConfig ipConfig{local, gateway, NO_IP, dns, NO_IP};
+            WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
+            const IpConfig ipConfig{local, gateway, INADDR_NONE, dns, INADDR_NONE};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"Does not need reinit");
@@ -173,8 +174,8 @@ namespace WaterMeterCppTest {
             constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr };
             PayloadBuilder payloadBuilder;
 
-            Wifi wifi(&eventServer, &CONFIG, &payloadBuilder);
-            const IpConfig ipConfig{local, NO_IP, NO_IP, dns1, dns2};
+            WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
+            const IpConfig ipConfig{local, INADDR_NONE, INADDR_NONE, dns1, dns2};
             wifi.configure(&ipConfig);
             wifi.begin();
             Assert::IsFalse(wifi.needsReinit(), L"does not need reinit");
@@ -192,6 +193,6 @@ namespace WaterMeterCppTest {
         }
     };
 
-    EventServer WifiTest::eventServer;
-    TestEventClient WifiTest::errorListener(&eventServer);
+    EventServer WiFiTest::eventServer;
+    TestEventClient WiFiTest::errorListener(&eventServer);
 }

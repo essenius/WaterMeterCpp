@@ -18,7 +18,7 @@
 #include "EventServer.h"
 #include "Configuration.h"
 #include "DataQueue.h"
-#include "WifiClientFactory.h"
+#include "WiFiClientFactory.h"
 
 #define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 
@@ -47,11 +47,16 @@ public:
     MqttGateway(
         EventServer* eventServer, 
         PubSubClient* mqttClient,
-        WifiClientFactory* wifiClientFactory,
+        WiFiClientFactory* wifiClientFactory,
         const MqttConfig* mqttConfig, 
         const DataQueue* dataQueue, 
         const char* buildVersion);
+    MqttGateway(const MqttGateway&) = default;
+    MqttGateway(MqttGateway&&) = default;
+    MqttGateway& operator=(const MqttGateway&) = default;
+    MqttGateway& operator=(MqttGateway&&) = default;
     ~MqttGateway() override;
+
     virtual void announceReady();
     virtual void begin(const char* clientName);
     virtual void connect();
@@ -68,7 +73,7 @@ protected:
     static constexpr int TOPIC_BUFFER_SIZE = 255;
     static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2500;
     PubSubClient* _mqttClient;
-    WifiClientFactory* _wifiClientFactory;
+    WiFiClientFactory* _wifiClientFactory;
     WiFiClient* _wifiClient = nullptr;
     const MqttConfig* _mqttConfig;
     const DataQueue* _dataQueue;

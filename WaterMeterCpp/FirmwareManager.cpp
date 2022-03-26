@@ -9,13 +9,8 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// TODO: eliminate ifdef 
-#ifdef ESP32
-#include <ESP.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
-#include <WiFiClient.h>
-#endif
 
 #include "FirmwareManager.h"
 #include "EventServer.h"
@@ -23,7 +18,7 @@
 
 FirmwareManager::FirmwareManager(
     EventServer* eventServer,
-    const WifiClientFactory* wifiClientFactory,
+    const WiFiClientFactory* wifiClientFactory,
     const FirmwareConfig* firmwareConfig, 
     const char* buildVersion) :
 
@@ -98,7 +93,7 @@ bool FirmwareManager::updateAvailable() const {
 
     const int httpCode = httpClient.GET();
     if (httpCode == 200) {
-        String newVersion = httpClient.getString();
+        const String newVersion = httpClient.getString();
         newBuildAvailable = strcmp(newVersion.c_str(), _buildVersion) != 0;
         if (newBuildAvailable) {
             safeSprintf(buffer, "Current firmware: '%s'; available: '%s'", _buildVersion, newVersion.c_str());

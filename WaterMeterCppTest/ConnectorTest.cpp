@@ -15,7 +15,7 @@
 
 #include <ESP.h>
 #include "MqttGatewayMock.h"
-#include "WifiMock.h"
+#include "WiFiMock.h"
 #include "../WaterMeterCpp/Connector.h"
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include "StateHelper.h"
@@ -31,8 +31,8 @@ namespace WaterMeterCppTest {
         static Configuration configuration;
         static EventServer eventServer;
         static Log logger;
-        static WifiClientFactory wifiClientFactory;
-        static WifiMock wifiMock;
+        static WiFiClientFactory wifiClientFactory;
+        static WiFiMock wifiMock;
         static MqttGatewayMock mqttGatewayMock;
         static PubSubClient mqttClient;
         static Connector connector;
@@ -213,8 +213,8 @@ namespace WaterMeterCppTest {
     Configuration ConnectorTest::configuration(&preferences);
     EventServer ConnectorTest::eventServer;
     Log ConnectorTest::logger(&eventServer, nullptr);
-    WifiClientFactory ConnectorTest::wifiClientFactory(nullptr);
-    WifiMock ConnectorTest::wifiMock(&eventServer, nullptr);
+    WiFiClientFactory ConnectorTest::wifiClientFactory(nullptr);
+    WiFiMock ConnectorTest::wifiMock(&eventServer, nullptr);
     PubSubClient ConnectorTest::mqttClient;
     MqttGatewayMock ConnectorTest::mqttGatewayMock(&eventServer, &mqttClient, &wifiClientFactory);
     TimeServerMock ConnectorTest::timeServer;

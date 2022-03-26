@@ -12,8 +12,7 @@
 // ReSharper disable CppClangTidyClangDiagnosticExitTimeDestructors
 
 // This project implements a water meter using a QMC5883L compass sensor on an ESP32 board.
-// you will see these ifdef preprocessor statements often. This is done to be able to test the application
-// on Visual Studio. They enable the mocks you see in this project if we're not on the actual ESP32 devices.
+// To enable unit testing in Visual Studio, some of the ESP libraries have been mocked in a separate project.
 
 #include <ESP.h>
 #include <PubSubClient.h>
@@ -34,9 +33,9 @@
 #include "SampleAggregator.h"
 #include "Sampler.h"
 #include "TimeServer.h"
-#include "Wifi.h"
+#include "WiFiManager.h"
 #include "QueueClient.h"
-#include "WifiClientFactory.h"
+#include "WiFiClientFactory.h"
 
 // For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "0.100.6";
@@ -53,7 +52,7 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 QMC5883LCompass compass;
 Preferences preferences;
 Configuration configuration(&preferences);
-WifiClientFactory wifiClientFactory(&configuration.tls);
+WiFiClientFactory wifiClientFactory(&configuration.tls);
 EventServer samplerEventServer;
 MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
 FlowMeter flowMeter(&samplerEventServer);
@@ -76,7 +75,7 @@ LedDriver ledDriver(&communicatorEventServer);
 PayloadBuilder wifiPayloadBuilder;
 Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
-Wifi wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
+WiFiManager wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
 PubSubClient mqttClient;
 MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
 FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);

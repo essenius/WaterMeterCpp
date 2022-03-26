@@ -11,18 +11,24 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
-#ifndef HEADER_CLIENT_H
-#define HEADER_CLIENT_H
+// Disabling warnings caused by mimicking existing interface
+// ReSharper disable CppInconsistentNaming
 
-class Client {
+#ifndef HEADER_STRINGARDUINO
+#define HEADER_STRINGARDUINO
+
+#include <string>
+
+class String {
 public:
-    Client() = default;
-    Client(const Client&) = default;
-    Client(Client&&) = default;
-    Client& operator=(const Client&) = default;
-    Client& operator=(Client&&) = default;
-    virtual ~Client() = default;
-    virtual const char* getType() { return "client"; }
+    // ReSharper disable once CppNonExplicitConvertingConstructor -- done on purpose to be able to use initialization
+    String(const char* value) : _string(value) {}
+
+    int toInt() const { return std::stoi(_string); }
+    const char* c_str() const { return _string.c_str(); }
+
+private:
+    std::string _string;
 };
 
 #endif

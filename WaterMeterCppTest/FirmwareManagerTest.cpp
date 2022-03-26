@@ -14,7 +14,9 @@
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/FirmwareManager.h"
-#include <NetMock.h>
+
+#include "HTTPClient.h"
+#include "HTTPUpdate.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -40,7 +42,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(firmwareManagerCheckSucceedsNoUpdateNeededTest) {
             // TODO: optimize use of const variables
-            const WifiClientFactory wifiClientFactory(nullptr);
+            const WiFiClientFactory wifiClientFactory(nullptr);
             FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
             manager.begin("001122334455");
             HTTPClient::ReturnValue = 200;
@@ -53,7 +55,7 @@ namespace WaterMeterCppTest {
 
 
         TEST_METHOD(firmwareManagerCheckSucceedsUpdateFailsTest) {
-            const WifiClientFactory wifiClientFactory(nullptr);
+            const WiFiClientFactory wifiClientFactory(nullptr);
             FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
             manager.begin("001122334455");
             // check succeeds and update fails
@@ -69,7 +71,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerFailedCheckTest) {
-            const WifiClientFactory wifiClientFactory(nullptr);
+            const WiFiClientFactory wifiClientFactory(nullptr);
             FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
             manager.begin("001122334455");
 
@@ -83,7 +85,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerNoUpdateAvailableTest) {
-            const WifiClientFactory wifiClientFactory(nullptr);
+            const WiFiClientFactory wifiClientFactory(nullptr);
             FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
             manager.begin("001122334455");
 
@@ -95,7 +97,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerOtherVersionTest) {
-            const WifiClientFactory wifiClientFactory(nullptr);
+            const WiFiClientFactory wifiClientFactory(nullptr);
             FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
             manager.begin("112233445566");
 
@@ -108,7 +110,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerUpdateCheckFailsTest) {
-            const WifiClientFactory wifiClientFactory(nullptr);
+            const WiFiClientFactory wifiClientFactory(nullptr);
             FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
             manager.begin("001122334455");
             HTTPClient::ReturnValue = 400;
@@ -126,7 +128,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerUpdateTest) {
-            const WifiClientFactory wifiClientFactory(nullptr);
+            const WiFiClientFactory wifiClientFactory(nullptr);
             FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
             manager.begin("001122334455");
 

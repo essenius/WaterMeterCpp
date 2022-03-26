@@ -9,6 +9,14 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// ReSharper disable CppClangTidyBugproneNarrowingConversions
+// ReSharper disable CppClangTidyClangDiagnosticImplicitIntConversion
+// ReSharper disable CppClangTidyClangDiagnosticEnumEnumConversion
+// ReSharper disable CppClangTidyBugproneSuspiciousEnumUsage
+
+// OK with the unscoped types
+#pragma warning (disable:26812)
+
 #include "MagnetoSensorQmc.h"
 #include "Wire.h"
 

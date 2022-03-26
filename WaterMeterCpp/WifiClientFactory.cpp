@@ -9,11 +9,11 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#include "WifiClientFactory.h"
+#include "WiFiClientFactory.h"
 
-WifiClientFactory::WifiClientFactory(const TlsConfig* config) : _config(config) {}
+WiFiClientFactory::WiFiClientFactory(const TlsConfig* config) : _config(config) {}
 
-WiFiClient* WifiClientFactory::create(const bool useTls) const {
+WiFiClient* WiFiClientFactory::create(const bool useTls) const {
     if (!useTls) return new WiFiClient();
     const auto client = new WiFiClientSecure();
     bool insecure = true;
@@ -35,7 +35,7 @@ WiFiClient* WifiClientFactory::create(const bool useTls) const {
     return client;
 }
 
-WiFiClient* WifiClientFactory::create(const char* url) const {
+WiFiClient* WiFiClientFactory::create(const char* url) const {
     constexpr auto HTTPS = "https";
     return create(url != nullptr && strncmp(url, HTTPS, strlen(HTTPS)) == 0);
 }

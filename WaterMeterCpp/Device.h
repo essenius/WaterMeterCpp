@@ -9,8 +9,8 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_DEVICE_H
-#define HEADER_DEVICE_H
+#ifndef HEADER_DEVICE
+#define HEADER_DEVICE
 
 #include <ESP.h>
 
@@ -31,7 +31,7 @@ private:
     ChangePublisher<long> _freeStackCommunicator;
     ChangePublisher<long> _freeStackConnector;
 
-    long freeHeap();
-    long freeStack(TaskHandle_t taskHandle);
+    static long freeHeap();
+    static long freeStack(TaskHandle_t taskHandle);
 };
 #endif

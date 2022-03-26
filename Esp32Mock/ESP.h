@@ -15,13 +15,12 @@
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppMemberFunctionMayBeStatic
 
-#ifndef ESP32
-
 #ifndef HEADER_ESP
 #define HEADER_ESP
 #define WIN32_LEAN_AND_MEAN
-#include <cstdint>
+#include <stdint.h>
 #include <string>
+// ReSharper disable once CppUnusedIncludeDirective -- added on purpose
 #include <FreeRtos.h>
 
 using byte = uint8_t;
@@ -67,7 +66,6 @@ private:
     static constexpr int INPUTBUFFER_SIZE = 100;
     char _inputBuffer[INPUTBUFFER_SIZE] = {};
     char* _bufferPointer = nullptr;
-
 };
 
 extern HardwareSerial Serial;
@@ -138,7 +136,5 @@ void log_d(const char* format, Arguments ... arguments) { log_printf(debug, form
 
 template <typename... Arguments>
 void log_v(const char* format, Arguments ... arguments) { log_printf(verbose, format, arguments...); }
-
-#endif
 
 #endif

@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2022 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -9,21 +9,11 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#pragma once
+// Mock implementation for unit testing (not targeting the ESP32)
 
-#include "pch.h"
-#include "CppUnitTest.h"
-#include <string>
-#include "../WaterMeterCpp/EventServer.h"
+// Disabling warnings caused by mimicking existing interface
+// ReSharper disable CppInconsistentNaming
 
-namespace Microsoft {
-    namespace VisualStudio {
-        namespace CppUnitTestFramework {
+#include "HTTPClient.h"
 
-            template <>
-            inline std::wstring ToString<Topic>(const Topic& q) { 
-                RETURN_WIDE_STRING(static_cast<int>(q));
-            }
-        }
-    }
-}
+int HTTPClient::ReturnValue = 400;

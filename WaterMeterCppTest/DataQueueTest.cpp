@@ -11,7 +11,6 @@
 
 #include "pch.h"
 
-#include <cstdlib>
 #include <ESP.h>
 #include <FreeRtos.h>
 

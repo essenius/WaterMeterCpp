@@ -9,21 +9,15 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_WIFICLIENTFACTORY_H
-#define HEADER_WIFICLIENTFACTORY_H
+#ifndef HEADER_WIFICLIENTFACTORY
+#define HEADER_WIFICLIENTFACTORY
 
-// TODO: eliminate ifdef
-#ifdef ESP32
 #include <WiFiClientSecure.h>
-#else
-#include "NetMock.h"
-#endif
-
 #include "Configuration.h"
 
-class WifiClientFactory {
+class WiFiClientFactory {
 public:
-    explicit WifiClientFactory(const TlsConfig* config);
+    explicit WiFiClientFactory(const TlsConfig* config);
     WiFiClient* create(bool useTls) const;
     WiFiClient* create(const char* url) const;
 private:

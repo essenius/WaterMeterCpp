@@ -11,6 +11,7 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
+// Disabling warnings caused by mimicking existing interface
 // ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppParameterNeverUsed

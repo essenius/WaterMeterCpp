@@ -23,8 +23,8 @@ namespace Microsoft {
         namespace CppUnitTestFramework {
 
             template <> 
-            inline std::wstring ToString<ConnectionState>(const ConnectionState& state) {
-                RETURN_WIDE_STRING(static_cast<int>(state));
+            inline std::wstring ToString<ConnectionState>(const ConnectionState& q) {
+                RETURN_WIDE_STRING(static_cast<int>(q));
             }
         }
     }

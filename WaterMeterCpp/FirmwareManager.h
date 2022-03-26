@@ -18,25 +18,23 @@
 #ifndef HEADER_FIRMWAREMANAGER
 #define HEADER_FIRMWAREMANAGER
 
-
-// TODO: eliminate ifdef
-#ifdef ESP32
 #include <WiFiClient.h>
-#else
-#include "NetMock.h"
-#endif
+
 #include "Configuration.h"
 #include "EventClient.h"
-#include "WifiClientFactory.h"
+#include "WiFiClientFactory.h"
 
 class FirmwareManager : public EventClient {
 public:
     explicit FirmwareManager(
         EventServer* eventServer, 
-        const WifiClientFactory* wifiClientFactory,
+        const WiFiClientFactory* wifiClientFactory,
         const FirmwareConfig* firmwareConfig, 
         const char* buildVersion);
-
+    FirmwareManager(const FirmwareManager&) = default;
+    FirmwareManager(FirmwareManager&&) = default;
+    FirmwareManager& operator=(const FirmwareManager&) = default;
+    FirmwareManager& operator=(FirmwareManager&&) = default;
     ~FirmwareManager() override;
     void begin(const char* machineId);
     void end();
@@ -47,7 +45,7 @@ private:
     static constexpr int BASE_URL_SIZE = 100;
     static constexpr const char* IMAGE_EXTENSION = ".bin";
     static constexpr const char* VERSION_EXTENSION = ".version";
-    const WifiClientFactory* _wifiClientFactory;
+    const WiFiClientFactory* _wifiClientFactory;
     WiFiClient* _client = nullptr;
     const char* _buildVersion;
     bool _justRebooted = true;

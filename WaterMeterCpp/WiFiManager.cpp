@@ -9,20 +9,15 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-
-// TODO check if can be eliminated
-#ifdef ESP32
-#include <HTTPClient.h>
-#endif
-
-#include "Wifi.h"
+#include "WiFiManager.h"
 #include "SafeCString.h"
 #include "EventServer.h"
+#include "WiFi.h"
 
-Wifi::Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder) :
+WiFiManager::WiFiManager(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder) :
     EventClient(eventServer), _payloadBuilder(payloadBuilder), _wifiConfig(wifiConfig) {}
 
-void Wifi::announceReady() {
+void WiFiManager::announceReady() {
     setStatusSummary();
     _eventServer->publish(this, Topic::WifiSummaryReady, LONG_TRUE);
     _eventServer->provides(this, Topic::IpAddress);
@@ -30,7 +25,7 @@ void Wifi::announceReady() {
     _eventServer->provides(this, Topic::MacRaw);
 }
 
-void Wifi::begin() {
+void WiFiManager::begin() {
     // need to set the host name before setting the mode
     if (_wifiConfig->deviceName == nullptr) {
         _hostName = nullptr;
@@ -50,23 +45,23 @@ void Wifi::begin() {
     WiFi.begin(_wifiConfig->ssid, _wifiConfig->password, 0, _wifiConfig->bssid);
 }
 
-void Wifi::configure(const IpConfig* ipConfig) {
+void WiFiManager::configure(const IpConfig* ipConfig) {
     _localIp = ipConfig->localIp;
-    if (ipConfig->gateway == NO_IP && ipConfig->localIp != NO_IP) {
+    if (ipConfig->gateway == INADDR_NONE && ipConfig->localIp != INADDR_NONE) {
         _gatewayIp = ipConfig->localIp;
         _gatewayIp[3] = 1;
     }
     else {
         _gatewayIp = ipConfig->gateway;
     }
-    _subnetMaskIp = ipConfig->subnetMask == NO_IP ? IPAddress(255, 255, 255, 0) : ipConfig->subnetMask;
+    _subnetMaskIp = ipConfig->subnetMask == INADDR_NONE ? IPAddress(255, 255, 255, 0) : ipConfig->subnetMask;
 
     bool result;
-    if (ipConfig->primaryDns == NO_IP) {
+    if (ipConfig->primaryDns == INADDR_NONE) {
         result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp);
     }
     else {
-        if (ipConfig->secondaryDns == NO_IP) {
+        if (ipConfig->secondaryDns == INADDR_NONE) {
             result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, ipConfig->primaryDns);
         }
         else {
@@ -78,11 +73,11 @@ void Wifi::configure(const IpConfig* ipConfig) {
     }
 }
 
-void Wifi::disconnect() {
+void WiFiManager::disconnect() {
     WiFi.disconnect();
 }
 
-const char* Wifi::get(const Topic topic, const char* defaultValue) {
+const char* WiFiManager::get(const Topic topic, const char* defaultValue) {
     switch (topic) {
     case Topic::IpAddress: {
         safeStrcpy(_ipAddress, WiFi.localIP().toString().c_str());
@@ -102,31 +97,31 @@ const char* Wifi::get(const Topic topic, const char* defaultValue) {
     }
 }
 
-const char* Wifi::getHostName() const { return _hostName; }
+const char* WiFiManager::getHostName() const { return _hostName; }
 
 // There is an issue on ESP32 with DHCP, timing out after 12032 seconds. Workaround is setting a fixed IP
 // address so we don't need DHCP. So, if we still want a dynamic IP, we first connect without config to
 // get valid addresses, and then we disconnect, and reconnect using the just obtained addresses, fixed.
-bool Wifi::needsReinit() {
+bool WiFiManager::needsReinit() {
     if (!isConnected()) return false;
-    _needsReconnect = _localIp == NO_IP;
+    _needsReconnect = _localIp == INADDR_NONE;
     if (_needsReconnect) _localIp = WiFi.localIP();
-    if (_gatewayIp == NO_IP) _gatewayIp = WiFi.gatewayIP();
-    if (_subnetMaskIp == NO_IP) _subnetMaskIp = WiFi.subnetMask();
-    if (_dns1Ip == NO_IP) _dns1Ip = WiFi.dnsIP(0);
-    if (_dns2Ip == NO_IP) _dns2Ip = WiFi.dnsIP(1);
+    if (_gatewayIp == INADDR_NONE) _gatewayIp = WiFi.gatewayIP();
+    if (_subnetMaskIp == INADDR_NONE) _subnetMaskIp = WiFi.subnetMask();
+    if (_dns1Ip == INADDR_NONE) _dns1Ip = WiFi.dnsIP(0);
+    if (_dns2Ip == INADDR_NONE) _dns2Ip = WiFi.dnsIP(1);
     return _needsReconnect;
 }
 
-bool Wifi::isConnected() {
+bool WiFiManager::isConnected() {
     return WiFi.isConnected();
 }
 
-void Wifi::reconnect() {
+void WiFiManager::reconnect() {
     WiFi.reconnect();
 }
 
-void Wifi::setStatusSummary() const {
+void WiFiManager::setStatusSummary() const {
     _payloadBuilder->initialize();
     _payloadBuilder->writeParam("ssid", WiFi.SSID().c_str());
     _payloadBuilder->writeParam("hostname", getHostName());

@@ -16,19 +16,29 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ESP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FreeRtos.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)NetMock.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)HTTPClient.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)HTTPUpdate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)IPAddress.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Preferences.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PubSubClient.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)WiFi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)WiFiClientSecure.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Wire.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Client.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ESP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FreeRtos.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)NetMock.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HTTPClient.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HTTPUpdate.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)IPAddress.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Preferences.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PubSubClient.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)QMC5883LCompass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)StringArduino.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)WiFi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)WiFiClient.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)WiFiClientSecure.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Wire.h" />
   </ItemGroup>
 </Project>

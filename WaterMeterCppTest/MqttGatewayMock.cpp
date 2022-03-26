@@ -12,7 +12,7 @@
 #include "pch.h"
 #include "MqttGatewayMock.h"
 
-MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WifiClientFactory* wifiClientFactory) :
+MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory) :
     MqttGateway(eventServer, mqttClient, wifiClientFactory, &MQTT_CONFIG, nullptr, "1.0.0") {}
 
 bool MqttGatewayMock::hasAnnouncement() {

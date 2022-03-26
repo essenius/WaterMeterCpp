@@ -18,7 +18,6 @@
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppParameterNeverUsed
 
-#ifndef ESP32
 #include <ESP.h>
 #include <cstdio>
 #include <chrono>
@@ -158,5 +157,3 @@ const char* toString(LogLevel level) {
 }
 
 LogLevel minLogLevel = info;
-
-#endif

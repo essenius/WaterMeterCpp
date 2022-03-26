@@ -27,7 +27,7 @@
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/ResultAggregator.h"
 #include "../WaterMeterCpp/TimeServer.h"
-#include "../WaterMeterCpp/Wifi.h"
+#include "../WaterMeterCpp/WiFiManager.h"
 #include "../WaterMeterCpp/Connector.h"
 #include "../WaterMeterCpp/Communicator.h"
 #include "../WaterMeterCpp/FirmwareManager.h"
@@ -36,8 +36,10 @@
 #include "../WaterMeterCpp/QueueClient.h"
 #include "../WaterMeterCpp/Sampler.h"
 // ReSharper disable CppUnusedIncludeDirective - false positive
+#include "HTTPClient.h"
 #include "TopicHelper.h"
 #include "StateHelper.h"
+#include "WiFi.h"
 // ReSharper restore CppUnusedIncludeDirective
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -68,7 +70,7 @@ namespace WaterMeterCppTest {
             constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
             QMC5883LCompass compass;
-            WifiClientFactory wifiClientFactory(&configuration.tls);
+            WiFiClientFactory wifiClientFactory(&configuration.tls);
 
             EventServer samplerEventServer;
             MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
@@ -93,7 +95,7 @@ namespace WaterMeterCppTest {
             PayloadBuilder wifiPayloadBuilder;
             Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
-            Wifi wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
+            WiFiManager wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
             PubSubClient mqttClient;
             MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
             FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);

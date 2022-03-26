@@ -15,8 +15,6 @@
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppParameterNeverUsed
 
-#ifndef ESP32
-
 #ifndef HEADER_FREERTOS
 #define HEADER_FREERTOS
 
@@ -88,5 +86,4 @@ TaskHandle_t xTaskGetCurrentTaskHandle();
 // testing only, does not exist in FreeRTOS
 void uxQueueReset();
 
-#endif
 #endif

@@ -15,9 +15,8 @@
 // ReSharper disable CppMemberFunctionMayBeStatic
 // ReSharper disable CppMemberFunctionMayBeConst 
 // ReSharper disable CppParameterNeverUsed
-
 // ReSharper disable CppParameterMayBeConst
-#ifndef ESP32
+// ReSharper disable CppClangTidyPerformanceUnnecessaryValueParam
 
 #include "../WaterMeterCpp/SafeCString.h"
 #include <PubSubClient.h>
@@ -62,5 +61,3 @@ PubSubClient& PubSubClient::setCallback(MQTT_CALLBACK_SIGNATURE) {
     _callback = callback;
     return *this;
 }
-
-#endif

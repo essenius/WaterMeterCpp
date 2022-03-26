@@ -15,13 +15,11 @@
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppMemberFunctionMayBeStatic
 
-#ifndef ESP32
-
 #ifndef HEADER_PREFERENCES
 #define HEADER_PREFERENCES
 #include <map>
 
-#include <NetMock.h>
+#include "StringArduino.h"
 
 class Preferences {
 public:
@@ -47,5 +45,4 @@ private:
     bool _started = false;
 };
 
-#endif
 #endif

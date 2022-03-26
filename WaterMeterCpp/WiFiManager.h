@@ -9,25 +9,21 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_WIFI_H
-#define HEADER_WIFI_H
+#ifndef HEADER_WIFIMANAGER
+#define HEADER_WIFIMANAGER
 
 #include "EventClient.h"
 #include "PayloadBuilder.h"
 #include "Configuration.h"
 
-// TODO: refactor NetMock to WiFi and WiFiClientSecure
-#ifdef ESP32
-#include <WiFi.h>
+#include <IPAddress.h>
+#include <WiFiManager.h>
 #include <WiFiClientSecure.h>
-#else
-#include "NetMock.h"
-#endif
 
-class Wifi : public EventClient {
+class WiFiManager : public EventClient {
 
 public:
-    Wifi(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder);
+    WiFiManager(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder);
     virtual void announceReady();
     virtual void begin();
     void configure(const IpConfig* ipConfig = &IP_AUTO_CONFIG);
@@ -47,11 +43,11 @@ private:
     PayloadBuilder* _payloadBuilder;
     const WifiConfig* _wifiConfig;
     WiFiClientSecure _wifiClient;
-    IPAddress _localIp = NO_IP;
-    IPAddress _gatewayIp = NO_IP;
-    IPAddress _subnetMaskIp = NO_IP;
-    IPAddress _dns1Ip = NO_IP;
-    IPAddress _dns2Ip = NO_IP;
+    IPAddress _localIp = INADDR_NONE;
+    IPAddress _gatewayIp = INADDR_NONE;
+    IPAddress _subnetMaskIp = INADDR_NONE;
+    IPAddress _dns1Ip = INADDR_NONE;
+    IPAddress _dns2Ip = INADDR_NONE;
     char _hostNameBuffer[HOSTNAME_LENGTH] = { 0 };
     char* _hostName = _hostNameBuffer;
     char _ipAddress[IP_ADDRESS_SIZE] = "";

@@ -58,8 +58,7 @@ DataQueuePayload* DataQueue::receive() const {
     memcpy(_payload, item1, item1Size);
     vRingbufferReturnItem(_bufferHandle, item1);
     if (item2 != nullptr) {
-        // TODO: figure out how to do this c-style cast the c++ way
-        const auto targetAddress = (void*)(reinterpret_cast<const char*>(_payload) + item1Size);
+        void* targetAddress = reinterpret_cast<char*>(_payload) + item1Size;
         memcpy(targetAddress, item2, item2Size);
         vRingbufferReturnItem(_bufferHandle, item2);
     }

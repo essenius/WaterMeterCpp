@@ -12,18 +12,30 @@
 // Mock implementation for unit testing (not targeting the ESP32)
 
 // Disabling warnings caused by mimicking existing interface
+// ReSharper disable CppMemberFunctionMayBeStatic
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppParameterNeverUsed
-// ReSharper disable CppMemberFunctionMayBeStatic
 
-#include <Wire.h>
+#ifndef HEADER_HTTPUPDATE
+#define HEADER_HTTPUPDATE
 
-TwoWire Wire;
+#include "StringArduino.h"
+#include "WiFiClient.h"
 
-int TwoWire::available() { return 6; }
-int TwoWire::read() { return 0; }
-void TwoWire::begin() {}
-void TwoWire::beginTransmission(uint8_t address) {}
-size_t TwoWire::write(uint8_t reg) { return 0; }
-uint8_t TwoWire::endTransmission() { return 0; }
-uint8_t TwoWire::requestFrom(uint8_t address, uint8_t size) { return 0; }
+constexpr int HTTP_UPDATE_FAILED = 0;
+constexpr int HTTP_UPDATE_NO_UPDATES = 1;
+constexpr int HTTP_UPDATE_OK = 2;
+
+using t_httpUpdate_return = int;
+
+class HTTPUpdate {
+public:
+    t_httpUpdate_return update(WiFiClient& client, const char* url) { return ReturnValue; }
+    int getLastError() { return 0; }
+    String getLastErrorString() { return {"OK"}; }
+    static int ReturnValue;
+};
+
+extern HTTPUpdate httpUpdate;
+
+#endif

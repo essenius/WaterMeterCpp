@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "pch.h"
-#include "WifiMock.h"
-WifiMock::WifiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder):
-Wifi(eventServer, &CONFIG, payloadBuilder) {}
+#include "WiFiMock.h"
+WiFiMock::WiFiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder):
+WiFiManager(eventServer, &CONFIG, payloadBuilder) {}
 

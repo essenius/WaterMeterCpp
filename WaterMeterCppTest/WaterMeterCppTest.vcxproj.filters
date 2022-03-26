@@ -63,13 +63,13 @@
     <ClCompile Include="MagnetoSensorReaderTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WifiTest.cpp">
+    <ClCompile Include="WiFiTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MqttGatewayMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WifiMock.cpp">
+    <ClCompile Include="WiFiMock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ConnectorTest.cpp">
@@ -119,7 +119,7 @@
     <ClInclude Include="MqttGatewayMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WifiMock.h">
+    <ClInclude Include="WiFiMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StateHelper.h">

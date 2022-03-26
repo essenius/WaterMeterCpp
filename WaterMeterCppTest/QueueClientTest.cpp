@@ -14,6 +14,7 @@
 #include <CppUnitTest.h>
 
 #include "../WaterMeterCpp/QueueClient.h"
+#include "../WaterMeterCpp/SafeCString.h"
 #include "StateHelper.h"
 #include "TestEventClient.h"
 

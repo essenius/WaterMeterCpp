@@ -50,7 +50,7 @@ constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 MqttGateway::MqttGateway(
     EventServer* eventServer, 
     PubSubClient* mqttClient,
-    WifiClientFactory* wifiClientFactory,
+    WiFiClientFactory* wifiClientFactory,
     const MqttConfig* mqttConfig, 
     const DataQueue* dataQueue,
     const char* buildVersion) :
@@ -95,7 +95,7 @@ void MqttGateway::begin(const char* clientName) {
     _wifiClient = _wifiClientFactory->create(_mqttConfig->useTls);
     _mqttClient->setClient(*_wifiClient);
     _mqttClient->setBufferSize(512);
-    _mqttClient->setServer(_mqttConfig->broker, _mqttConfig->port);
+    _mqttClient->setServer(_mqttConfig->broker, static_cast<uint16_t>(_mqttConfig->port));
     _mqttClient->setCallback([=](const char* topic, const uint8_t* payload, const unsigned int length) {
           this->callback(topic, payload, length);
          });

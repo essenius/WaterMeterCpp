@@ -11,9 +11,8 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
+// Disabling warnings caused by mimicking existing interface
 // ReSharper disable CppInconsistentNaming
-
-#ifndef ESP32
 
 #ifndef WIRE_HEADER
 #define WIRE_HEADER
@@ -33,5 +32,4 @@ public:
 };
 
 extern TwoWire Wire;
-#endif
 #endif

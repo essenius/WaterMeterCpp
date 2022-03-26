@@ -13,17 +13,26 @@
 
 // Disabling warnings caused by mimicking existing interface
 // ReSharper disable CppInconsistentNaming
-// ReSharper disable CppParameterNeverUsed
 // ReSharper disable CppMemberFunctionMayBeStatic
+// ReSharper disable CppParameterNeverUsed
 
-#include <Wire.h>
+#ifndef HEADER_WIFICLIENTSECURE
+#define HEADER_WIFICLIENTSECURE
 
-TwoWire Wire;
+#include "WiFiClient.h"
 
-int TwoWire::available() { return 6; }
-int TwoWire::read() { return 0; }
-void TwoWire::begin() {}
-void TwoWire::beginTransmission(uint8_t address) {}
-size_t TwoWire::write(uint8_t reg) { return 0; }
-uint8_t TwoWire::endTransmission() { return 0; }
-uint8_t TwoWire::requestFrom(uint8_t address, uint8_t size) { return 0; }
+class WiFiClientSecure : public WiFiClient {
+public:
+    void setCACert(const char* cert) { }
+    void setCertificate(const char* cert) { }
+    void setPrivateKey(const char* cert) { }
+    void setInsecure() { _insecure = true; }
+
+    // testing
+    bool isSecure() const { return !_insecure; }
+    const char* getType() override { return "WifiClientSecure"; }
+private:
+    bool _insecure = false;
+};
+
+#endif

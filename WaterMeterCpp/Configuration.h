@@ -9,15 +9,11 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_CONFIGURATION_H
-#define HEADER_CONFIGURATION_H
+#ifndef HEADER_CONFIGURATION
+#define HEADER_CONFIGURATION
 
-#include <ESP.h>
+#include <IPAddress.h>
 #include <Preferences.h>
-
-#ifndef ESP32
-#include <NetMock.h>
-#endif
 
 struct IpConfig {
     IPAddress localIp;
@@ -27,10 +23,8 @@ struct IpConfig {
     IPAddress secondaryDns;
 };
 
-const IPAddress NO_IP{0, 0, 0, 0};
-
-// NO_IP means auto-configure
-const IpConfig IP_AUTO_CONFIG{NO_IP, NO_IP, NO_IP, NO_IP, NO_IP};
+// INADDR_NONE means auto-configure
+const IpConfig IP_AUTO_CONFIG{INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE};
 
 struct FirmwareConfig {
     const char* baseUrl;
@@ -56,7 +50,6 @@ struct WifiConfig {
     const char* deviceName;
     uint8_t* bssid; // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
 };
-
 
 class Configuration {
 public:

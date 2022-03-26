@@ -17,8 +17,6 @@
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppParameterNeverUsed
 
-#ifndef ESP32
-
 #ifndef HEADER_QMC5883L_COMPASS
 #define HEADER_QMC5883L_COMPASS
 
@@ -45,6 +43,4 @@ private:
     bool _resetSucceeds = true;
     int _y = 0;
 };
-#endif
-
 #endif

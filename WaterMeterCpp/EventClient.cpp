@@ -13,11 +13,6 @@
 #include "EventServer.h"
 #include "SafeCString.h"
 
-// TODO: eliminate ifdef
-#ifdef ESP32
-#include <ESP.h>
-#endif
-
 EventClient::EventClient(EventServer* eventServer) : _eventServer(eventServer) {}
 
 EventClient::~EventClient() {

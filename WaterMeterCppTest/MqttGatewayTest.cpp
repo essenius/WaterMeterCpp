@@ -17,6 +17,7 @@
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/PayloadBuilder.h"
 #include "../WaterMeterCpp/DataQueue.h"
+#include "../WaterMeterCpp/SafeCString.h"
 #include "../WaterMeterCpp/Serializer.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -61,7 +62,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(mqttGatewayCannotSubscribeTest) {
             mqttClient.setCanSubscribe(false);
-            WifiClientFactory wifiClientFactory(nullptr);
+            WiFiClientFactory wifiClientFactory(nullptr);
             MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);
             gateway.begin("client1");
             Assert::AreEqual("MQTT: Could not subscribe to setters [state = 3]", errorListener.getPayload(),
@@ -69,7 +70,7 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(mqttGatewayNoUserTest) {
-            WifiClientFactory wifiClientFactory(nullptr);
+            WiFiClientFactory wifiClientFactory(nullptr);
             MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_NO_USER, &dataQueue, BUILD);
             gateway.begin("client1");
             Assert::AreEqual("", mqttClient.user(), "User not set");
@@ -77,7 +78,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(mqttGatewayScriptTest) {
             // We need to make this a longer test since the init needs to be done for the rest to work
-            WifiClientFactory wifiClientFactory(nullptr);
+            WiFiClientFactory wifiClientFactory(nullptr);
 
             // Init part
             MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);

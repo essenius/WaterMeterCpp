@@ -51,10 +51,7 @@
     <ClCompile Include="TimeServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Wifi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NetMock.cpp">
+    <ClCompile Include="WiFiManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Log.cpp">
@@ -102,7 +99,7 @@
     <ClCompile Include="Configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WifiClientFactory.cpp">
+    <ClCompile Include="WiFiClientFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MagnetoSensorQmc.cpp">
@@ -149,7 +146,7 @@
     <ClInclude Include="TimeServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Wifi.h">
+    <ClInclude Include="WiFiManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Log.h">
@@ -203,7 +200,7 @@
     <ClInclude Include="Communicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WifiClientFactory.h">
+    <ClInclude Include="WiFiClientFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MagnetoSensorQmc.h">

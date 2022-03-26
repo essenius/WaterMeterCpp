@@ -11,18 +11,25 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
-#ifndef HEADER_CLIENT_H
-#define HEADER_CLIENT_H
+// Disabling warnings caused by mimicking existing interface
+// ReSharper disable CppInconsistentNaming
+// ReSharper disable CppMemberFunctionMayBeStatic
+// ReSharper disable CppParameterNeverUsed
 
-class Client {
+#ifndef HEADER_HTTPCLIENT
+#define HEADER_HTTPCLIENT
+
+#include "StringArduino.h"
+#include "WiFiClient.h"
+
+class HTTPClient {
 public:
-    Client() = default;
-    Client(const Client&) = default;
-    Client(Client&&) = default;
-    Client& operator=(const Client&) = default;
-    Client& operator=(Client&&) = default;
-    virtual ~Client() = default;
-    virtual const char* getType() { return "client"; }
-};
+    HTTPClient() = default;
 
+    bool begin(WiFiClient& client, const char* url) { return true; }
+    void end() {}
+    int GET() { return ReturnValue; }
+    String getString() { return {"0.1.1"}; }
+    static int ReturnValue;
+};
 #endif

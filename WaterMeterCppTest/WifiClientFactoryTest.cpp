@@ -12,7 +12,7 @@
 #include "pch.h"
 
 #include "CppUnitTest.h"
-#include "../WaterMeterCpp/WifiClientFactory.h"
+#include "../WaterMeterCpp/WiFiClientFactory.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -23,7 +23,7 @@ public:
 
     TEST_METHOD(wifiClientFactoryInsecureClientTest) {
         constexpr TlsConfig CONFIG{ nullptr, nullptr, nullptr };
-        const WifiClientFactory factory(&CONFIG);
+        const WiFiClientFactory factory(&CONFIG);
         const auto normalClient = factory.create(nullptr);
         const auto secureClient = factory.create(true);
         Assert::AreEqual("WifiClient", normalClient->getType(), L"normalClient has type WifiClient");
@@ -33,7 +33,7 @@ public:
 
     TEST_METHOD(wifiClientFactorySecureClientTest) {
         constexpr TlsConfig CONFIG{ "a", "b", "c" };
-        const WifiClientFactory factory(&CONFIG);
+        const WiFiClientFactory factory(&CONFIG);
         const auto normalClient = factory.create("http://localhost");
         const auto secureClient = factory.create("https");
         Assert::AreEqual("WifiClient", normalClient->getType());

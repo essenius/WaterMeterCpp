@@ -15,7 +15,7 @@
 
 class MqttGatewayMock : public MqttGateway {
 public:
-    explicit MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WifiClientFactory* wifiClientFactory);
+    explicit MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory);
     void announceReady() override { }
     void begin(const char* clientName) override { }
     void connect() override { }

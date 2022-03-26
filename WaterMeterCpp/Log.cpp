@@ -65,7 +65,7 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Blocked:
         log("Blocked: %s", payload);
         break;
-    case Topic::Connection:
+    case Topic::Connection:  // NOLINT(bugprone-branch-clone) -- looks like a false positive
         log("%s", payload);
         break;
     case Topic::ErrorFormatted:

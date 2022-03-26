@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2022 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -12,55 +12,14 @@
 // Mock implementation for unit testing (not targeting the ESP32)
 
 // Disabling warnings caused by mimicking existing interface
-// ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppInconsistentNaming
-
+// ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppParameterMayBeConst
-#ifndef ESP32
 
-#include <NetMock.h>
-
-// HTTPCLient and HTTPUpdate
-
-int HTTPClient::ReturnValue = 400;
-int HTTPUpdate::ReturnValue = HTTP_UPDATE_NO_UPDATES;
-
-HTTPUpdate httpUpdate;
-
-// IPAddress
-
-IPAddress::IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4) {
-    _address.bytes[0] = oct1;
-    _address.bytes[1] = oct2;
-    _address.bytes[2] = oct3;
-    _address.bytes[3] = oct4;
-}
-
-IPAddress::IPAddress(const uint8_t* address) {
-    memcpy(_address.bytes, address, sizeof(_address.bytes));
-}
-
-IPAddress& IPAddress::operator=(uint32_t address) {
-    _address.dword = address;
-    return *this;
-}
-
-IPAddress& IPAddress::operator=(const uint8_t* address) {
-    memcpy(_address.bytes, address, sizeof(_address.bytes));
-    return *this;
-}
-
-String IPAddress::toString() const {
-    char buffer[16];
-    safeSprintf(buffer, "%u.%u.%u.%u", _address.bytes[0], _address.bytes[1], _address.bytes[2], _address.bytes[3]);
-    return {buffer};
-}
-
-// WiFiClass
+#include "WiFi.h"
+#include "StringArduino.h"
 
 WiFiClass WiFi;
-
-WiFiClientSecure testWifiClientSecure;
 
 WiFiClass::WiFiClass() : _name("esp32_001122334455") {
     reset();
@@ -84,23 +43,19 @@ void WiFiClass::reset() {
     _connectCountdown = _connectMax;
 }
 
-void WiFiClass::connectIn(int connectCount) {
+void WiFiClass::connectIn(const int connectCount) {
     _connectMax = connectCount;
     _connectCountdown = _connectMax;
 }
-
-const IPAddress NO_IP = IPAddress(0, 0, 0, 0);
 
 bool WiFiClass::config(IPAddress local, IPAddress gateway, IPAddress subnet, IPAddress dns1, IPAddress dns2) {
     _localIP = local;
     _gatewayIP = gateway;
     _subnetIP = subnet;
-    _primaryDNSIP = dns1 == NO_IP ? _gatewayIP : dns1;
-    _secondaryDNSIP = dns2 == NO_IP ? _primaryDNSIP : dns2;
+    _primaryDNSIP = dns1 == INADDR_NONE ? _gatewayIP : dns1;
+    _secondaryDNSIP = dns2 == INADDR_NONE ? _primaryDNSIP : dns2;
     return true;
 }
-
-WiFiClientSecure* getClient() { return &testWifiClientSecure; }
 
 bool WiFiClass::isConnected() {
     if (_connectCountdown <= 0) return true;
@@ -112,5 +67,3 @@ bool WiFiClass::setHostname(const char* name) {
     safeStrcpy(_name, name);
     return strlen(name) > 0;
 }
-
-#endif

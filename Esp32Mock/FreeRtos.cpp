@@ -19,7 +19,9 @@
 // ReSharper disable CppClangTidyPerformanceNoIntToPtr
 // ReSharper disable CppClangTidyClangDiagnosticIntToVoidPointerCast
 
-#ifndef ESP32
+// deliberate ponter truncations and unscoped enum
+#pragma warning (disable:4302 4311 4312 26812)
+
 #include <ESP.h>
 #include <FreeRtos.h>
 
@@ -224,5 +226,3 @@ BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName
 TaskHandle_t testHandle = reinterpret_cast<TaskHandle_t>(42);
 
 TaskHandle_t xTaskGetCurrentTaskHandle() { return testHandle; }
-
-#endif

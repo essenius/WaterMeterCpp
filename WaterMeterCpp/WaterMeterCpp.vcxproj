@@ -172,8 +172,8 @@
     <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="TimeServer.cpp" />
     <ClCompile Include="WaterMeterCpp.cpp" />
-    <ClCompile Include="Wifi.cpp" />
-    <ClCompile Include="WifiClientFactory.cpp" />
+    <ClCompile Include="WiFiManager.cpp" />
+    <ClCompile Include="WiFiClientFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aggregator.h" />
@@ -207,8 +207,8 @@
     <ClInclude Include="secrets.h" />
     <ClInclude Include="Serializer.h" />
     <ClInclude Include="TimeServer.h" />
-    <ClInclude Include="Wifi.h" />
-    <ClInclude Include="WifiClientFactory.h" />
+    <ClInclude Include="WiFiManager.h" />
+    <ClInclude Include="WiFiClientFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

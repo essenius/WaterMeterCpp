@@ -11,11 +11,11 @@
 
 #pragma once
 
-#include "../WaterMeterCpp/Wifi.h"
+#include "../WaterMeterCpp/WiFiManager.h"
 
-class WifiMock : public Wifi {
+class WiFiMock : public WiFiManager {
 public:
-    explicit WifiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder);
+    explicit WiFiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder);
     void begin() override {}
     void disconnect() override {}
     bool isConnected() override { return _isConnected; }

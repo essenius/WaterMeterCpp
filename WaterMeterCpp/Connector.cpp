@@ -15,7 +15,7 @@
 
 constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
 
-Connector::Connector(EventServer* eventServer, Wifi* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
+Connector::Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
                      FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
                      Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
     EventClient(eventServer),
@@ -70,6 +70,7 @@ void Connector::setup(const Configuration* configuration) {
 }
 
 ConnectionState Connector::connect() {
+    // ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement -- all options handled
     switch (_state) {
     case ConnectionState::Init:
         handleInit();
