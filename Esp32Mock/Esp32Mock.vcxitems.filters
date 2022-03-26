@@ -1,46 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Label="Globals">
-    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <HasSharedItems>true</HasSharedItems>
-    <ItemsProjectGuid>{bb523b57-d28b-4c96-840a-e3b3386c014c}</ItemsProjectGuid>
-  </PropertyGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <ProjectCapability Include="SourceItemsFromImports" />
-  </ItemGroup>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ESP.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Preferences.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PubSubClient.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Wire.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)freertos\freeRTOS.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)freertos\ringbuf.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)HTTPClient.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)HTTPUpdate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IPAddress.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Preferences.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)PubSubClient.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)WiFi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)WiFiClientSecure.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Wire.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Client.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ESP.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)freertos\freeRTOS.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)freertos\ringbuf.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)HTTPClient.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)HTTPUpdate.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)IPAddress.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Preferences.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PubSubClient.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)QMC5883LCompass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Wire.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)freertos\ringbuf.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)freertos\freeRTOS.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HTTPClient.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HTTPUpdate.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)IPAddress.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StringArduino.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WiFi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WiFiClient.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WiFiClientSecure.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Wire.h" />
   </ItemGroup>
 </Project>

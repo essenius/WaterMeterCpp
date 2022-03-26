@@ -61,6 +61,7 @@ namespace WaterMeterCppTest {
             ESP.restart();
             uxTaskGetStackHighWaterMarkReset();
             uxQueueReset();
+            uxRingbufReset();
 
             // For being able to set the firmware 
             constexpr auto BUILD_VERSION = "0.100.5";

@@ -18,10 +18,11 @@
 #ifndef HEADER_ESP
 #define HEADER_ESP
 #define WIN32_LEAN_AND_MEAN
-#include <stdint.h>
+#include <cstdint>
 #include <string>
+
 // ReSharper disable once CppUnusedIncludeDirective -- added on purpose
-#include <FreeRtos.h>
+#include <freertos/freeRTOS.h>
 
 using byte = uint8_t;
 
@@ -55,11 +56,12 @@ public:
     char read();
     void setTimeout(long timeout);
 
-    // test support, not in original Serial object (i.e. don't use in production code)
+    // test support (i.e. don't use in production code)
     void clearInput();
     void clearOutput();
     const char* getOutput();
     void setInput(const char* input);
+
 private:
     static constexpr int PRINTBUFFER_SIZE = 4096;
     char _printBuffer[PRINTBUFFER_SIZE] = {};

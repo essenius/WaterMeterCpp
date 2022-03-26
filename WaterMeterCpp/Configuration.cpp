@@ -45,7 +45,7 @@ constexpr const char* URL = "url";
 
 void Configuration::begin(const bool useSecrets) {
     // we use both an ifdef and an if to enable testing without having to recompile
-#ifdef HEADER_SECRETS_H
+#ifdef HEADER_SECRETS
     if (useSecrets) {
         putIpConfig(&CONFIG_IP);
         putMqttConfig(&CONFIG_MQTT);

@@ -40,6 +40,7 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD_INITIALIZE(resultAggregatorTestMethodInitialize) {
             uxQueueReset();
+            uxRingbufReset();
             rateListener.reset();
         }
 

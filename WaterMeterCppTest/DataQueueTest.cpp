@@ -12,7 +12,7 @@
 #include "pch.h"
 
 #include <ESP.h>
-#include <FreeRtos.h>
+#include <freertos/freeRTOS.h>
 
 #include "CppUnitTest.h"
 #include "TestEventClient.h"

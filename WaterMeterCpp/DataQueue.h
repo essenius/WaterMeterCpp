@@ -12,13 +12,8 @@
 #ifndef HEADER_DATAQUEUE
 #define HEADER_DATAQUEUE
 
-// TODO eliminate ifdef
-#ifdef ESP32
-#include "freertos/freeRTOS.h"
-#include "freertos/ringbuf.h"
-#else
-#include <FreeRtos.h>
-#endif
+#include <freertos/freeRTOS.h>
+#include <freertos/ringbuf.h>
 
 #include "EventClient.h"
 #include "LongChangePublisher.h"

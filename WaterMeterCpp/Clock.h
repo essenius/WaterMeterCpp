@@ -20,7 +20,7 @@
 #include <sys/time.h>
 #else
 #include <ctime>
-#include <FreeRtos.h>
+#include <freertos/freeRTOS.h>
 
 // ReSharper disable CppInconsistentNaming -- redefining existing entity in ESP32
 

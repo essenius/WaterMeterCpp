@@ -22,9 +22,8 @@
 #include <cstdint>
 
 using QueueHandle_t = void*;
-using RingbufHandle_t = void*;
 using TaskHandle_t = void*;
-using RingbufHandle_t = void*;
+//using RingbufHandle_t = void*;
 using SemaphoreHandle_t = void*;
 
 using UBaseType_t = unsigned long;
@@ -41,10 +40,12 @@ constexpr unsigned long portMAX_DELAY = ULONG_MAX;
 #define portTICK_PERIOD_MS			((TickType_t)1000 / configTICK_RATE_HZ)
 #define pdMS_TO_TICKS(xTimeInMs)    ((TickType_t)(((TickType_t)(xTimeInMs)*(TickType_t)configTICK_RATE_HZ)/(TickType_t)1000U))
 
+/*
 enum RingbufferType_t { RINGBUF_TYPE_NOSPLIT = 0, RINGBUF_TYPE_ALLOWSPLIT, RINGBUF_TYPE_BYTEBUF, RINGBUF_TYPE_MAX };
 
-// test function
+ test function
 void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull);
+*/
 
 QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize);
 
@@ -62,6 +63,7 @@ UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t taskHandle);
 
 void uxTaskGetStackHighWaterMarkReset();
 
+/*
 inline void vRingbufferReturnItem(RingbufHandle_t bufferHandle, void* item1) {}
 
 RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType);
@@ -72,6 +74,7 @@ BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, v
                                    size_t* item2Size, uint32_t ticksToWait);
 
 UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t ticksToWait);
+*/
 
 inline SemaphoreHandle_t xSemaphoreCreateMutex() { return nullptr; }
 inline void xSemaphoreTake(SemaphoreHandle_t handle, unsigned long delay) {}

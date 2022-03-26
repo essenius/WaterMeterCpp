@@ -12,38 +12,23 @@
 // Mock implementation for unit testing (not targeting the ESP32)
 
 // Disabling warnings caused by mimicking existing interfaces or mocking hacks
-// ReSharper disable CppInconsistentNaming
+
 // ReSharper disable CppParameterNeverUsed
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppClangTidyClangDiagnosticVoidPointerToIntCast
 // ReSharper disable CppClangTidyPerformanceNoIntToPtr
-// ReSharper disable CppClangTidyClangDiagnosticIntToVoidPointerCast
 
-// deliberate ponter truncations and unscoped enum
 #pragma warning (disable:4302 4311 4312 26812)
 
 #include <ESP.h>
-#include <FreeRtos.h>
+#include <freertos/ringbuf.h>
 
-#include <cstring>
 
 constexpr int16_t MAX_ITEMS = 100;
 constexpr int16_t MAX_ITEM_SIZE = 64;
 
 constexpr int MAX_RINGBUFFERS = 10;
 
-constexpr short MAX_ELEMENTS = 10;
-
-class Queue {
-public:
-    short currentIndex;
-    long long element[MAX_ELEMENTS];
-};
-
-constexpr short MAX_QUEUES = 5;
-Queue queue[MAX_QUEUES];
-QueueHandle_t queueHandle[MAX_QUEUES] = {nullptr};
-short queueIndex = 0;
 
 struct RingBufferContainer {
     RingbufHandle_t ringbufHandle = nullptr;
@@ -68,77 +53,7 @@ void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull) {
     container[i].bufferIsFull = isFull;
 }
 
-// xQueue
-
-UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue) {
-    return static_cast<Queue*>(xQueue)->currentIndex >= 0 ? pdTRUE : pdFALSE;
-}
-
-TaskHandle_t firstWaterMarkHandle = nullptr;
-TaskHandle_t secondWaterMarkHandle = nullptr;
-int waterMarkSamplerCount = -1;
-
-// test function
-void uxTaskGetStackHighWaterMarkReset() {
-    firstWaterMarkHandle = nullptr;
-    secondWaterMarkHandle = nullptr;
-    waterMarkSamplerCount = -1;
-}
-
-UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t taskHandle) {
-    if (firstWaterMarkHandle == nullptr) {
-        firstWaterMarkHandle = taskHandle;
-    }
-    if (taskHandle == firstWaterMarkHandle) {
-        waterMarkSamplerCount++;
-        if (waterMarkSamplerCount <= 2) return 1500L + waterMarkSamplerCount * 64L;
-        if (waterMarkSamplerCount <= 4) return 1628L;
-        waterMarkSamplerCount = -1;
-        return 1500;
-    }
-    if (secondWaterMarkHandle == nullptr) {
-        secondWaterMarkHandle = taskHandle;
-    }
-    if (taskHandle == secondWaterMarkHandle) return 3750;
-    return 5250;
-}
-
-QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize) {
-    if (queueIndex < MAX_QUEUES) {
-        queueHandle[queueIndex] = &queue[queueIndex];
-
-        return queueHandle[queueIndex++];
-    }
-    return nullptr;
-}
-
-BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait) {
-    const auto queue1 = static_cast<Queue*>(xQueue);
-    if (queue1->currentIndex <= 0) return pdFALSE;
-    *static_cast<long long*>(pvBuffer) = queue1->element[0];
-    for (short i = 0; i < queue1->currentIndex - 1; i++) {
-        queue1->element[i] = queue1->element[i + 1];
-    }
-    queue1->currentIndex--;
-    return pdTRUE;
-}
-
-BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
-    const auto queue1 = static_cast<Queue*>(xQueue);
-
-    if (queue1->currentIndex >= MAX_ELEMENTS) return pdFALSE;
-    queue1->element[queue1->currentIndex++] = *static_cast<const long long*>(pvItemToQueue);
-    return pdTRUE;
-}
-
-BaseType_t xQueueSendToFront(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) { return pdFALSE; }
-
-void uxQueueReset() {
-    queueIndex = 0;
-    for (short i = 0; i < MAX_QUEUES; i++) {
-        queueHandle[i] = nullptr;
-        queue[i].currentIndex = 0;
-    }
+void uxRingbufReset() {
     for (auto& i : container) {
         i.ringbufHandle = nullptr;
         i.nextBufferItem = 0;
@@ -149,13 +64,6 @@ void uxQueueReset() {
         }
     }
 }
-
-UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle) {
-    const auto queue1 = static_cast<Queue*>(handle);
-    return MAX_ELEMENTS - queue1->currentIndex;
-}
-
-// Ringbuffer
 
 RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType) {
     int i = 0;
@@ -175,7 +83,7 @@ size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle) {
 }
 
 BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
-                                   size_t* item2Size, uint32_t ticksToWait) {
+    size_t* item2Size, uint32_t ticksToWait) {
     if (bufferHandle == nullptr) return pdFALSE;
     const int i = getIndex(bufferHandle);
     if (container[i].nextReadBufferItem >= container[i].nextBufferItem) return pdFALSE;
@@ -211,18 +119,3 @@ UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, s
     container[i].nextBufferItem++;
     return pdTRUE;
 }
-
-// Task
-
-unsigned long taskHandle = 100;
-
-BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, uint16_t usStackDepth,
-                                   void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
-                                   BaseType_t xCoreID) {
-    *pxCreatedTask = reinterpret_cast<TaskHandle_t>(taskHandle++);
-    return pdTRUE;
-}
-
-TaskHandle_t testHandle = reinterpret_cast<TaskHandle_t>(42);
-
-TaskHandle_t xTaskGetCurrentTaskHandle() { return testHandle; }
