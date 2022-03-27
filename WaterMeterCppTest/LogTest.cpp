@@ -91,14 +91,15 @@ namespace WaterMeterCppTest {
             Assert::AreEqual("[] Blocked: 1\n", getPrintOutput(), L"Blocked handled OK");
 
             clearPrintOutput();
-            eventServer.publish(Topic::SensorWasReset, LONG_TRUE);
-            Assert::AreEqual("[] Sensor was reset\n", getPrintOutput(), L"Sensor reset handled OK");
+            eventServer.publish(Topic::SensorWasReset, 3);
+            Assert::AreEqual("[] Sensor was reset: 3\n", getPrintOutput(), L"Sensor reset handled OK");
 
             clearPrintOutput();
             eventServer.publish(Topic::FreeQueueSpaces, 0x03000010);
             Assert::AreEqual("[] Free Spaces Queue #3: 16\n", getPrintOutput(), L"Sensor reset handled OK");
         }
-private:
+
+    private:
         void publishConnectionState(const Topic topic, ConnectionState connectionState) {
             eventServer.publish(topic, static_cast<long>(connectionState));
         }

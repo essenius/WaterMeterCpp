@@ -82,14 +82,18 @@ int redirectPrintf(const char* format, Arguments ... arguments) {
     return length;
 }
 
-inline char* getPrintOutput() { return PrintBuffer; }
+inline char* getPrintOutput() {
+    return PrintBuffer;
+}
 
 inline void clearPrintOutput() {
     PrintBuffer[0] = 0;
     PrintBufferPointer = PrintBuffer;
 }
 
-inline size_t getPrintOutputLength() { return strlen(PrintBuffer); }
+inline size_t getPrintOutputLength() {
+    return strlen(PrintBuffer);
+}
 
 void configTime(int i, int i1, const char* str, const char* text);
 
@@ -107,13 +111,15 @@ uint8_t getPinMode(uint8_t pin);
 void shiftMicros(long long shift);
 
 // testing only too
-enum LogLevel { error = 1, warning, info, debug, verbose };
+enum class LogLevel { Error = 1, Warning, Info, Debug, Verbose };
 
 const char* toString(LogLevel level);
 
 extern LogLevel minLogLevel;
 
-inline void setLogLevel(const LogLevel level) { minLogLevel = level; }
+inline void setLogLevel(const LogLevel level) {
+    minLogLevel = level;
+}
 
 template <typename... Arguments>
 void log_printf(const LogLevel level, const char* format, Arguments ... arguments) {
@@ -125,18 +131,28 @@ void log_printf(const LogLevel level, const char* format, Arguments ... argument
 }
 
 template <typename... Arguments>
-void log_e(const char* format, Arguments ... arguments) { log_printf(error, format, arguments...); }
+void log_e(const char* format, Arguments ... arguments) {
+    log_printf(LogLevel::Error, format, arguments...);
+}
 
 template <typename... Arguments>
-void log_w(const char* format, Arguments ... arguments) { log_printf(warning, format, arguments...); }
+void log_w(const char* format, Arguments ... arguments) {
+    log_printf(LogLevel::Warning, format, arguments...);
+}
 
 template <typename... Arguments>
-void log_i(const char* format, Arguments ... arguments) { log_printf(info, format, arguments...); }
+void log_i(const char* format, Arguments ... arguments) {
+    log_printf(LogLevel::Info, format, arguments...);
+}
 
 template <typename... Arguments>
-void log_d(const char* format, Arguments ... arguments) { log_printf(debug, format, arguments...); }
+void log_d(const char* format, Arguments ... arguments) {
+    log_printf(LogLevel::Debug, format, arguments...);
+}
 
 template <typename... Arguments>
-void log_v(const char* format, Arguments ... arguments) { log_printf(verbose, format, arguments...); }
+void log_v(const char* format, Arguments ... arguments) {
+    log_printf(LogLevel::Verbose, format, arguments...);
+}
 
 #endif

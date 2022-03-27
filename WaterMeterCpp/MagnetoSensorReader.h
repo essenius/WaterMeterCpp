@@ -12,24 +12,26 @@
 #ifndef HEADER_MAGNETOSENSORREADER
 #define HEADER_MAGNETOSENSORREADER
 
-// TODO eliminate and replace by MagnetoSensorQmc
-#include <QMC5883LCompass.h>
-
+#include "MagnetoSensorQmc.h"
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
+constexpr int SOFT_RESET = 1;
+constexpr int HARD_RESET = 2;
+
 class MagnetoSensorReader final : public EventClient {
 public:
-    MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass);
+    MagnetoSensorReader(EventServer* eventServer, MagnetoSensor* sensor);
     void begin();
     int16_t read();
     void reset();
+    void hardReset();
     void update(Topic topic, long payload) override;
 
 private:
     static constexpr int FLATLINE_STREAK = 100;
     static constexpr int MAX_STREAKS_TO_ALERT = 10;
-    QMC5883LCompass* _compass;
+    MagnetoSensor* _sensor;
     ChangePublisher<bool> _alert;
     int _consecutiveStreakCount = 0;
     int16_t _previousSample = -32768;

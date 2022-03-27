@@ -16,7 +16,6 @@
 
 #include <ESP.h>
 #include <PubSubClient.h>
-#include <QMC5883LCompass.h>
 
 #include "../WaterMeterCpp/Device.h"
 #include "../WaterMeterCpp/DataQueue.h"
@@ -40,6 +39,7 @@
 #include "TopicHelper.h"
 #include "StateHelper.h"
 #include "WiFi.h"
+#include "Wire.h"
 // ReSharper restore CppUnusedIncludeDirective
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -57,8 +57,9 @@ namespace WaterMeterCppTest {
         TEST_METHOD(mainTest1) {
             // make the firmware check fail
             HTTPClient::ReturnValue = 400;
-            // Other tests might have run before, so reset stacks and queues
+            // Other tests might have run before, so softReset stacks and queues
             ESP.restart();
+            Wire.setFlatline(true);
             uxTaskGetStackHighWaterMarkReset();
             uxQueueReset();
             uxRingbufReset();
@@ -70,11 +71,11 @@ namespace WaterMeterCppTest {
             // Processing one cycle usually takes quite a bit less than that, unless a write happened.
             constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
-            QMC5883LCompass compass;
+            MagnetoSensor sensor;
             WiFiClientFactory wifiClientFactory(&configuration.tls);
 
             EventServer samplerEventServer;
-            MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
+            MagnetoSensorReader sensorReader(&samplerEventServer, &sensor);
             FlowMeter flowMeter(&samplerEventServer);
 
             EventServer communicatorEventServer;

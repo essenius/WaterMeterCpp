@@ -38,7 +38,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)IPAddress.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Preferences.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PubSubClient.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)QMC5883LCompass.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StringArduino.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)sys\time.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WiFi.h" />

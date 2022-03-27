@@ -147,13 +147,13 @@ void HardwareSerial::setTimeout(long timeout) {}
 
 const char* toString(LogLevel level) {
     switch (level) {
-    case error: return "E";
-    case warning: return "W";
-    case info: return "I";
-    case debug: return "D";
-    case verbose: return "V";
+    case LogLevel::Error: return "E";
+    case LogLevel::Warning: return "W";
+    case LogLevel::Info: return "I";
+    case LogLevel::Debug: return "D";
+    case LogLevel::Verbose: return "V";
     }
     return nullptr;
 }
 
-LogLevel minLogLevel = info;
+LogLevel minLogLevel = LogLevel::Info;

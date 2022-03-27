@@ -13,6 +13,7 @@
 
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
+#include "Wire.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -23,15 +24,16 @@ namespace WaterMeterCppTest {
     TEST_CLASS(MagnetoSensorReaderTest) {
     public:
         TEST_METHOD(magnetoSensorReaderTest1) {
-            QMC5883LCompass compass;
+            MagnetoSensor sensor;
             EventServer eventServer;
             TestEventClient resetSensorEventClient(&eventServer);
             TestEventClient alertEventClient(&eventServer);
             eventServer.subscribe(&resetSensorEventClient, Topic::SensorWasReset);
             eventServer.subscribe(&alertEventClient, Topic::Alert);
-            MagnetoSensorReader reader(&eventServer, &compass);
-            compass.resetSucceeds(false);
+            MagnetoSensorReader reader(&eventServer, &sensor);
+            Wire.setFlatline(true);
             reader.begin();
+            Wire.setEndTransmissionTogglePeriod(10);
 
             for (int streaks = 0; streaks < 10; streaks++) {
                 for (int sample = 0; sample < 100; sample++) {
@@ -46,7 +48,13 @@ namespace WaterMeterCppTest {
 
             resetSensorEventClient.reset();
             eventServer.publish(Topic::ResetSensor, LONG_TRUE);
-            Assert::AreEqual(1, resetSensorEventClient.getCallCount(), L"Sensor was reset called after ResetSensor command");
+            Assert::AreEqual(
+                1,
+                resetSensorEventClient.getCallCount(),
+                L"Sensor was softReset called after ResetSensor command");
+            Wire.setEndTransmissionTogglePeriod(0);
+            constexpr uint8_t BUFFER[] = {10, 0x80, 11, 0x01, 9, 0x19};
+            Assert::AreEqual<short>(sizeof BUFFER, Wire.writeMismatchIndex(BUFFER, sizeof BUFFER), L"test");
         }
     };
 }

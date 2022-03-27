@@ -65,7 +65,7 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Blocked:
         log("Blocked: %s", payload);
         break;
-    case Topic::Connection:  // NOLINT(bugprone-branch-clone) -- looks like a false positive
+    case Topic::Connection: // NOLINT(bugprone-branch-clone) -- looks like a false positive
         log("%s", payload);
         break;
     case Topic::ErrorFormatted:
@@ -84,11 +84,11 @@ void Log::update(Topic topic, const char* payload) {
         log("Result Written: %s", payload);
         break;
     case Topic::SensorWasReset:
-        log("Sensor was reset");
+        log("Sensor was reset: %s", payload);
         break;
     case Topic::SkipSamples:
         log("Skipped %s samples", payload);
-        break;    
+        break;
     case Topic::TimeOverrun:
         log("Time overrun: %s", payload);
         break;

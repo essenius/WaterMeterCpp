@@ -16,7 +16,6 @@
 
 #include <ESP.h>
 #include <PubSubClient.h>
-#include <QMC5883LCompass.h>
 
 #include "Configuration.h"
 #include "Communicator.h"
@@ -38,7 +37,7 @@
 #include "WiFiClientFactory.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.6";
+constexpr const char* const BUILD_VERSION = "0.100.7";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle usually takes quite a bit less than that, unless a write happened.
@@ -49,12 +48,12 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 // we do use dependency injection to hide this design decision as much as possible
 // (and make testing easier).
 
-QMC5883LCompass compass;
+MagnetoSensor sensor;
 Preferences preferences;
 Configuration configuration(&preferences);
 WiFiClientFactory wifiClientFactory(&configuration.tls);
 EventServer samplerEventServer;
-MagnetoSensorReader sensorReader(&samplerEventServer, &compass);
+MagnetoSensorReader sensorReader(&samplerEventServer, &sensor);
 FlowMeter flowMeter(&samplerEventServer);
 
 EventServer communicatorEventServer;
@@ -77,7 +76,8 @@ Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
 WiFiManager wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
 PubSubClient mqttClient;
-MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
+MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt, &sensorDataQueue,
+                        BUILD_VERSION);
 FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);
 
 QueueClient samplerQueueClient(&samplerEventServer, &logger, 20, 0);

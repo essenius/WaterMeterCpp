@@ -9,13 +9,14 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Disabling a few ReSharper issues for code clarity. The issues are related to:
+// * conversions that might in theory go wrong but the sensor won't return too high values.
+// * using enums to do bitwise manipulations
+
 // ReSharper disable CppClangTidyBugproneNarrowingConversions
 // ReSharper disable CppClangTidyClangDiagnosticImplicitIntConversion
 // ReSharper disable CppClangTidyClangDiagnosticEnumEnumConversion
 // ReSharper disable CppClangTidyBugproneSuspiciousEnumUsage
-
-// OK with the unscoped types
-#pragma warning (disable:26812)
 
 #include "MagnetoSensorQmc.h"
 #include "Wire.h"
@@ -23,68 +24,89 @@
 constexpr int SOFT_RESET = 0x80;
 constexpr int DATA_READY = 0x01;
 
-void MagnetoSensor::begin() {
+void MagnetoSensor::begin() const {
     Wire.begin();
-    reset();
-    configure();
+    softReset();
 }
 
-void MagnetoSensor::begin(const SensorRange range) {
-    _range = range;
-    begin();
-}
-
-void MagnetoSensor::configure() {
+void MagnetoSensor::configure() const {
     setRegister(SetReset, 0x01);
     setRegister(Control1, Continuous | _rate | _range | _overSampling);
 }
 
-bool MagnetoSensor::dataReady() {
+void MagnetoSensor::configureAddress(const byte address) {
+    _address = address;
+}
+
+void MagnetoSensor::configureOverSampling(const SensorOverSampling overSampling) {
+    _overSampling = overSampling;
+}
+
+void MagnetoSensor::configurePowerPort(const uint8_t port) {
+    _powerPort = port;
+}
+
+void MagnetoSensor::configureRange(const SensorRange range) {
+    _range = range;
+}
+
+void MagnetoSensor::configureRate(const SensorRate rate) {
+    _rate = rate;
+}
+
+bool MagnetoSensor::dataReady() const {
     return (getRegister(Status) & DATA_READY) != 0;
 }
 
-byte MagnetoSensor::getRegister(const SensorRegister sensorRegister) {
+byte MagnetoSensor::getRegister(const SensorRegister sensorRegister) const {
     constexpr byte BYTES_TO_READ = 1;
-    Wire.beginTransmission(ADDRESS);
+    Wire.beginTransmission(_address);
     Wire.write(sensorRegister);
     Wire.endTransmission();
-    Wire.requestFrom(ADDRESS, BYTES_TO_READ);
+    Wire.requestFrom(_address, BYTES_TO_READ);
     const byte value = static_cast<byte>(Wire.read());
     Wire.endTransmission();
     return value;
 }
 
-bool MagnetoSensor::isOn() {
-    Wire.beginTransmission(ADDRESS);
+void MagnetoSensor::hardReset() const {
+    digitalWrite(_powerPort, LOW);
+    while (isOn()) {}
+    digitalWrite(_powerPort, HIGH);
+    while (!isOn()) {}
+    delay(10);
+    // since this was drastic, we might need to revive Wire too.
+    begin();
+}
+
+bool MagnetoSensor::isOn() const {
+    Wire.beginTransmission(_address);
     return Wire.endTransmission() == 0;
 }
 
-void MagnetoSensor::read(SensorData* sample) {
-    Wire.beginTransmission(ADDRESS);
+void MagnetoSensor::read(SensorData* sample) const {
+    Wire.beginTransmission(_address);
     Wire.write(Data); 
     Wire.endTransmission();
   
+    constexpr byte BYTES_TO_READ = 6;
+    constexpr byte BITS_PER_BYTE = 8;
     // Read data from each axis, 2 registers per axis
     // order: x LSB, x MSB, y LSB, y MSB, z LSB, z MSB
-    constexpr byte BYTES_TO_READ = 6;
-    Wire.requestFrom(ADDRESS, BYTES_TO_READ);
+    Wire.requestFrom(_address, BYTES_TO_READ);
     while (Wire.available() < BYTES_TO_READ) {}
-    sample->x = Wire.read() | Wire.read()<<8; 
-    sample->y = Wire.read() | Wire.read()<<8; 
-    sample->z = Wire.read() | Wire.read()<<8;
+    sample->x = Wire.read() | Wire.read() << BITS_PER_BYTE;
+    sample->y = Wire.read() | Wire.read() << BITS_PER_BYTE;
+    sample->z = Wire.read() | Wire.read() << BITS_PER_BYTE;
 }
 
-void MagnetoSensor::reset() {
+void MagnetoSensor::softReset() const {
     setRegister(Control2, SOFT_RESET);
-}
-
-void MagnetoSensor::setRange(const SensorRange range) {
-    _range = range;
     configure();
 }
 
-void MagnetoSensor::setRegister(const SensorRegister sensorRegister, const byte value) {
-    Wire.beginTransmission(ADDRESS); 
+void MagnetoSensor::setRegister(const SensorRegister sensorRegister, const byte value) const {
+    Wire.beginTransmission(_address);
     Wire.write(sensorRegister); 
     Wire.write(value); 
     Wire.endTransmission();  

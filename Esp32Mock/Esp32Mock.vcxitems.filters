@@ -19,7 +19,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ESP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Preferences.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PubSubClient.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)QMC5883LCompass.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Wire.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)freertos\ringbuf.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)freertos\freeRTOS.h" />
