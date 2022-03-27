@@ -51,7 +51,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(
                 1,
                 resetSensorEventClient.getCallCount(),
-                L"Sensor was softReset called after ResetSensor command");
+                L"Sensor was reset called after ResetSensor command");
             Wire.setEndTransmissionTogglePeriod(0);
             constexpr uint8_t BUFFER[] = {10, 0x80, 11, 0x01, 9, 0x19};
             Assert::AreEqual<short>(sizeof BUFFER, Wire.writeMismatchIndex(BUFFER, sizeof BUFFER), L"test");

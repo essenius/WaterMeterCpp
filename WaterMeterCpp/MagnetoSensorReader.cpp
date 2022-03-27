@@ -37,13 +37,13 @@ int16_t MagnetoSensorReader::read() {
     // check whether the sensor still works
     if (sample.y == _previousSample) {
         _streakCount++;
-        // if we have too many of the same results in a row, softReset the sensor
+        // if we have too many of the same results in a row, reset the sensor
         if (_streakCount >= FLATLINE_STREAK) {
             reset();
         }
     }
     else {
-        // all good, softReset the statistics
+        // all good, reset the statistics
         _streakCount = 0;
         _consecutiveStreakCount = 0;
         _previousSample = sample.y;
@@ -54,7 +54,7 @@ int16_t MagnetoSensorReader::read() {
 
 void MagnetoSensorReader::reset() {
     _consecutiveStreakCount++;
-    // If we have done this a number of times in a row, we do a hard softReset and post an alert
+    // If we have done this a number of times in a row, we do a hard reset and post an alert
     if (_consecutiveStreakCount >= MAX_STREAKS_TO_ALERT) {
         _alert = true;
         hardReset();

@@ -52,7 +52,7 @@ namespace WaterMeterCppTest {
                 L"writes for begin ok");
             // we are at the default address so the sensor should report it's on
             Assert::IsTrue(sensor.isOn());
-            // softReset buffer
+            // reset buffer
             Wire.begin();
             SensorData sample{};
             sensor.read(&sample);

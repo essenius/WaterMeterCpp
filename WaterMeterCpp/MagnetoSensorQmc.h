@@ -12,8 +12,8 @@
 // Driver for the QMC5883L sensor.
 // We don't care a lot about calibration as we're looking for peaks in the signals.
 //
-// Since the sensor sometimes stops responding, we need a way to hard softReset it.
-// For that, we simply give it its power from a GPIO port, which we can bring down to softReset it.
+// Since the sensor sometimes stops responding, we need a way to hard reset it.
+// For that, we simply give it its power from a GPIO port, which we can bring down to reset it.
 
 #ifndef HEADER_MAGNETOSENSORQMC
 #define HEADER_MAGNETOSENSORQMC
@@ -104,7 +104,7 @@ public:
     // read a sample from the sensor
     void read(SensorData* sample) const;
 
-    // soft softReset the sensor
+    // soft reset the sensor
     void softReset() const;
 
     static constexpr byte DEFAULT_ADDRESS = 0x0D;

@@ -57,7 +57,7 @@ namespace WaterMeterCppTest {
         TEST_METHOD(mainTest1) {
             // make the firmware check fail
             HTTPClient::ReturnValue = 400;
-            // Other tests might have run before, so softReset stacks and queues
+            // Other tests might have run before, so reset stacks and queues
             ESP.restart();
             Wire.setFlatline(true);
             uxTaskGetStackHighWaterMarkReset();
