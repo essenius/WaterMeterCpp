@@ -16,8 +16,8 @@
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppClangTidyPerformanceNoIntToPtr
 
-// deliberate unscoped enum
-#pragma warning (disable:26812)
+// deliberate conversion to handle and unscoped enum
+#pragma warning (disable:4312 26812)
 
 #include <ESP.h>
 #include <freertos/freeRTOS.h>
@@ -117,9 +117,14 @@ UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle) {
 
 unsigned long taskHandle = 100;
 
-BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode, const char* pcName, uint16_t usStackDepth,
-                                   void* pvParameters, UBaseType_t uxPriority, TaskHandle_t* pxCreatedTask,
-                                   BaseType_t xCoreID) {
+BaseType_t xTaskCreatePinnedToCore(
+    TaskFunction_t pvTaskCode, 
+    const char* pcName, 
+    uint16_t usStackDepth,
+    void* pvParameters,
+    UBaseType_t uxPriority,
+    TaskHandle_t* pxCreatedTask,
+    BaseType_t xCoreID) {
     *pxCreatedTask = reinterpret_cast<TaskHandle_t>(taskHandle++);
     return pdTRUE;
 }

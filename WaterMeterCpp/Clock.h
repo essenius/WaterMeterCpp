@@ -12,23 +12,13 @@
 #ifndef HEADER_CLOCK
 #define HEADER_CLOCK
 
+// ReSharper disable once CppUnusedIncludeDirective - it is used
+#include <sys/time.h>
 #include "EventServer.h"
 
-// We omit ESP32 on purpose on Windows. the ESP32 mock defines INPUT which is also defined in windows.h.
-#ifdef ESP32
-#include <ESP.h>  
-#include <sys/time.h>
-#else
-#include <ctime>
+// We circumvent ESP.h - it defines INPUT which is also defined in windows.h, which time.h uses there
 #include <freertos/freeRTOS.h>
-
-// ReSharper disable CppInconsistentNaming -- redefining existing entity in ESP32
-
-struct timeval {
-    time_t tv_sec; // seconds 
-    long tv_usec; // microseconds
-};
-#endif
+#include <freertos/semphr.h>
 
 using Timestamp = unsigned long long;
 
@@ -38,8 +28,8 @@ public:
     void begin();
     const char* get(Topic topic, const char* defaultValue) override;
 
-    Timestamp getTimestamp();
-    bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
+    static Timestamp getTimestamp();
+    static bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
 
 private:
     static constexpr int BUFFER_SIZE = 27;

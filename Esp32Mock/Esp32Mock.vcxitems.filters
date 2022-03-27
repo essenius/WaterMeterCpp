@@ -12,6 +12,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)IPAddress.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)WiFi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)WiFiClientSecure.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)sys\time.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Client.h" />
@@ -29,5 +30,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)WiFi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WiFiClient.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WiFiClientSecure.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)sys\time.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)freertos\semphr.h" />
   </ItemGroup>
 </Project>
