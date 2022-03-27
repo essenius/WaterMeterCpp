@@ -17,7 +17,7 @@
 #include "EventServer.h"
 #include "LongChangePublisher.h"
 
-class Device : public EventClient {
+class Device final : public EventClient {
 public:
     explicit Device(EventServer* eventServer);
     void begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle);

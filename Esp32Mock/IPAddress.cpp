@@ -25,7 +25,7 @@ IPAddress::IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4) {
 }
 
 IPAddress::IPAddress(const uint8_t* address) {
-    memcpy(_address.bytes, address, sizeof(_address.bytes));
+    memcpy(_address.bytes, address, sizeof _address.bytes);
 }
 
 IPAddress& IPAddress::operator=(uint32_t address) {
@@ -34,7 +34,7 @@ IPAddress& IPAddress::operator=(uint32_t address) {
 }
 
 IPAddress& IPAddress::operator=(const uint8_t* address) {
-    memcpy(_address.bytes, address, sizeof(_address.bytes));
+    memcpy(_address.bytes, address, sizeof _address.bytes);
     return *this;
 }
 

@@ -11,6 +11,9 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
+// Disabling warnings caused by mimicking existing interface
+// ReSharper disable CppParameterNeverUsed
+
 #define WIN32_LEAN_AND_MEAN
 #include <sys/time.h>
 #include <windows.h>

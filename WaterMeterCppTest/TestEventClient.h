@@ -13,7 +13,7 @@
 
 #include "../WaterMeterCpp/EventServer.h"
 
-class TestEventClient : public EventClient {
+class TestEventClient final : public EventClient {
 public:
     explicit TestEventClient(EventServer* eventServer) : EventClient(eventServer) {
         _payload[0] = 0;

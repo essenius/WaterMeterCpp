@@ -15,7 +15,7 @@
 #include "EventServer.h"
 #include "LedFlasher.h"
 
-class LedDriver : public EventClient {
+class LedDriver final : public EventClient {
 public:
     explicit LedDriver(EventServer* eventServer);
     void begin();

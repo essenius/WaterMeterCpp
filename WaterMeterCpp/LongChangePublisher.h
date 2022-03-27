@@ -16,7 +16,7 @@
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
-class LongChangePublisher : public ChangePublisher<long> {
+class LongChangePublisher final : public ChangePublisher<long> {
 public:
     LongChangePublisher(
         EventServer* eventServer, 

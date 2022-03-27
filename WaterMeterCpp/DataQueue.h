@@ -19,7 +19,7 @@
 #include "LongChangePublisher.h"
 #include "DataQueuePayload.h"
 
-class DataQueue : public EventClient {
+class DataQueue final : public EventClient {
 public:
     DataQueue(EventServer* eventServer, DataQueuePayload* payload, int8_t index = 0, long queueSize = 40960, long epsilon = 1024, long lowThreshold = 2048);
 

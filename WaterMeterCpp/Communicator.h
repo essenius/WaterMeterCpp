@@ -18,7 +18,7 @@
 #include "QueueClient.h"
 #include "Serializer.h"
 
-class Communicator : public EventClient {
+class Communicator final : public EventClient {
 public:
     Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, Device* device, 
         DataQueue* dataQueue, Serializer* serializer, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);

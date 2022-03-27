@@ -21,7 +21,7 @@ size_t DataQueuePayload::size() const {
         size += sizeof(ResultData);
         break;
     case Topic::Samples:
-        size += sizeof(Samples::count) + buffer.samples.count * sizeof(Samples::value[0]);
+        size += sizeof Samples::count + buffer.samples.count * sizeof Samples::value[0];
         break;
     case Topic::ConnectionError:
     case Topic::Info:

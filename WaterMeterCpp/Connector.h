@@ -28,7 +28,7 @@ constexpr unsigned long TIMESERVER_WAIT_DURATION = 10UL * SECONDS;
 constexpr unsigned long WIFI_INITIAL_WAIT_DURATION = 20UL * SECONDS;
 constexpr unsigned long WIFI_RECONNECT_WAIT_DURATION = 10UL * SECONDS;
 
-class Connector : public EventClient {
+class Connector final : public EventClient {
 public:
     Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
               FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,

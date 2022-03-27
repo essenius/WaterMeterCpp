@@ -13,7 +13,7 @@
 
 #include "../WaterMeterCpp/WiFiManager.h"
 
-class WiFiMock : public WiFiManager {
+class WiFiMock final : public WiFiManager {
 public:
     explicit WiFiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder);
     void begin() override {}

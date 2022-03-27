@@ -33,10 +33,10 @@ char*  safePointerStrcpy(char* const pointer, char(&buffer)[BufferSize], const c
 }
 
 template <size_t BufferSize, typename... Arguments>
-int safeSprintf(char(&buffer)[BufferSize], const char* format, Arguments ... arguments) {
+int safeSprintf(char(&buffer)[BufferSize], const char* const format, Arguments ... arguments) {
     const int size = BufferSize;
 
-    return snprintf(buffer, size, format, arguments...);
+    return snprintf(buffer, size, format, arguments...);  // NOLINT(clang-diagnostic-format-nonliteral) -- this flexibility is needed
 }
 
 template <size_t BufferSize>

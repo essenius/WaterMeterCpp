@@ -17,7 +17,7 @@
 #include "DataQueuePayload.h"
 
 
-class Serializer : public EventClient {
+class Serializer final : public EventClient {
 public:
     Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder);
     void update(Topic topic, const char* payload) override;

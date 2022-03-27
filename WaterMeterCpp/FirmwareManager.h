@@ -24,7 +24,7 @@
 #include "EventClient.h"
 #include "WiFiClientFactory.h"
 
-class FirmwareManager : public EventClient {
+class FirmwareManager final : public EventClient {
 public:
     explicit FirmwareManager(
         EventServer* eventServer, 

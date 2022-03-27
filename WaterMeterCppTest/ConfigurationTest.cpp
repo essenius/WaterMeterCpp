@@ -86,7 +86,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual("deviceName", configuration.wifi.deviceName, L"Device name OK");
             const auto bssid = configuration.wifi.bssid;
             Assert::IsNotNull(bssid, L"BSSID not null");
-            for (unsigned int i = 0; i < sizeof(bssidConfig); i++) {
+            for (unsigned int i = 0; i < sizeof bssidConfig; i++) {
                 Assert::AreEqual(bssidConfig[i], bssid[i], L"bssid[i] ok");
             }
             Assert::AreEqual<uint32_t>(0x04030201, configuration.ip.localIp, L"localIP 0");

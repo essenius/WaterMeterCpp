@@ -22,7 +22,7 @@
 #include "EventServer.h"
 #include "PayloadBuilder.h"
 
-class Log : public EventClient {
+class Log final : public EventClient {
 public:
     using EventClient::update;
     Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder);

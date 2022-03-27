@@ -68,7 +68,7 @@ bool Aggregator::send() {
     if (!shouldSend()) return false;
     _blocked = !canSend();
     if (_blocked) return false;
-    _payload->timestamp = _clock->getTimestamp();
+    _payload->timestamp = Clock::getTimestamp();
     if (!_dataQueue->send(getPayload())) {
         return false;
     }

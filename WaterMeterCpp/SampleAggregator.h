@@ -15,12 +15,12 @@
 #include "Aggregator.h"
 #include "EventServer.h"
 
-class SampleAggregator : public Aggregator {
+class SampleAggregator final : public Aggregator {
 public:
     SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
     using Aggregator::begin;
     void addSample(int16_t measure);
-    virtual void begin();
+    void begin();
     void flush() override;
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;

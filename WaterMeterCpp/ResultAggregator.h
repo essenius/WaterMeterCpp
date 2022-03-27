@@ -16,14 +16,14 @@
 #include "FlowMeter.h"
 #include "EventServer.h"
 
-class ResultAggregator : public Aggregator {
+class ResultAggregator final : public Aggregator {
 public:
     ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
                      uint32_t measureIntervalMicros);
     void addDuration(unsigned long duration) const;
     void addMeasurement(int16_t value, const FlowMeter* result);
     using Aggregator::begin;
-    virtual void begin();
+    void begin();
     void flush() override;
     bool shouldSend(bool endOfFile = false) override;
     bool send() override;

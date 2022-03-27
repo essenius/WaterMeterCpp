@@ -13,7 +13,7 @@
 
 #include "../WaterMeterCpp/TimeServer.h"
 
-class TimeServerMock : public TimeServer
+class TimeServerMock final : public TimeServer
 {
 public:
     void setTime() override { _wasSet = true; }

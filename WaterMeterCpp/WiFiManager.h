@@ -22,7 +22,6 @@
 const IPAddress NO_IP(0,0,0,0);
 
 class WiFiManager : public EventClient {
-
 public:
     WiFiManager(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder);
     virtual void announceReady();

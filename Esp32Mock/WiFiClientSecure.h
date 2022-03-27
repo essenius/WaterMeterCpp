@@ -21,7 +21,7 @@
 
 #include "WiFiClient.h"
 
-class WiFiClientSecure : public WiFiClient {
+class WiFiClientSecure final : public WiFiClient {
 public:
     void setCACert(const char* cert) { }
     void setCertificate(const char* cert) { }

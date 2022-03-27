@@ -13,7 +13,7 @@
 
 #include "../WaterMeterCpp/MqttGateway.h"
 
-class MqttGatewayMock : public MqttGateway {
+class MqttGatewayMock final : public MqttGateway {
 public:
     explicit MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory);
     void announceReady() override { }

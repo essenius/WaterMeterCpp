@@ -11,6 +11,9 @@
 
 // Mock implementation for unit testing (not targeting the ESP32)
 
+// Disabling warnings caused by mimicking existing interfaces
+// ReSharper disable CppMemberFunctionMayBeStatic
+
 #ifndef HEADER_WIFICLIENT
 #define HEADER_WIFICLIENT
 

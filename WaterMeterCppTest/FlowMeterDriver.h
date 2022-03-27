@@ -13,7 +13,7 @@
 
 #include "../WaterMeterCpp/FlowMeter.h"
 
-class FlowMeterDriver : public FlowMeter {
+class FlowMeterDriver final : public FlowMeter {
 public:
     FlowMeterDriver(EventServer* eventServer, int smoothValue, int derivative = 0, int smoothDerivative = 0,
                              bool flow = false, bool peak = false,

@@ -12,9 +12,10 @@
 // Mock implementation for unit testing (not targeting the ESP32)
 
 // Disabling warnings caused by mimicking existing interfaces or mocking hacks
-// ReSharper disable CppParameterNeverUsed
-// ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppClangTidyPerformanceNoIntToPtr
+// ReSharper disable CppInconsistentNaming
+// ReSharper disable CppParameterMayBeConst
+// ReSharper disable CppParameterNeverUsed
 
 // deliberate conversion to handle and unscoped enum
 #pragma warning (disable:4312 26812)

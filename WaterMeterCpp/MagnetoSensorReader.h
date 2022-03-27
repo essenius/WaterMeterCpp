@@ -18,7 +18,7 @@
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
-class MagnetoSensorReader : public EventClient {
+class MagnetoSensorReader final : public EventClient {
 public:
     MagnetoSensorReader(EventServer* eventServer, QMC5883LCompass* compass);
     void begin();

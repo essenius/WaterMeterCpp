@@ -17,12 +17,13 @@
 #include "EventServer.h"
 
 // We circumvent ESP.h - it defines INPUT which is also defined in windows.h, which time.h uses there
+// ReSharper disable once CppUnusedIncludeDirective -- semphr.h requires freeRTOS.h
 #include <freertos/freeRTOS.h>
 #include <freertos/semphr.h>
 
 using Timestamp = unsigned long long;
 
-class Clock : public EventClient {
+class Clock final : public EventClient {
 public:
     explicit Clock(EventServer* eventServer);
     void begin();

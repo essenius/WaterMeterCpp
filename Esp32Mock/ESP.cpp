@@ -135,7 +135,7 @@ void HardwareSerial::println(const char* input) {
 
 char HardwareSerial::read() {
     if (*_bufferPointer == 0) return 0;
-    return *(_bufferPointer++);
+    return *_bufferPointer++;
 }
 
 void HardwareSerial::setInput(const char* input) {

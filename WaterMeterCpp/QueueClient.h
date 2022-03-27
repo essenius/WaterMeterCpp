@@ -18,7 +18,7 @@
 #include "Log.h" // exception: log from here only if buffer is full
 #include "LongChangePublisher.h"
 
-class QueueClient : public EventClient {
+class QueueClient final : public EventClient {
 public:
     QueueClient(EventServer* eventServer, Log* logger, uint16_t size, int8_t index = 0);
     void begin(QueueHandle_t sendQueue = nullptr);

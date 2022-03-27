@@ -23,7 +23,6 @@
 
 using QueueHandle_t = void*;
 using TaskHandle_t = void*;
-//using RingbufHandle_t = void*;
 
 using UBaseType_t = unsigned long;
 using BaseType_t = long;

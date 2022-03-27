@@ -68,7 +68,7 @@ void PayloadBuilder::writeLabel(const char* label) {
 }
 
 void PayloadBuilder::writeTimestamp(const Timestamp timestampIn) {
-    _clock->formatTimestamp(timestampIn, _currentPosition, RESULT_BUFFER_SIZE - strlen(_resultBuffer));
+    Clock::formatTimestamp(timestampIn, _currentPosition, RESULT_BUFFER_SIZE - strlen(_resultBuffer));
     updatePosition();
 }
 
@@ -98,7 +98,7 @@ void PayloadBuilder::updatePosition() {
 }
 
 void PayloadBuilder::writeDelimiter(const char delimiter) {
-    *(_currentPosition++) = delimiter;
+    *_currentPosition++ = delimiter;
     *_currentPosition = 0;
 }
 
@@ -113,7 +113,7 @@ void PayloadBuilder::writeString(const float input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%.2f", input);
     updatePosition();
     // clean up any overprecision
-    while (*(--_currentPosition) == '0') {}
+    while (*--_currentPosition == '0') {}
     if (*_currentPosition != '.') {
         _currentPosition++;
     }

@@ -91,7 +91,7 @@ void MqttGateway::begin(const char* clientName) {
         _announcementPointer = _announcementBuffer;
         prepareAnnouncementBuffer();
     }
-    delete(_wifiClient);
+    delete _wifiClient;
     _wifiClient = _wifiClientFactory->create(_mqttConfig->useTls);
     _mqttClient->setClient(*_wifiClient);
     _mqttClient->setBufferSize(512);
