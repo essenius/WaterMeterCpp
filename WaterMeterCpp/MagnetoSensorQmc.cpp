@@ -10,8 +10,8 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 // Disabling a few ReSharper issues for code clarity. The issues are related to:
-// * conversions that might in theory go wrong but the sensor won't return too high values.
-// * using enums to do bitwise manipulations
+// * conversions that might in theory go wrong, but the sensor won't return too high values.
+// * using enum values to do bitwise manipulations
 
 // ReSharper disable CppClangTidyBugproneNarrowingConversions
 // ReSharper disable CppClangTidyClangDiagnosticImplicitIntConversion

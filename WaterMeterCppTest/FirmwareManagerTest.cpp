@@ -41,7 +41,6 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(firmwareManagerCheckSucceedsNoUpdateNeededTest) {
-            // TODO: optimize use of const variables
             const WiFiClientFactory wifiClientFactory(nullptr);
             FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
             manager.begin("001122334455");
