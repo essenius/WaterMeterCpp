@@ -21,10 +21,11 @@ namespace WaterMeterCppTest {
     TEST_CLASS(MagnetoSensorQmcTest) {
     public:
         TEST_METHOD(magnetoSensorQmcAddressTest) {
-            MagnetoSensor sensor;
+            MagnetoSensorQmc sensor;
             constexpr uint8_t ADDRESS = 0x23;
             sensor.configureAddress(ADDRESS);
             digitalWrite(MagnetoSensor::DEFAULT_POWER_PORT, LOW);
+            Wire.begin();
             sensor.begin();
             sensor.hardReset();
             Assert::AreEqual<int>(ADDRESS, Wire.getAddress(), L"Custom Address OK");
@@ -32,18 +33,20 @@ namespace WaterMeterCppTest {
         }
 
         TEST_METHOD(magnetoSensorQmcHardResetTest) {
-            MagnetoSensor sensor;
+            MagnetoSensorQmc sensor;
             constexpr uint8_t PIN = 23;
             sensor.configurePowerPort(PIN);
             digitalWrite(PIN, LOW);
+            Wire.begin();
             sensor.begin();
             sensor.hardReset();
             Assert::AreEqual<int>(HIGH, digitalRead(PIN), L"Custom pin was toggled");
-            Assert::AreEqual<int>(MagnetoSensor::DEFAULT_ADDRESS, Wire.getAddress(), L"Default address OK");
+            Assert::AreEqual<int>(MagnetoSensorQmc::DEFAULT_ADDRESS, Wire.getAddress(), L"Default address OK");
         }
 
         TEST_METHOD(magnetoSensorQmcScriptTest) {
-            MagnetoSensor sensor;
+            MagnetoSensorQmc sensor;
+            Wire.begin();
             sensor.begin();
             constexpr uint8_t BUFFER_BEGIN[] = {10, 0x80, 11, 0x01, 9, 0x19};
             Assert::AreEqual<int>(
@@ -78,6 +81,9 @@ namespace WaterMeterCppTest {
             sensor.configureOverSampling(Sampling128);
             sensor.configureRate(Rate200Hz);
             sensor.configureRange(Range2G);
+
+            // ensure all test variables are reset
+            Wire.begin();
             sensor.begin();
             constexpr uint8_t BUFFER_RECONFIGURE[] = { 10, 0x80, 11, 0x01, 9, 0x8d };
             Assert::AreEqual<int>(

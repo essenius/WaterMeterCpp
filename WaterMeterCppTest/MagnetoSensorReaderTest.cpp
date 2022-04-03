@@ -15,6 +15,7 @@
 #include "TestEventClient.h"
 #include "Wire.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
+#include "../WaterMeterCpp/MagnetoSensorQmc.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -24,13 +25,16 @@ namespace WaterMeterCppTest {
     TEST_CLASS(MagnetoSensorReaderTest) {
     public:
         TEST_METHOD(magnetoSensorReaderTest1) {
-            MagnetoSensor sensor;
+            MagnetoSensor* sensor;
             EventServer eventServer;
             TestEventClient resetSensorEventClient(&eventServer);
             TestEventClient alertEventClient(&eventServer);
             eventServer.subscribe(&resetSensorEventClient, Topic::SensorWasReset);
             eventServer.subscribe(&alertEventClient, Topic::Alert);
             MagnetoSensorReader reader(&eventServer, &sensor);
+            MagnetoSensorQmc qmcSensor;
+            sensor = &qmcSensor;
+            Wire.begin();
             Wire.setFlatline(true);
             reader.begin();
             Wire.setEndTransmissionTogglePeriod(10);
@@ -47,6 +51,8 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(1, alertEventClient.getCallCount(), L"Alert event fired");
 
             resetSensorEventClient.reset();
+            // reset the test variables in Wire
+            Wire.begin();
             eventServer.publish(Topic::ResetSensor, LONG_TRUE);
             Assert::AreEqual(
                 1,

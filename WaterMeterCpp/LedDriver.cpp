@@ -30,6 +30,7 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::ConnectionError);
     _eventServer->subscribe(this, Topic::Exclude);
     _eventServer->subscribe(this, Topic::Flow);
+    _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::Peak);
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::Sample);
@@ -42,8 +43,8 @@ void LedDriver::begin() {
 }
 
 void LedDriver::update(const Topic topic, const char* payload) {
-    // red led has two functions: error and overrun
-    if (topic == Topic::ConnectionError) {
+    // red led means an error condition
+    if (topic == Topic::ConnectionError || topic == Topic::NoSensorFound) {
         Led::set(Led::RED, Led::ON);
     }
 }

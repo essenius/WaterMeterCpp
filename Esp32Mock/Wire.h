@@ -43,7 +43,7 @@ public:
     short writeMismatchIndex(const uint8_t* expected, short length) const;
 
 private:
-    static constexpr short WRITE_BUFFER_SIZE = 1024;
+    static constexpr short WRITE_BUFFER_SIZE = 2048;
     uint8_t _address = 0;
     int _available = 0;
     uint8_t _nextResult = 0;

@@ -74,6 +74,9 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::FreeHeap:
         log("Free Heap: %s", payload);
         break;
+    case Topic::NoSensorFound:
+        log("No sensor found");
+        break;
     case Topic::MessageFormatted:
         log("%s", payload);
         break;

@@ -40,6 +40,7 @@
 #include "StateHelper.h"
 #include "WiFi.h"
 #include "Wire.h"
+#include "../WaterMeterCpp/MagnetoSensorQmc.h"
 // ReSharper restore CppUnusedIncludeDirective
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -71,7 +72,8 @@ namespace WaterMeterCppTest {
             // Processing one cycle usually takes quite a bit less than that, unless a write happened.
             constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
-            MagnetoSensor sensor;
+            MagnetoSensorQmc qmcSensor;
+            MagnetoSensor* sensor = nullptr;
             WiFiClientFactory wifiClientFactory(&configuration.tls);
 
             EventServer samplerEventServer;
@@ -151,8 +153,17 @@ namespace WaterMeterCppTest {
             communicatorEventServer.cannotProvide(&theClock, Topic::Time);
 
             communicator.setup();
-            sampler.setup(MEASURE_INTERVAL_MICROS);
             connector.setup(&configuration);
+
+            if (qmcSensor.isOn()) {
+                sensor = &qmcSensor;
+            }
+
+            while (!sampler.setup(MEASURE_INTERVAL_MICROS)) {
+                // No sense doing anything if we don't have a sensor
+            }
+
+            sampler.setup(MEASURE_INTERVAL_MICROS);
 
             // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (setup and loop run on core 1)
             xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
@@ -161,6 +172,7 @@ namespace WaterMeterCppTest {
             xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
 
             device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
+
 
             // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
             sampler.begin();

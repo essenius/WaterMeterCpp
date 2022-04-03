@@ -24,67 +24,30 @@
 constexpr int SOFT_RESET = 0x80;
 constexpr int DATA_READY = 0x01;
 
-void MagnetoSensor::begin() const {
-    Wire.begin();
-    softReset();
-}
+MagnetoSensorQmc::MagnetoSensorQmc(): MagnetoSensor(DEFAULT_ADDRESS) {}
 
-void MagnetoSensor::configure() const {
+void MagnetoSensorQmc::configure() const {
     setRegister(SetReset, 0x01);
     setRegister(Control1, Continuous | _rate | _range | _overSampling);
 }
 
-void MagnetoSensor::configureAddress(const byte address) {
-    _address = address;
-}
-
-void MagnetoSensor::configureOverSampling(const SensorOverSampling overSampling) {
+void MagnetoSensorQmc::configureOverSampling(const QmcOverSampling overSampling) {
     _overSampling = overSampling;
 }
 
-void MagnetoSensor::configurePowerPort(const uint8_t port) {
-    _powerPort = port;
-}
-
-void MagnetoSensor::configureRange(const SensorRange range) {
+void MagnetoSensorQmc::configureRange(const QmcRange range) {
     _range = range;
 }
 
-void MagnetoSensor::configureRate(const SensorRate rate) {
+void MagnetoSensorQmc::configureRate(const QmcRate rate) {
     _rate = rate;
 }
 
-bool MagnetoSensor::dataReady() const {
+bool MagnetoSensorQmc::dataReady() const {
     return (getRegister(Status) & DATA_READY) != 0;
 }
 
-byte MagnetoSensor::getRegister(const SensorRegister sensorRegister) const {
-    constexpr byte BYTES_TO_READ = 1;
-    Wire.beginTransmission(_address);
-    Wire.write(sensorRegister);
-    Wire.endTransmission();
-    Wire.requestFrom(_address, BYTES_TO_READ);
-    const byte value = static_cast<byte>(Wire.read());
-    Wire.endTransmission();
-    return value;
-}
-
-void MagnetoSensor::hardReset() const {
-    digitalWrite(_powerPort, LOW);
-    while (isOn()) {}
-    digitalWrite(_powerPort, HIGH);
-    while (!isOn()) {}
-    delay(10);
-    // since this was drastic, we might need to revive Wire too.
-    begin();
-}
-
-bool MagnetoSensor::isOn() const {
-    Wire.beginTransmission(_address);
-    return Wire.endTransmission() == 0;
-}
-
-void MagnetoSensor::read(SensorData* sample) const {
+void MagnetoSensorQmc::read(SensorData* sample) const {
     Wire.beginTransmission(_address);
     Wire.write(Data); 
     Wire.endTransmission();
@@ -100,14 +63,7 @@ void MagnetoSensor::read(SensorData* sample) const {
     sample->z = Wire.read() | Wire.read() << BITS_PER_BYTE;
 }
 
-void MagnetoSensor::softReset() const {
+void MagnetoSensorQmc::softReset() const {
     setRegister(Control2, SOFT_RESET);
     configure();
-}
-
-void MagnetoSensor::setRegister(const SensorRegister sensorRegister, const byte value) const {
-    Wire.beginTransmission(_address);
-    Wire.write(sensorRegister); 
-    Wire.write(value); 
-    Wire.endTransmission();  
 }

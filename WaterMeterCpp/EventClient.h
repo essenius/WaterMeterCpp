@@ -31,7 +31,7 @@ enum class Topic: uint16_t {
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak,
     Time, IpAddress, MacRaw, MacFormatted,
-    ResetSensor, SensorWasReset
+    ResetSensor, SensorWasReset, NoSensorFound
 };
 
 class EventServer;

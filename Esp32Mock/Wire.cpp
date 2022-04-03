@@ -39,7 +39,9 @@ void TwoWire::beginTransmission(uint8_t address) {
 }
 
 uint8_t TwoWire::endTransmission() {
-    if (_endTransmissionTogglePeriod == 0) return _endTransmissionValue;
+    if (_endTransmissionTogglePeriod == 0) {
+        return _endTransmissionValue;
+    }
     if (_endTransmissionCounter == 0) {
         _endTransmissionCounter = _endTransmissionTogglePeriod;
         _endTransmissionValue = 1 - _endTransmissionValue;
@@ -65,8 +67,11 @@ uint8_t TwoWire::getAddress() {
 }
 
 size_t TwoWire::write(uint8_t value) {
-    _written[_writeIndex++] = value;
-    return _writeIndex < WRITE_BUFFER_SIZE;
+    if (_writeIndex < WRITE_BUFFER_SIZE) {
+        _written[_writeIndex++] = value;
+        return true;
+    }
+    return false;
 }
 
 short TwoWire::writeMismatchIndex(const uint8_t* expected, const short length) const {

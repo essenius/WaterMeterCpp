@@ -26,6 +26,7 @@
 #include "FlowMeter.h"
 #include "LedDriver.h"
 #include "Log.h"
+#include "MagnetoSensorQmc.h"
 #include "MagnetoSensorReader.h"
 #include "MqttGateway.h"
 #include "ResultAggregator.h"
@@ -35,6 +36,7 @@
 #include "WiFiManager.h"
 #include "QueueClient.h"
 #include "WiFiClientFactory.h"
+#include "Wire.h"
 
 // For being able to set the firmware 
 constexpr const char* const BUILD_VERSION = "0.100.7";
@@ -48,7 +50,8 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 // we do use dependency injection to hide this design decision as much as possible
 // (and make testing easier).
 
-MagnetoSensor sensor;
+MagnetoSensorQmc qmcSensor;
+MagnetoSensor* sensor = nullptr;
 Preferences preferences;
 Configuration configuration(&preferences);
 WiFiClientFactory wifiClientFactory(&configuration.tls);
@@ -108,6 +111,8 @@ TaskHandle_t connectorTaskHandle;
 void setup() {
     Serial.begin(115200);
     theClock.begin();
+    Wire.begin();
+
     configuration.begin();
     // queue for the sampler process
     samplerQueueClient.begin(communicatorSamplerQueueClient.getQueueHandle());
@@ -122,8 +127,15 @@ void setup() {
     connectorSamplerQueueClient.begin(samplerQueueClient.getQueueHandle());
 
     communicator.setup();
-    sampler.setup(MEASURE_INTERVAL_MICROS);
     connector.setup(&configuration);
+
+    if (qmcSensor.isOn()) {
+        sensor = &qmcSensor;
+    }
+
+    while (!sampler.setup(MEASURE_INTERVAL_MICROS)) {
+        // No sense doing anything if we don't have a sensor
+    }
 
     // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
     sampler.begin();

@@ -12,7 +12,7 @@
 #ifndef HEADER_MAGNETOSENSORREADER
 #define HEADER_MAGNETOSENSORREADER
 
-#include "MagnetoSensorQmc.h"
+#include "MagnetoSensor.h"
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
@@ -21,7 +21,7 @@ constexpr int HARD_RESET = 2;
 
 class MagnetoSensorReader final : public EventClient {
 public:
-    MagnetoSensorReader(EventServer* eventServer, MagnetoSensor* sensor);
+    MagnetoSensorReader(EventServer* eventServer, MagnetoSensor** sensor);
     void begin();
     int16_t read();
     void reset();
@@ -31,7 +31,7 @@ public:
 private:
     static constexpr int FLATLINE_STREAK = 100;
     static constexpr int MAX_STREAKS_TO_ALERT = 10;
-    MagnetoSensor* _sensor;
+    MagnetoSensor** _sensor;
     ChangePublisher<bool> _alert;
     int _consecutiveStreakCount = 0;
     int16_t _previousSample = -32768;
