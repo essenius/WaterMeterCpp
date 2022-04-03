@@ -43,8 +43,8 @@ void LedDriver::begin() {
 }
 
 void LedDriver::update(const Topic topic, const char* payload) {
-    // red led means an error condition
-    if (topic == Topic::ConnectionError || topic == Topic::NoSensorFound) {
+    // red led means an error condition. It can have multiple causes (see below as well)
+    if (topic == Topic::ConnectionError) {
         Led::set(Led::RED, Led::ON);
     }
 }
@@ -90,6 +90,9 @@ void LedDriver::update(const Topic topic, long payload) {
         _sampleFlasher.setInterval(interval);
         return;
     }
+    case Topic::NoSensorFound:
+        Led::set(Led::RED, Led::ON);
+        break;
     case Topic::Peak:
         Led::set(Led::BLUE, state);
         break;

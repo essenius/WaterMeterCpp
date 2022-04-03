@@ -97,6 +97,10 @@ namespace WaterMeterCppTest {
             clearPrintOutput();
             eventServer.publish(Topic::FreeQueueSpaces, 0x03000010);
             Assert::AreEqual("[] Free Spaces Queue #3: 16\n", getPrintOutput(), L"Sensor reset handled OK");
+
+            clearPrintOutput();
+            eventServer.publish(Topic::NoSensorFound, LONG_TRUE);
+            Assert::AreEqual("[] No sensor found\n", getPrintOutput(), L"no sensor found handled OK");
         }
 
     private:

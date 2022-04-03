@@ -45,6 +45,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::FreeQueueSize);
     _eventServer->subscribe(this, Topic::FreeQueueSpaces);
     _eventServer->subscribe(this, Topic::MessageFormatted);
+    _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::SensorWasReset);

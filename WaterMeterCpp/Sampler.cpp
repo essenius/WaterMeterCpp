@@ -74,13 +74,14 @@ void Sampler::loop() {
     }
 }
 
+// if it returns false, the setup failed. Don't try any other functions if so.
 bool Sampler::setup(const unsigned long samplePeriod) {
     _samplePeriod = samplePeriod;
     _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
     // if we didn't find a sensor, signal that the first time only
     // this allows for an easy way to get into an infinite wait loop -
     // no sense doing anything without a sensor.
-    if (_sensorReader == nullptr) {
+    if (!_sensorReader->hasSensor()) {
         if (_firstError) {
             _eventServer->publish(Topic::NoSensorFound, LONG_TRUE);
             _eventServer->publish(Topic::Alert, LONG_TRUE);

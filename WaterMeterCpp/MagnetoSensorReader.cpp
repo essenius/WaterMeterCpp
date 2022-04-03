@@ -32,6 +32,17 @@ void MagnetoSensorReader::begin() {
     _eventServer->subscribe(this, Topic::ResetSensor);
 }
 
+void MagnetoSensorReader::hardReset() {
+    (*_sensor)->hardReset();
+    _streakCount = 0;
+    _consecutiveStreakCount = 0;
+    _eventServer->publish(Topic::SensorWasReset, HARD_RESET);
+}
+
+bool MagnetoSensorReader::hasSensor() const {
+    return *_sensor != nullptr;
+}
+
 int16_t MagnetoSensorReader::read() {
     SensorData sample{};
     (*_sensor)->read(&sample);
@@ -69,13 +80,6 @@ void MagnetoSensorReader::reset() {
     (*_sensor)->softReset();
     _streakCount = 0;
     _eventServer->publish(Topic::SensorWasReset, SOFT_RESET);
-}
-
-void MagnetoSensorReader::hardReset() {
-    (*_sensor)->hardReset();
-    _streakCount = 0;
-    _consecutiveStreakCount = 0;
-    _eventServer->publish(Topic::SensorWasReset, HARD_RESET);
 }
 
 void MagnetoSensorReader::update(const Topic topic, long payload) {

@@ -176,6 +176,7 @@
     <ClCompile Include="LogTest.cpp" />
     <ClCompile Include="MagnetoSensorQmcTest.cpp" />
     <ClCompile Include="MagnetoSensorReaderTest.cpp" />
+    <ClCompile Include="SamplerTest.cpp" />
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="MqttGatewayMock.cpp" />
     <ClCompile Include="MqttGatewayTest.cpp" />

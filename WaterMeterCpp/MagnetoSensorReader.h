@@ -23,9 +23,10 @@ class MagnetoSensorReader final : public EventClient {
 public:
     MagnetoSensorReader(EventServer* eventServer, MagnetoSensor** sensor);
     void begin();
+    void hardReset();
+    bool hasSensor() const;
     int16_t read();
     void reset();
-    void hardReset();
     void update(Topic topic, long payload) override;
 
 private:
