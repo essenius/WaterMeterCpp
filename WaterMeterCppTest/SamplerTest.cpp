@@ -12,8 +12,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
-#include "Wire.h"
-#include "../WaterMeterCpp/MagnetoSensorQmc.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/Sampler.h"
 

@@ -62,7 +62,7 @@ enum QmcMode: byte {
 
 // QMC5883L sensor driver returning the raw readings.
 
-class MagnetoSensorQmc: public MagnetoSensor {
+class MagnetoSensorQmc final : public MagnetoSensor {
 public:
     MagnetoSensorQmc();
     // Configure the sensor according to the configuration parameters (called in begin())

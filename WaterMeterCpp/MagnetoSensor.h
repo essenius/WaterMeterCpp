@@ -36,6 +36,10 @@ class MagnetoSensor {
 public:
     virtual ~MagnetoSensor() = default;
     explicit MagnetoSensor(byte address);
+    MagnetoSensor(const MagnetoSensor&) = default;
+    MagnetoSensor(MagnetoSensor&&) = default;
+    MagnetoSensor& operator=(const MagnetoSensor&) = default;
+    MagnetoSensor& operator=(MagnetoSensor&&) = default;
 
     // Start Wire and configure the sensor
     void begin() const;
