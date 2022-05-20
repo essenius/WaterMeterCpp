@@ -38,6 +38,7 @@ constexpr const char* const RESULT = "result";
 constexpr const char* const RESULT_IDLE_RATE = "idle-rate";
 constexpr const char* const RESULT_NON_IDLE_RATE = "non-idle-rate";
 constexpr const char* const RESULT_RATE = "rate";
+constexpr const char* const RESULT_METER = "meter";
 constexpr const char* const RESULT_VALUES = "values";
 constexpr const char* const STATE = "$state";
 

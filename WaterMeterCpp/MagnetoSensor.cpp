@@ -34,7 +34,7 @@ void MagnetoSensor::configurePowerPort(const uint8_t port) {
     pinMode(_powerPort, OUTPUT);
 }
 
-void MagnetoSensor::power(uint8_t state) const {
+void MagnetoSensor::power(const uint8_t state) const {
     digitalWrite(_powerPort, state);
 }
 

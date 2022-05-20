@@ -19,20 +19,24 @@
 
 using namespace std::placeholders;
 
-static const std::map<Topic, std::pair<const char*, const char*>> TOPIC_MAP{
-    {Topic::BatchSize, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}},
-    {Topic::BatchSizeDesired, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}},
-    {Topic::SamplesFormatted, {MEASUREMENT, MEASUREMENT_VALUES}},
-    {Topic::Rate, {RESULT, RESULT_RATE}},
-    {Topic::ResultFormatted, {RESULT, RESULT_VALUES}},
-    {Topic::IdleRate, {RESULT, RESULT_IDLE_RATE}},
-    {Topic::NonIdleRate, {RESULT, RESULT_NON_IDLE_RATE}},
-    {Topic::FreeHeap, {DEVICE, DEVICE_FREE_HEAP}},
-    {Topic::FreeStack, {DEVICE, DEVICE_FREE_STACK}},
-    {Topic::FreeQueueSize, {DEVICE, DEVICE_FREE_QUEUE_SIZE}},
-    {Topic::FreeQueueSpaces, {DEVICE, DEVICE_FREE_QUEUE_SPACES}},
-    {Topic::SensorWasReset, {DEVICE, DEVICE_RESET_SENSOR}},
-    {Topic::ResetSensor, {DEVICE, DEVICE_RESET_SENSOR}}
+// mapoing between topics and whether it can be set, the node, and the property
+// implementing triplet via two pairs
+static const std::map<Topic, std::pair<bool, std::pair<const char*, const char*>>> TOPIC_MAP{
+    {Topic::BatchSize,        {false, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}}},
+    {Topic::BatchSizeDesired, {true,  {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}}},
+    {Topic::SamplesFormatted, {false, {MEASUREMENT, MEASUREMENT_VALUES}}},
+    {Topic::Rate,             {false, {RESULT, RESULT_RATE}}},
+    {Topic::ResultFormatted,  {false, {RESULT, RESULT_VALUES}}},
+    {Topic::IdleRate,         {true,  {RESULT, RESULT_IDLE_RATE}}},
+    {Topic::NonIdleRate,      {true,  {RESULT, RESULT_NON_IDLE_RATE}}},
+    {Topic::Meter,            {false, {RESULT, RESULT_METER}}},
+    {Topic::SetMeter,         {true,  {RESULT, RESULT_METER}}},
+    {Topic::FreeHeap,         {false, {DEVICE, DEVICE_FREE_HEAP}}},
+    {Topic::FreeStack,        {false, {DEVICE, DEVICE_FREE_STACK}}},
+    {Topic::FreeQueueSize,    {false, {DEVICE, DEVICE_FREE_QUEUE_SIZE}}},
+    {Topic::FreeQueueSpaces,  {false, {DEVICE, DEVICE_FREE_QUEUE_SPACES}}},
+    {Topic::SensorWasReset,   {false, {DEVICE, DEVICE_RESET_SENSOR}}},
+    {Topic::ResetSensor,      {true,  {DEVICE, DEVICE_RESET_SENSOR}}}
 };
 
 static const std::set<Topic> NON_RETAINED_TOPICS{ Topic::ResetSensor, Topic::SensorWasReset };
@@ -40,10 +44,10 @@ static const std::set<Topic> NON_RETAINED_TOPICS{ Topic::ResetSensor, Topic::Sen
 constexpr const char* const RATE_RANGE = "0:8640000";
 constexpr const char* const TYPE_INTEGER = "integer";
 constexpr const char* const TYPE_STRING = "string";
+constexpr const char* const TYPE_FLOAT = "float";
 constexpr const char* const LAST_WILL_MESSAGE = "lost";
 constexpr bool SETTABLE = true;
 constexpr const char* const NAME = "$name";
-
 
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
@@ -126,17 +130,21 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
     const char* property = nextToken(&copyTopic, DELIMITER);
     const char* set = nextToken(&copyTopic, DELIMITER);
     if (set != nullptr && strcmp(set, "set") == 0) {
-        // 1ULL is a trick to avoid C26451
+        // 1LL is a trick to avoid C26451
         const auto payloadStr = new char[1LL + length];
         for (unsigned int i = 0; i < length; i++) {
             payloadStr[i] = static_cast<char>(payload[i]);
         } 
         payloadStr[length] = 0;
         for (const auto& entry : TOPIC_MAP) {
-            const auto topicPair = entry.second;
-            if (strcmp(topicPair.first, node) == 0 && strcmp(topicPair.second, property) == 0) {
-                _eventServer->publish<const char*>(this, entry.first, payloadStr);
-                break;
+            const auto topicTriplet = entry.second;
+            const auto isSetProperty = topicTriplet.first;
+            if (isSetProperty) {
+                const auto topicPair = topicTriplet.second;
+                if (strcmp(topicPair.first, node) == 0 && strcmp(topicPair.second, property) == 0) {
+                    _eventServer->publish<const char*>(this, entry.first, payloadStr);
+                    break;
+                }
             }
         }
         delete[] payloadStr;
@@ -195,14 +203,15 @@ void MqttGateway::prepareAnnouncementBuffer() {
     safeSprintf(payload, "%s,%s,%s", MEASUREMENT_BATCH_SIZE, MEASUREMENT_BATCH_SIZE_DESIRED, MEASUREMENT_VALUES);
     prepareNode(MEASUREMENT, "Measurement", "1", payload);
     prepareProperty(MEASUREMENT, MEASUREMENT_BATCH_SIZE, "Batch Size", TYPE_INTEGER);
-    prepareProperty(MEASUREMENT, MEASUREMENT_VALUES, "Values", TYPE_STRING);
     prepareProperty(MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED, "Desired Batch Size", TYPE_INTEGER, "0-20", SETTABLE);
+    prepareProperty(MEASUREMENT, MEASUREMENT_VALUES, "Values", TYPE_STRING);
 
-    safeSprintf(payload, "%s,%s,%s,%s", RESULT_RATE, RESULT_IDLE_RATE, RESULT_NON_IDLE_RATE, RESULT_VALUES);
+    safeSprintf(payload, "%s,%s,%s,%s,%s", RESULT_RATE, RESULT_IDLE_RATE, RESULT_NON_IDLE_RATE, RESULT_METER, RESULT_VALUES);
     prepareNode(RESULT, "Result", "1", payload);
     prepareProperty(RESULT, RESULT_RATE, "Rate", TYPE_INTEGER);
     prepareProperty(RESULT, RESULT_IDLE_RATE, "Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
     prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
+    prepareProperty(RESULT, RESULT_METER, "Meter value", TYPE_FLOAT, "0-99999.999999", SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
     safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_FREE_QUEUE_SIZE, DEVICE_FREE_QUEUE_SPACES, DEVICE_BUILD, DEVICE_MAC);
@@ -289,12 +298,16 @@ void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
     }
     const auto entry = TOPIC_MAP.find(topic);
     if (entry != TOPIC_MAP.end()) {
-        const auto topicPair = entry->second;
-        publishProperty(
-            topicPair.first, 
-            topicPair.second, 
-            payload, 
-            NON_RETAINED_TOPICS.find(topic) == NON_RETAINED_TOPICS.end());
+        const auto topicTriplet = entry->second;
+        const auto isSetTopic = topicTriplet.first;
+        if (!isSetTopic) {
+            const auto topicPair = topicTriplet.second;
+            publishProperty(
+                topicPair.first, 
+                topicPair.second, 
+                payload, 
+                NON_RETAINED_TOPICS.find(topic) == NON_RETAINED_TOPICS.end());
+        }
     }
 }
 

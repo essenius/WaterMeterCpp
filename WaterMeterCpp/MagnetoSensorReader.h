@@ -21,7 +21,7 @@ constexpr int HARD_RESET = 2;
 
 class MagnetoSensorReader final : public EventClient {
 public:
-    MagnetoSensorReader(EventServer* eventServer);
+    explicit MagnetoSensorReader(EventServer* eventServer);
     void begin();
     float getGain() const;
     int getNoiseRange() const;

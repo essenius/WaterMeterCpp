@@ -53,7 +53,7 @@ void FlowMeter::addSample(const int measurement) {
         return;
     }
     detectOutlier(measurement);
-    markAnomalies(measurement);
+    markAnomalies();
     detectPeaks(measurement);
 }
 
@@ -195,7 +195,7 @@ float FlowMeter::lowPassFilter(const float measure, const float filterValue, con
     return alpha * measure + (1 - alpha) * filterValue;
 }
 
-void FlowMeter::markAnomalies(const int measurement) {
+void FlowMeter::markAnomalies() {
     _exclude = _outlier;
     if (_outlier) {
         _consecutiveOutliers++;
@@ -205,20 +205,6 @@ void FlowMeter::markAnomalies(const int measurement) {
         return;
     }
     _consecutiveOutliers = 0;
-    
-    //if (!_exclude) {
-    //    return;
-    //}
-    //_excludeAll = _startupSamplesLeft > 0;
-    //if (!_excludeAll) {
-    //    return;
-    //}
-
-    //// We have a problem in the first few measurements. It might as well have been the first one (e.g. startup issue).
-    //// so we discard what we have so far and start again. We keep the current value as seed for the low pass filters.
-    //// If this was the outlier, it will be caught the next time.
-    //resetFilters(measurement);
-    //_startupSamplesLeft = STARTUP_SAMPLES;
 }
 
 void FlowMeter::resetAnomalies() {

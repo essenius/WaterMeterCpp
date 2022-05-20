@@ -111,6 +111,9 @@
     <ClCompile Include="MagnetoSensorHmc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OledDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aggregator.h">
@@ -216,6 +219,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MagnetoSensorHmc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OledDriver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -76,7 +76,6 @@ public:
 protected:
     uint8_t _powerPort = DEFAULT_POWER_PORT;
     byte _address;
-    byte getRegister(byte sensorRegister) const;
     void setRegister(byte sensorRegister, byte value) const;
 };
 

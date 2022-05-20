@@ -28,6 +28,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Wire.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Adafruit_SSD1306.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Client.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ESP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)freertos\freeRTOS.h" />

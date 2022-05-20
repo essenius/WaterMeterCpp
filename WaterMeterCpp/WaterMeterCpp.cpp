@@ -30,6 +30,7 @@
 #include "MagnetoSensorQmc.h"
 #include "MagnetoSensorReader.h"
 #include "MqttGateway.h"
+#include "OledDriver.h"
 #include "ResultAggregator.h"
 #include "SampleAggregator.h"
 #include "Sampler.h"
@@ -53,7 +54,6 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
 MagnetoSensorQmc qmcSensor;
 MagnetoSensorHmc hmcSensor;
-MagnetoSensor* sensor = nullptr;
 Preferences preferences;
 Configuration configuration(&preferences);
 WiFiClientFactory wifiClientFactory(&configuration.tls);
@@ -76,6 +76,7 @@ ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQue
 
 Device device(&communicatorEventServer);
 LedDriver ledDriver(&communicatorEventServer);
+OledDriver oledDriver(&communicatorEventServer);
 PayloadBuilder wifiPayloadBuilder;
 Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
@@ -100,7 +101,7 @@ Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2,
+Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &device, &connectorDataQueue, &serializer2,
                           &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
 TimeServer timeServer;

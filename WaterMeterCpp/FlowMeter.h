@@ -68,7 +68,7 @@ protected:
     void detectPeaks(int measurement);
     static float highPassFilter(float measure, float previous, float filterValue, float alpha);
     static float lowPassFilter(float measure, float filterValue, float alpha);
-    void markAnomalies(int measurement);
+    void markAnomalies();
     void resetAnomalies();
     void resetFilters(int initialMeasurement);
 };

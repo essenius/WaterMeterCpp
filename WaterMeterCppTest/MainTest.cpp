@@ -76,7 +76,6 @@ namespace WaterMeterCppTest {
             MagnetoSensorQmc qmcSensor;
             MagnetoSensorHmc hmcSensor;
 
-            MagnetoSensor* sensor = nullptr;
             WiFiClientFactory wifiClientFactory(&configuration.tls);
 
             EventServer samplerEventServer;
@@ -99,6 +98,7 @@ namespace WaterMeterCppTest {
 
             Device device(&communicatorEventServer);
             LedDriver ledDriver(&communicatorEventServer);
+            OledDriver oledDriver(&communicatorEventServer);
             PayloadBuilder wifiPayloadBuilder;
             Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
@@ -121,7 +121,7 @@ namespace WaterMeterCppTest {
             DataQueue connectorDataQueue(&communicatorEventServer, &communicatorQueuePayload, 1, 1024, 128, 256);
             Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator,
                             &samplerQueueClient);
-            Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2,
+            Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &device, &connectorDataQueue, &serializer2,
                                       &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
             TimeServer timeServer;
