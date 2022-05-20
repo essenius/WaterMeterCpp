@@ -16,27 +16,37 @@
 #include <iostream>
 #include <fstream>
 
+#include "TestEventClient.h"
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WaterMeterCppTest {
     TEST_CLASS(FlowMeterTest) {
     public:
         static EventServer eventServer;
-
-        TEST_METHOD(flowMeterEarlyOutlierTest) {
+        TEST_METHOD(flowMeterFirstValueIsOutlierTest) {
             FlowMeter actual(&eventServer);
+            eventServer.subscribe(&actual, Topic::SensorWasReset);
+            TestEventClient client(&eventServer);
+            eventServer.subscribe(&client, Topic::ResetSensor);
             actual.addSample(5000);
             assertResult(&actual, L"Fist measurement", 5000.0f, 0.0f, 0.0f);
 
-            actual.addSample(2500);
-            // an early outlier should result in a reset with the last value as seed.
-            assertResult(&actual, L"Early first outlier",
-                2500.0f, 0.0f, 0.0f, false, true, true, true);
-
-            // we're starting from scratch using the next value
+            for (int i = 0; i < 9; i++) {
+                actual.addSample(2500);
+                assertResult(&actual, L"Ignore outlier", 5000.0f, 0.0f, 0.0f, false, true, true);
+                Assert::AreEqual(0, client.getCallCount(), L"ResetSensor not published");
+            }
             actual.addSample(2510);
-            assertResult(&actual, L"first after outlier reset", 2510.0f, 0.0f, 0.0f);
+            assertResult(&actual, L"Ignore outlier", 5000.0f, 0.0f, 0.0f, false, true, true);
+            Assert::AreEqual(1, client.getCallCount(), L"ResetSensor published");
+
+            eventServer.publish(Topic::SensorWasReset, LONG_TRUE);
+            // we're starting from scratch using the next value
+            actual.addSample(2490);
+            assertResult(&actual, L"first after outlier reset", 2490.0f, 0.0f, 0.0f);
         }
+
 
         TEST_METHOD(flowMeterGoodFlowTest) {
             FlowMeter flowMeter(&eventServer);
@@ -138,13 +148,13 @@ namespace WaterMeterCppTest {
         TEST_METHOD(flowMeterResetSensorTest) {
             FlowMeter actual(&eventServer);
             actual.begin(4, 390.0f);
-            Assert::IsTrue(actual.wasReset(), L"was reset");
+            Assert::IsTrue(actual.wasReset(), L"was reset 1");
             addMeasurementSeries(&actual, 5, [](const int i) { return 180 + i % 2 * 2; });
             assertFloatAreEqual(0.4737f, actual.getSmoothFastDerivative());
             Assert::IsFalse(actual.wasReset(), L"Not reset");
             actual.update(Topic::SensorWasReset, LONG_TRUE);
+            Assert::IsTrue(actual.wasReset(), L"was reset 2");
             actual.addSample(175);
-            Assert::IsTrue(actual.wasReset(), L"was reset");
             assertFloatAreEqual(175.0f, actual.getFastSmoothValue(), L"Fast Smooth");
             assertFloatAreEqual(0.0f, actual.getFastDerivative(), L"Fast Derivative");
             assertFloatAreEqual(0.0f, actual.getSmoothFastDerivative(), L"Fast Smooth Derivative");
@@ -152,6 +162,20 @@ namespace WaterMeterCppTest {
             assertFloatAreEqual(175.0f, actual.getSlowSmoothValue(), L"Slow Smooth");
             assertFloatAreEqual(0.0f, actual.getCombinedDerivative(), L"Combined Derivative");
             assertFloatAreEqual(0.0f, actual.getSmoothAbsCombinedDerivative(), L"Smooth Abs Combined Derivative");
+        }
+
+        TEST_METHOD(flowMeterSecondValueIsOutlierTest) {
+            FlowMeter actual(&eventServer);
+            actual.begin(5, 390);
+            actual.addSample(5000);
+            assertResult(&actual, L"Fist measurement", 5000.0f, 0.0f, 0.0f);
+
+            actual.addSample(2500);
+            // an outlier as second value should get ignored.
+            assertResult(&actual, L"Early first outlier", 5000.0f, 0.0f, 0.0f, false, true, true);
+
+            actual.addSample(5005);
+            assertResult(&actual, L"first after outlier reset", 5001.675f, 1.576f, 0.528f);
         }
 
         TEST_METHOD(flowMeterSingleOutlierIgnoredTest) {
@@ -179,8 +203,7 @@ namespace WaterMeterCppTest {
     private:
         void assertResult(const FlowMeter* meter, const wchar_t* description,
                           const float smoothValue, const float derivative, const float smoothDerivative,
-                          const bool peak = false, const bool excluded = false, const bool outlier = false,
-                          const bool excludeAll = false) const {
+                          const bool peak = false, const bool excluded = false, const bool outlier = false) const {
             std::wstring message(description);
             message += std::wstring(L" @ ");
 
@@ -191,7 +214,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(peak, meter->isPeak(), (message + L"Peak").c_str());
             Assert::AreEqual(excluded, meter->isExcluded(), (message + L"Excluded").c_str());
             Assert::AreEqual(outlier, meter->isOutlier(), (message + L"Outlier").c_str());
-            Assert::AreEqual(excludeAll, meter->areAllExcluded(), (message + L"All excluded").c_str());
+            // Assert::AreEqual(excludeAll, meter->areAllExcluded(), (message + L"All excluded").c_str());
         }
 
         static void addMeasurementSeries(FlowMeter* flowMeter, const int count, int (*f)(int)) {

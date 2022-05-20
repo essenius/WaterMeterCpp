@@ -61,9 +61,9 @@ void ResultAggregator::addMeasurement(const int16_t value, const FlowMeter* resu
     if (result->wasReset()) {
         _result->resetCount++;
     }
-    if (result->areAllExcluded()) {
-        _result->excludeCount = _messageCount;
-    }
+    //if (result->areAllExcluded()) {
+    //    _result->excludeCount = _messageCount;
+    //}
     else if (result->isExcluded()) {
         _result->excludeCount++;
     }

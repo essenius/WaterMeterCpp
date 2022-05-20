@@ -17,11 +17,11 @@
 #include "MagnetoSensorQmc.h"
 #include "Wire.h"
 
-
 MagnetoSensor::MagnetoSensor(const byte address): _address(address) {
 }
 
 void MagnetoSensor::begin() const {
+    pinMode(_powerPort, OUTPUT);
     softReset();
 }
 
@@ -31,24 +31,17 @@ void MagnetoSensor::configureAddress(const byte address) {
 
 void MagnetoSensor::configurePowerPort(const uint8_t port) {
     _powerPort = port;
+    pinMode(_powerPort, OUTPUT);
 }
 
-// TODO: not used - eliminate?
-byte MagnetoSensor::getRegister(const byte sensorRegister) const {
-    constexpr byte BYTES_TO_READ = 1;
-    Wire.beginTransmission(_address);
-    Wire.write(sensorRegister);
-    Wire.endTransmission();
-    Wire.requestFrom(_address, BYTES_TO_READ);
-    const byte value = static_cast<byte>(Wire.read());
-    Wire.endTransmission();
-    return value;
+void MagnetoSensor::power(uint8_t state) const {
+    digitalWrite(_powerPort, state);
 }
 
 void MagnetoSensor::hardReset() const {
-    digitalWrite(_powerPort, LOW);
+    power(LOW);
     while (isOn()) {}
-    digitalWrite(_powerPort, HIGH);
+    power(HIGH);
     while (!isOn()) {}
     delay(10);
     // since this was drastic, we might need to revive Wire too.

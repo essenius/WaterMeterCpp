@@ -50,7 +50,7 @@ void Sampler::loop() {
             // ReSharper disable once CppRedundantParentheses - intent clearer this way
             (duration / _samplePeriod) * _samplePeriod + 
             (_consecutiveOverrunCount > MAX_CONSECUTIVE_OVERRUNS ? _samplePeriod : 0);
-        _eventServer->publish(Topic::SkipSamples, shiftPeriod + (_consecutiveOverrunCount-1) * 100000000);
+        _eventServer->publish(Topic::SkipSamples, shiftPeriod /_samplePeriod);
         _scheduledStartTime += shiftPeriod;
         // immediately start the next loop in an attempt to catch up.
     }

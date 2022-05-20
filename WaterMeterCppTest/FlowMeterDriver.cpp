@@ -15,16 +15,16 @@
 
 // constructor for ResultAggregatorTest. Uses fields that are used for reporting
 FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const int smoothValue, const int derivative, const int smoothDerivative,
-                                 const bool flow, const bool peak, const bool outlier, const bool exclude, const bool excludeAll): FlowMeter(eventServer) {
+                                 const bool flow, const bool peak, const bool outlier, const bool exclude): FlowMeter(eventServer) {
     _fastSmooth = static_cast<float>(smoothValue);
     _fastDerivative = static_cast<float>(derivative);
     _smoothFastDerivative = static_cast<float>(smoothDerivative);
     _smoothAbsFastDerivative = 0.0f;
     _exclude = exclude;
-    _excludeAll = excludeAll;
     _flow = flow;
     _outlier = outlier;
     _peak = peak;
+    _firstCall = false;
 }
 
 //float FlowMeterDriver::isFirstOutlier() const {

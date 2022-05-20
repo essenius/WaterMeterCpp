@@ -80,7 +80,7 @@ namespace WaterMeterCppTest {
             WiFiClientFactory wifiClientFactory(&configuration.tls);
 
             EventServer samplerEventServer;
-            MagnetoSensorReader sensorReader(&samplerEventServer, &sensor);
+            MagnetoSensorReader sensorReader(&samplerEventServer);
             FlowMeter flowMeter(&samplerEventServer);
 
             EventServer communicatorEventServer;
@@ -136,6 +136,11 @@ namespace WaterMeterCppTest {
 
             Serial.begin(115200);
             theClock.begin();
+            qmcSensor.power(HIGH); // might as well be hmc, it's about switching a GPIO port
+            // wait for the sensor to be ready for measurements
+            delay(50);
+            Wire.begin();
+
             FirmwareConfig firmwareConfig{ "https://localhost/" };
             configuration.putFirmwareConfig(&firmwareConfig);
             configuration.begin(false);
@@ -159,10 +164,9 @@ namespace WaterMeterCppTest {
             connector.setup(&configuration);
 
             if (qmcSensor.isOn()) {
-                sensor = &qmcSensor;
-            }
-            else if (hmcSensor.isOn()) {
-                sensor = &hmcSensor;
+                sensorReader.setSensor(&qmcSensor);
+            } else if (hmcSensor.isOn()) {
+                sensorReader.setSensor(&hmcSensor);
             }
 
             while (!sampler.setup(MEASURE_INTERVAL_MICROS)) {

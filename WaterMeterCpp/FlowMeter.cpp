@@ -33,6 +33,9 @@ constexpr float ALPHA_HIGH_PASS_SLOW = 0.997f;
 // If the amplitude ls larger than this, it's very likely we have an outlier
 constexpr float OUTLIER_AMPLITUDE_MILLIGAUSS = 53.0f * 2.0f;
 
+// if we have more than this number of outliers in a row, we reset the sensor
+constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 10;
+
 FlowMeter::FlowMeter(EventServer* eventServer):
     EventClient(eventServer),
     _exclude(eventServer, Topic::Exclude),
@@ -40,15 +43,13 @@ FlowMeter::FlowMeter(EventServer* eventServer):
     _peak(eventServer, Topic::Peak) {}
 
 void FlowMeter::addSample(const int measurement) {
-    _firstCall = _startupSamplesLeft == STARTUP_SAMPLES;
-    if (_startupSamplesLeft > 0) {
-        _startupSamplesLeft--;
-    }
+
     // if we don't have a previous measurement yet, use defaults.
     if (_firstCall) {
         // since the filters need initial values, set those. Also initialize the anomaly indicators.
         resetAnomalies();
         resetFilters(measurement);
+        _firstCall = false;
         return;
     }
     detectOutlier(measurement);
@@ -56,9 +57,9 @@ void FlowMeter::addSample(const int measurement) {
     detectPeaks(measurement);
 }
 
-bool FlowMeter::areAllExcluded() const {
-    return _excludeAll;
-}
+//bool FlowMeter::areAllExcluded() const {
+//    return _excludeAll;
+//}
 
 float FlowMeter::getAmplitude() const {
     return _amplitude;
@@ -104,7 +105,8 @@ void FlowMeter::detectPeaks(const int measurement) {
     // on that we apply a low pass filter
     _smoothFastDerivative = lowPassFilter(_fastDerivative, _smoothFastDerivative, ALPHA_LOW_PASS_FAST);
 
-     // we take a low pass filter on the absolute value to be able to see if we have flow (i.e. a sinusoid signal). 
+     // we take a low pass filter on the absolute value as well to be able to see if we have flow,
+     // i.e. a sinusoid signal with an amplitude above a threshold
     _smoothAbsFastDerivative = lowPassFilter(fabsf(_smoothFastDerivative), _smoothAbsFastDerivative, ALPHA_LOW_PASS_SLOW);
     _fastFlow = _smoothAbsFastDerivative > _flowThreshold;
 
@@ -195,26 +197,34 @@ float FlowMeter::lowPassFilter(const float measure, const float filterValue, con
 
 void FlowMeter::markAnomalies(const int measurement) {
     _exclude = _outlier;
-    if (!_exclude) {
+    if (_outlier) {
+        _consecutiveOutliers++;
+        if (_consecutiveOutliers == MAX_CONSECUTIVE_OUTLIERS) {
+          _eventServer->publish(Topic::ResetSensor, LONG_TRUE);
+        }
         return;
     }
-    _excludeAll = _startupSamplesLeft > 0;
-    if (!_excludeAll) {
-        return;
-    }
+    _consecutiveOutliers = 0;
+    
+    //if (!_exclude) {
+    //    return;
+    //}
+    //_excludeAll = _startupSamplesLeft > 0;
+    //if (!_excludeAll) {
+    //    return;
+    //}
 
-    // We have a problem in the first few measurements. It might as well have been the first one (e.g. startup issue).
-    // so we discard what we have so far and start again. We keep the current value as seed for the low pass filters.
-    // If this was the outlier, it will be caught the next time.
-    resetFilters(measurement);
-    _startupSamplesLeft = STARTUP_SAMPLES;
+    //// We have a problem in the first few measurements. It might as well have been the first one (e.g. startup issue).
+    //// so we discard what we have so far and start again. We keep the current value as seed for the low pass filters.
+    //// If this was the outlier, it will be caught the next time.
+    //resetFilters(measurement);
+    //_startupSamplesLeft = STARTUP_SAMPLES;
 }
 
 void FlowMeter::resetAnomalies() {
     _outlier = false;
     _flow = false;
     _exclude = false;
-    _excludeAll = false;
 }
 
 void FlowMeter::resetFilters(const int initialMeasurement) {
@@ -235,7 +245,8 @@ void FlowMeter::update(const Topic topic, const long payload) {
         addSample(static_cast<int>(payload));
     } else if (topic == Topic::SensorWasReset) {
         // If we needed to reset the sensor, also reset the measurement process when the next sample comes in
-       _startupSamplesLeft = STARTUP_SAMPLES;
+       _firstCall = true;
+       _consecutiveOutliers = 0;
     }
 }
 

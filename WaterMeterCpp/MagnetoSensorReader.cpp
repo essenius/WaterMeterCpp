@@ -15,46 +15,43 @@
 #include "MagnetoSensorReader.h"
 #include "MagnetoSensorQmc.h"
 
-MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer, MagnetoSensor** sensor) :
-    EventClient(eventServer), _sensor(sensor), _alert(eventServer, Topic::Alert) {}
-
-// using pointer to pointer as the sensor pointer changes after constroction of the reader
+MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer) :
+    EventClient(eventServer), _alert(eventServer, Topic::Alert) {}
 
 void MagnetoSensorReader::begin() {
-    //_sensor->setCalibration(-1410, 1217, -1495, 1435, -1143, 1680);
-    (*_sensor)->begin();
+    _sensor->begin();
     // ignore the first measurements, often outliers
     SensorData sample{};
-    (*_sensor)->read(&sample);
-    delay(10);
-    (*_sensor)->read(&sample);
-    delay(10);
-    (*_sensor)->read(&sample);
+    _sensor->read(&sample);
+    for (int i = 0; i < 4; i++) {
+        delay(10);
+        _sensor->read(&sample);
+    }
     _eventServer->subscribe(this, Topic::ResetSensor);
 }
 
 float MagnetoSensorReader::getGain() const {
-    return (*_sensor)->getGain();
+    return _sensor->getGain();
 }
 
 int MagnetoSensorReader::getNoiseRange() const {
-    return (*_sensor)->getNoiseRange();
+    return _sensor->getNoiseRange();
 }
 
 void MagnetoSensorReader::hardReset() {
-    (*_sensor)->hardReset();
+    _sensor->hardReset();
     _streakCount = 0;
     _consecutiveStreakCount = 0;
     _eventServer->publish(Topic::SensorWasReset, HARD_RESET);
 }
 
 bool MagnetoSensorReader::hasSensor() const {
-    return *_sensor != nullptr;
+    return _sensor != nullptr;
 }
 
 int16_t MagnetoSensorReader::read() {
     SensorData sample{};
-    (*_sensor)->read(&sample);
+    _sensor->read(&sample);
     // Empirically determined that Y gave the best data for this meter
     // check whether the sensor still works
     if (sample.y == _previousSample) {
@@ -86,9 +83,13 @@ void MagnetoSensorReader::reset() {
         // stop the alert halfway through
         _alert = false;
     }
-    (*_sensor)->softReset();
+    _sensor->softReset();
     _streakCount = 0;
     _eventServer->publish(Topic::SensorWasReset, SOFT_RESET);
+}
+
+void MagnetoSensorReader::setSensor(MagnetoSensor* sensor) {
+  _sensor = sensor;
 }
 
 void MagnetoSensorReader::update(const Topic topic, long payload) {

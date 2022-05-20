@@ -22,13 +22,12 @@ namespace WaterMeterCppTest {
     TEST_CLASS(SamplerTest) {
 public:
     TEST_METHOD(samplerSensorNotFoundTest) {
-        MagnetoSensor* sensor = nullptr;
         EventServer eventServer;
         TestEventClient noSensorClient(&eventServer);
         TestEventClient alertClient(&eventServer);
         eventServer.subscribe(&noSensorClient, Topic::NoSensorFound);
         eventServer.subscribe(&alertClient, Topic::Alert);
-        MagnetoSensorReader reader(&eventServer, &sensor);
+        MagnetoSensorReader reader(&eventServer);
         Sampler sampler(&eventServer, &reader, nullptr, nullptr, nullptr, nullptr);
         Assert::IsFalse(sampler.setup(), L"Setup without a sensor fails");
         Assert::AreEqual(1, noSensorClient.getCallCount(), L"No sensor event was fired");

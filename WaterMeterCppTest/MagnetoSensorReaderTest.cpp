@@ -25,15 +25,14 @@ namespace WaterMeterCppTest {
     TEST_CLASS(MagnetoSensorReaderTest) {
     public:
         TEST_METHOD(magnetoSensorReaderTest1) {
-            MagnetoSensor* sensor;
             EventServer eventServer;
             TestEventClient resetSensorEventClient(&eventServer);
             TestEventClient alertEventClient(&eventServer);
             eventServer.subscribe(&resetSensorEventClient, Topic::SensorWasReset);
             eventServer.subscribe(&alertEventClient, Topic::Alert);
-            MagnetoSensorReader reader(&eventServer, &sensor);
+            MagnetoSensorReader reader(&eventServer);
             MagnetoSensorQmc qmcSensor;
-            sensor = &qmcSensor;
+            reader.setSensor(&qmcSensor);
             Assert::AreEqual(3000.0f, reader.getGain(), L"Gain = 3000");
             Wire.begin();
             Wire.setFlatline(true);
@@ -41,7 +40,7 @@ namespace WaterMeterCppTest {
             Wire.setEndTransmissionTogglePeriod(10);
 
             for (int streaks = 0; streaks < 10; streaks++) {
-                for (int sample = 0; sample < 100; sample++) {
+                for (int sample = 0; sample < 250; sample++) {
                     reader.read();
                     Assert::AreEqual(streaks, resetSensorEventClient.getCallCount(), L"right number of events fired");
                     Assert::AreEqual(0, alertEventClient.getCallCount(), L"Alert event not fired");

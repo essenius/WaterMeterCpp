@@ -63,6 +63,8 @@ public:
     // returns whether the sensor is active
     bool isOn() const;
 
+    void power(uint8_t state) const;
+    
     // read a sample from the sensor
     virtual void read(SensorData* sample) const = 0;
 

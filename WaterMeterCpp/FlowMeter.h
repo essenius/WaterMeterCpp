@@ -19,7 +19,7 @@ public:
     explicit FlowMeter(EventServer* eventServer);
     void begin(int noiseRange, float gain);
     void addSample(int measurement);
-    bool areAllExcluded() const;
+    // bool areAllExcluded() const;
     float getAmplitude() const;
     float getCombinedDerivative() const;
     float getFastDerivative() const;
@@ -40,21 +40,18 @@ public:
     static constexpr float SAMPLE_PERIOD_SECONDS = SAMPLE_PERIOD_MICROS / 1000000.0f;
 
 protected:
-    static constexpr int MIN_DERIVATIVE_PEAK = -9;
-    static constexpr int STARTUP_SAMPLES = 10;
+    unsigned int _consecutiveOutliers = 0;
     ChangePublisher<bool> _exclude;
     ChangePublisher<bool> _flow;
     ChangePublisher<bool> _peak;
     float _fastSmooth = 0.0f;
     float _previousFastSmooth = 0.0f;
     float _fastDerivative = 0.0f;
-    bool _excludeAll = false;
     bool _firstCall = true;
     bool _outlier = false;
     float _smoothAbsFastDerivative = 0.0f;
     float _smoothFastDerivative = 0.0f;
 
-    unsigned int _startupSamplesLeft = STARTUP_SAMPLES;
     float _zeroThreshold = 0.0f;
     float _flowThreshold = _zeroThreshold;
     bool _hasEnteredBand = false;
