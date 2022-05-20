@@ -75,7 +75,7 @@ public:
         payload.buffer.result.sampleCount = 81;
         payload.buffer.result.flowCount = 27;
         payload.buffer.result.peakCount = 3;
-        payload.buffer.result.smoothAbsDerivativeSmooth = 23.2f;
+        payload.buffer.result.smoothAbsFastDerivative = 23.2f;
         dataQueue.send(&payload);
 
         // send an error message
@@ -99,7 +99,7 @@ public:
         Assert::AreEqual<uint32_t>(81, payloadReceive2->buffer.result.sampleCount, L"SampleCount=81");
         Assert::AreEqual<uint32_t>(27, payloadReceive2->buffer.result.flowCount, L"FlowCount=27");
         Assert::AreEqual<uint32_t>(3, payloadReceive2->buffer.result.peakCount, L"PeakCount=3");
-        Assert::AreEqual(23.2f, payloadReceive2->buffer.result.smoothAbsDerivativeSmooth, L"SmoothAbsDerivativeSmooth=23.2");
+        Assert::AreEqual(23.2f, payloadReceive2->buffer.result.smoothAbsFastDerivative, L"SmoothAbsDerivativeSmooth=23.2");
 
         // get the error message
         auto payloadReceive3 = dataQueue.receive();

@@ -17,19 +17,27 @@
 class FlowMeter : public EventClient {
 public:
     explicit FlowMeter(EventServer* eventServer);
-    void begin();
+    void begin(int noiseRange, float gain);
     void addSample(int measurement);
     bool areAllExcluded() const;
-    float getDerivative() const;
-    float getSmoothAbsDerivative() const;
-    float getSmoothDerivative() const;
-    float getSmoothValue() const;
+    float getAmplitude() const;
+    float getCombinedDerivative() const;
+    float getFastDerivative() const;
+    float getFastSmoothValue() const;
+    float getSlowSmoothValue() const;
+    float getSmoothAbsCombinedDerivative() const;
+    float getSmoothAbsFastDerivative() const;
+    float getSmoothFastDerivative() const;
+    float getZeroThreshold() const;
     bool hasFlow() const;
     bool isExcluded() const;
     bool isOutlier() const;
     bool isPeak() const;
+    bool hasEnteredBand() const;
     void update(Topic topic, long payload) override;
     bool wasReset() const;
+    static constexpr int SAMPLE_PERIOD_MICROS = 10000;
+    static constexpr float SAMPLE_PERIOD_SECONDS = SAMPLE_PERIOD_MICROS / 1000000.0f;
 
 protected:
     static constexpr int MIN_DERIVATIVE_PEAK = -9;
@@ -37,17 +45,27 @@ protected:
     ChangePublisher<bool> _exclude;
     ChangePublisher<bool> _flow;
     ChangePublisher<bool> _peak;
-    float _derivative = 0.0f;
+    float _fastSmooth = 0.0f;
+    float _previousFastSmooth = 0.0f;
+    float _fastDerivative = 0.0f;
     bool _excludeAll = false;
     bool _firstCall = true;
-    float _minDerivative = MIN_DERIVATIVE_PEAK;
     bool _outlier = false;
-    float _previousSmoothDerivative = 0.0f;
-    float _previousSmoothValue = 0.0f;
-    float _smoothAbsDerivative = 0.0f;
-    float _smoothDerivative = 0.0f;
-    float _smoothValue = 0.0f;
+    float _smoothAbsFastDerivative = 0.0f;
+    float _smoothFastDerivative = 0.0f;
+
     unsigned int _startupSamplesLeft = STARTUP_SAMPLES;
+    float _zeroThreshold = 0.0f;
+    float _flowThreshold = _zeroThreshold;
+    bool _hasEnteredBand = false;
+    bool _fastFlow = false;
+    float _slowSmooth = 0.0f;
+    float _combinedDerivative = 0.0f;
+    float _previousSlowSmooth = 0.0f;
+    float _smoothAbsCombinedDerivative = 0.0f;
+    float _outlierThreshold = 0.0f;
+    float _previousCombinedDerivative = 0.0f;
+    float _amplitude = 0.0;
 
     void detectOutlier(int measurement);
     void detectPeaks(int measurement);

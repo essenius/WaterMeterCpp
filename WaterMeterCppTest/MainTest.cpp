@@ -40,6 +40,7 @@
 #include "StateHelper.h"
 #include "WiFi.h"
 #include "Wire.h"
+#include "../WaterMeterCpp/MagnetoSensorHmc.h"
 #include "../WaterMeterCpp/MagnetoSensorQmc.h"
 // ReSharper restore CppUnusedIncludeDirective
 
@@ -73,6 +74,8 @@ namespace WaterMeterCppTest {
             constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
             MagnetoSensorQmc qmcSensor;
+            MagnetoSensorHmc hmcSensor;
+
             MagnetoSensor* sensor = nullptr;
             WiFiClientFactory wifiClientFactory(&configuration.tls);
 
@@ -158,6 +161,9 @@ namespace WaterMeterCppTest {
             if (qmcSensor.isOn()) {
                 sensor = &qmcSensor;
             }
+            else if (hmcSensor.isOn()) {
+                sensor = &hmcSensor;
+            }
 
             while (!sampler.setup(MEASURE_INTERVAL_MICROS)) {
                 // No sense doing anything if we don't have a sensor
@@ -215,7 +221,7 @@ namespace WaterMeterCppTest {
             payload1.topic = Topic::Result;
             payload1.timestamp = 1000000;
             payload1.buffer.result.sampleCount = 327;
-            payload1.buffer.result.smoothAbsDerivativeSmooth = 23.02f;
+            payload1.buffer.result.smoothAbsFastDerivative = 23.02f;
             sensorDataQueue.send(&payload1);
             Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Reading queue");
 
@@ -227,7 +233,7 @@ namespace WaterMeterCppTest {
 [] Free Spaces Queue #2: 6
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://localhost/001122334455.version
-[] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.02}}
+[] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"LPF":0,"HPLPF":0,"LPHPF":0,"LPAHPLPF":23.02,"LFS":0,"HPC":0,"LPAHPC":0}}
 [] Free Stack #0: 1564
 )";
             Assert::AreEqual(expected, getPrintOutput(), L"Formatted result came through");

@@ -20,6 +20,12 @@ namespace WaterMeterCppTest {
 
     TEST_CLASS(MagnetoSensorQmcTest) {
     public:
+
+        TEST_METHOD(magnetoSensorQmcGetGainTest) {
+            Assert::AreEqual(12000.0f, MagnetoSensorQmc::getGain(QmcRange2G), L"2G gain ok");
+            Assert::AreEqual(3000.0f, MagnetoSensorQmc::getGain(QmcRange8G), L"8G gain ok");
+        }
+
         TEST_METHOD(magnetoSensorQmcAddressTest) {
             MagnetoSensorQmc sensor;
             constexpr uint8_t ADDRESS = 0x23;
@@ -54,7 +60,8 @@ namespace WaterMeterCppTest {
                 Wire.writeMismatchIndex(BUFFER_BEGIN, sizeof BUFFER_BEGIN),
                 L"writes for begin ok");
             // we are at the default address so the sensor should report it's on
-            Assert::IsTrue(sensor.isOn());
+            Wire.setEndTransmissionTogglePeriod(1);
+            Assert::IsTrue(sensor.isOn(), L"Sensor on");
             // reset buffer
             Wire.begin();
             SensorData sample{};
@@ -63,24 +70,16 @@ namespace WaterMeterCppTest {
             Assert::AreEqual<int>(0x0100, sample.x, L"X ok");
             Assert::AreEqual<int>(0x0302, sample.y, L"Y ok");
             Assert::AreEqual<int>(0x0504, sample.z, L"Z ok");
-            // last value we read was 5, so next will be 6. Last bit is 0 so data should not be reported ready
-            Assert::IsFalse(sensor.dataReady(), L"Data not ready");
-            // now 7, so that should report ready
-            Assert::IsTrue(sensor.dataReady(), L"Data ready");
-            constexpr uint8_t BUFFER_DATA_READY[] = {0, 6, 6};
-            Assert::AreEqual<int>(
-                sizeof BUFFER_DATA_READY,
-                Wire.writeMismatchIndex(BUFFER_DATA_READY, sizeof BUFFER_DATA_READY),
-                L"writes for read & data ready ok");
+
             // we configure another address so it reports off
             Wire.setEndTransmissionTogglePeriod(1);
             Assert::IsTrue(sensor.isOn(), L"Sensor is on");
             Assert::IsFalse(sensor.isOn(), L"Sensor is off");
             Wire.setEndTransmissionTogglePeriod(1);
 
-            sensor.configureOverSampling(Sampling128);
-            sensor.configureRate(Rate200Hz);
-            sensor.configureRange(Range2G);
+            sensor.configureOverSampling(QmcSampling128);
+            sensor.configureRate(QmcRate200Hz);
+            sensor.configureRange(QmcRange2G);
 
             // ensure all test variables are reset
             Wire.begin();

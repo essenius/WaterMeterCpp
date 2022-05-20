@@ -30,7 +30,7 @@ public:
         eventServer.subscribe(&alertClient, Topic::Alert);
         MagnetoSensorReader reader(&eventServer, &sensor);
         Sampler sampler(&eventServer, &reader, nullptr, nullptr, nullptr, nullptr);
-        Assert::IsFalse(sampler.setup(10), L"Setup without a sensor fails");
+        Assert::IsFalse(sampler.setup(), L"Setup without a sensor fails");
         Assert::AreEqual(1, noSensorClient.getCallCount(), L"No sensor event was fired");
         Assert::AreEqual(1, alertClient.getCallCount(), L"Alert fired");
     }

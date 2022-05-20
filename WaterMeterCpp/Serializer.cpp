@@ -75,10 +75,13 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeParam("max", result.maxDuration);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("analysis");
-    _payloadBuilder->writeParam("smoothValue", result.smooth);
-    _payloadBuilder->writeParam("derivative", result.derivativeSmooth);
-    _payloadBuilder->writeParam("smoothDerivative", result.smoothDerivativeSmooth);
-    _payloadBuilder->writeParam("smoothAbsDerivative", result.smoothAbsDerivativeSmooth);
+    _payloadBuilder->writeParam("LPF", result.fastSmooth);
+    _payloadBuilder->writeParam("HPLPF", result.fastDerivative);
+    _payloadBuilder->writeParam("LPHPF", result.smoothFastDerivative);
+    _payloadBuilder->writeParam("LPAHPLPF", result.smoothAbsFastDerivative);
+    _payloadBuilder->writeParam("LFS", result.fastSmooth);
+    _payloadBuilder->writeParam("HPC", result.combinedDerivative);
+    _payloadBuilder->writeParam("LPAHPC", result.combinedDerivative);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupEnd();
 }

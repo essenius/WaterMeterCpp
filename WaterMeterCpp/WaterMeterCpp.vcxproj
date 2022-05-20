@@ -159,6 +159,7 @@
     <ClCompile Include="LedFlasher.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MagnetoSensor.cpp" />
+    <ClCompile Include="MagnetoSensorHmc.cpp" />
     <ClCompile Include="MagnetoSensorQmc.cpp" />
     <ClCompile Include="MagnetoSensorReader.cpp" />
     <ClCompile Include="DataQueuePayload.cpp" />
@@ -195,6 +196,7 @@
     <ClInclude Include="LedFlasher.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MagnetoSensor.h" />
+    <ClInclude Include="MagnetoSensorHmc.h" />
     <ClInclude Include="MagnetoSensorQmc.h" />
     <ClInclude Include="MagnetoSensorReader.h" />
     <ClInclude Include="SafeCString.h" />

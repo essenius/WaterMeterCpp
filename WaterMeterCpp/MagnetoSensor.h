@@ -45,7 +45,7 @@ public:
     void begin() const;
 
     // Configure the sensor according to the configuration parameters (called in begin())
-    virtual void configure() const = 0;
+    virtual bool configure() const = 0;
 
     // configure the wire address if not default (0x0D). Call before begin()
     void configureAddress(byte address);
@@ -53,8 +53,9 @@ public:
     // Configure the GPIO port used for the sensor power if not default (15). 
     void configurePowerPort(uint8_t port);
 
-    // returns whether the sensor has data available
-    virtual bool dataReady() const = 0;
+    virtual float getGain() const = 0;
+
+    virtual int getNoiseRange() const = 0;
 
     // power cycle the sensor
     void hardReset() const;

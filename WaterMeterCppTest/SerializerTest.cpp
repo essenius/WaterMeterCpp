@@ -38,13 +38,13 @@ namespace WaterMeterCppTest {
             payload.buffer.result.sampleCount = 81;
             payload.buffer.result.peakCount = 3;
             payload.buffer.result.flowCount = 27;
-            payload.buffer.result.smoothAbsDerivativeSmooth = 23.2f;
+            payload.buffer.result.smoothAbsFastDerivative = 23.2f;
             eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
             Assert::AreEqual(1, testEventClient.getCallCount(), L"Test client called once result");
             Assert::AreEqual(
                 R"({"timestamp":1970-01-01T00:00:00.000000,"lastValue":0,"summaryCount":{"samples":81,"peaks":3,"flows":27,"maxStreak":0},)"
                 R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},)"
-                R"("analysis":{"smoothValue":0,"derivative":0,"smoothDerivative":0,"smoothAbsDerivative":23.2}})",
+                R"("analysis":{"LPF":0,"HPLPF":0,"LPHPF":0,"LPAHPLPF":23.2,"LFS":0,"HPC":0,"LPAHPC":0}})",
                 testEventClient.getPayload(),
                 "Formatted result payload OK");
 

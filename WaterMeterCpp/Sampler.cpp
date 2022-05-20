@@ -93,7 +93,7 @@ bool Sampler::setup(const unsigned long samplePeriod) {
         return false;
     }
     _sensorReader->begin();
-    _flowMeter->begin();
+    _flowMeter->begin(_sensorReader->getNoiseRange(), _sensorReader->getGain());
     
     // what can be sent to the communicator (note: must be numerical payloads)
     _eventServer->subscribe(_queueClient, Topic::Alert);

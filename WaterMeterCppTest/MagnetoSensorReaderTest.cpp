@@ -34,6 +34,7 @@ namespace WaterMeterCppTest {
             MagnetoSensorReader reader(&eventServer, &sensor);
             MagnetoSensorQmc qmcSensor;
             sensor = &qmcSensor;
+            Assert::AreEqual(3000.0f, reader.getGain(), L"Gain = 3000");
             Wire.begin();
             Wire.setFlatline(true);
             reader.begin();

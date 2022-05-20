@@ -13,6 +13,7 @@
 #include <ESP.h>
 
 #include "MagnetoSensorReader.h"
+#include "MagnetoSensorQmc.h"
 
 MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer, MagnetoSensor** sensor) :
     EventClient(eventServer), _sensor(sensor), _alert(eventServer, Topic::Alert) {}
@@ -30,6 +31,14 @@ void MagnetoSensorReader::begin() {
     delay(10);
     (*_sensor)->read(&sample);
     _eventServer->subscribe(this, Topic::ResetSensor);
+}
+
+float MagnetoSensorReader::getGain() const {
+    return (*_sensor)->getGain();
+}
+
+int MagnetoSensorReader::getNoiseRange() const {
+    return (*_sensor)->getNoiseRange();
 }
 
 void MagnetoSensorReader::hardReset() {

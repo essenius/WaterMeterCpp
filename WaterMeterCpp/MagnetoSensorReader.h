@@ -23,6 +23,8 @@ class MagnetoSensorReader final : public EventClient {
 public:
     MagnetoSensorReader(EventServer* eventServer, MagnetoSensor** sensor);
     void begin();
+    float getGain() const;
+    int getNoiseRange() const;
     void hardReset();
     bool hasSensor() const;
     int16_t read();

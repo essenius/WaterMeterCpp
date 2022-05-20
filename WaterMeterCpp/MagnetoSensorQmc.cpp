@@ -22,13 +22,13 @@
 #include "Wire.h"
 
 constexpr int SOFT_RESET = 0x80;
-constexpr int DATA_READY = 0x01;
 
 MagnetoSensorQmc::MagnetoSensorQmc(): MagnetoSensor(DEFAULT_ADDRESS) {}
 
-void MagnetoSensorQmc::configure() const {
-    setRegister(SetReset, 0x01);
-    setRegister(Control1, Continuous | _rate | _range | _overSampling);
+bool MagnetoSensorQmc::configure() const {
+    setRegister(QmcSetReset, 0x01);
+    setRegister(QmcControl1, QmcContinuous | _rate | _range | _overSampling);
+    return true;
 }
 
 void MagnetoSensorQmc::configureOverSampling(const QmcOverSampling overSampling) {
@@ -43,15 +43,22 @@ void MagnetoSensorQmc::configureRate(const QmcRate rate) {
     _rate = rate;
 }
 
-bool MagnetoSensorQmc::dataReady() const {
-    return (getRegister(Status) & DATA_READY) != 0;
+// if we ever need DataReady, use (getRegister(QmcStatus) & 0x01) != 0;
+
+float MagnetoSensorQmc::getGain() const {
+    return getGain(_range);
+}
+
+float MagnetoSensorQmc::getGain(const QmcRange range) {
+    if (range == QmcRange8G) return 3000.0f;
+    return 12000.0f;
 }
 
 void MagnetoSensorQmc::read(SensorData* sample) const {
     Wire.beginTransmission(_address);
-    Wire.write(Data); 
+    Wire.write(QmcData);
     Wire.endTransmission();
-  
+
     constexpr byte BYTES_TO_READ = 6;
     constexpr byte BITS_PER_BYTE = 8;
     // Read data from each axis, 2 registers per axis
@@ -64,6 +71,11 @@ void MagnetoSensorQmc::read(SensorData* sample) const {
 }
 
 void MagnetoSensorQmc::softReset() const {
-    setRegister(Control2, SOFT_RESET);
-    configure();
+    setRegister(QmcControl2, SOFT_RESET);
+    static_cast<void>(configure());
+}
+
+int MagnetoSensorQmc::getNoiseRange() const {
+    // only checked on 8 Gauss
+    return 60;
 }

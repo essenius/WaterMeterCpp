@@ -68,10 +68,13 @@ void ResultAggregator::addMeasurement(const int16_t value, const FlowMeter* resu
         _result->excludeCount++;
     }
     // we only need these at the end but we don't know when that is
-    _result->smooth = result->getSmoothValue();
-    _result->derivativeSmooth = result->getDerivative();
-    _result->smoothDerivativeSmooth = result->getSmoothDerivative();
-    _result->smoothAbsDerivativeSmooth = result->getSmoothAbsDerivative();
+    _result->fastSmooth = result->getFastSmoothValue();
+    _result->fastDerivative = result->getFastDerivative();
+    _result->smoothFastDerivative = result->getSmoothFastDerivative();
+    _result->smoothAbsFastDerivative = result->getSmoothAbsFastDerivative();
+    _result->slowSmooth = result->getSlowSmoothValue();
+    _result->combinedDerivative = result->getCombinedDerivative();
+    _result->smoothAbsCombinedDerivative = result->getSmoothAbsCombinedDerivative();
 }
 
 void ResultAggregator::begin() {

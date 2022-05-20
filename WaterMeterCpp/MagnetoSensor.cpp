@@ -33,6 +33,7 @@ void MagnetoSensor::configurePowerPort(const uint8_t port) {
     _powerPort = port;
 }
 
+// TODO: not used - eliminate?
 byte MagnetoSensor::getRegister(const byte sensorRegister) const {
     constexpr byte BYTES_TO_READ = 1;
     Wire.beginTransmission(_address);

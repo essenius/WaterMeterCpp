@@ -264,10 +264,10 @@ namespace WaterMeterCppTest {
             }
 
             void assertAnalysis(const float smooth, const float derivativeSmooth, const float smoothDerivativeSmooth, const float smoothAbsDerivativeSmooth, const ResultData* result) const {
-                Assert::AreEqual(smooth, result->smooth, L"smooth OK");
-                Assert::AreEqual(derivativeSmooth, result->derivativeSmooth, L"derivativeSmooth OK");
-                Assert::AreEqual(smoothDerivativeSmooth, result->smoothDerivativeSmooth, L"smoothDerivativeSmooth OK");
-                Assert::AreEqual(smoothAbsDerivativeSmooth, result->smoothAbsDerivativeSmooth, L"smoothAbsDerivativeSmooth OK");
+                Assert::AreEqual(smooth, result->fastSmooth, L"fastSmooth OK");
+                Assert::AreEqual(derivativeSmooth, result->fastDerivative, L"fastDerivative OK");
+                Assert::AreEqual(smoothDerivativeSmooth, result->smoothFastDerivative, L"smoothFastDerivative OK");
+                Assert::AreEqual(smoothAbsDerivativeSmooth, result->smoothAbsFastDerivative, L"smoothAbsFastDerivative OK");
             }
     };
 

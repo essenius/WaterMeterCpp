@@ -39,10 +39,13 @@ struct ResultData {
     uint32_t totalDuration;
     uint32_t averageDuration;
     uint32_t maxDuration;
-    float smooth;
-    float derivativeSmooth;
-    float smoothDerivativeSmooth;
-    float smoothAbsDerivativeSmooth;
+    float fastSmooth;
+    float fastDerivative;
+    float smoothFastDerivative;
+    float smoothAbsFastDerivative;
+    float slowSmooth;
+    float combinedDerivative;
+    float smoothAbsCombinedDerivative;
 };
 
 typedef union {

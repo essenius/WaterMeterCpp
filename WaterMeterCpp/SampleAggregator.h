@@ -13,7 +13,6 @@
 #define HEADER_SAMPLEAGGREGATOR
 
 #include "Aggregator.h"
-#include "EventServer.h"
 
 class SampleAggregator final : public Aggregator {
 public:

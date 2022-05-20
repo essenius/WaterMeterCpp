@@ -14,23 +14,24 @@
 #include "FlowMeter.h"
 #include "EventServer.h"
 
-// if the smooth absolute of the derivative is larger than the threshold, we have flow.
-constexpr float FLOW_THRESHOLD = 1.0f;
+// most signals are between 1 Hz and 8 Hz. We call that fast. But smetimes with very slow flows (e.g. someone
+// didn't close the tap completely) slower frequencies  occur, and the filter would suppress those.
+// That's why we also use a slower filter, checking for 0.05 Hz to 1 Hz. We call that slow.
 
-// Empirically found that this gives a reasonably accurate derivative
-constexpr float HIGH_PASS_ALPHA = 0.8f;
+// Fast cut-off frequency 8 Hz. Alpha for low pass = dt/(1/(2*pi*fc)+dt), dt = 0.01s
+constexpr float ALPHA_LOW_PASS_FAST =0.335f;
+// Slow cut-off frequency 1 Hz
+constexpr float ALPHA_LOW_PASS_SLOW = 0.0591f;
 
-// We need the line smooth enough to eliminate noise. Averaging over 20 seems to work OK
-constexpr float LOW_PASS_ALPHA = 0.05f;
+// Fast cut-off frequency 1 Hz
+// alpha for high pass = 1/(2*pi*dt*fc+1)
+constexpr float ALPHA_HIGH_PASS_FAST = 0.941f;
+// slow cut-off frequncy 0.05 Hz
+constexpr float ALPHA_HIGH_PASS_SLOW = 0.997f;
 
-// Eliminate much of the noise on the derivative
-constexpr float LOW_PASS_ON_HIGH_PASS_ALPHA = 0.05f;
-
+// take the highest measured range times 2 as outlier limit
 // If the amplitude ls larger than this, it's very likely we have an outlier
-constexpr float OUTLIER_THRESHOLD = 200.0f;
-
-// The troughs are usually around -8. Take 25% of that for the zero check, to eliminate much of the noise
-constexpr float ZEROCHECK_THESHOLD = -2.0f;
+constexpr float OUTLIER_AMPLITUDE_MILLIGAUSS = 53.0f * 2.0f;
 
 FlowMeter::FlowMeter(EventServer* eventServer):
     EventClient(eventServer),
@@ -59,51 +60,109 @@ bool FlowMeter::areAllExcluded() const {
     return _excludeAll;
 }
 
-void FlowMeter::begin() {
+float FlowMeter::getAmplitude() const {
+    return _amplitude;
+}
+
+void FlowMeter::begin(const int noiseRange, const float gain) {
+
+    if (noiseRange > 30) {
+        // We have a QMC sensor, which is more sensitive and has higher noise range.
+        // We only use the 8 Gauss range, and zero threshold was empirically determined via null measurements
+        _zeroThreshold = 12.0f;
+    } else {
+        // We have an HMC sensor with much lower noise ranges in the different measurement ranges.
+        // Emprirically determined a linear relation between range and maximum noise in the filtered signal.
+        // We take a margin of 50% to be sure. This should come down to ~0.86 for the 4.7 Gauss range
+        constexpr float NOISE_FIT_A = 0.1088f;
+        constexpr float NOISE_FIT_B = 0.1384f;
+        constexpr float THRESHOLD_MARGIN = 0.5f;
+        _zeroThreshold = (NOISE_FIT_A * static_cast<float>(noiseRange) + NOISE_FIT_B) * (1 + THRESHOLD_MARGIN);
+    }
+    _flowThreshold = _zeroThreshold;
+    // Calculate LSB corresponding to the largest measured magnetic field with margin.
+    // If we have an amplitude larger than that, it is an outlier
+    _outlierThreshold = OUTLIER_AMPLITUDE_MILLIGAUSS * gain / 1000.0f;
     _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::SensorWasReset);
 }
 
 void FlowMeter::detectOutlier(const int measurement) {
-    const float amplitude = fabsf(_smoothValue - static_cast<float>(measurement));
-    _outlier = amplitude > OUTLIER_THRESHOLD;
+    const float amplitude = fabsf(_slowSmooth - static_cast<float>(measurement));
+    _outlier = amplitude > _outlierThreshold;
 }
 
 void FlowMeter::detectPeaks(const int measurement) {
+    // ignore outliers
     if (_outlier) {
         return;
     }
-    // smoothen the measurement
-    _smoothValue = lowPassFilter(static_cast<float>(measurement), _smoothValue, LOW_PASS_ALPHA);
-    // from this we want the peaks. Approximate the derivative via a high pass filter
-    _derivative = highPassFilter(_smoothValue, _previousSmoothValue, _derivative, HIGH_PASS_ALPHA);
-    // smoothen the derivative to minimize noise
-    _smoothDerivative = lowPassFilter(_derivative, _smoothDerivative, LOW_PASS_ON_HIGH_PASS_ALPHA);
-    // when the derivative moves from positive to negative (with a threshold to eliminate noise) we have a peak in the original signal
-    _peak = _smoothDerivative <= ZEROCHECK_THESHOLD && _previousSmoothDerivative > ZEROCHECK_THESHOLD;
+    const auto sample = static_cast<float>(measurement);
+    _fastSmooth = lowPassFilter(sample, _fastSmooth, ALPHA_LOW_PASS_FAST);
+    // first we do a high pass to center values around zero and approximate a derivative-like function so we can find peaks
+    _fastDerivative = highPassFilter(_fastSmooth, _previousFastSmooth, _fastDerivative, ALPHA_HIGH_PASS_FAST);
+    // on that we apply a low pass filter
+    _smoothFastDerivative = lowPassFilter(_fastDerivative, _smoothFastDerivative, ALPHA_LOW_PASS_FAST);
 
-    // we use the smooth abs derivative to check for flow
-    _smoothAbsDerivative = lowPassFilter(fabsf(_derivative), _smoothAbsDerivative, LOW_PASS_ON_HIGH_PASS_ALPHA);
-    _flow = _smoothAbsDerivative > FLOW_THRESHOLD;
+     // we take a low pass filter on the absolute value to be able to see if we have flow (i.e. a sinusoid signal). 
+    _smoothAbsFastDerivative = lowPassFilter(fabsf(_smoothFastDerivative), _smoothAbsFastDerivative, ALPHA_LOW_PASS_SLOW);
+    _fastFlow = _smoothAbsFastDerivative > _flowThreshold;
 
-    _previousSmoothValue = _smoothValue;
-    _previousSmoothDerivative = _smoothDerivative;
+    _slowSmooth = lowPassFilter(sample, _slowSmooth, ALPHA_LOW_PASS_SLOW);
+    _amplitude = fabsf(_slowSmooth - sample);
+    // If we already have a flow, take the fast signal. If not, calculate the slow signal and take that.
+    // this can result in a bit weirdly shaped output signals, but the important bit is the move from positive to negative.
+    _combinedDerivative = _fastFlow ? _smoothFastDerivative : highPassFilter(_slowSmooth, _previousSlowSmooth, _combinedDerivative, ALPHA_HIGH_PASS_SLOW);
+    _smoothAbsCombinedDerivative = _fastFlow
+             ? _smoothAbsFastDerivative
+             : lowPassFilter(fabsf(_combinedDerivative), _smoothAbsCombinedDerivative, ALPHA_LOW_PASS_SLOW);
+    _flow = _smoothAbsCombinedDerivative > _flowThreshold;
+
+    // To find the number of peaks in the original signal, we look for a move from positive to negative in this derivative signal.
+    // It is still a bit noisy, so we do that in two steps. We define a band that we consider to be indistinguishable from zero,
+    // and we have a peak if the signal has entered and exited that band with a downward slope.
+    _hasEnteredBand |= _previousCombinedDerivative > _zeroThreshold && _combinedDerivative <= _zeroThreshold;
+    const bool hasExitedBand = _previousCombinedDerivative >= -_zeroThreshold && _combinedDerivative < -_zeroThreshold;
+    _peak = _hasEnteredBand && hasExitedBand;
+    if (_peak) {
+        _hasEnteredBand = false;
+    }
+
+    _previousFastSmooth = _fastSmooth;
+    _previousSlowSmooth = _slowSmooth;
+    _previousCombinedDerivative = _combinedDerivative;
 }
 
-float FlowMeter::getDerivative() const {
-    return _derivative;
+float FlowMeter::getCombinedDerivative() const {
+    return _combinedDerivative;
 }
 
-float FlowMeter::getSmoothAbsDerivative() const {
-    return _smoothAbsDerivative;
+float FlowMeter::getFastDerivative() const {
+    return _fastDerivative;
 }
 
-float FlowMeter::getSmoothDerivative() const {
-    return _smoothDerivative;
+float FlowMeter::getFastSmoothValue() const {
+    return _fastSmooth;
 }
 
-float FlowMeter::getSmoothValue() const {
-    return _smoothValue;
+float FlowMeter::getSmoothAbsCombinedDerivative() const {
+    return _smoothAbsCombinedDerivative;
+}
+
+float FlowMeter::getSmoothAbsFastDerivative() const {
+    return _smoothAbsFastDerivative;
+}
+
+float FlowMeter::getSmoothFastDerivative() const {
+    return _smoothFastDerivative;
+}
+
+float FlowMeter::getSlowSmoothValue() const {
+    return _slowSmooth;
+}
+
+float FlowMeter::getZeroThreshold() const {
+    return _zeroThreshold;
 }
 
 bool FlowMeter::hasFlow() const {
@@ -124,6 +183,10 @@ bool FlowMeter::isOutlier() const {
 
 bool FlowMeter::isPeak() const {
     return _peak;
+}
+
+bool FlowMeter::hasEnteredBand() const {
+    return _hasEnteredBand;
 }
 
 float FlowMeter::lowPassFilter(const float measure, const float filterValue, const float alpha) {
@@ -155,12 +218,16 @@ void FlowMeter::resetAnomalies() {
 }
 
 void FlowMeter::resetFilters(const int initialMeasurement) {
-    _smoothValue = static_cast<float>(initialMeasurement);
-    _derivative = 0.0f;
-    _smoothDerivative = 0.0f;
-    _smoothAbsDerivative = 0.0f;
-    _minDerivative = MIN_DERIVATIVE_PEAK;
-    _previousSmoothValue = _smoothValue;
+    _fastSmooth = static_cast<float>(initialMeasurement);
+    _previousFastSmooth = _fastSmooth;
+    _slowSmooth = _fastSmooth;
+    _previousSlowSmooth = _fastSmooth;
+    _fastDerivative = 0.0f;
+    _smoothFastDerivative = 0.0f;
+    _smoothAbsFastDerivative = 0.0f;
+    _combinedDerivative = 0.0f;
+    _previousCombinedDerivative = 0.0f;
+    _smoothAbsCombinedDerivative = 0.0F;
 }
 
 void FlowMeter::update(const Topic topic, const long payload) {

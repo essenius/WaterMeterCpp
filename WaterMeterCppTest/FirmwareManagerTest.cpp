@@ -61,6 +61,7 @@ namespace WaterMeterCppTest {
             HTTPClient::ReturnValue = 200;
             HTTPUpdate::ReturnValue = HTTP_UPDATE_FAILED;
             manager.tryUpdate();
+            Assert::IsFalse(manager.updateAvailable(), L"No updating after first update attempt");
             Assert::AreEqual(1, infoListener.getCallCount(), L"new info on update failure");
             Assert::AreEqual("Current firmware: '0.1.2'; available: '0.1.1'", infoListener.getPayload(),
                 "info on update failure OK");

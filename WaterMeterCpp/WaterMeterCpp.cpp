@@ -26,6 +26,7 @@
 #include "FlowMeter.h"
 #include "LedDriver.h"
 #include "Log.h"
+#include "MagnetoSensorHmc.h"
 #include "MagnetoSensorQmc.h"
 #include "MagnetoSensorReader.h"
 #include "MqttGateway.h"
@@ -39,7 +40,7 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.7";
+constexpr const char* const BUILD_VERSION = "0.100.8";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle usually takes quite a bit less than that, unless a write happened.
@@ -51,6 +52,7 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 // (and make testing easier).
 
 MagnetoSensorQmc qmcSensor;
+MagnetoSensorHmc hmcSensor;
 MagnetoSensor* sensor = nullptr;
 Preferences preferences;
 Configuration configuration(&preferences);
@@ -131,6 +133,8 @@ void setup() {
 
     if (qmcSensor.isOn()) {
         sensor = &qmcSensor;
+    } else if (hmcSensor.isOn()) {
+        sensor = &hmcSensor;
     }
 
     while (!sampler.setup(MEASURE_INTERVAL_MICROS)) {

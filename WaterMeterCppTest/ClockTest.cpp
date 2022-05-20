@@ -21,6 +21,15 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(ClockTest) {
 public:
+        TEST_METHOD(clockFormatTimestampTest) {
+            constexpr Timestamp TIMESTAMP = 1;
+            EventServer eventServer;
+            // the mock only mocks the time setting and detection, but keeps the rest
+            char destination[5] ="abcd";
+            Assert::IsFalse(Clock::formatTimestamp(TIMESTAMP, destination, sizeof destination), L"Timestamp does not fit");
+            Assert::AreEqual("abcd", destination,  L"Destination not changed");
+        }
+
     TEST_METHOD(clockTest1) {
         EventServer eventServer;
         // the mock only mocks the time setting and detection, but keeps the rest
@@ -49,7 +58,7 @@ public:
 
         eventServer.cannotProvide(&theClock, Topic::Time);
         timestamp = eventServer.request(Topic::Time, "");
-        Assert::AreEqual("", timestamp, "Time no longer available"); 
+        Assert::AreEqual("", timestamp, "Time no longer available");
     }
     };
 }

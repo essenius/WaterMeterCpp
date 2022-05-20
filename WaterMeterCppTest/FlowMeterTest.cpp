@@ -40,30 +40,67 @@ namespace WaterMeterCppTest {
 
         TEST_METHOD(flowMeterGoodFlowTest) {
             FlowMeter flowMeter(&eventServer);
-            flowMeter.begin();
+            flowMeter.begin(4, 390);
+            assertFloatAreEqual(0.8604f, flowMeter.getZeroThreshold(), L"Zero threshold", 0);
             int measurement;
-            float smoothValue;
-            float derivative;
-            float smoothDerivative;
+            float fastSmoothValue;
+            float fastDerivative;
+            float smoothFastDerivative;
+            float smoothAbsFastDerivative;
+            float slowSmoothValue;
+            float amplitude;
+            float combinedDerivative;
+            float smoothAbsCombinedDerivative;
             int totalPeaks = 0;
-            std::ifstream measurements("flow_test.csv");
+            std::ifstream measurements("unitTestFlow_4_7.csv");
+            // y LPFY HPLPFy LPHPLPFy LPABSHPLPFy LPSY Ampl Comb AbsComb
             Assert::IsTrue(measurements.is_open(), L"File open");
             long index = 0;
+            bool inFlow = false;
+            int flowSwitches = 0;
+            int flowLength = 0;
+            int longestFlow = 0;
+            int enteredBandCount = 0;
             while (measurements >> measurement) {
                 eventServer.publish(Topic::Sample, measurement);
-                measurements >> smoothValue;
-                assertFloatAreEqual(smoothValue, flowMeter.getSmoothValue(), L"Smooth value", index);
-                measurements >> derivative;
-                assertFloatAreEqual(derivative, flowMeter.getDerivative(), L"Derivative #", index);
-                measurements >> smoothDerivative;
-                assertFloatAreEqual(smoothDerivative, flowMeter.getSmoothDerivative(), L"Smooth Derivative", index);
-                std::cout << measurement << "," << flowMeter.getSmoothValue() << "," << flowMeter.getDerivative() << ","
-                    << flowMeter.getSmoothDerivative() << "," << flowMeter.isPeak() << "," << flowMeter.isExcluded() <<
+                measurements >> fastSmoothValue;
+                assertFloatAreEqual(fastSmoothValue, flowMeter.getFastSmoothValue(), L"Fast Smooth #", index);
+                measurements >> fastDerivative;
+                assertFloatAreEqual(fastDerivative, flowMeter.getFastDerivative(), L"Fast Derivative #", index);
+                measurements >> smoothFastDerivative;
+                assertFloatAreEqual(smoothFastDerivative, flowMeter.getSmoothFastDerivative(), L"Smooth Fast Derivative", index);
+                measurements >> smoothAbsFastDerivative;
+                assertFloatAreEqual(smoothAbsFastDerivative, flowMeter.getSmoothAbsFastDerivative(), L"Smooth Abs Fast Derivative", index);
+                measurements >> slowSmoothValue;
+                assertFloatAreEqual(slowSmoothValue, flowMeter.getSlowSmoothValue(), L"Slow Smooth #", index);
+                measurements >> amplitude;
+                assertFloatAreEqual(amplitude, flowMeter.getAmplitude(), L"Amplitude #", index);
+                measurements >> combinedDerivative;
+                assertFloatAreEqual(combinedDerivative, flowMeter.getCombinedDerivative(), L"Combined Derivative", index);
+                measurements >> smoothAbsCombinedDerivative;
+                assertFloatAreEqual(smoothAbsCombinedDerivative, flowMeter.getSmoothAbsCombinedDerivative(), L"Smooth Abs Combined Derivative", index);
+                std::cout << measurement << "," << flowMeter.getFastDerivative() << "," << flowMeter.getSmoothFastDerivative() << "," << flowMeter.getCombinedDerivative() << "," << flowMeter.isPeak() << "," << flowMeter.isExcluded() <<
                     "\n";
                 totalPeaks += flowMeter.isPeak();
-                index++;
+                enteredBandCount += flowMeter.hasEnteredBand();
+                if (flowMeter.hasFlow() != inFlow) {
+                    inFlow = !inFlow;
+                    flowSwitches++;
+                    flowLength = 0;
+                }
+                if (inFlow) {
+                    flowLength++;
+                    if (flowLength > longestFlow) {
+                        longestFlow = flowLength;
+                    }
+                }
+                 index++;
             }
-            Assert::AreEqual(5, totalPeaks, L"Found 5 peaks");
+            Assert::AreEqual(3000L, index, L"3000 samples");
+            Assert::AreEqual(13, totalPeaks, L"Found 13 peaks");
+            Assert::AreEqual(20, flowSwitches, L"Flow switched 20 times");
+            Assert::AreEqual(840, longestFlow, L"Longest flow is 840 samples");
+            Assert::AreEqual(403, enteredBandCount, L"Entered band count is 403");
             measurements.close();
         }
 
@@ -74,7 +111,7 @@ namespace WaterMeterCppTest {
             std::cout.rdbuf(ss.rdbuf());
 
             FlowMeter flowMeter(&eventServer);
-            flowMeter.begin();
+            flowMeter.begin(1, 390.0f);
             int measurement;
             int totalOutliers = 0;
             std::ifstream measurements("outliertest.txt");
@@ -83,8 +120,8 @@ namespace WaterMeterCppTest {
             while (measurements >> measurement) {
                 std::cout << measurement << ",";
                 eventServer.publish(Topic::Sample, measurement);
-                std::cout << flowMeter.getSmoothValue() << "," << flowMeter.getDerivative() << ","
-                    << flowMeter.getSmoothDerivative() << "," << flowMeter.isPeak() << "," << flowMeter.isExcluded() <<
+                std::cout << flowMeter.getFastSmoothValue() << "," << flowMeter.getFastDerivative() << ","
+                    << flowMeter.getSmoothFastDerivative() << "," << flowMeter.isPeak() << "," << flowMeter.isExcluded() <<
                     "\n";
                 Logger::WriteMessage(ss.str().c_str());
                 totalOutliers += flowMeter.isOutlier();
@@ -97,27 +134,46 @@ namespace WaterMeterCppTest {
             // restore original buffer for cout
             std::cout.rdbuf(backup);
         }
+
+        TEST_METHOD(flowMeterResetSensorTest) {
+            FlowMeter actual(&eventServer);
+            actual.begin(4, 390.0f);
+            Assert::IsTrue(actual.wasReset(), L"was reset");
+            addMeasurementSeries(&actual, 5, [](const int i) { return 180 + i % 2 * 2; });
+            assertFloatAreEqual(0.4737f, actual.getSmoothFastDerivative());
+            Assert::IsFalse(actual.wasReset(), L"Not reset");
+            actual.update(Topic::SensorWasReset, LONG_TRUE);
+            actual.addSample(175);
+            Assert::IsTrue(actual.wasReset(), L"was reset");
+            assertFloatAreEqual(175.0f, actual.getFastSmoothValue(), L"Fast Smooth");
+            assertFloatAreEqual(0.0f, actual.getFastDerivative(), L"Fast Derivative");
+            assertFloatAreEqual(0.0f, actual.getSmoothFastDerivative(), L"Fast Smooth Derivative");
+            assertFloatAreEqual(0, actual.getSmoothAbsFastDerivative(), L"Smooth Abs Fast Derivative");
+            assertFloatAreEqual(175.0f, actual.getSlowSmoothValue(), L"Slow Smooth");
+            assertFloatAreEqual(0.0f, actual.getCombinedDerivative(), L"Combined Derivative");
+            assertFloatAreEqual(0.0f, actual.getSmoothAbsCombinedDerivative(), L"Smooth Abs Combined Derivative");
+        }
+
         TEST_METHOD(flowMeterSingleOutlierIgnoredTest) {
             FlowMeter actual(&eventServer);
+            actual.begin(4, 390.0f);
             actual.addSample(1001);
             assertResult(&actual, L"First", 1001.0f, 0.0f, 0.0f);
             actual.addSample(999);
-            assertResult(&actual, L"Second", 1000.9f, -0.08f, -0.004f);
+            assertResult(&actual, L"Second", 1000.33f, -0.6305f, -0.2112f);
             actual.addSample(1001);
-            assertResult(&actual, L"Third", 1000.905f, -0.06f, -0.0068f);
+            assertResult(&actual, L"Third", 1000.554f, -0.3821f, -0.2684f);
 
             addMeasurementSeries(&actual, 7, [](const int i) { return 999 + i % 2 * 2; });
-            assertResult(&actual, L"7 more good samples", 1000.5884f, -0.1547f, -0.043f);
+            assertResult(&actual, L"7 more good samples", 999.8191f, -0.8125f, -0.6699f);
 
             // introduce an outlier
             actual.addSample(2000);
-            assertResult(&actual, L"outlier ignored",
-                         1000.5884f, -0.1547f, -0.043f, false, true, true);
+            assertResult(&actual, L"outlier ignored", 999.8191f, -0.8125f, -0.6699f, false, true, true);
 
             // new good data
             actual.addSample(1001);
-            assertResult(&actual, L"good value after outlier",
-                         1000.6090f, -0.1073f, -0.046f);
+            assertResult(&actual, L"good value after outlier", 1000.215f, -0.3923f, -0.577f);
         }
 
     private:
@@ -128,9 +184,9 @@ namespace WaterMeterCppTest {
             std::wstring message(description);
             message += std::wstring(L" @ ");
 
-            assertFloatAreEqual(smoothValue, meter->getSmoothValue(), (message + L"Smooth Value").c_str());
-            assertFloatAreEqual(derivative, meter->getDerivative(), (message + L"Derivative").c_str());
-            assertFloatAreEqual(smoothDerivative, meter->getSmoothDerivative(),
+            assertFloatAreEqual(smoothValue, meter->getFastSmoothValue(), (message + L"Smooth Value").c_str());
+            assertFloatAreEqual(derivative, meter->getFastDerivative(), (message + L"Derivative").c_str());
+            assertFloatAreEqual(smoothDerivative, meter->getSmoothFastDerivative(),
                                 (message + L"Smooth Derivative").c_str());
             Assert::AreEqual(peak, meter->isPeak(), (message + L"Peak").c_str());
             Assert::AreEqual(excluded, meter->isExcluded(), (message + L"Excluded").c_str());

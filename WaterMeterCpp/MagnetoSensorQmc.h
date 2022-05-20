@@ -27,37 +27,37 @@
 // not using enum classes as we prefer weak typing to make the code more readable
 
 enum QmcRange: byte {
-    Range2G = 0b00000000,
+    QmcRange2G = 0b00000000,
     // divide by 120 for microTesla
-    Range8G = 0b00010000,
+    QmcRange8G = 0b00010000,
     // divide by 30 
 };
 
 enum QmcRate: byte {
-    Rate10Hz = 0b00000000,
-    Rate50Hz = 0b00000100,
-    Rate100Hz = 0b00001000,
-    Rate200Hz = 0b00001100
+    QmcRate10Hz = 0b00000000,
+    QmcRate50Hz = 0b00000100,
+    QmcRate100Hz = 0b00001000,
+    QmcRate200Hz = 0b00001100
 };
 
 enum QmcOverSampling: byte {
-    Sampling512 = 0b00000000,
-    Sampling256 = 0b01000000,
-    Sampling128 = 0b10000000,
-    Sampling64 = 0b11000000
+    QmcSampling512 = 0b00000000,
+    QmcSampling256 = 0b01000000,
+    QmcSampling128 = 0b10000000,
+    QmcSampling64 = 0b11000000
 };
 
 enum QmcRegister: byte {
-    Data = 0x00,
-    Status = 0x06,
-    Control1 = 0x09,
-    Control2 = 0x0a,
-    SetReset = 0x0b
+    QmcData = 0x00,
+    QmcStatus = 0x06,
+    QmcControl1 = 0x09,
+    QmcControl2 = 0x0a,
+    QmcSetReset = 0x0b
 };
 
 enum QmcMode: byte {
-    Standby = 0,
-    Continuous = 1
+    QmcStandby = 0,
+    QmcContinuous = 1
 };
 
 // QMC5883L sensor driver returning the raw readings.
@@ -66,33 +66,35 @@ class MagnetoSensorQmc final : public MagnetoSensor {
 public:
     MagnetoSensorQmc();
     // Configure the sensor according to the configuration parameters (called in begin())
-    void configure() const override;
+    bool configure() const override;
 
-    // configure oversampling if not default (Sampling512). Do before begin()
+    // configure oversampling if not default (QmcSampling512). Do before begin()
     void configureOverSampling(QmcOverSampling overSampling);
 
-    // configure the range if not default (Range8G). Call before begin()
+    // configure the range if not default (QmcRange8G). Call before begin()
     void configureRange(QmcRange range);
 
-    // configure the rate if not default (Rate100Hz). Call before begin()
+    // configure the rate if not default (QmcRate100Hz). Call before begin()
     // Note: lower rates won't work with the water meter as the code expects 100 Hz.
     void configureRate(QmcRate rate);
 
-    // returns whether the sensor has data available
-    bool dataReady() const override;
+    float getGain() const override;
+
+    static float getGain(QmcRange range);
 
     // read a sample from the sensor
     void read(SensorData* sample) const override;
 
     // soft reset the sensor
     void softReset() const override;
+    int getNoiseRange() const override;
 
     static constexpr byte DEFAULT_ADDRESS = 0x0D;
 
 private:
-    QmcOverSampling _overSampling = Sampling512;
-    QmcRange _range = Range8G;
-    QmcRate _rate = Rate100Hz;
+    QmcOverSampling _overSampling = QmcSampling512;
+    QmcRange _range = QmcRange8G;
+    QmcRate _rate = QmcRate100Hz;
 };
 
 #endif

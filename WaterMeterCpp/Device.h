@@ -13,8 +13,6 @@
 #define HEADER_DEVICE
 
 #include <ESP.h>
-
-#include "EventServer.h"
 #include "LongChangePublisher.h"
 
 class Device final : public EventClient {

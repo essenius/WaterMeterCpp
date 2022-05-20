@@ -108,6 +108,12 @@
     <ClCompile Include="SamplerTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MagnetoSensorHmcTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MagnetoSensorTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -136,12 +142,12 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="flow_test.csv">
-      <Filter>Source Files</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="outliertest.txt">
       <Filter>Source Files</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="preferences.txt" />
+    <CopyFileToFolders Include="unitTestFlow_4_7.csv">
+      <Filter>Source Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

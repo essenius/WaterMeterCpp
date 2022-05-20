@@ -47,7 +47,7 @@ void Aggregator::flush() {
     _flushRate = _desiredFlushRate;
 }
 
-// TODO: only used for testing -- driver?
+// Only used for testing, but inherited so can't easily move to a driver
 long Aggregator::getFlushRate() {
     return _flushRate;
 }

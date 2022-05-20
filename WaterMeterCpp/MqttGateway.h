@@ -15,7 +15,6 @@
 #include <ESP.h>
 #include <PubSubClient.h>
 
-#include "EventServer.h"
 #include "Configuration.h"
 #include "DataQueue.h"
 #include "WiFiClientFactory.h"
