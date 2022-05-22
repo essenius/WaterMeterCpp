@@ -119,6 +119,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\Mock;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -200,6 +201,7 @@
     <ClInclude Include="MagnetoSensorHmc.h" />
     <ClInclude Include="MagnetoSensorQmc.h" />
     <ClInclude Include="MagnetoSensorReader.h" />
+    <ClInclude Include="MagnetoSensorNull.h" />
     <ClInclude Include="OledDriver.h" />
     <ClInclude Include="SafeCString.h" />
     <ClInclude Include="SampleAggregator.h" />

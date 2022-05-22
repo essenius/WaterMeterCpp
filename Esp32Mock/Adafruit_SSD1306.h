@@ -14,6 +14,9 @@
 // ReSharper disable CppInconsistentNaming - mimicking existing interface
 // ReSharper disable CppParameterNeverUsed
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppMemberFunctionMayBeStatic
+// ReSharper disable CppParameterMayBeConst
 #ifndef HEADER_ADAFRUIT_SSD1306_H
 #define HEADER_ADAFRUIT_SSD1306_H
 

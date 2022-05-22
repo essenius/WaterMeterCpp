@@ -130,7 +130,7 @@ void Log::update(const Topic topic, const long payload) {
     }
 }
 
-void Log::printIndexedPayload(const char* entity, long payload) const {
+void Log::printIndexedPayload(const char* entity, const long payload) const {
     const int index = payload >> 24;
     const long value = payload & 0x00FFFFFF;
     log("Free %s #%d: %ld", entity, index, value);

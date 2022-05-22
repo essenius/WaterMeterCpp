@@ -12,8 +12,6 @@
 #ifndef HEADER_QUEUECLIENT
 #define HEADER_QUEUECLIENT
 
-#include <ESP.h>
-
 #include "EventClient.h"
 #include "Log.h" // exception: log from here only if buffer is full
 #include "LongChangePublisher.h"

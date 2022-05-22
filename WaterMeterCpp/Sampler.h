@@ -12,8 +12,6 @@
 #ifndef HEADER_SAMPLER
 #define HEADER_SAMPLER
 
-#include <ESP.h>
-
 #include "EventClient.h"
 #include "FlowMeter.h"
 #include "MagnetoSensorReader.h"
@@ -27,7 +25,7 @@ public:
             SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient);
     void begin();
     void loop();
-    bool setup(unsigned long samplePeriod = 10000UL);
+    bool setup(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
 
 private:
     EventServer* _eventServer;

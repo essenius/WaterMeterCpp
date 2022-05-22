@@ -13,8 +13,6 @@
 #define HEADER_EVENTSERVER
 
 #include "EventClient.h"
-#include <cstdarg>
-#include <map>
 #include <set>
 
 class EventServer {
@@ -24,8 +22,8 @@ public:
     // Deleting the server before the client would cause an access violation when the client gets destroyed.
 
     void provides(EventClient* client, Topic topic);
-    void cannotProvide(EventClient* client, Topic topic);
-    void cannotProvide(EventClient* client);
+    void cannotProvide(const EventClient* client, Topic topic);
+    void cannotProvide(const EventClient* client);
 
     // Request a topic. There can be only one provider
     template <class PayloadType>

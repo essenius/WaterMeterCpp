@@ -18,7 +18,7 @@
 #include "WiFiMock.h"
 #include "../WaterMeterCpp/Connector.h"
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
-#include "StateHelper.h"
+#include "AssertHelper.h"
 #include "TimeServerMock.h"
 #include "../WaterMeterCpp/DataQueue.h"
 

@@ -17,19 +17,20 @@ ResultAggregator::ResultAggregator(EventServer* eventServer, Clock* theClock, Da
                                    const uint32_t measureIntervalMicros) :
     Aggregator(eventServer, theClock, dataQueue, payload),
     _result(&payload->buffer.result),
+    _timeOverrun(eventServer, Topic::TimeOverrun),
     _measureIntervalMicros(measureIntervalMicros) {
     _desiredFlushRate = _idleFlushRate;
 }
 
-void ResultAggregator::addDuration(const unsigned long duration) const {
+void ResultAggregator::addDuration(const unsigned long duration) {
     // should only be called once during a message
     _result->totalDuration += duration;
     if (duration > _result->maxDuration) {
         _result->maxDuration = duration;
     }
     if (duration > _measureIntervalMicros) {
+        _timeOverrun = duration - _measureIntervalMicros;
         _result->overrunCount++;
-        _eventServer->publish(Topic::TimeOverrun, duration - _measureIntervalMicros);
     }
     // this could be optimized by only getting it executed at the end of a cycle
     _result->averageDuration = static_cast<uint32_t>((_result->totalDuration * 10 / _messageCount + 5) / 10);
@@ -88,6 +89,9 @@ void ResultAggregator::flush() {
     Aggregator::flush();
     _payload->topic = Topic::Result;
     _result->maxStreak = 0;
+    if (_result->overrunCount == 0) {
+        _timeOverrun = 0;
+    }
     _streak = 0;
 }
 

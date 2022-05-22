@@ -54,7 +54,7 @@ float MagnetoSensorQmc::getGain(const QmcRange range) {
     return 12000.0f;
 }
 
-void MagnetoSensorQmc::read(SensorData* sample) const {
+bool MagnetoSensorQmc::read(SensorData* sample) const {
     Wire.beginTransmission(_address);
     Wire.write(QmcData);
     Wire.endTransmission();
@@ -68,6 +68,7 @@ void MagnetoSensorQmc::read(SensorData* sample) const {
     sample->x = Wire.read() | Wire.read() << BITS_PER_BYTE;
     sample->y = Wire.read() | Wire.read() << BITS_PER_BYTE;
     sample->z = Wire.read() | Wire.read() << BITS_PER_BYTE;
+    return true;
 }
 
 void MagnetoSensorQmc::softReset() const {

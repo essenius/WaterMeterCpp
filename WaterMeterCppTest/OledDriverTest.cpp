@@ -14,6 +14,7 @@
 #include <ESP.h>
 
 #include "TestEventClient.h"
+#include "AssertHelper.h"
 #include "../WaterMeterCpp/OledDriver.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/ConnectionState.h"
@@ -87,7 +88,7 @@ public:
         Assert::AreEqual<int16_t>(0, display->getY(), L"alert off Y=0");
         Assert::AreEqual<int16_t>(7, display->getHeight(), L"alert off H=7");
         Assert::AreEqual<int16_t>(8, display->getWidth(), L"alert off W=8");
-        Assert::AreEqual<int16_t>(BLACK, display->getForegroundColor());
+        Assert::AreEqual<uint16_t>(BLACK, display->getForegroundColor());
 
         publishConnectionState(ConnectionState::RequestTime);
         Assert::AreEqual(0b00110000, display->getFirstByte(), L"First byte of time logo ok");
@@ -104,7 +105,7 @@ public:
         Assert::AreEqual<int16_t>(0, display->getY(), L"disconnected Y=0");
         Assert::AreEqual<int16_t>(7, display->getHeight(), L"disconnected H=7");
         Assert::AreEqual<int16_t>(8, display->getWidth(), L"disconnected W=8");
-        Assert::AreEqual<int16_t>(BLACK, display->getForegroundColor(), L"disconnected C=BLACK");
+        Assert::AreEqual<uint16_t>(BLACK, display->getForegroundColor(), L"disconnected C=BLACK");
 
         eventServer.publish(Topic::SensorWasReset, LONG_TRUE);
         Assert::AreEqual(0b00010000, display->getFirstByte(), L"First byte of reset logo ok");

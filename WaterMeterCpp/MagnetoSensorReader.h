@@ -21,25 +21,34 @@ constexpr int HARD_RESET = 2;
 
 class MagnetoSensorReader final : public EventClient {
 public:
-    explicit MagnetoSensorReader(EventServer* eventServer);
-    void begin();
+    MagnetoSensorReader(EventServer* eventServer);
+    bool begin(MagnetoSensor* sensor[], size_t listSize);
+    void configurePowerPort(uint8_t port);
     float getGain() const;
     int getNoiseRange() const;
     void hardReset();
-    bool hasSensor() const;
+    void power(uint8_t state) const;
     int16_t read();
     void reset();
-    void setSensor(MagnetoSensor* sensor);
     void update(Topic topic, long payload) override;
+    static constexpr byte DEFAULT_POWER_PORT = 15;
 
 private:
     static constexpr int FLATLINE_STREAK = 250;
     static constexpr int MAX_STREAKS_TO_ALERT = 10;
+    static constexpr int DELAY_SENSOR_MILLIS = 5;
+
+    bool setSensor();
+
     MagnetoSensor* _sensor = nullptr;
     ChangePublisher<bool> _alert;
+    ChangePublisher<bool> _noSensor;
     int _consecutiveStreakCount = 0;
     int16_t _previousSample = -32768;
     int _streakCount = 0;
+    uint8_t _powerPort = DEFAULT_POWER_PORT;
+    MagnetoSensor** _sensorList = nullptr;
+    size_t _sensorListSize = 0;
 };
 
 #endif

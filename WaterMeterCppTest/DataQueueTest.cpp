@@ -20,7 +20,7 @@
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/SafeCString.h"
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
-#include "TopicHelper.h"
+#include "AssertHelper.h"
 #include "../WaterMeterCpp/Serializer.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

@@ -28,6 +28,7 @@
 #include "Log.h"
 #include "MagnetoSensorHmc.h"
 #include "MagnetoSensorQmc.h"
+#include "MagnetoSensorNull.h"
 #include "MagnetoSensorReader.h"
 #include "MqttGateway.h"
 #include "OledDriver.h"
@@ -54,6 +55,9 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
 MagnetoSensorQmc qmcSensor;
 MagnetoSensorHmc hmcSensor;
+MagnetoSensorNull nullSensor;
+MagnetoSensor* sensor[] = { &qmcSensor, &hmcSensor, &nullSensor };
+
 Preferences preferences;
 Configuration configuration(&preferences);
 WiFiClientFactory wifiClientFactory(&configuration.tls);
@@ -114,7 +118,8 @@ TaskHandle_t connectorTaskHandle;
 void setup() {
     Serial.begin(115200);
     theClock.begin();
-    qmcSensor.power(HIGH); // might as well be hmc, it's about switching a GPIO port
+    sensorReader.power(HIGH);
+
     // wait for the sensor to be ready for measurements
     delay(50);
     Wire.begin();
@@ -135,15 +140,7 @@ void setup() {
     communicator.setup();
     connector.setup(&configuration);
 
-    if (qmcSensor.isOn()) {
-        sensorReader.setSensor(&qmcSensor);
-    } else if (hmcSensor.isOn()) {
-        sensorReader.setSensor(&hmcSensor);
-    }
-
-    while (!sampler.setup(MEASURE_INTERVAL_MICROS)) {
-        // No sense doing anything if we don't have a sensor
-    }
+    sampler.setup(sensor, std::size(sensor), MEASURE_INTERVAL_MICROS);
 
     // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
     sampler.begin();

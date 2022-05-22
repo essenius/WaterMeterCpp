@@ -14,6 +14,7 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/Sampler.h"
+#include "../WaterMeterCpp/MagnetoSensorNull.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -28,9 +29,11 @@ public:
         eventServer.subscribe(&noSensorClient, Topic::NoSensorFound);
         eventServer.subscribe(&alertClient, Topic::Alert);
         MagnetoSensorReader reader(&eventServer);
+        MagnetoSensorNull noSensor;
+        MagnetoSensor* list[] = { &noSensor };
         Sampler sampler(&eventServer, &reader, nullptr, nullptr, nullptr, nullptr);
-        Assert::IsFalse(sampler.setup(), L"Setup without a sensor fails");
-        Assert::AreEqual(1, noSensorClient.getCallCount(), L"No sensor event was fired");
+        Assert::IsFalse(sampler.setup(list, 1), L"Setup without a sensor fails");
+        Assert::AreEqual(1, noSensorClient.getCallCount(), L"No-sensor event was fired");
         Assert::AreEqual(1, alertClient.getCallCount(), L"Alert fired");
     }
 

@@ -9,16 +9,31 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+
 #include <Wire.h>
 #include "OledDriver.h"
 #include "ConnectionState.h"
 #include "SafeCString.h"
 
+// ReSharper disable CppClangTidyReadabilityRedundantDeclaration - needed for compilation on device (C++ 11)
+
+    constexpr unsigned char OledDriver::ALERT_LOGO[];
+    constexpr unsigned char OledDriver::DOWNLOAD_LOGO[];
+    constexpr unsigned char OledDriver::FIRMWARE_LOGO[];
+    constexpr unsigned char OledDriver::FLOW_LOGO[];
+    constexpr unsigned char OledDriver::BLOCKED_LOGO[];
+    constexpr unsigned char OledDriver::MQTT_LOGO[];
+    constexpr unsigned char OledDriver::NO_SENSOR_LOGO[];
+    constexpr unsigned char OledDriver::OUTLIER_LOGO[];
+    constexpr unsigned char OledDriver::RESET_LOGO[];
+    constexpr unsigned char OledDriver::SEND_LOGO[];
+    constexpr unsigned char OledDriver::TIME_LOGO[];
+    constexpr unsigned char OledDriver::WIFI_LOGO[];
+
 OledDriver::OledDriver(EventServer* eventServer) :
     EventClient(eventServer),
     _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire) {}
     
-
 // for testing only
 Adafruit_SSD1306* OledDriver::getDriver() { return &_display; }
 
@@ -82,7 +97,7 @@ void OledDriver::setLogo(const unsigned char* logo, const int16_t xLocation, con
 }
 
 void OledDriver::showMessageAtLine(const char* message, const int16_t line) {
-    _display.setCursor(0, line * 8);
+    _display.setCursor(0, static_cast<int16_t>(LINE_HEIGHT * line));
     _display.print(message);
     _needsDisplay = true;
 }
@@ -103,7 +118,7 @@ void OledDriver::switchLogo(const unsigned char* logo, const int16_t xLocation, 
      }
 }
 
-void OledDriver::update(Topic topic, const char* payload) {
+void OledDriver::update(const Topic topic, const char* payload) {
     if(topic == Topic::Meter) {
         char buffer[20];
         safeSprintf(buffer, "%s m3 ", payload); // %012.6lf
@@ -111,9 +126,9 @@ void OledDriver::update(Topic topic, const char* payload) {
     }
 }
 
-void OledDriver::update(Topic topic, long payload) {
-    switch(topic) {
-        char buffer[20];
+void OledDriver::update(const Topic topic, long payload) {
+    char buffer[20];
+    switch(topic) { 
     case Topic::Connection:
         switch (static_cast<ConnectionState>(payload)) {
             case ConnectionState::CheckFirmware:
@@ -132,6 +147,7 @@ void OledDriver::update(Topic topic, long payload) {
                 setConnectionLogo(WIFI_LOGO);
                 return;
             default:
+                // do nothing, intermediate state
                 return;
         }
     case Topic::Flow:
@@ -152,9 +168,12 @@ void OledDriver::update(Topic topic, long payload) {
     case Topic::TimeOverrun:
         switchEventLogo(TIME_LOGO, payload);
         return;        
-
     case Topic::Peaks: 
         safeSprintf(buffer, "Peaks: %ld", payload);
         showMessageAtLine(buffer, 0);
-  }
+    // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
+        return;
+    default:;
+        // do nothing
+    }
 }

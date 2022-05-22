@@ -20,32 +20,13 @@
 MagnetoSensor::MagnetoSensor(const byte address): _address(address) {
 }
 
-void MagnetoSensor::begin() const {
-    pinMode(_powerPort, OUTPUT);
+bool MagnetoSensor::begin() {
     softReset();
+    return true;
 }
 
 void MagnetoSensor::configureAddress(const byte address) {
     _address = address;
-}
-
-void MagnetoSensor::configurePowerPort(const uint8_t port) {
-    _powerPort = port;
-    pinMode(_powerPort, OUTPUT);
-}
-
-void MagnetoSensor::power(const uint8_t state) const {
-    digitalWrite(_powerPort, state);
-}
-
-void MagnetoSensor::hardReset() const {
-    power(LOW);
-    while (isOn()) {}
-    power(HIGH);
-    while (!isOn()) {}
-    delay(10);
-    // since this was drastic, we might need to revive Wire too.
-    begin();
 }
 
 bool MagnetoSensor::isOn() const {

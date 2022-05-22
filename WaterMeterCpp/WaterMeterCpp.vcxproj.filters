@@ -224,5 +224,8 @@
     <ClInclude Include="OledDriver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MagnetoSensorNull.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -36,12 +36,12 @@
 #include "../WaterMeterCpp/Sampler.h"
 // ReSharper disable CppUnusedIncludeDirective - false positive
 #include "HTTPClient.h"
-#include "TopicHelper.h"
-#include "StateHelper.h"
+#include "AssertHelper.h"
 #include "WiFi.h"
 #include "Wire.h"
 #include "../WaterMeterCpp/MagnetoSensorHmc.h"
 #include "../WaterMeterCpp/MagnetoSensorQmc.h"
+#include "../WaterMeterCpp/MagnetoSensorNull.h"
 // ReSharper restore CppUnusedIncludeDirective
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -75,6 +75,8 @@ namespace WaterMeterCppTest {
 
             MagnetoSensorQmc qmcSensor;
             MagnetoSensorHmc hmcSensor;
+            MagnetoSensorNull nullSensor;
+            MagnetoSensor* sensor[] = { &qmcSensor, &hmcSensor, &nullSensor };
 
             WiFiClientFactory wifiClientFactory(&configuration.tls);
 
@@ -136,7 +138,7 @@ namespace WaterMeterCppTest {
 
             Serial.begin(115200);
             theClock.begin();
-            qmcSensor.power(HIGH); // might as well be hmc, it's about switching a GPIO port
+            sensorReader.power(HIGH); // might as well be hmc, it's about switching a GPIO port
             // wait for the sensor to be ready for measurements
             delay(50);
             Wire.begin();
@@ -163,17 +165,7 @@ namespace WaterMeterCppTest {
             communicator.setup();
             connector.setup(&configuration);
 
-            if (qmcSensor.isOn()) {
-                sensorReader.setSensor(&qmcSensor);
-            } else if (hmcSensor.isOn()) {
-                sensorReader.setSensor(&hmcSensor);
-            }
-
-            while (!sampler.setup(MEASURE_INTERVAL_MICROS)) {
-                // No sense doing anything if we don't have a sensor
-            }
-
-            sampler.setup(MEASURE_INTERVAL_MICROS);
+            Assert::IsTrue(sampler.setup(sensor, std::size(sensor), MEASURE_INTERVAL_MICROS), L"Sampler found a sensor");
 
             // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (setup and loop run on core 1)
             xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);

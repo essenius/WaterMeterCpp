@@ -26,7 +26,7 @@ namespace WaterMeterCppTest {
             sensor.configureAddress(ADDRESS);
             Wire.begin();
             sensor.begin();
-            sensor.hardReset();
+            //sensor.hardReset();
             Assert::AreEqual<int>(ADDRESS, Wire.getAddress(), L"Custom Address OK");
         }
 
@@ -39,16 +39,11 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(390.0f, MagnetoSensorHmc::getGain(HmcGain4_7), L"4.7G gain ok");
             Assert::AreEqual(330.0f, MagnetoSensorHmc::getGain(HmcGain5_6), L"5.6G gain ok");
             Assert::AreEqual(230.0f, MagnetoSensorHmc::getGain(HmcGain8_1), L"8.1G gain ok");
+            MagnetoSensorHmc sensor;
+            sensor.configureGain(HmcGain2_5);
+            Assert::AreEqual(660.f, sensor.getGain(), L"getGain() returns correct value");
         }
 
-        TEST_METHOD(magnetoSensorHmcStandardAddressTest) {
-            const MagnetoSensorHmc sensor;
-            Wire.begin();
-            Assert::AreEqual(390.0f,sensor.getGain(), L"Default gain OK");
-            sensor.begin();
-            sensor.hardReset();
-            Assert::AreEqual<int>(MagnetoSensorHmc::DEFAULT_ADDRESS, Wire.getAddress(), L"Default address OK");
-        }
 
         TEST_METHOD(magnetoSensorHmcTestTest) {
             const MagnetoSensorHmc sensor;

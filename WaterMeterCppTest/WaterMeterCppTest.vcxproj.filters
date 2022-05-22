@@ -111,10 +111,10 @@
     <ClCompile Include="MagnetoSensorHmcTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MagnetoSensorTest.cpp">
+    <ClCompile Include="OledDriverTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OledDriverTest.cpp">
+    <ClCompile Include="MagnetoSensorNullTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,16 +128,13 @@
     <ClInclude Include="TestEventClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TopicHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MqttGatewayMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WiFiMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StateHelper.h">
+    <ClInclude Include="AssertHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TimeServerMock.h">

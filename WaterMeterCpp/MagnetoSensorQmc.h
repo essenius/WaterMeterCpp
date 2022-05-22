@@ -83,7 +83,7 @@ public:
     static float getGain(QmcRange range);
 
     // read a sample from the sensor
-    void read(SensorData* sample) const override;
+    bool read(SensorData* sample) const override;
 
     // soft reset the sensor
     void softReset() const override;

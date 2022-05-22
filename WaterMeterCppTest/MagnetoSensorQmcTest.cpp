@@ -13,6 +13,7 @@
 #include "CppUnitTest.h"
 #include "Wire.h"
 #include "../WaterMeterCpp/MagnetoSensorQmc.h"
+#include "../WaterMeterCpp/MagnetoSensorReader.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -30,23 +31,15 @@ namespace WaterMeterCppTest {
             MagnetoSensorQmc sensor;
             constexpr uint8_t ADDRESS = 0x23;
             sensor.configureAddress(ADDRESS);
-            digitalWrite(MagnetoSensor::DEFAULT_POWER_PORT, LOW);
             Wire.begin();
             sensor.begin();
-            sensor.hardReset();
             Assert::AreEqual<int>(ADDRESS, Wire.getAddress(), L"Custom Address OK");
-            Assert::AreEqual<int>(HIGH, digitalRead(MagnetoSensor::DEFAULT_POWER_PORT), L"Default Pin was toggled");
         }
 
-        TEST_METHOD(magnetoSensorQmcHardResetTest) {
+        TEST_METHOD(magnetoSensorQmcDefaultAddressTest) {
             MagnetoSensorQmc sensor;
-            constexpr uint8_t PIN = 23;
-            sensor.configurePowerPort(PIN);
-            digitalWrite(PIN, LOW);
             Wire.begin();
             sensor.begin();
-            sensor.hardReset();
-            Assert::AreEqual<int>(HIGH, digitalRead(PIN), L"Custom pin was toggled");
             Assert::AreEqual<int>(MagnetoSensorQmc::DEFAULT_ADDRESS, Wire.getAddress(), L"Default address OK");
         }
 

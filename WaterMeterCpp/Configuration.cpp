@@ -178,7 +178,7 @@ void Configuration::putWifiConfig(const WifiConfig* wifiConfig) const {
     _preferences->end();
 }
 
-int Configuration::freeBufferSpace() {
+int Configuration::freeBufferSpace() const {
     return BUFFER_SIZE - static_cast<int>(_next - _buffer);
 }
 

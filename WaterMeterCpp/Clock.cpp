@@ -10,6 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "Clock.h"
+#include <sys/time.h>
 #include <cstring>
 
 constexpr unsigned long long MICROSECONDS_PER_SECOND = 1000000ULL;

@@ -38,17 +38,63 @@ private:
     Adafruit_SSD1306 _display;
     bool _needsDisplay = false;
     static constexpr unsigned int MIN_DELAY_FOR_DISPLAY = 25;
-    static constexpr unsigned int SCREEN_WIDTH = 128;
-    static constexpr unsigned int SCREEN_HEIGHT = 32;
-    static constexpr unsigned int LOGO_HEIGHT = 7;
-    static constexpr unsigned int LOGO_WIDTH = 8;
-    static constexpr unsigned int FLOW_X = 98;
-    static constexpr unsigned int FLOW_Y = 0;
-    static constexpr unsigned int EVENT_X = 108;
-    static constexpr unsigned int EVENT_Y = 0;
-    static constexpr unsigned int CONNECTION_X = 118;
-    static constexpr unsigned int CONNECTION_Y = 0;
-            
+    static constexpr int16_t SCREEN_WIDTH = 128;
+    static constexpr int16_t SCREEN_HEIGHT = 32;
+    static constexpr int16_t LINE_HEIGHT = 8;
+    static constexpr int16_t LOGO_HEIGHT = 7;
+    static constexpr int16_t LOGO_WIDTH = 8;
+    static constexpr int16_t FLOW_X = 98;
+    static constexpr int16_t FLOW_Y = 0;
+    static constexpr int16_t EVENT_X = 108;
+    static constexpr int16_t EVENT_Y = 0;
+    static constexpr int16_t CONNECTION_X = 118;
+    static constexpr int16_t CONNECTION_Y = 0;   
+
+    static constexpr unsigned char ALERT_LOGO[] = 
+    { 0b11111100, 
+      0b01111000, 
+      0b01111000, 
+      0b00110000, 
+      0b00000000, 
+      0b00110000, 
+      0b00110000 };
+
+    static constexpr unsigned char BLOCKED_LOGO[] =
+    { 0b00111000, 
+      0b01111100, 
+      0b11111110, 
+      0b10000010, 
+      0b11111110, 
+      0b01111100, 
+      0b00111000 };
+      
+    static constexpr unsigned char DOWNLOAD_LOGO[] =
+    { 0b00110000, 
+      0b00110000, 
+      0b00110000, 
+      0b00110000, 
+      0b11111100, 
+      0b01111000, 
+      0b00110000 };
+
+    static constexpr unsigned char FIRMWARE_LOGO[] = 
+    { 0b11110001, 
+      0b10000001, 
+      0b11110001, 
+      0b10100001, 
+      0b10101001, 
+      0b10101010, 
+      0b10010100 };
+      
+    static constexpr unsigned char FLOW_LOGO[] =
+    { 0b00010000, 
+      0b10101010, 
+      0b01000100, 
+      0b00010000, 
+      0b10101010, 
+      0b01000100, 
+      0b00000000 };
+     
     static constexpr unsigned char MQTT_LOGO[] =
     { 0b00000000, 
       0b11100000, 
@@ -57,17 +103,42 @@ private:
       0b00100100,
       0b10010100,
       0b11010100 };
-    };
-    
-    static constexpr unsigned char WIFI_LOGO[] =
-    { 0b01111000, 
-      0b10000100, 
-      0b00000000,
+
+    static constexpr unsigned char NO_SENSOR_LOGO[] =
+    { 0b00010011, 
+      0b00010110, 
+      0b00111100, 
+      0b11011011, 
+      0b00110100, 
       0b01111000, 
+      0b11010000 };
+
+    static constexpr unsigned char OUTLIER_LOGO[] =
+    { 0b00011000, 
+      0b00011000, 
+      0b00000000, 
+      0b11111111, 
+      0b00000000, 
+      0b00000000, 
+      0b11111111 };
+     
+    static constexpr unsigned char RESET_LOGO[] =
+    { 0b00010000, 
+      0b01010100, 
+      0b10010010, 
+      0b10010010, 
+      0b10000010, 
+      0b01000100, 
+      0b00111000 };
+     
+     static constexpr unsigned char SEND_LOGO[] =
+    { 0b11111100, 
       0b10000100, 
-      0b00110000,
-      0b00110000 };
-    
+      0b11001100, 
+      0b10110100, 
+      0b10000100, 
+      0b10000100, 
+      0b11111100 };
     
     static constexpr unsigned char TIME_LOGO[] =
     { 0b00110000, 
@@ -77,92 +148,15 @@ private:
       0b10000100, 
       0b01001000, 
       0b00110000 };
-    
-    
-    static constexpr unsigned char DOWNLOAD_LOGO[] =
-    { 0b00110000, 
-      0b00110000, 
-      0b00110000, 
-      0b00110000, 
-      0b11111100, 
+      
+    static constexpr unsigned char WIFI_LOGO[] =
+    { 0b01111000, 
+      0b10000100, 
+      0b00000000,
       0b01111000, 
+      0b10000100, 
+      0b00110000,
       0b00110000 };
     
-    static constexpr unsigned char SEND_LOGO[] =
-    { 0b11111100, 
-      0b10000100, 
-      0b11001100, 
-      0b10110100, 
-      0b10000100, 
-      0b10000100, 
-      0b11111100 };
-    
-    static constexpr unsigned char NO_SENSOR_LOGO[] =
-    { 0b00010011, 
-      0b00010110, 
-      0b00111100, 
-      0b11011011, 
-      0b00110100, 
-      0b01111000, 
-      0b11010000 };
-    
-    
-    static constexpr unsigned char FLOW_LOGO[] =
-    { 0b00010000, 
-      0b10101010, 
-      0b01000100, 
-      0b00010000, 
-      0b10101010, 
-      0b01000100, 
-      0b00000000
-     };
-    
-    static constexpr unsigned char ALERT_LOGO[] =
-    { 0b11111100, 
-      0b01111000, 
-      0b01111000, 
-      0b00110000, 
-      0b00000000, 
-      0b00110000, 
-      0b00110000
-     };
-    
-    static constexpr unsigned char BLOCKED_LOGO[] =
-    { 0b00111000, 
-      0b01111100, 
-      0b11111110, 
-      0b10000010, 
-      0b11111110, 
-      0b01111100, 
-      0b00111000
-     };
-    
-    static constexpr unsigned char RESET_LOGO[] =
-    { 0b00010000, 
-      0b01010100, 
-      0b10010010, 
-      0b10010010, 
-      0b10000010, 
-      0b01000100, 
-      0b00111000
-     };
-    
-    static constexpr unsigned char OUTLIER_LOGO[] =
-    { 0b00011000, 
-      0b00011000, 
-      0b00000000, 
-      0b11111111, 
-      0b00000000, 
-      0b00000000, 
-      0b11111111
-     };
-    static constexpr unsigned char FIRMWARE_LOGO[] = { 
-      0b11110001, 
-      0b10000001, 
-      0b11110001, 
-      0b10100001, 
-      0b10101001, 
-      0b10101010, 
-      0b10010100
-    };
+};
 #endif

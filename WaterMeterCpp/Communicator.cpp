@@ -58,6 +58,7 @@ void Communicator::setup() const {
     _eventServer->subscribe(_connectorQueueClient, Topic::FreeStack);
     _eventServer->subscribe(_connectorQueueClient, Topic::Rate);
     _eventServer->subscribe(_connectorQueueClient, Topic::SensorWasReset);
+    _eventServer->subscribe(_connectorQueueClient, Topic::NoSensorFound);
     _eventServer->subscribe(_connectorQueueClient, Topic::NoDisplayFound);
     _eventServer->subscribe(_serializer, Topic::SensorData);
     

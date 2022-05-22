@@ -15,7 +15,7 @@
 
 #include "../WaterMeterCpp/QueueClient.h"
 #include "../WaterMeterCpp/SafeCString.h"
-#include "StateHelper.h"
+#include "AssertHelper.h"
 #include "TestEventClient.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
