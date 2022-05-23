@@ -164,6 +164,7 @@
     <ClCompile Include="MagnetoSensorQmc.cpp" />
     <ClCompile Include="MagnetoSensorReader.cpp" />
     <ClCompile Include="DataQueuePayload.cpp" />
+    <ClCompile Include="Meter.cpp" />
     <ClCompile Include="OledDriver.cpp" />
     <ClCompile Include="SampleAggregator.cpp" />
     <ClCompile Include="MqttGateway.cpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="MagnetoSensorQmc.h" />
     <ClInclude Include="MagnetoSensorReader.h" />
     <ClInclude Include="MagnetoSensorNull.h" />
+    <ClInclude Include="Meter.h" />
     <ClInclude Include="OledDriver.h" />
     <ClInclude Include="SafeCString.h" />
     <ClInclude Include="SampleAggregator.h" />

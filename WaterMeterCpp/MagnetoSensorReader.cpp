@@ -81,6 +81,7 @@ void MagnetoSensorReader::hardReset() {
     }
     power(HIGH);
     delay(DELAY_SENSOR_MILLIS);
+    _noSensor = false;
     setSensor();
     
     _streakCount = 0;

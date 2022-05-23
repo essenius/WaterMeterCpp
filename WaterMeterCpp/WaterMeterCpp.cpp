@@ -30,6 +30,7 @@
 #include "MagnetoSensorQmc.h"
 #include "MagnetoSensorNull.h"
 #include "MagnetoSensorReader.h"
+#include "Meter.h"
 #include "MqttGateway.h"
 #include "OledDriver.h"
 #include "ResultAggregator.h"
@@ -79,6 +80,7 @@ SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQue
 ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &resultPayload, MEASURE_INTERVAL_MICROS);
 
 Device device(&communicatorEventServer);
+Meter meter(&communicatorEventServer);
 LedDriver ledDriver(&communicatorEventServer);
 OledDriver oledDriver(&communicatorEventServer);
 PayloadBuilder wifiPayloadBuilder;
@@ -105,7 +107,7 @@ Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &device, &connectorDataQueue, &serializer2,
+Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &meter, &device, &connectorDataQueue, &serializer2,
                           &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
 TimeServer timeServer;
@@ -139,8 +141,8 @@ void setup() {
 
     communicator.setup();
     connector.setup(&configuration);
-
-    sampler.setup(sensor, std::size(sensor), MEASURE_INTERVAL_MICROS);
+    // C++ 11 compatible way
+    sampler.setup(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
 
     // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
     sampler.begin();

@@ -58,7 +58,7 @@ public:
         Assert::AreEqual(0u, oledDriver.display(), L"No need to display");
 
         const auto testValue = "23456.7890123";
-        eventServer.publish(Topic::Meter, testValue);
+        eventServer.publish(Topic::Volume, testValue);
         Assert::AreEqual<int16_t>(0, display->getX(), L"Meter X=0");
         Assert::AreEqual<int16_t>(8, display->getY(), L"Meter Y=8");
         Assert::AreEqual("23456.7890123 m3 ", display->getMessage(), L"Meter message OK");
@@ -97,7 +97,7 @@ public:
 
         eventServer.publish(Topic::NoSensorFound, LONG_TRUE);
         Assert::AreEqual(0b00010011, display->getFirstByte(), L"First byte of missing sensor logo ok");
-        Assert::AreEqual<int16_t>(108, display->getX(), L"missing sensor X=108");
+        Assert::AreEqual<int16_t>(98, display->getX(), L"missing sensor X=98");
         Assert::AreEqual<int16_t>(0, display->getY(), L"missing sensor Y=0");
 
         publishConnectionState(ConnectionState::Disconnected);
@@ -112,10 +112,10 @@ public:
         Assert::AreEqual<int16_t>(108, display->getX(), L"reset X=108");
         Assert::AreEqual<int16_t>(0, display->getY(), L"reset Y=0");
 
-        eventServer.publish(Topic::Peaks, 4321);
-        Assert::AreEqual<int16_t>(0, display->getX(), L"Peaks X=0");
-        Assert::AreEqual<int16_t>(0, display->getY(), L"Peaks Y=0");
-        Assert::AreEqual("Peaks: 4321", display->getMessage(), L"Peaks message OK"); 
+        eventServer.publish(Topic::Pulses, 4321);
+        Assert::AreEqual<int16_t>(0, display->getX(), L"Pulses X=0");
+        Assert::AreEqual<int16_t>(0, display->getY(), L"Pulses Y=0");
+        Assert::AreEqual("Pulses:    4321", display->getMessage(), L"Pulses message OK"); 
 
         eventServer.publish(Topic::Blocked, LONG_TRUE);
         Assert::AreEqual(0b00111000, display->getFirstByte(), L"First byte of blocked logo ok");

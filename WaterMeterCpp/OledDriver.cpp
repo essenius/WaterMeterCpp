@@ -58,8 +58,8 @@ bool OledDriver::begin() {
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::TimeOverrun);
-    _eventServer->subscribe(this, Topic::Meter);
-    _eventServer->subscribe(this, Topic::Peaks);
+    _eventServer->subscribe(this, Topic::Volume);
+    _eventServer->subscribe(this, Topic::Pulses);
     delay(MIN_DELAY_FOR_DISPLAY);
     return true;
 }
@@ -119,9 +119,9 @@ void OledDriver::switchLogo(const unsigned char* logo, const int16_t xLocation, 
 }
 
 void OledDriver::update(const Topic topic, const char* payload) {
-    if(topic == Topic::Meter) {
+    if(topic == Topic::Volume) {
         char buffer[20];
-        safeSprintf(buffer, "%s m3 ", payload); // %012.6lf
+        safeSprintf(buffer, "%s m3 ", payload); // %013.7lf
         showMessageAtLine(buffer, 1);
     }
 }
@@ -151,6 +151,7 @@ void OledDriver::update(const Topic topic, long payload) {
                 return;
         }
     case Topic::Flow:
+        if (payload) showMessageAtLine("Flow on        ", 3); else showMessageAtLine("Flow off       ", 3);
         switchFlowLogo(FLOW_LOGO, payload);
         return;
     case Topic::Alert:
@@ -160,16 +161,20 @@ void OledDriver::update(const Topic topic, long payload) {
         switchEventLogo(BLOCKED_LOGO, payload);
         return;
     case Topic::SensorWasReset:
+        if (payload == 2) showMessageAtLine("Hard reset     ", 3); else showMessageAtLine("Soft reset     ", 3);
         switchEventLogo(RESET_LOGO, payload);
         return;
     case Topic::NoSensorFound:
-        switchEventLogo(NO_SENSOR_LOGO, payload);
+        showMessageAtLine("No sensor      ", 3);
+        switchFlowLogo(NO_SENSOR_LOGO, payload);
         return;
     case Topic::TimeOverrun:
+        safeSprintf(buffer, "Overrun: %6ld", payload);
+        showMessageAtLine(buffer, 3);
         switchEventLogo(TIME_LOGO, payload);
         return;        
-    case Topic::Peaks: 
-        safeSprintf(buffer, "Peaks: %ld", payload);
+    case Topic::Pulses: 
+        safeSprintf(buffer, "Pulses: %7ld", payload);
         showMessageAtLine(buffer, 0);
     // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
         return;

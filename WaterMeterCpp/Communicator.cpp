@@ -13,13 +13,14 @@
 #include "Connector.h"
 #include "DataQueuePayload.h"
 
-Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, OledDriver* oledDriver, Device* device,
+Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, OledDriver* oledDriver, Meter* meter, Device* device,
                            DataQueue* dataQueue, Serializer* serializer,
                            QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient) :
     EventClient(eventServer),
     _logger(logger),
     _ledDriver(ledDriver),
     _oledDriver(oledDriver),
+    _meter(meter),
     _device(device),
     _dataQueue(dataQueue),
     _serializer(serializer),
@@ -42,14 +43,14 @@ void Communicator::loop() const {
 
     const auto waitedTime = _oledDriver->display();
     if (waitedTime < 10) {
-      delay(10 - static_cast<int>(waitedTime));
+        delay(10 - static_cast<int>(waitedTime));
     }
-    
 }
 
 void Communicator::setup() const {
     _logger->begin();
     _ledDriver->begin();
+    _meter->begin();
 
     // what can be sent to mqtt (note: nothing sent to the sampler)
     _eventServer->subscribe(_connectorQueueClient, Topic::Alert);
@@ -62,7 +63,7 @@ void Communicator::setup() const {
     _eventServer->subscribe(_connectorQueueClient, Topic::NoDisplayFound);
     _eventServer->subscribe(_serializer, Topic::SensorData);
     
-    // can publish 
+    // can publish NoDisplayFound
     _oledDriver->begin();
 }
 

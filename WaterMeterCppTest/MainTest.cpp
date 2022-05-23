@@ -99,6 +99,7 @@ namespace WaterMeterCppTest {
                                               MEASURE_INTERVAL_MICROS);
 
             Device device(&communicatorEventServer);
+            Meter meter(&communicatorEventServer);
             LedDriver ledDriver(&communicatorEventServer);
             OledDriver oledDriver(&communicatorEventServer);
             PayloadBuilder wifiPayloadBuilder;
@@ -123,7 +124,7 @@ namespace WaterMeterCppTest {
             DataQueue connectorDataQueue(&communicatorEventServer, &communicatorQueuePayload, 1, 1024, 128, 256);
             Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator,
                             &samplerQueueClient);
-            Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &device, &connectorDataQueue, &serializer2,
+            Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &meter, &device, &connectorDataQueue, &serializer2,
                                       &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
             TimeServer timeServer;

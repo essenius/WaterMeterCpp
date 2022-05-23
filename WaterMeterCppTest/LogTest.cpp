@@ -100,7 +100,7 @@ namespace WaterMeterCppTest {
 
             clearPrintOutput();
             eventServer.publish(Topic::NoSensorFound, LONG_TRUE);
-            Assert::AreEqual("[] No sensor found\n", getPrintOutput(), L"no sensor found handled OK");
+            Assert::AreEqual("[] No sensor found: 1\n", getPrintOutput(), L"no sensor found handled OK");
         }
 
     private:

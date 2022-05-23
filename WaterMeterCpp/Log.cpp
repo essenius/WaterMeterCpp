@@ -80,7 +80,7 @@ void Log::update(Topic topic, const char* payload) {
         log("No OLED display found");
         break;
     case Topic::NoSensorFound:
-        log("No sensor found");
+        log("No sensor found: %s", payload);
         break;
     case Topic::MessageFormatted:
         log("%s", payload);

@@ -118,7 +118,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator.obj;Clock.obj;Communicator.obj;Configuration.obj;Connector.obj;DataQueue.obj;DataQueuePayload.obj;Device.obj;ESP.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;freeRTOS.obj;HTTPClient.obj;HTTPUpdate.obj;IPAddress.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensor.obj;MagnetoSensorHmc.obj;MagnetoSensorQmc.obj;MagnetoSensorReader.obj;MqttGateway.obj;OledDriver.obj;PayloadBuilder.obj;Preferences.obj;PubSubClient.obj;QueueClient.obj;ResultAggregator.obj;ringbuf.obj;SampleAggregator.obj;Sampler.obj;Serializer.obj;time.obj;TimeServer.obj;Wire.obj;WiFi.obj;WiFiManager.obj;WifiClientFactory.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator.obj;Clock.obj;Communicator.obj;Configuration.obj;Connector.obj;DataQueue.obj;DataQueuePayload.obj;Device.obj;ESP.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;freeRTOS.obj;HTTPClient.obj;HTTPUpdate.obj;IPAddress.obj;Meter.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensor.obj;MagnetoSensorHmc.obj;MagnetoSensorQmc.obj;MagnetoSensorReader.obj;MqttGateway.obj;OledDriver.obj;PayloadBuilder.obj;Preferences.obj;PubSubClient.obj;QueueClient.obj;ResultAggregator.obj;ringbuf.obj;SampleAggregator.obj;Sampler.obj;Serializer.obj;time.obj;TimeServer.obj;Wire.obj;WiFi.obj;WiFiManager.obj;WifiClientFactory.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>false</Profile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>
@@ -178,6 +178,7 @@
     <ClCompile Include="MagnetoSensorNullTest.cpp" />
     <ClCompile Include="MagnetoSensorQmcTest.cpp" />
     <ClCompile Include="MagnetoSensorReaderTest.cpp" />
+    <ClCompile Include="MeterTest.cpp" />
     <ClCompile Include="OledDriverTest.cpp" />
     <ClCompile Include="SamplerTest.cpp" />
     <ClCompile Include="MainTest.cpp" />

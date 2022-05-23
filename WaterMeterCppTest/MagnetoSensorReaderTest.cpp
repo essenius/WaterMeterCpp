@@ -66,8 +66,8 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(1, client.getCallCount(), L"NoSensorFound triggered");
             digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
             sensorReader.hardReset();
+            Assert::AreEqual(3, client.getCallCount(), L"NoSensorFound triggered again (off and then on)");
             Assert::AreEqual<int>(HIGH, digitalRead(MagnetoSensorReader::DEFAULT_POWER_PORT), L"Default Pin was toggled");
-            Assert::AreEqual(1, client.getCallCount(), L"NoSensorFound triggered again");
         }
 
         TEST_METHOD(magnetoSensorReaderQmcTest1) {
