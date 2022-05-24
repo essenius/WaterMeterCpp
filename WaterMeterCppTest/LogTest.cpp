@@ -101,8 +101,11 @@ namespace WaterMeterCppTest {
             clearPrintOutput();
             eventServer.publish(Topic::NoSensorFound, LONG_TRUE);
             Assert::AreEqual("[] No sensor found: 1\n", getPrintOutput(), L"no sensor found handled OK");
-        }
 
+            clearPrintOutput();
+            eventServer.publish(Topic::NoDisplayFound, LONG_TRUE);
+            Assert::AreEqual("[] No OLED display found\n", getPrintOutput(), L"no display found handled OK");
+        }
     private:
         void publishConnectionState(const Topic topic, ConnectionState connectionState) {
             eventServer.publish(topic, static_cast<long>(connectionState));
