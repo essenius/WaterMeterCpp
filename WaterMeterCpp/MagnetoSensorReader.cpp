@@ -24,7 +24,7 @@ MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer) :
 
 bool MagnetoSensorReader::setSensor() {
     // The last one (null sensor) always matches so _sensor can't be nullptr
-    for (uint8_t i = 0; i < _sensorListSize; i++) {
+    for (uint8_t i = 0; i < static_cast<uint8_t>(_sensorListSize); i++) {
         if (_sensorList[i]->isOn()) {
             _sensor = _sensorList[i];
             break;

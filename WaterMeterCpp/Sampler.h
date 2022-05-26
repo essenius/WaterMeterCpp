@@ -34,7 +34,6 @@ private:
     SampleAggregator* _sampleAggregator;
     ResultAggregator* _resultAggregator;
     QueueClient* _queueClient;
-    bool _firstError = true;
     unsigned long _additionalDuration = 0;
     unsigned long _maxDurationForChecks = 8000;
     unsigned long _samplePeriod = 10000;

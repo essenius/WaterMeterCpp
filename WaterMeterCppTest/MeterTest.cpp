@@ -46,7 +46,7 @@ public:
 
         const char* expected[] = { "00123.4567001", "00123.4567001", "00123.4567002", "00123.4567003", "00123.4567003",
                                    "00123.4567004", "00123.4567004", "00123.4567005", "00123.4567006", "00123.4567006" };
-        for (int i = 0; i < std::size(expected); i++) {
+        for (unsigned int i = 0; i < std::size(expected); i++) {
             volumeClient.reset();
             pulseClient.reset();
             eventServer.publish(Topic::Peak, LONG_TRUE);

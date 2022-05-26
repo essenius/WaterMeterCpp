@@ -19,7 +19,7 @@
 
 using namespace std::placeholders;
 
-// mapoing between topics and whether it can be set, the node, and the property
+// mapping between topics and whether it can be set, the node, and the property
 // implementing triplet via two pairs
 static const std::map<Topic, std::pair<bool, std::pair<const char*, const char*>>> TOPIC_MAP{
     {Topic::BatchSize,        {false, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}}},
@@ -211,7 +211,7 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(RESULT, RESULT_RATE, "Rate", TYPE_INTEGER);
     prepareProperty(RESULT, RESULT_IDLE_RATE, "Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
     prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
-    prepareProperty(RESULT, RESULT_METER, "Meter value", TYPE_FLOAT, "0-99999.999999", SETTABLE);
+    prepareProperty(RESULT, RESULT_METER, "Meter value", TYPE_FLOAT, "0-99999.9999999", SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
     safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_FREE_QUEUE_SIZE, DEVICE_FREE_QUEUE_SPACES, DEVICE_BUILD, DEVICE_MAC);

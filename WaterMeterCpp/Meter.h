@@ -14,22 +14,21 @@
 
 #include "EventClient.h"
 
-class Meter : public EventClient {
+class Meter final : public EventClient {
 public:
     explicit Meter(EventServer* eventServer);
     void begin();
     const char* getVolume();
     void newPulse();
     void publishValues();
-    unsigned long pulseCount() const;
     bool setVolume(const char* meterValue);
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
 
 private:
     // 16,000 pulses per liter, and 1000 liters in a cubic meter
-    double PULSES_PER_UNIT = 16000.0 * 1000.0;
-    double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;
+    static constexpr double PULSES_PER_UNIT = 16000.0 * 1000.0;
+    static constexpr double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;
     double _volume = 0.0;
     unsigned long _pulses = 0;
     static constexpr int BUFFERSIZE = 20;

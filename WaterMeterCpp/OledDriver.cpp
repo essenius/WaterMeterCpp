@@ -121,7 +121,7 @@ void OledDriver::switchLogo(const unsigned char* logo, const int16_t xLocation, 
 void OledDriver::update(const Topic topic, const char* payload) {
     if(topic == Topic::Volume) {
         char buffer[20];
-        safeSprintf(buffer, "%s m3 ", payload); // %013.7lf
+        safeSprintf(buffer, "%s m3 ", payload);
         showMessageAtLine(buffer, 1);
     }
 }

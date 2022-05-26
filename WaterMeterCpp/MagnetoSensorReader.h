@@ -21,7 +21,7 @@ constexpr int HARD_RESET = 2;
 
 class MagnetoSensorReader final : public EventClient {
 public:
-    MagnetoSensorReader(EventServer* eventServer);
+	explicit MagnetoSensorReader(EventServer* eventServer);
     bool begin(MagnetoSensor* sensor[], size_t listSize);
     void configurePowerPort(uint8_t port);
     float getGain() const;

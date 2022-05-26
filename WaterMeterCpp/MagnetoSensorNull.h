@@ -14,7 +14,7 @@
 
 #include "MagnetoSensor.h"
 
-class MagnetoSensorNull : public MagnetoSensor
+class MagnetoSensorNull final : public MagnetoSensor
 {
 public:
     MagnetoSensorNull() : MagnetoSensor(0) {}

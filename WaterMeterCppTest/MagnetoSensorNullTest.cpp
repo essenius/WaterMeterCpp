@@ -11,7 +11,6 @@
 
 #include "pch.h"
 #include "CppUnitTest.h"
-#include "Wire.h"
 #include "../WaterMeterCpp/MagnetoSensorNull.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 
@@ -24,7 +23,7 @@ namespace WaterMeterCppTest {
 public:
     TEST_METHOD(magnetoSensorReaderNoSensorTest1) {
         EventServer eventServer;
-        MagnetoSensorNull nullSensor;
+        const MagnetoSensorNull nullSensor;
         Assert::IsFalse(nullSensor.configure(), L"Configure returns false");
         Assert::AreEqual(0.0f, nullSensor.getGain(), L"Gain is 0");
         Assert::AreEqual(0, nullSensor.getNoiseRange(), L"Noise range is 0");

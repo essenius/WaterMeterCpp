@@ -99,7 +99,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual("client1", mqttClient.id());
             // check if the homie init events were sent 
             Assert::AreEqual(static_cast<size_t>(2193), strlen(mqttClient.getTopics()), L"Topic lenght OK");
-            Assert::AreEqual(static_cast<size_t>(626), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
+            Assert::AreEqual(static_cast<size_t>(627), strlen(mqttClient.getPayloads()), L"Payload lenght OK");
             Assert::AreEqual(58, mqttClient.getCallCount(), L"Call count");
 
             gateway.announceReady();

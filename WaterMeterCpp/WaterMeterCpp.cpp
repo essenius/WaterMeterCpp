@@ -141,7 +141,7 @@ void setup() {
 
     communicator.setup();
     connector.setup(&configuration);
-    // C++ 11 compatible way
+    // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
     sampler.setup(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
 
     // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
