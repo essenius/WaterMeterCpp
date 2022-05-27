@@ -19,6 +19,7 @@
 #include "../WaterMeterCpp/Connector.h"
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include "AssertHelper.h"
+#include "TestEventClient.h"
 #include "TimeServerMock.h"
 #include "../WaterMeterCpp/DataQueue.h"
 
@@ -42,16 +43,19 @@ namespace WaterMeterCppTest {
         static Serializer serializer;
         static QueueHandle_t queueHandle;
         static QueueClient queueClient1;
-        static QueueClient queueClient2;
+        static QueueClient communicatorQueueClient;
         static DataQueue dataQueue;
         static DataQueue commsDataQueue;
 
         TEST_CLASS_INITIALIZE(connectorTestInitialize) {
-            queueClient1.begin(queueClient2.getQueueHandle());
-            queueClient2.begin();
+            disableDelay(false);
+            setRealTime(false);
+            queueClient1.begin(communicatorQueueClient.getQueueHandle());
+            communicatorQueueClient.begin();
         }
 
         TEST_METHOD(connectorMaxWifiFailuresTest) {
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty start");
             connector.setup(&configuration);
             wifiMock.setIsConnected(false);
 
@@ -64,9 +68,15 @@ namespace WaterMeterCppTest {
                 delay(WIFI_RECONNECT_WAIT_DURATION / 1000);
             }
             Assert::AreEqual(ConnectionState::Init, connector.loop(), L"Failed too many times, re-init");
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty end");
+
+        	Assert::IsFalse(uxQueueMessagesWaiting(queueClient1.getQueueHandle()), L"queueClient1 ok");
+            Assert::IsFalse(uxQueueMessagesWaiting(communicatorQueueClient.getQueueHandle()), L"communicatorQueueClient ok");
+
         }
 
         TEST_METHOD(connectorReInitTest) {
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty start");
             connector.setup(&configuration);
             wifiMock.setIsConnected(false);
             wifiMock.setNeedsReconnect(true);
@@ -80,22 +90,31 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Connected");
             wifiMock.setIsConnected(false);
             Assert::AreEqual(ConnectionState::Disconnected, connector.connect(), L"Disconnected");
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty end");
+
+            Assert::IsFalse(uxQueueMessagesWaiting(queueClient1.getQueueHandle()), L"queueClient1 ok");
+            Assert::IsFalse(uxQueueMessagesWaiting(communicatorQueueClient.getQueueHandle()), L"communicatorQueueClient ok");
+
         }
 
         TEST_METHOD(connectorScriptTest) {
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty start");
             timeServer.reset();
             // connect before timeout
             connector.setup(&configuration);
             wifiMock.setNeedsReconnect(false);
             wifiMock.setIsConnected(false);
             Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Wifi connecting");
+
             Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Wifi connecting 2");
             delay(3000);
             Assert::AreEqual(ConnectionState::WifiConnecting, connector.connect(), L"Wifi connecting 3");
-            wifiMock.setIsConnected(true);
+
+        	wifiMock.setIsConnected(true);
             Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Wifi connected");
             Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Set time");
-            Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Setting time");
+
+        	Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Setting time");
             Assert::AreEqual(ConnectionState::CheckFirmware, connector.connect(), L"Checking firmware");
             Assert::AreEqual(ConnectionState::WifiReady, connector.connect(), L"Wifi ready");
 
@@ -110,7 +129,7 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(50UL, (micros() - timestampReady) / 1000UL, L"50 ms wait time when ready");
             Assert::AreEqual(
                 ConnectionState::MqttReady, connector.connect(),
-                L"MQTT stays ready if nothing changges");
+                L"MQTT stays ready if nothing changes");
 
             // disconnecting Wifi should change state to Disconnected
             wifiMock.setIsConnected(false);
@@ -124,7 +143,7 @@ namespace WaterMeterCppTest {
                 ConnectionState::WifiConnecting, connector.connect(),
                 L"Connecting after Wifi comes up");
             Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Wifi reconnected");
-            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"SetTime 2(does nothing)");
+            Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"SetTime 2 (does nothing)");
             Assert::AreEqual(ConnectionState::CheckFirmware, connector.connect(), L"Checking firmware 2 (does nothing)");
 
             Assert::AreEqual(ConnectionState::WifiReady, connector.connect(), L"Wifi Ready 2");
@@ -157,9 +176,13 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(ConnectionState::MqttConnecting, connector.connect(), L"Connecting to MQTT 5");
             Assert::AreEqual(ConnectionState::MqttConnected, connector.connect(), L"Connected to MQTT 5");
             Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Final MQTT Ready");
+
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty end");
         }
 
         TEST_METHOD(connectorTimeFailTest) {
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty start");
+
             connector.setup(&configuration);
             wifiMock.setIsConnected(true);
             wifiMock.setNeedsReconnect(false);
@@ -173,15 +196,45 @@ namespace WaterMeterCppTest {
             // and again, since the standard mock mechanism switches it on
             timeServer.reset();
             Assert::AreEqual(ConnectionState::SettingTime, connector.connect(), L"Waiting for time to be set 2");
-            delay(10000);
+            delayMicroseconds(11000000);
             Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Back to Connected");
             Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Request time 2");
             // now let timeServer succeed
             timeServer.setTime();
             Assert::AreEqual(ConnectionState::CheckFirmware, connector.connect(), L"Time was set");
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty end");
+        }
+
+        TEST_METHOD(connectorQueueStringPayloadTest) {
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty start");
+            connector.setup(&configuration);
+            constexpr char BUFFER[] = "12345.6789012";
+            EventServer receivingEventServer;
+            QueueClient receivingQueueClient(&receivingEventServer, &logger, 20);
+            communicatorQueueClient.begin(receivingQueueClient.getQueueHandle());
+            receivingQueueClient.begin();
+            eventServer.publish(Topic::SetVolume, BUFFER);
+            // now the entry is in the queue. Pick it up at the other end.
+            TestEventClient client(&receivingEventServer);
+            receivingEventServer.subscribe(&client, Topic::SetVolume);
+            receivingQueueClient.receive();
+
+            Assert::AreEqual(1, client.getCallCount(), L"Test client called");
+            Assert::AreEqual("12345.6789012", client.getPayload(), L"Payload ok");
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty end");
+
+            Assert::IsFalse(uxQueueMessagesWaiting(queueClient1.getQueueHandle()), L"queueClient1 ok");
+            Assert::IsFalse(uxQueueMessagesWaiting(communicatorQueueClient.getQueueHandle()), L"communicatorQueueClient ok");
+            // make sure the client has no send queue for the other tests
+            communicatorQueueClient.begin();
+            Assert::IsFalse(uxQueueMessagesWaiting(queueClient1.getQueueHandle()), L"queueClient1 ok");
+            Assert::IsFalse(uxQueueMessagesWaiting(communicatorQueueClient.getQueueHandle()), L"communicatorQueueClient ok");
+
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty end");
         }
 
         TEST_METHOD(connectorWifiInitTest) {
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty start");
             connector.setup(&configuration);
 
             wifiMock.setNeedsReconnect(true);
@@ -206,6 +259,8 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(ConnectionState::WifiConnected, connector.connect(), L"Connected 2");
             Assert::AreEqual(ConnectionState::RequestTime, connector.connect(), L"Requesting time 2");
             Assert::AreEqual(ConnectionState::CheckFirmware, connector.connect(), L"Checking firmware");
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty end");
+
         }
     };
 
@@ -227,8 +282,8 @@ namespace WaterMeterCppTest {
     DataQueue ConnectorTest::commsDataQueue(&eventServer, &payload, 1, 2, 1, 2);
 
     QueueHandle_t ConnectorTest::queueHandle = nullptr;
-    QueueClient ConnectorTest::queueClient1(&eventServer, &logger, 10);
-    QueueClient ConnectorTest::queueClient2(&eventServer, &logger, 10);
+    QueueClient ConnectorTest::queueClient1(&eventServer, &logger, 10, 1);
+    QueueClient ConnectorTest::communicatorQueueClient(&eventServer, &logger, 10, 2);
     Connector ConnectorTest::connector(&eventServer, &wifiMock, &mqttGatewayMock, &timeServer, &firmwareManager, &dataQueue,
-                                       &commsDataQueue, &serializer, &queueClient1, &queueClient2);
+                                       &commsDataQueue, &serializer, &queueClient1, &communicatorQueueClient);
 }

@@ -19,14 +19,16 @@ public:
         _payload[0] = 0;
     }
 
+    int getCallCount() const;
+    char* getPayload();
+    Topic getTopic() const;
     void reset();
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
-    Topic getTopic() const;
-    char* getPayload();
-    int getCallCount() const;
+    bool wasLong() const;
 private:
     int _callCount = 0;
     Topic _topic = Topic::None;
     char _payload[512]{};
+    bool _wasLong = false;
 };

@@ -50,6 +50,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::SensorWasReset);
+    _eventServer->subscribe(this, Topic::SetVolume);
     _eventServer->subscribe(this, Topic::SkipSamples);
     _eventServer->subscribe(this, Topic::TimeOverrun);
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
@@ -93,6 +94,9 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::SensorWasReset:
         log("Sensor was reset: %s", payload);
+        break;
+    case Topic::SetVolume:
+        log("Set meter volume: %s", payload);
         break;
     case Topic::SkipSamples:
         log("Skipped %s samples", payload);

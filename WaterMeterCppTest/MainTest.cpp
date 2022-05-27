@@ -37,6 +37,7 @@
 // ReSharper disable CppUnusedIncludeDirective - false positive
 #include "HTTPClient.h"
 #include "AssertHelper.h"
+#include "TestEventClient.h"
 #include "WiFi.h"
 #include "Wire.h"
 #include "../WaterMeterCpp/MagnetoSensorHmc.h"
@@ -57,11 +58,16 @@ namespace WaterMeterCppTest {
         static Configuration configuration;
 
         TEST_METHOD(mainTest1) {
+            Assert::AreEqual("", getPrintOutput(), L"Print buffer empty start");
+
+            setRealTime(false);
+            disableDelay(false);
             // make the firmware check fail
             HTTPClient::ReturnValue = 400;
             // Other tests might have run before, so reset stacks and queues
             ESP.restart();
             Wire.setFlatline(true);
+            Wire.setEndTransmissionTogglePeriod(10);
             uxTaskGetStackHighWaterMarkReset();
             uxQueueReset();
             uxRingbufReset();
@@ -110,9 +116,9 @@ namespace WaterMeterCppTest {
             MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt, &sensorDataQueue, BUILD_VERSION);
             FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);
 
-            QueueClient samplerQueueClient(&samplerEventServer, &logger, 20, 0);
-            QueueClient communicatorSamplerQueueClient(&communicatorEventServer, &logger, 20, 1);
-            QueueClient communicatorConnectorQueueClient(&communicatorEventServer, &logger, 20, 2);
+            QueueClient samplerQueueClient(&samplerEventServer, &logger, 50, 0);
+            QueueClient communicatorSamplerQueueClient(&communicatorEventServer, &logger, 50, 1);
+            QueueClient communicatorConnectorQueueClient(&communicatorEventServer, &logger, 50, 2);
             QueueClient connectorCommunicatorQueueClient(&connectorEventServer, &logger, 100, 3);
 
             // send only
@@ -162,17 +168,21 @@ namespace WaterMeterCppTest {
 
             // disable the timestamps to make it easier to test
             communicatorEventServer.cannotProvide(&theClock, Topic::Time);
-
+            Assert::AreEqual("", getPrintOutput(), "Print output empty 1");
             communicator.setup();
             connector.setup(&configuration);
 
             Assert::IsTrue(sampler.setup(sensor, std::size(sensor), MEASURE_INTERVAL_MICROS), L"Sampler found a sensor");
+            Assert::AreEqual("[] Starting\n", getPrintOutput(), "Print output started");
+            clearPrintOutput();
 
             // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (setup and loop run on core 1)
             xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
 
             // start the communication task which takes care of logging and leds, as well as passing on data to the connector if there is a connection
             xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
+
+            Assert::AreEqual("", getPrintOutput(), "Print output empty 2");
 
             device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 
@@ -192,11 +202,10 @@ namespace WaterMeterCppTest {
 
             Assert::AreEqual(Led::ON, Led::get(Led::AUX), L"AUX on");
             Assert::AreEqual(Led::ON, Led::get(Led::RUNNING), L"RUNNING on");
-            Assert::AreEqual(R"([] Starting
-[] Topic '6': 0
-[] Free Spaces Queue #1: 9
+            Assert::AreEqual(R"([] Topic '6': 0
+[] Free Spaces Queue #1: 19
 [] Wifi summary: {"ssid":"","hostname":"","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
-[] Free Spaces Queue #2: 9
+[] Free Spaces Queue #2: 19
 [] Free Memory DataQueue #0: 12800
 [] Free Heap: 32000
 [] Free Stack #0: 1500
@@ -207,12 +216,19 @@ namespace WaterMeterCppTest {
             // reduce the noise in the logger 
             samplerEventServer.unsubscribe(&logger, Topic::Sample);
             communicatorEventServer.unsubscribe(&logger, Topic::Connection);
+            clearPrintOutput();
             // start again with the wifi connection
             WiFi.reset();
             WiFi.connectIn(1);
-            while (connector.connect() != ConnectionState::MqttReady) {}
+            int i = 0;
+            while (connector.connect() != ConnectionState::MqttReady) {
+                i++;
+                if (i>20) {
+                    Assert::AreEqual("", getPrintOutput(), "waited > 20 times");
+                }
+            }
             Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Checking for data");
-
+        Assert::AreEqual("[] Free Memory DataQueue #1: 12800\n", getPrintOutput(), L"Print output DQ");
             // emulate the publication of a result from sensor to log
             DataQueuePayload payload1{};
             payload1.topic = Topic::Result;
@@ -224,10 +240,11 @@ namespace WaterMeterCppTest {
 
             clearPrintOutput();
             communicator.loop();
-            auto expected = R"([] Free Spaces Queue #2: 1
+            auto expected = R"([] Free Spaces Queue #2: 8
 [] Wifi summary: {"ssid":"","hostname":"esp32_001122334455","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
 [] Wifi summary: {"ssid":"","hostname":"esp32_001122334455","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2","gateway-ip":"10.0.0.1","dns1-ip":"8.8.8.8","dns2-ip":"8.8.4.4","subnet-mask":"255.255.0.0","bssid":"55:44:33:22:11:00"}
-[] Free Spaces Queue #2: 6
+[] Free Spaces Queue #2: 16
+[] Free Spaces Queue #3: 16
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://localhost/001122334455.version
 [] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"LPF":0,"HPLPF":0,"LPHPF":0,"LPAHPLPF":23.02,"LFS":0,"HPC":0,"LPAHPC":0}}
@@ -235,14 +252,43 @@ namespace WaterMeterCppTest {
 )";
             Assert::AreEqual(expected, getPrintOutput(), L"Formatted result came through");
             clearPrintOutput();
-            // expect an overrun
-            delay(10);
+
+        	// expect an overrun due to delays in the loop tasks
+
             sampler.loop();
+
+            // switch off delay() so we don't get an overrun next time
+
+            disableDelay(true);
+
             Assert::AreEqual(ConnectionState::MqttReady, connector.loop(), L"Connector loop");
             communicator.loop();
-            Assert::AreEqual(0, strncmp("[] Time overrun:", getPrintOutput(), 16), L"Time overrun");
+            Assert::AreEqual("[] Time overrun: 100400\n[] Skipped 11 samples\n[] Free Stack #0: 1628\n", getPrintOutput(), L"Time overrun");
+
             connectorEventServer.publish(Topic::ResetSensor, 2);
+            TestEventClient client(&samplerEventServer);
+            samplerEventServer.subscribe(&client, Topic::SensorWasReset);
             sampler.loop();
+            Assert::AreEqual(1, client.getCallCount(), L"SensorWasReset was called");
+
+            clearPrintOutput();
+            communicator.loop();
+
+            auto expected2 = R"([] No sensor found: 1
+[] Alert: 1
+[] Sensor was reset: 2
+[] Free Spaces Queue #0: 20
+[] Free Heap: 23000
+)";
+            Assert::AreEqual(expected2, getPrintOutput(), L"Communicator picked up alert and reset");
+
+            clearPrintOutput();
+            connectorEventServer.publish(Topic::SetVolume, "98765.4321098");
+            communicator.loop();
+            Assert::AreEqual("[] Set meter volume: 98765.4321098\n", getPrintOutput(), L"Set meter worked");
+            
+            disableDelay(false);
+            clearPrintOutput();
         }
     };
 

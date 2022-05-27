@@ -52,10 +52,10 @@ constexpr const char* const NAME = "$name";
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
 MqttGateway::MqttGateway(
-    EventServer* eventServer, 
+    EventServer* eventServer,
     PubSubClient* mqttClient,
     WiFiClientFactory* wifiClientFactory,
-    const MqttConfig* mqttConfig, 
+    const MqttConfig* mqttConfig,
     const DataQueue* dataQueue,
     const char* buildVersion) :
 
@@ -64,7 +64,8 @@ MqttGateway::MqttGateway(
     _wifiClientFactory(wifiClientFactory),
     _mqttConfig(mqttConfig),
     _dataQueue(dataQueue),
-    _buildVersion(buildVersion) {}
+    _buildVersion(buildVersion) {
+}
 
 MqttGateway::~MqttGateway() {
     delete _wifiClient;
@@ -142,7 +143,14 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
             if (isSetProperty) {
                 const auto topicPair = topicTriplet.second;
                 if (strcmp(topicPair.first, node) == 0 && strcmp(topicPair.second, property) == 0) {
-                    _eventServer->publish<const char*>(this, entry.first, payloadStr);
+                    // There is one set-value that requires a string, and that needs to be persistent across tasks
+                    if (entry.first == Topic::SetVolume) {
+                        safeStrcpy(_volume, payloadStr);
+                        _eventServer->publish(this, entry.first, _volume);
+                    }
+                    else {
+                        _eventServer->publish(this, entry.first, payloadStr);
+                    }
                     break;
                 }
             }

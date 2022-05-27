@@ -18,7 +18,7 @@
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;
 
-enum class Topic: uint16_t {
+enum class Topic: int16_t {
     None = 0,
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
     Sample, Samples, SkipSamples, SamplesFormatted, 

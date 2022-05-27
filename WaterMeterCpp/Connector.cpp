@@ -59,6 +59,7 @@ void Connector::setup(const Configuration* configuration) {
     _eventServer->subscribe(_communicatorQueueClient, Topic::WifiSummaryReady);
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSize);
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSpaces);
+    _eventServer->subscribe(_communicatorQueueClient, Topic::SetVolume);
 
     _wifi->configure(&configuration->ip);
 }

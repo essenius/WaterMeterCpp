@@ -30,10 +30,11 @@ namespace WaterMeterCppTest {
 
         // making sure that the printf redirect works
         TEST_METHOD(logPrintfTest) {
-            redirectPrintf("Hello %s\n", "there");
-            Assert::AreEqual("Hello there\n", getPrintOutput());
             clearPrintOutput();
-            Assert::AreEqual<size_t>(0, getPrintOutputLength());
+            redirectPrintf("Hello %s\n", "there");
+            Assert::AreEqual("Hello there\n", getPrintOutput(), L"Output OK");
+            clearPrintOutput();
+            Assert::AreEqual<size_t>(0, strlen(getPrintOutput()), L"Zero length");
         }
 
         TEST_METHOD(logScriptTest) {
@@ -105,6 +106,7 @@ namespace WaterMeterCppTest {
             clearPrintOutput();
             eventServer.publish(Topic::NoDisplayFound, LONG_TRUE);
             Assert::AreEqual("[] No OLED display found\n", getPrintOutput(), L"no display found handled OK");
+            clearPrintOutput();
         }
     private:
         void publishConnectionState(const Topic topic, ConnectionState connectionState) {

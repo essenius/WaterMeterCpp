@@ -141,17 +141,18 @@ void setup() {
 
     communicator.setup();
     connector.setup(&configuration);
+
     // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
     sampler.setup(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
-
-    // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
-    sampler.begin();
 
     // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
     xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
 
     // the communicator loop takes care of logging and leds, as well as passing on data to the connector if there is a connection
     xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
+
+    // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
+    sampler.begin();
 
     device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 }

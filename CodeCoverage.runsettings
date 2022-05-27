@@ -25,6 +25,7 @@ Included items must then not match any entries in the exclude list to remain inc
 						<Sources>
 							<Exclude>
 								<Source>.*\\.*Mock.*</Source>
+								<Source>.*Esp32Mock\\.*</Source>
 							</Exclude>
 						</Sources>
 						<!-- Don't forget "Attribute" at the end of the name -->
