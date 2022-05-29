@@ -23,7 +23,7 @@
 
 constexpr int SOFT_RESET = 0x80;
 
-MagnetoSensorQmc::MagnetoSensorQmc(): MagnetoSensor(DEFAULT_ADDRESS) {}
+MagnetoSensorQmc::MagnetoSensorQmc(TwoWire* wire): MagnetoSensor(DEFAULT_ADDRESS, wire) {}
 
 bool MagnetoSensorQmc::configure() const {
     setRegister(QmcSetReset, 0x01);
@@ -55,19 +55,19 @@ float MagnetoSensorQmc::getGain(const QmcRange range) {
 }
 
 bool MagnetoSensorQmc::read(SensorData* sample) const {
-    Wire.beginTransmission(_address);
-    Wire.write(QmcData);
-    Wire.endTransmission();
+    _wire->beginTransmission(_address);
+    _wire->write(QmcData);
+    _wire->endTransmission();
 
     constexpr byte BYTES_TO_READ = 6;
     constexpr byte BITS_PER_BYTE = 8;
     // Read data from each axis, 2 registers per axis
     // order: x LSB, x MSB, y LSB, y MSB, z LSB, z MSB
-    Wire.requestFrom(_address, BYTES_TO_READ);
-    while (Wire.available() < BYTES_TO_READ) {}
-    sample->x = Wire.read() | Wire.read() << BITS_PER_BYTE;
-    sample->y = Wire.read() | Wire.read() << BITS_PER_BYTE;
-    sample->z = Wire.read() | Wire.read() << BITS_PER_BYTE;
+    _wire->requestFrom(_address, BYTES_TO_READ);
+    while (_wire->available() < BYTES_TO_READ) {}
+    sample->x = _wire->read() | _wire->read() << BITS_PER_BYTE;
+    sample->y = _wire->read() | _wire->read() << BITS_PER_BYTE;
+    sample->z = _wire->read() | _wire->read() << BITS_PER_BYTE;
     return true;
 }
 

@@ -64,7 +64,7 @@ enum QmcMode: byte {
 
 class MagnetoSensorQmc final : public MagnetoSensor {
 public:
-    MagnetoSensorQmc();
+    explicit MagnetoSensorQmc(TwoWire* wire = &Wire);
     // Configure the sensor according to the configuration parameters (called in begin())
     bool configure() const override;
 

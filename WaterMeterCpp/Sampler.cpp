@@ -26,6 +26,7 @@ void Sampler::begin() {
 }
 
 void Sampler::loop() {
+	const auto startOffset = micros() - _scheduledStartTime;
     const int16_t measure = _sensorReader->read();
     // this triggers flowMeter, sampleAggregator and the comms task
     _eventServer->publish(Topic::Sample, measure);
@@ -74,6 +75,7 @@ void Sampler::loop() {
             duration = micros() - _scheduledStartTime;
         } while (duration < _samplePeriod);
         _scheduledStartTime += _samplePeriod;
+        const auto endOffset = micros() - _scheduledStartTime;
     }
 }
 

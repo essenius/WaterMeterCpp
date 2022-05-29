@@ -30,17 +30,20 @@
     constexpr unsigned char OledDriver::TIME_LOGO[];
     constexpr unsigned char OledDriver::WIFI_LOGO[];
 
-OledDriver::OledDriver(EventServer* eventServer) :
+OledDriver::OledDriver(EventServer* eventServer, TwoWire* wire) :
     EventClient(eventServer),
-    _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire) {}
+    _wire(wire),
+    _display(SCREEN_WIDTH, SCREEN_HEIGHT, wire) {}
     
 // for testing only
 Adafruit_SSD1306* OledDriver::getDriver() { return &_display; }
 
 bool OledDriver::begin() {
-    // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
     constexpr int OLED_128_32 = 0x3c;
-    if(!_display.begin(SSD1306_SWITCHCAPVCC, OLED_128_32, false)) {
+    // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+    // Do an explicit check whether the oled is there (the driver doesn't do that)
+    _wire->beginTransmission(OLED_128_32);
+    if ((_wire->endTransmission() != 0) || !_display.begin(SSD1306_SWITCHCAPVCC, OLED_128_32, false, false)) {
       _eventServer->publish(Topic::NoDisplayFound, LONG_TRUE);
       return false;
     }

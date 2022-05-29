@@ -27,7 +27,7 @@ public:
         prefs.begin("test1");
         Assert::AreEqual(456u, prefs.getUInt("int2", 0), L"int works");
         Assert::AreEqual("valueX", prefs.getString("string2").c_str(), L"getString works");
-        char buf[6];
+        char buf[7];
         prefs.getBytes("bytes2", buf, sizeof buf);
         Assert::AreEqual(0, strncmp(buf, "abcdef", 6), L"getBytes OK");
         prefs.begin("test");

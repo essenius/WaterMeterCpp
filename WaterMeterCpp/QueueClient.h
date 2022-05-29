@@ -25,7 +25,7 @@ public:
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
 private:
-    void send(Topic topic, int64_t payload, bool isString = false);
+    void send(Topic topic, intptr_t payload, bool isString = false);
     static QueueHandle_t createQueue(uint16_t length);
     Log* _logger;
     LongChangePublisher _freeSpaces;

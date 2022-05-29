@@ -61,6 +61,7 @@ void Communicator::setup() const {
     _eventServer->subscribe(_connectorQueueClient, Topic::SensorWasReset);
     _eventServer->subscribe(_connectorQueueClient, Topic::NoSensorFound);
     _eventServer->subscribe(_connectorQueueClient, Topic::NoDisplayFound);
+    _eventServer->subscribe(_connectorQueueClient, Topic::Volume);
     _eventServer->subscribe(_serializer, Topic::SensorData);
     
     // can publish NoDisplayFound

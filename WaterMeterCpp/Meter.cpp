@@ -11,6 +11,7 @@
 
 #include "Meter.h"
 #include <string>
+#include <cmath>
 
 #include "EventServer.h"
 #include "SafeCString.h"

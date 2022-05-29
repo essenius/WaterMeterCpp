@@ -30,7 +30,7 @@ constexpr uint8_t SSD1306_SWITCHCAPVCC = 0x02;
 class Adafruit_SSD1306 {
 public:
     Adafruit_SSD1306(unsigned width, unsigned height, TwoWire* wire) {}
-    bool begin(uint8_t switchvcc, uint8_t i2caddr, bool reset = true) {
+    bool begin(uint8_t switchvcc, uint8_t i2caddr, bool reset = true, bool initDependencies = true) {
         return _isPresent;
     }
     void cp437(bool x = true) {}

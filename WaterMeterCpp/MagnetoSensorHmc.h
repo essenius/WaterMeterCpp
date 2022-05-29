@@ -70,7 +70,7 @@ enum HmcMode : byte {
 
 class MagnetoSensorHmc final : public MagnetoSensor {
 public:
-    MagnetoSensorHmc();
+    explicit MagnetoSensorHmc(TwoWire* wire = &Wire);
     bool configure() const override;
     void configureGain(HmcGain gain);
     void configureOverSampling(HmcOverSampling overSampling);

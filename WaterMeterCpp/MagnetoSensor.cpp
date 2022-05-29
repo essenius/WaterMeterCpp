@@ -17,7 +17,9 @@
 #include "MagnetoSensorQmc.h"
 #include "Wire.h"
 
-MagnetoSensor::MagnetoSensor(const byte address): _address(address) {
+MagnetoSensor::MagnetoSensor(const byte address, TwoWire* wire): 
+    _address(address),
+    _wire(wire) {
 }
 
 bool MagnetoSensor::begin() {
@@ -30,13 +32,13 @@ void MagnetoSensor::configureAddress(const byte address) {
 }
 
 bool MagnetoSensor::isOn() const {
-    Wire.beginTransmission(_address);
-    return Wire.endTransmission() == 0;
+    _wire->beginTransmission(_address);
+    return _wire->endTransmission() == 0;
 }
 
 void MagnetoSensor::setRegister(const byte sensorRegister, const byte value) const {
-    Wire.beginTransmission(_address);
-    Wire.write(sensorRegister);
-    Wire.write(value);
-    Wire.endTransmission();
+    _wire->beginTransmission(_address);
+    _wire->write(sensorRegister);
+    _wire->write(value);
+    _wire->endTransmission();
 }

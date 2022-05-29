@@ -33,7 +33,8 @@ public:
     }
 
     TEST_METHOD(oledDriverCycleScriptTest) {
-        OledDriver oledDriver(&eventServer);
+        Wire1.setFlatline(true); // make Wire1.endTransmission return the right value so begin() passes
+        OledDriver oledDriver(&eventServer, &Wire1);
         TestEventClient client(&eventServer);
         eventServer.subscribe(&client, Topic::NoDisplayFound);
         const auto display = oledDriver.getDriver();

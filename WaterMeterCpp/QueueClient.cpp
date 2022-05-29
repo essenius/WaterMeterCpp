@@ -26,10 +26,10 @@ QueueHandle_t QueueClient::createQueue(const uint16_t length) {
 QueueClient::QueueClient(EventServer* eventServer, Log* logger, const uint16_t size, const int8_t index) :
     EventClient(eventServer),
     _logger(logger),
-	_index(index),
-    // being careful with reporting on spaces as it may use them as well, so just every 5
     _freeSpaces(eventServer, Topic::FreeQueueSpaces, 5, 0, index, size),
-    _receiveQueue(createQueue(size)) {
+    // being careful with reporting on spaces as it may use them as well, so just every 5
+    _receiveQueue(createQueue(size)),
+    _index(index) {
 }
 
 // ReSharper disable once CppParameterMayBeConst -- introduces misplaced const

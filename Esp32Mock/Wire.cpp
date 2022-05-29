@@ -21,12 +21,13 @@
 #include <Wire.h>
 
 TwoWire Wire;
+TwoWire Wire1;
 
 int TwoWire::available() {
     return ++_available;
 }
 
-void TwoWire::begin() {
+void TwoWire::begin(int sda, int scl) {
     _nextResult = 0;
     _available = 0;
     _writeIndex = 0;

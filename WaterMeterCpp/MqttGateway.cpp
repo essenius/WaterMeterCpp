@@ -39,7 +39,10 @@ static const std::map<Topic, std::pair<bool, std::pair<const char*, const char*>
     {Topic::ResetSensor,      {true,  {DEVICE, DEVICE_RESET_SENSOR}}}
 };
 
-static const std::set<Topic> NON_RETAINED_TOPICS{ Topic::ResetSensor, Topic::SensorWasReset };
+static const std::set<Topic> NON_RETAINED_TOPICS{ Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume };
+
+static const std::set<Topic> RETRIEVED_TOPICS{ Topic::Volume };
+
 
 constexpr const char* const RATE_RANGE = "0:8640000";
 constexpr const char* const TYPE_INTEGER = "integer";
@@ -74,19 +77,20 @@ MqttGateway::~MqttGateway() {
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
     // TODO: it's probably OK to do this just once and leave on. Validate.
-    _eventServer->subscribe(this, Topic::Alert); // long
-    _eventServer->subscribe(this, Topic::BatchSize); // long
-    _eventServer->subscribe(this, Topic::BatchSizeDesired); // long
-    _eventServer->subscribe(this, Topic::FreeHeap); // long
-    _eventServer->subscribe(this, Topic::FreeStack); // long
-    _eventServer->subscribe(this, Topic::FreeQueueSize); // long
-    _eventServer->subscribe(this, Topic::FreeQueueSpaces); // long
-    _eventServer->subscribe(this, Topic::IdleRate); // long
-    _eventServer->subscribe(this, Topic::NonIdleRate); // long
-    _eventServer->subscribe(this, Topic::Rate); // long  
-    _eventServer->subscribe(this, Topic::ResultFormatted); // string
+    _eventServer->subscribe(this, Topic::Alert); 
+    _eventServer->subscribe(this, Topic::BatchSize); 
+    _eventServer->subscribe(this, Topic::BatchSizeDesired); 
+    _eventServer->subscribe(this, Topic::FreeHeap); 
+    _eventServer->subscribe(this, Topic::FreeStack); 
+    _eventServer->subscribe(this, Topic::FreeQueueSize); 
+    _eventServer->subscribe(this, Topic::FreeQueueSpaces); 
+    _eventServer->subscribe(this, Topic::IdleRate);
+    _eventServer->subscribe(this, Topic::NonIdleRate); 
+    _eventServer->subscribe(this, Topic::Rate); 
+    _eventServer->subscribe(this, Topic::ResultFormatted); 
     _eventServer->subscribe(this, Topic::SamplesFormatted); // string
-    _eventServer->subscribe(this, Topic::SensorWasReset); // long     
+    _eventServer->subscribe(this, Topic::SensorWasReset);      
+    _eventServer->subscribe(this, Topic::Volume); // string
 }
 
 void MqttGateway::begin(const char* clientName) {

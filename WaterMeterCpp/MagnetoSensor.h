@@ -22,6 +22,7 @@
 #pragma warning (disable:26812)
 
 #include <ESP.h>
+#include <Wire.h>
 
 struct SensorData {
     short x;
@@ -42,7 +43,7 @@ struct SensorData {
 class MagnetoSensor {
 public:
     virtual ~MagnetoSensor() = default;
-    explicit MagnetoSensor(byte address);
+    explicit MagnetoSensor(byte address, TwoWire* wire);
     MagnetoSensor(const MagnetoSensor&) = default;
     MagnetoSensor(MagnetoSensor&&) = default;
     MagnetoSensor& operator=(const MagnetoSensor&) = default;
@@ -76,6 +77,7 @@ public:
 
 protected:
     byte _address;
+    TwoWire* _wire;
     void setRegister(byte sensorRegister, byte value) const;
 };
 

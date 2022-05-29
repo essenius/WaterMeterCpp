@@ -17,7 +17,7 @@
 
 class OledDriver final : public EventClient {
 public:
-    explicit OledDriver(EventServer* eventServer);
+    explicit OledDriver(EventServer* eventServer, TwoWire* wire = &Wire);
     Adafruit_SSD1306* getDriver();
     bool begin();
     unsigned int display();
@@ -34,7 +34,8 @@ private:
     void switchEventLogo(const unsigned char* logo, long switchOn);
     void switchFlowLogo(const unsigned char* logo, long switchOn);
     void switchLogo(const unsigned char* logo, int16_t xLocation, int16_t yLocation, long switchOn);    
-    
+
+    TwoWire* _wire;
     Adafruit_SSD1306 _display;
     bool _needsDisplay = false;
     static constexpr unsigned int MIN_DELAY_FOR_DISPLAY = 25;

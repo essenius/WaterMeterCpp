@@ -18,7 +18,7 @@
 #include "MagnetoSensorHmc.h"
 #include "Wire.h"
 
-MagnetoSensorHmc::MagnetoSensorHmc() : MagnetoSensor(DEFAULT_ADDRESS) {}
+MagnetoSensorHmc::MagnetoSensorHmc(TwoWire* wire) : MagnetoSensor(DEFAULT_ADDRESS, wire) {}
 
 bool MagnetoSensorHmc::configure() const {
     return test();
@@ -80,21 +80,21 @@ void MagnetoSensorHmc::getTestMeasurement(SensorData* reading) const {
 bool MagnetoSensorHmc::read(SensorData* sample) const {
     startMeasurement();
 
-    Wire.beginTransmission(_address);
-    Wire.write(HmcData);
-    Wire.endTransmission();
+    _wire->beginTransmission(_address);
+    _wire->write(HmcData);
+    _wire->endTransmission();
 
     //Read data from each axis, 2 registers per axis
     // order: x MSB, x LSB, z MSB, z LSB, y MSB, y LSB
     constexpr byte BYTES_TO_READ = 6;
-    Wire.requestFrom(_address, BYTES_TO_READ);
-    while (Wire.available() < BYTES_TO_READ) {}
-    sample->x = Wire.read() << 8;
-    sample->x |= Wire.read();
-    sample->z = Wire.read() << 8;
-    sample->z |= Wire.read();
-    sample->y = Wire.read() << 8;
-    sample->y |= Wire.read();
+    _wire->requestFrom(_address, BYTES_TO_READ);
+    while (_wire->available() < BYTES_TO_READ) {}
+    sample->x = _wire->read() << 8;
+    sample->x |= _wire->read();
+    sample->z = _wire->read() << 8;
+    sample->z |= _wire->read();
+    sample->y = _wire->read() << 8;
+    sample->y |= _wire->read();
     return true;
 }
 

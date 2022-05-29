@@ -38,10 +38,9 @@ public:
     void save();
     void load();
 private:
-    std::map<std::string, std::map<std::string, std::string>> _prefs;
+    std::map<std::string, std::map<std::string, std::string>> _preferences;
 
-    std::map<std::string, std::string>* _cur = nullptr;
-    //std::map<std::string, std::map<std::string, std::string>>::mapped_type _current;
+    std::map<std::string, std::string>* _currentPreference = nullptr;
     bool _started = false;
 };
 

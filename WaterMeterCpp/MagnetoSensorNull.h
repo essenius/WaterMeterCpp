@@ -17,7 +17,7 @@
 class MagnetoSensorNull final : public MagnetoSensor
 {
 public:
-    MagnetoSensorNull() : MagnetoSensor(0) {}
+    MagnetoSensorNull() : MagnetoSensor(0, nullptr) {}
 
     bool begin() override {
         return false;
