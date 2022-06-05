@@ -28,8 +28,11 @@
 #include "Log.h"
 #include "MagnetoSensorHmc.h"
 #include "MagnetoSensorQmc.h"
+#include "MagnetoSensorNull.h"
 #include "MagnetoSensorReader.h"
+#include "Meter.h"
 #include "MqttGateway.h"
+#include "OledDriver.h"
 #include "ResultAggregator.h"
 #include "SampleAggregator.h"
 #include "Sampler.h"
@@ -40,20 +43,25 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.8";
+constexpr const char* const BUILD_VERSION = "0.100.9";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle usually takes quite a bit less than that, unless a write happened.
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
+
+constexpr int SDA_OLED = 32;
+constexpr int SCL_OLED = 33;
 
 // This is where you would normally use an injector framework,
 // We define the objects globally to avoid using (and fragmenting) the heap.
 // we do use dependency injection to hide this design decision as much as possible
 // (and make testing easier).
 
-MagnetoSensorQmc qmcSensor;
-MagnetoSensorHmc hmcSensor;
-MagnetoSensor* sensor = nullptr;
+MagnetoSensorQmc qmcSensor(&Wire);
+MagnetoSensorHmc hmcSensor(&Wire);
+MagnetoSensorNull nullSensor;
+MagnetoSensor* sensor[] = { &qmcSensor, &hmcSensor, &nullSensor };
+
 Preferences preferences;
 Configuration configuration(&preferences);
 WiFiClientFactory wifiClientFactory(&configuration.tls);
@@ -75,7 +83,9 @@ SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQue
 ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &resultPayload, MEASURE_INTERVAL_MICROS);
 
 Device device(&communicatorEventServer);
+Meter meter(&communicatorEventServer);
 LedDriver ledDriver(&communicatorEventServer);
+OledDriver oledDriver(&communicatorEventServer, &Wire1);
 PayloadBuilder wifiPayloadBuilder;
 Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 
@@ -86,7 +96,8 @@ MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, 
 FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);
 
 QueueClient samplerQueueClient(&samplerEventServer, &logger, 50, 0);
-QueueClient communicatorSamplerQueueClient(&communicatorEventServer, &logger, 50, 1);
+// will fill fast if we have flow during startup
+QueueClient communicatorSamplerQueueClient(&communicatorEventServer, &logger, 100, 1);
 QueueClient communicatorConnectorQueueClient(&communicatorEventServer, &logger, 50, 2);
 // This queue needs more space as it won't be read when offline.
 QueueClient connectorCommunicatorQueueClient(&connectorEventServer, &logger, 100, 3);
@@ -94,13 +105,13 @@ QueueClient connectorCommunicatorQueueClient(&connectorEventServer, &logger, 100
 // Nothing to send from sampler to connector
 QueueClient connectorSamplerQueueClient(&connectorEventServer, &logger, 0, 4);
 DataQueuePayload connectorDataQueuePayload;
-DataQueuePayload communicatorQueuePayload;
+//DataQueuePayload communicatorQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);
 Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &device, &connectorDataQueue, &serializer2,
+Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &meter, &device, &connectorDataQueue, &serializer2,
                           &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
 TimeServer timeServer;
@@ -113,10 +124,12 @@ TaskHandle_t connectorTaskHandle;
 void setup() {
     Serial.begin(115200);
     theClock.begin();
-    qmcSensor.power(HIGH); // might as well be hmc, it's about switching a GPIO port
+    sensorReader.power(HIGH);
+
     // wait for the sensor to be ready for measurements
     delay(50);
-    Wire.begin();
+    Wire.begin(); // standard SDA=21, SCL=22
+    Wire1.begin(SDA_OLED,SCL_OLED);
 
     configuration.begin();
     // queue for the sampler process
@@ -134,24 +147,17 @@ void setup() {
     communicator.setup();
     connector.setup(&configuration);
 
-    if (qmcSensor.isOn()) {
-        sensorReader.setSensor(&qmcSensor);
-    } else if (hmcSensor.isOn()) {
-        sensorReader.setSensor(&hmcSensor);
-    }
-
-    while (!sampler.setup(MEASURE_INTERVAL_MICROS)) {
-        // No sense doing anything if we don't have a sensor
-    }
-
-    // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
-    sampler.begin();
+    // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
+    sampler.setup(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
 
     // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
     xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
 
     // the communicator loop takes care of logging and leds, as well as passing on data to the connector if there is a connection
     xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
+
+    // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
+    sampler.begin();
 
     device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 }

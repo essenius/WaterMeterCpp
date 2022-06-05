@@ -70,16 +70,15 @@ enum HmcMode : byte {
 
 class MagnetoSensorHmc final : public MagnetoSensor {
 public:
-    MagnetoSensorHmc();
+    explicit MagnetoSensorHmc(TwoWire* wire = &Wire);
     bool configure() const override;
     void configureGain(HmcGain gain);
     void configureOverSampling(HmcOverSampling overSampling);
     void configureRate(HmcRate rate);
     float getGain() const override;
-    //float getRange() const override;
     int getNoiseRange() const override;
     static float getGain(HmcGain gain);
-    void read(SensorData* sample) const override;
+    bool read(SensorData* sample) const override;
     void softReset() const override;
     static bool testInRange(const SensorData* sample);
     bool test() const;

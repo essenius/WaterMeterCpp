@@ -36,6 +36,8 @@ constexpr float OUTLIER_AMPLITUDE_MILLIGAUSS = 53.0f * 2.0f;
 // if we have more than this number of outliers in a row, we reset the sensor
 constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 10;
 
+constexpr bool USE_SLOW_MEASUREMENT = true;
+
 FlowMeter::FlowMeter(EventServer* eventServer):
     EventClient(eventServer),
     _exclude(eventServer, Topic::Exclude),
@@ -53,7 +55,7 @@ void FlowMeter::addSample(const int measurement) {
         return;
     }
     detectOutlier(measurement);
-    markAnomalies(measurement);
+    markAnomalies();
     detectPeaks(measurement);
 }
 
@@ -112,13 +114,19 @@ void FlowMeter::detectPeaks(const int measurement) {
 
     _slowSmooth = lowPassFilter(sample, _slowSmooth, ALPHA_LOW_PASS_SLOW);
     _amplitude = fabsf(_slowSmooth - sample);
-    // If we already have a flow, take the fast signal. If not, calculate the slow signal and take that.
-    // this can result in a bit weirdly shaped output signals, but the important bit is the move from positive to negative.
-    _combinedDerivative = _fastFlow ? _smoothFastDerivative : highPassFilter(_slowSmooth, _previousSlowSmooth, _combinedDerivative, ALPHA_HIGH_PASS_SLOW);
-    _smoothAbsCombinedDerivative = _fastFlow
-             ? _smoothAbsFastDerivative
-             : lowPassFilter(fabsf(_combinedDerivative), _smoothAbsCombinedDerivative, ALPHA_LOW_PASS_SLOW);
-    _flow = _smoothAbsCombinedDerivative > _flowThreshold;
+    if (USE_SLOW_MEASUREMENT) {
+        // If we already have a flow, take the fast signal. If not, calculate the slow signal and take that.
+        // this can result in a bit weirdly shaped output signals, but the important bit is the move from positive to negative.
+        _combinedDerivative = _fastFlow ? _smoothFastDerivative : highPassFilter(_slowSmooth, _previousSlowSmooth, _combinedDerivative, ALPHA_HIGH_PASS_SLOW);
+        _smoothAbsCombinedDerivative = _fastFlow
+            ? _smoothAbsFastDerivative
+            : lowPassFilter(fabsf(_combinedDerivative), _smoothAbsCombinedDerivative, ALPHA_LOW_PASS_SLOW);
+        _flow = _smoothAbsCombinedDerivative > _flowThreshold;
+    } else {
+        _combinedDerivative = _smoothFastDerivative;
+        _smoothAbsCombinedDerivative = _smoothAbsFastDerivative;
+        _flow = _fastFlow;
+    }
 
     // To find the number of peaks in the original signal, we look for a move from positive to negative in this derivative signal.
     // It is still a bit noisy, so we do that in two steps. We define a band that we consider to be indistinguishable from zero,
@@ -195,7 +203,7 @@ float FlowMeter::lowPassFilter(const float measure, const float filterValue, con
     return alpha * measure + (1 - alpha) * filterValue;
 }
 
-void FlowMeter::markAnomalies(const int measurement) {
+void FlowMeter::markAnomalies() {
     _exclude = _outlier;
     if (_outlier) {
         _consecutiveOutliers++;
@@ -205,20 +213,6 @@ void FlowMeter::markAnomalies(const int measurement) {
         return;
     }
     _consecutiveOutliers = 0;
-    
-    //if (!_exclude) {
-    //    return;
-    //}
-    //_excludeAll = _startupSamplesLeft > 0;
-    //if (!_excludeAll) {
-    //    return;
-    //}
-
-    //// We have a problem in the first few measurements. It might as well have been the first one (e.g. startup issue).
-    //// so we discard what we have so far and start again. We keep the current value as seed for the low pass filters.
-    //// If this was the outlier, it will be caught the next time.
-    //resetFilters(measurement);
-    //_startupSamplesLeft = STARTUP_SAMPLES;
 }
 
 void FlowMeter::resetAnomalies() {

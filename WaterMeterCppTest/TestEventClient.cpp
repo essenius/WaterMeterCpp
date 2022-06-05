@@ -13,6 +13,12 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/SafeCString.h"
 
+int TestEventClient::getCallCount() const { return _callCount; }
+
+char* TestEventClient::getPayload() { return _payload; }
+
+Topic TestEventClient::getTopic() const { return _topic; }
+
 void TestEventClient::reset() {
     _callCount = 0;
     _topic = Topic::None;
@@ -21,18 +27,16 @@ void TestEventClient::reset() {
 
 void TestEventClient::update(const Topic topic, const char* payload) {
     _callCount++;
+    _wasLong = false;
     _topic = topic;
     safeStrcpy(_payload, payload);
 }
 
 void TestEventClient::update(const Topic topic, const long payload) {
     _callCount++;
+    _wasLong = true;
     _topic = topic;
     safeSprintf(_payload, "%ld", payload);
 }
 
-Topic TestEventClient::getTopic() const { return _topic; }
-
-char* TestEventClient::getPayload() { return _payload; }
-
-int TestEventClient::getCallCount() const { return _callCount; }
+bool TestEventClient::wasLong() const { return _wasLong; }

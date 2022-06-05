@@ -13,8 +13,9 @@
 #include "EventServer.h"
 
 struct ShortMessage {
-    Topic topic;
-    int32_t payload;
+    // we're using a trick here. The most significant bit is used to codify whether we have a char* (1) or a long (0)
+    int16_t topic;
+    intptr_t payload;
 };
 
 QueueHandle_t QueueClient::createQueue(const uint16_t length) {
@@ -25,9 +26,10 @@ QueueHandle_t QueueClient::createQueue(const uint16_t length) {
 QueueClient::QueueClient(EventServer* eventServer, Log* logger, const uint16_t size, const int8_t index) :
     EventClient(eventServer),
     _logger(logger),
-    // being careful with reporting on spaces as it may use them as well, so just every 5
     _freeSpaces(eventServer, Topic::FreeQueueSpaces, 5, 0, index, size),
-    _receiveQueue(createQueue(size)) {
+    // being careful with reporting on spaces as it may use them as well, so just every 5
+    _receiveQueue(createQueue(size)),
+    _index(index) {
 }
 
 // ReSharper disable once CppParameterMayBeConst -- introduces misplaced const
@@ -43,23 +45,43 @@ bool QueueClient::receive() {
     if (_receiveQueue == nullptr || uxQueueMessagesWaiting(_receiveQueue) == 0) return false;
     ShortMessage message{};
     if (xQueueReceive(_receiveQueue, &message, 0) == pdFALSE) return false;
-    _eventServer->publish(this, message.topic, message.payload);
+    if (message.topic < 0) {
+        _eventServer->publish(
+            this, 
+            static_cast<Topic>(message.topic & 0x7fff), 
+            reinterpret_cast<const char*>(message.payload));
+    }
+    else {
+        _eventServer->publish(this, static_cast<Topic>(message.topic), static_cast<long>(message.payload));
+    }
     // conversion should not be a problem - values don't get large
     _freeSpaces = static_cast<long>(uxQueueSpacesAvailable(_receiveQueue));
     return true;
 }
 
-// Queue client can only handle longs, so convert strings to long (becomes 0 if that fails)
 void QueueClient::update(const Topic topic, const char* payload) {
-    update(topic, strtol(payload, nullptr, 10));
+    // if we can convert the input to a long, do that. Otherwise keep it a string
+    char* endPointer;
+    const auto longValue = strtol(payload, &endPointer, 0);
+    if (*endPointer != '\0') {
+        send(topic, reinterpret_cast<intptr_t>(payload), true);
+        return;
+    } 
+    send(topic, longValue, false);
 }
 
 void QueueClient::update(const Topic topic, const long payload) {
+    send(topic, payload, false);
+}
+
+void QueueClient::send(const Topic topic, const intptr_t payload, const bool isString) {
     if (_sendQueue == nullptr) return;
-    const ShortMessage message = {topic, static_cast<int32_t>(payload)};
+    auto topic1 = static_cast<int16_t>(topic);
+    if (isString) topic1 |= static_cast<int16_t>(0x8000);
+    const ShortMessage message = { topic1, payload };
     if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {
         // Catch 22 - we may need a queue to send an error, and that fails. So we're using a direct log.
         // That uses the default format which gives more details 
-        _logger->log("[E] Instance %p: error sending %d/%ld\n", this, topic, payload);
+        _logger->log("[E] Instance %p (%d): error sending %d/%lld\n", this, _index, topic, payload);
     }
 }

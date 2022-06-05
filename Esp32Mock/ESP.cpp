@@ -19,10 +19,8 @@
 // ReSharper disable CppParameterNeverUsed
 
 #include <ESP.h>
-#include <cstdio>
 #include <chrono>
 #include <cstdarg>
-#include <iostream>
 #include "../WaterMeterCpp/SafeCString.h"
 
 Esp ESP;
@@ -36,31 +34,7 @@ int Esp::getFreeHeap() {
     return 11000L;
 }
 
-HardwareSerial Serial;
-
-char PrintBuffer[2048];
-char* PrintBufferPointer = PrintBuffer;
-
-auto startTime = std::chrono::high_resolution_clock::now();
-
-long long microShift = 0;
-
-void configTime(int i, int i1, const char* str, const char* text) {}
-
-/* char* dtostrf(float value, signed char width, unsigned char precision, char* buffer) {
-		char fmt[20];
-		safeSprintf(fmt, "%%%d.%df", width, precision);
-		sprintf(buffer, fmt, value);
-		return buffer;
-}*/
-
-void shiftMicros(long long shift) {
-    microShift = shift;
-}
-
-void delayMicroseconds(int delay) { microShift += delay; }
-
-void delay(int delay) { microShift += delay * 1000LL; }
+// GPIO functions
 
 constexpr uint8_t PIN_COUNT = 36;
 uint8_t pinValue[PIN_COUNT];
@@ -78,24 +52,76 @@ uint8_t getPinMode(uint8_t pin) {
     return pinModeValue[pin];
 }
 
-unsigned long millis() {
-    const auto now = std::chrono::high_resolution_clock::now();
-    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count() +
-        microShift / 1000);
-}
-
-unsigned long micros() {
-    const auto now = std::chrono::high_resolution_clock::now();
-    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::microseconds>(now - startTime).count() +
-        microShift);
-}
-
 void pinMode(uint8_t pin, uint8_t mode) {
     pinModeValue[pin] = mode;
 }
 
+// Time functions
+
+unsigned long Micros = 0;
+unsigned long MicrosSteps = 50;
+bool RealTimeOn = false;
+auto startTime = std::chrono::high_resolution_clock::now();
+bool DisableDelay = false;
+
+long long microShift = 0;
+
+void configTime(int i, int i1, const char* str, const char* text) {}
+
+void shiftMicros(long long shift) {
+    microShift = shift;
+}
+
+void delayMicroseconds(int delay) {
+    if (RealTimeOn) {
+        microShift += delay;
+    } else {
+        Micros += delay;
+    }
+}
+
+void disableDelay(bool disable) {
+    DisableDelay = disable;
+}
+
+void delay(int delay) {
+    if (DisableDelay) return;
+    if (RealTimeOn) {
+        microShift += delay * 1000LL;
+    } else {
+        Micros += delay * 1000UL;
+    }
+}
+
+void setRealTime(bool on) {
+    RealTimeOn = on;
+    if (RealTimeOn) {
+        startTime = std::chrono::high_resolution_clock::now();
+    } else {
+        Micros = 0;
+    }
+}
+
+unsigned long millis() {
+    return micros() / 1000;
+}
+
+unsigned long micros() {
+    if (RealTimeOn) {
+        const auto now = std::chrono::high_resolution_clock::now();
+        return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::microseconds>(now - startTime).count() +
+            microShift);
+    }
+    Micros += MicrosSteps;
+    return Micros;
+}
+
+// Serial class
+
+HardwareSerial Serial;
+
 int HardwareSerial::available() {
-    return static_cast<int>(strlen(_bufferPointer));
+    return static_cast<int>(strlen(_inputBufferPointer));
 }
 
 void HardwareSerial::begin(int speed) {
@@ -105,11 +131,12 @@ void HardwareSerial::begin(int speed) {
 
 void HardwareSerial::clearInput() {
     _inputBuffer[0] = 0;
-    _bufferPointer = _inputBuffer;
+    _inputBufferPointer = _inputBuffer;
 }
 
 void HardwareSerial::clearOutput() {
     _printBuffer[0] = 0;
+    _printBufferPointer = _printBuffer;
 }
 
 const char* HardwareSerial::getOutput() {
@@ -118,29 +145,23 @@ const char* HardwareSerial::getOutput() {
 
 void HardwareSerial::print(const char* input) {
     safeStrcat(_printBuffer, input);
-}
-
-void HardwareSerial::printf(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    vsprintf_s(_printBuffer + strlen(_printBuffer), PRINTBUFFER_SIZE - strlen(_printBuffer), format, args);
-    std::cout << _printBuffer;
-    va_end(args);
+    _printBufferPointer = _printBuffer + strlen(_printBuffer);
 }
 
 void HardwareSerial::println(const char* input) {
     print(input);
     safeStrcat(_printBuffer, "\n");
+    _printBufferPointer = _printBuffer + strlen(_printBuffer);
 }
 
 char HardwareSerial::read() {
-    if (*_bufferPointer == 0) return 0;
-    return *_bufferPointer++;
+    if (*_inputBufferPointer == 0) return 0;
+    return *_inputBufferPointer++;
 }
 
 void HardwareSerial::setInput(const char* input) {
     safeStrcpy(_inputBuffer, input);
-    _bufferPointer = _inputBuffer;
+    _inputBufferPointer = _inputBuffer;
 }
 
 void HardwareSerial::setTimeout(long timeout) {}
@@ -157,3 +178,10 @@ const char* toString(LogLevel level) {
 }
 
 LogLevel minLogLevel = LogLevel::Info;
+
+/* char* dtostrf(float value, signed char width, unsigned char precision, char* buffer) {
+        char fmt[20];
+        safeSprintf(fmt, "%%%d.%df", width, precision);
+        sprintf(buffer, fmt, value);
+        return buffer;
+}*/

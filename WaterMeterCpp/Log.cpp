@@ -45,10 +45,12 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::FreeQueueSize);
     _eventServer->subscribe(this, Topic::FreeQueueSpaces);
     _eventServer->subscribe(this, Topic::MessageFormatted);
+    _eventServer->subscribe(this, Topic::NoDisplayFound);
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::SensorWasReset);
+    _eventServer->subscribe(this, Topic::SetVolume);
     _eventServer->subscribe(this, Topic::SkipSamples);
     _eventServer->subscribe(this, Topic::TimeOverrun);
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
@@ -75,8 +77,11 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::FreeHeap:
         log("Free Heap: %s", payload);
         break;
+    case Topic::NoDisplayFound:
+        log("No OLED display found");
+        break;
     case Topic::NoSensorFound:
-        log("No sensor found");
+        log("No sensor found: %s", payload);
         break;
     case Topic::MessageFormatted:
         log("%s", payload);
@@ -89,6 +94,9 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::SensorWasReset:
         log("Sensor was reset: %s", payload);
+        break;
+    case Topic::SetVolume:
+        log("Set meter volume: %s", payload);
         break;
     case Topic::SkipSamples:
         log("Skipped %s samples", payload);
@@ -126,7 +134,7 @@ void Log::update(const Topic topic, const long payload) {
     }
 }
 
-void Log::printIndexedPayload(const char* entity, long payload) const {
+void Log::printIndexedPayload(const char* entity, const long payload) const {
     const int index = payload >> 24;
     const long value = payload & 0x00FFFFFF;
     log("Free %s #%d: %ld", entity, index, value);

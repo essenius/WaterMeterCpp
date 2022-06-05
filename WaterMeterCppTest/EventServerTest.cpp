@@ -15,7 +15,7 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/EventServer.h"
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
-#include "TopicHelper.h"
+#include "AssertHelper.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

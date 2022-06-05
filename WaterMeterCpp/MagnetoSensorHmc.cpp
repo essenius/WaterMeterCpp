@@ -18,7 +18,7 @@
 #include "MagnetoSensorHmc.h"
 #include "Wire.h"
 
-MagnetoSensorHmc::MagnetoSensorHmc() : MagnetoSensor(DEFAULT_ADDRESS) {}
+MagnetoSensorHmc::MagnetoSensorHmc(TwoWire* wire) : MagnetoSensor(DEFAULT_ADDRESS, wire) {}
 
 bool MagnetoSensorHmc::configure() const {
     return test();
@@ -44,19 +44,6 @@ void MagnetoSensorHmc::configureRate(const HmcRate rate) {
 float MagnetoSensorHmc::getGain() const {
     return getGain(_gain);
 }
-
-//float MagnetoSensorHmc::getRange() const {
-//    switch (_gain) {
-//    case HmcGain0_88: return 0.88f;
-//    case HmcGain1_3: return 1.3f;
-//    case HmcGain1_9: return 1.9f;
-//    case HmcGain2_5: return 2.5f;
-//    case HmcGain4_0: return 4.0f;
-//    case HmcGain4_7: return 4.7f;
-//    case HmcGain5_6: return 5.6f;
-//    default: return 8.1f;
-//    }
-//}
 
 int MagnetoSensorHmc::getNoiseRange() const {
     switch(_gain) {
@@ -90,24 +77,25 @@ void MagnetoSensorHmc::getTestMeasurement(SensorData* reading) const {
     read(reading);
 }
 
-void MagnetoSensorHmc::read(SensorData* sample) const {
+bool MagnetoSensorHmc::read(SensorData* sample) const {
     startMeasurement();
 
-    Wire.beginTransmission(_address);
-    Wire.write(HmcData);
-    Wire.endTransmission();
+    _wire->beginTransmission(_address);
+    _wire->write(HmcData);
+    _wire->endTransmission();
 
     //Read data from each axis, 2 registers per axis
     // order: x MSB, x LSB, z MSB, z LSB, y MSB, y LSB
     constexpr byte BYTES_TO_READ = 6;
-    Wire.requestFrom(_address, BYTES_TO_READ);
-    while (Wire.available() < BYTES_TO_READ) {}
-    sample->x = Wire.read() << 8;
-    sample->x |= Wire.read();
-    sample->z = Wire.read() << 8;
-    sample->z |= Wire.read();
-    sample->y = Wire.read() << 8;
-    sample->y |= Wire.read();
+    _wire->requestFrom(_address, BYTES_TO_READ);
+    while (_wire->available() < BYTES_TO_READ) {}
+    sample->x = _wire->read() << 8;
+    sample->x |= _wire->read();
+    sample->z = _wire->read() << 8;
+    sample->z |= _wire->read();
+    sample->y = _wire->read() << 8;
+    sample->y |= _wire->read();
+    return true;
 }
 
 void MagnetoSensorHmc::softReset() const {

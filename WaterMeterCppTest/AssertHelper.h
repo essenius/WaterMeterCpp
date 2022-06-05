@@ -26,6 +26,17 @@ namespace Microsoft {
             inline std::wstring ToString<ConnectionState>(const ConnectionState& q) {
                 RETURN_WIDE_STRING(static_cast<int>(q));
             }
+
+            template <>
+            inline std::wstring ToString<Topic>(const Topic& q) {
+                RETURN_WIDE_STRING(static_cast<int>(q));
+            }
+
+            template <>
+            inline std::wstring ToString<unsigned short>(const unsigned short& q) {
+                RETURN_WIDE_STRING(q);
+            }
+
         }
     }
 }

@@ -14,7 +14,6 @@
 
 #include "Clock.h"
 #include "DataQueuePayload.h"
-#include "EventServer.h"
 #include "ChangePublisher.h"
 #include "DataQueue.h"
 

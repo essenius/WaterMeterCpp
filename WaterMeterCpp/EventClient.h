@@ -18,7 +18,7 @@
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;
 
-enum class Topic: uint16_t {
+enum class Topic: int16_t {
     None = 0,
     BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
     Sample, Samples, SkipSamples, SamplesFormatted, 
@@ -31,7 +31,8 @@ enum class Topic: uint16_t {
     ProcessTime, TimeOverrun,
     Flow, Exclude, Peak,
     Time, IpAddress, MacRaw, MacFormatted,
-    ResetSensor, SensorWasReset, NoSensorFound
+    ResetSensor, SensorWasReset, NoSensorFound,
+    SetVolume, Volume, Pulses, NoDisplayFound
 };
 
 class EventServer;

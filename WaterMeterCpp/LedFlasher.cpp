@@ -10,6 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "LedFlasher.h"
+#include "Led.h"
 
 LedFlasher::LedFlasher(const uint8_t led, const unsigned int interval) : _interval(interval), _led(led) {}
 

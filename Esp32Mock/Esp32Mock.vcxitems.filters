@@ -31,5 +31,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)WiFiClientSecure.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)sys\time.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)freertos\semphr.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Adafruit_SSD1306.h" />
   </ItemGroup>
 </Project>

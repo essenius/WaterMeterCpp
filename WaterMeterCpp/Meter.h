@@ -9,29 +9,30 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_QUEUECLIENT
-#define HEADER_QUEUECLIENT
+#ifndef HEADER_METER
+#define HEADER_METER
 
 #include "EventClient.h"
-#include "Log.h" // exception: log from here only if buffer is full
-#include "LongChangePublisher.h"
 
-class QueueClient final : public EventClient {
+class Meter final : public EventClient {
 public:
-    QueueClient(EventServer* eventServer, Log* logger, uint16_t size, int8_t index = 0);
-    void begin(QueueHandle_t sendQueue = nullptr);
-    QueueHandle_t getQueueHandle() const;
-    bool receive();
+    explicit Meter(EventServer* eventServer);
+    void begin();
+    const char* getVolume();
+    void newPulse();
+    void publishValues();
+    bool setVolume(const char* meterValue);
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
-private:
-    void send(Topic topic, intptr_t payload, bool isString = false);
-    static QueueHandle_t createQueue(uint16_t length);
-    Log* _logger;
-    LongChangePublisher _freeSpaces;
-    QueueHandle_t _receiveQueue;
-    QueueHandle_t _sendQueue = nullptr;
-    int8_t _index;
-};
 
+private:
+    // 33.173 pulses per liter, and 1000 liters in a cubic meter
+    static constexpr double PULSES_PER_UNIT = 33173.0;
+    static constexpr double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;
+    double _volume = 0.0;
+    unsigned long _pulses = 0;
+    static constexpr int BUFFERSIZE = 20;
+    char _buffer[BUFFERSIZE] = "";
+};
 #endif
+

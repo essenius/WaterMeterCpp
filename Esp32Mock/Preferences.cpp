@@ -23,18 +23,18 @@
 
 bool Preferences::begin(const char* name, bool readOnly) {
     _started = true;
-    _cur = &_prefs[name];
+    _currentPreference = &_preferences[name];
     return true;
 }
 
 void Preferences::clear() {
     if (!_started) return;
-    _cur->clear();
+    _currentPreference->clear();
 }
 
 void Preferences::end() {
     _started = false;
-    _cur = nullptr;
+    _currentPreference = nullptr;
 }
 
 bool Preferences::getBool(const char* key, const bool defaultValue) {
@@ -46,27 +46,27 @@ void Preferences::getBytes(const char* key, void* buf, const size_t maxLen) {
         buf = nullptr;
         return;
     }
-    (*_cur)[key].copy(static_cast<char*>(buf), maxLen);
+    (*_currentPreference)[key].copy(static_cast<char*>(buf), maxLen);
 }
 
 String Preferences::getString(const char* key) {
     if (!_started) return nullptr;
-    return {(*_cur)[key].c_str()};
+    return {(*_currentPreference)[key].c_str()};
 }
 
 unsigned Preferences::getUInt(const char* key, const int defaultValue) {
     if (!isKey(key)) return defaultValue;
-    return std::stoi((*_cur)[key]);
+    return std::stoi((*_currentPreference)[key]);
 }
 
 bool Preferences::isKey(const char* key) {
     if (!_started) return false;
-    return _cur->find(key) != _cur->end();
+    return _currentPreference->find(key) != _currentPreference->end();
 }
 
 void Preferences::putString(const char* key, const char* value) {
     if (!_started) return;
-    (*_cur)[key] = value;
+    (*_currentPreference)[key] = value;
 }
 
 void Preferences::putBool(const char* key, bool value) {
@@ -76,20 +76,20 @@ void Preferences::putBool(const char* key, bool value) {
 void Preferences::putBytes(const char* key, const void* value, size_t len) {
     if (!_started) return;
 
-    (*_cur)[key] = std::string(len, 0);
+    (*_currentPreference)[key] = std::string(len, 0);
     const auto p = static_cast<const char*>(value);
-    (*_cur)[key].assign(p, len);
+    (*_currentPreference)[key].assign(p, len);
 }
 
 void Preferences::putUInt(const char* key, uint32_t value) {
     if (!_started) return;
-    (*_cur)[key] = std::to_string(value);
+    (*_currentPreference)[key] = std::to_string(value);
 }
 
 void Preferences::save() {
     std::ofstream stream;
     stream.open("preferences.txt");
-    for (const auto& categories : _prefs) {
+    for (const auto& categories : _preferences) {
         stream << categories.first << "\n";
         for (auto& entry : categories.second) {
             stream << entry.first << "=" << entry.second << "\n";
@@ -101,7 +101,7 @@ void Preferences::save() {
 
 void Preferences::load() {
     std::ifstream stream;
-    _prefs.clear();
+    _preferences.clear();
     std::string categoryKey;
     stream.open("preferences.txt");
     std::string line;
@@ -114,7 +114,7 @@ void Preferences::load() {
         }
         std::string key = line.substr(0, equalsSign);
         std::string value = line.substr(equalsSign + 1);
-        _prefs[categoryKey].insert(std::pair<std::string, std::string>(key, value));
+        _preferences[categoryKey].insert(std::pair<std::string, std::string>(key, value));
     }
     stream.close();
 }

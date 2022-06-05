@@ -26,6 +26,7 @@ void Sampler::begin() {
 }
 
 void Sampler::loop() {
+	const auto startOffset = micros() - _scheduledStartTime;
     const int16_t measure = _sensorReader->read();
     // this triggers flowMeter, sampleAggregator and the comms task
     _eventServer->publish(Topic::Sample, measure);
@@ -74,29 +75,16 @@ void Sampler::loop() {
             duration = micros() - _scheduledStartTime;
         } while (duration < _samplePeriod);
         _scheduledStartTime += _samplePeriod;
+        const auto endOffset = micros() - _scheduledStartTime;
     }
 }
 
 // if it returns false, the setup failed. Don't try any other functions if so.
-bool Sampler::setup(const unsigned long samplePeriod) {
+bool Sampler::setup(MagnetoSensor* sensor[], const size_t listSize, const unsigned long samplePeriod) {
     _samplePeriod = samplePeriod;
     _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
-    // if we didn't find a sensor, signal that the first time only
-    // this allows for an easy way to get into an infinite wait loop -
-    // no sense doing anything without a sensor.
-    if (!_sensorReader->hasSensor()) {
-        if (_firstError) {
-            _eventServer->publish(Topic::NoSensorFound, LONG_TRUE);
-            _eventServer->publish(Topic::Alert, LONG_TRUE);
-            _firstError = false;
-        }
-        return false;
-    }
-    _sensorReader->begin();
-    _flowMeter->begin(_sensorReader->getNoiseRange(), _sensorReader->getGain());
-    
+
     // what can be sent to the communicator (note: must be numerical payloads)
-    _eventServer->subscribe(_queueClient, Topic::Alert);
     _eventServer->subscribe(_queueClient, Topic::BatchSize);
     _eventServer->subscribe(_queueClient, Topic::Blocked);
     _eventServer->subscribe(_queueClient, Topic::Exclude);
@@ -109,5 +97,15 @@ bool Sampler::setup(const unsigned long samplePeriod) {
     _eventServer->subscribe(_queueClient, Topic::SkipSamples);
     _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
     _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
+    // SensorReader.begin can publish these     
+    _eventServer->subscribe(_queueClient, Topic::Alert);
+    _eventServer->subscribe(_queueClient, Topic::NoSensorFound);
+    
+    if (!_sensorReader->begin(sensor, listSize)) {
+        return false;
+    }
+
+    _flowMeter->begin(_sensorReader->getNoiseRange(), _sensorReader->getGain());
+
     return true;
 }

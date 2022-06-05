@@ -15,13 +15,13 @@
 
 EventServer::EventServer() : _numberBuffer{0} {}
 
-void EventServer::cannotProvide(EventClient* client, const Topic topic) {
+void EventServer::cannotProvide(const EventClient* client, const Topic topic) {
     if (_providers[topic] == client) {
         _providers.erase(topic);
     }
 }
 
-void EventServer::cannotProvide(EventClient* client) {
+void EventServer::cannotProvide(const EventClient* client) {
     for (auto iterator = _providers.begin(); iterator != _providers.end();) {
         if (iterator->second == client) {
             iterator = _providers.erase(iterator);

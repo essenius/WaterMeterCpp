@@ -30,14 +30,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
@@ -45,14 +45,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
@@ -118,7 +118,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator.obj;Clock.obj;Communicator.obj;Configuration.obj;Connector.obj;DataQueue.obj;DataQueuePayload.obj;Device.obj;ESP.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;freeRTOS.obj;HTTPClient.obj;HTTPUpdate.obj;IPAddress.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensor.obj;MagnetoSensorHmc.obj;MagnetoSensorQmc.obj;MagnetoSensorReader.obj;MqttGateway.obj;PayloadBuilder.obj;Preferences.obj;PubSubClient.obj;QueueClient.obj;ResultAggregator.obj;ringbuf.obj;SampleAggregator.obj;Sampler.obj;Serializer.obj;time.obj;TimeServer.obj;Wire.obj;WiFi.obj;WiFiManager.obj;WifiClientFactory.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator.obj;Clock.obj;Communicator.obj;Configuration.obj;Connector.obj;DataQueue.obj;DataQueuePayload.obj;Device.obj;ESP.obj;EventClient.obj;EventServer.obj;FirmwareManager.obj;FlowMeter.obj;freeRTOS.obj;HTTPClient.obj;HTTPUpdate.obj;IPAddress.obj;Meter.obj;Led.obj;LedDriver.obj;LedFlasher.obj;Log.obj;LongChangePublisher.obj;MagnetoSensor.obj;MagnetoSensorHmc.obj;MagnetoSensorQmc.obj;MagnetoSensorReader.obj;MqttGateway.obj;OledDriver.obj;PayloadBuilder.obj;Preferences.obj;PubSubClient.obj;QueueClient.obj;ResultAggregator.obj;ringbuf.obj;SampleAggregator.obj;Sampler.obj;Serializer.obj;time.obj;TimeServer.obj;Wire.obj;WiFi.obj;WiFiManager.obj;WifiClientFactory.obj;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>false</Profile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>
@@ -169,15 +169,19 @@
     <ClCompile Include="ConnectorTest.cpp" />
     <ClCompile Include="DataQueueTest.cpp" />
     <ClCompile Include="DeviceTest.cpp" />
+    <ClCompile Include="EspTest.cpp" />
     <ClCompile Include="FirmwareManagerTest.cpp" />
     <ClCompile Include="FlowMeterDriver.cpp" />
     <ClCompile Include="FlowMeterTest.cpp" />
+    <ClCompile Include="FreeRtosTest.cpp" />
     <ClCompile Include="LedDriverTest.cpp" />
     <ClCompile Include="LogTest.cpp" />
     <ClCompile Include="MagnetoSensorHmcTest.cpp" />
+    <ClCompile Include="MagnetoSensorNullTest.cpp" />
     <ClCompile Include="MagnetoSensorQmcTest.cpp" />
     <ClCompile Include="MagnetoSensorReaderTest.cpp" />
-    <ClCompile Include="MagnetoSensorTest.cpp" />
+    <ClCompile Include="MeterTest.cpp" />
+    <ClCompile Include="OledDriverTest.cpp" />
     <ClCompile Include="SamplerTest.cpp" />
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="MqttGatewayMock.cpp" />
@@ -206,10 +210,9 @@
     <ClInclude Include="FlowMeterDriver.h" />
     <ClInclude Include="MqttGatewayMock.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="StateHelper.h" />
+    <ClInclude Include="AssertHelper.h" />
     <ClInclude Include="TestEventClient.h" />
     <ClInclude Include="TimeServerMock.h" />
-    <ClInclude Include="TopicHelper.h" />
     <ClInclude Include="WiFiMock.h" />
   </ItemGroup>
   <ItemGroup>

@@ -64,7 +64,7 @@ enum QmcMode: byte {
 
 class MagnetoSensorQmc final : public MagnetoSensor {
 public:
-    MagnetoSensorQmc();
+    explicit MagnetoSensorQmc(TwoWire* wire = &Wire);
     // Configure the sensor according to the configuration parameters (called in begin())
     bool configure() const override;
 
@@ -83,7 +83,7 @@ public:
     static float getGain(QmcRange range);
 
     // read a sample from the sensor
-    void read(SensorData* sample) const override;
+    bool read(SensorData* sample) const override;
 
     // soft reset the sensor
     void softReset() const override;

@@ -20,6 +20,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <cstdint>
 #include <string>
+#include "../WaterMeterCpp/SafeCString.h"
 
 // ReSharper disable once CppUnusedIncludeDirective -- added on purpose
 #include <freertos/freeRTOS.h>
@@ -45,13 +46,12 @@ private:
 
 extern Esp ESP;
 
-
 class HardwareSerial {
 public:
     int available();
     void begin(int speed);
     void print(const char* input);
-    void printf(const char* format, ...);
+    //void printf(const char* format, ...);
     void println(const char* input);
     char read();
     void setTimeout(long timeout);
@@ -62,53 +62,62 @@ public:
     const char* getOutput();
     void setInput(const char* input);
 
+    template <typename... Arguments>
+    int printf(const char* format, Arguments ... arguments) {
+        const int length = safePointerSprintf(_printBufferPointer, _printBuffer, format, arguments...);
+        _printBufferPointer += length;
+        return length;
+    }
+
+    static constexpr size_t PRINTBUFFER_SIZE = 4096;
+
 private:
-    static constexpr int PRINTBUFFER_SIZE = 4096;
     char _printBuffer[PRINTBUFFER_SIZE] = {};
-    static constexpr int INPUTBUFFER_SIZE = 100;
+    char* _printBufferPointer = _printBuffer;
+    static constexpr size_t INPUTBUFFER_SIZE = 100;
     char _inputBuffer[INPUTBUFFER_SIZE] = {};
-    char* _bufferPointer = nullptr;
+    char* _inputBufferPointer = nullptr;
 };
 
 extern HardwareSerial Serial;
 
-extern char PrintBuffer[];
-extern char* PrintBufferPointer;
-
 template <typename... Arguments>
 int redirectPrintf(const char* format, Arguments ... arguments) {
-    const int length = sprintf(PrintBufferPointer, format, arguments...);
-    PrintBufferPointer += length;
-    return length;
+    return Serial.printf(format, arguments...);
 }
 
-inline char* getPrintOutput() {
-    return PrintBuffer;
+inline const char* getPrintOutput() {
+    return Serial.getOutput();
 }
 
 inline void clearPrintOutput() {
-    PrintBuffer[0] = 0;
-    PrintBufferPointer = PrintBuffer;
+    Serial.clearOutput();
 }
 
-inline size_t getPrintOutputLength() {
-    return strlen(PrintBuffer);
-}
+// GPIO functions
 
-void configTime(int i, int i1, const char* str, const char* text);
-
-void delay(int delay);
-void delayMicroseconds(int delay);
-//char* dtostrf(float value, signed char width, unsigned char precision, char* buffer);
 uint8_t digitalRead(uint8_t pin);
 void digitalWrite(uint8_t pin, uint8_t value);
-unsigned long micros();
-unsigned long millis();
 void pinMode(uint8_t pin, uint8_t mode);
 
 // for testing only
 uint8_t getPinMode(uint8_t pin);
+
+// Timing functions
+
+void configTime(int i, int i1, const char* str, const char* text);
+void delay(int delay);
+void delayMicroseconds(int delay);
+unsigned long micros();
+unsigned long millis();
+
+// for testing only
 void shiftMicros(long long shift);
+void setRealTime(bool on);
+// delay() is often used to give time for other tasks. Whwn testing, we often run sequential and then this interferes
+void disableDelay(bool disable);
+
+// Logging
 
 // testing only too
 enum class LogLevel { Error = 1, Warning, Info, Debug, Verbose };
@@ -154,5 +163,7 @@ template <typename... Arguments>
 void log_v(const char* format, Arguments ... arguments) {
     log_printf(LogLevel::Verbose, format, arguments...);
 }
+
+//char* dtostrf(float value, signed char width, unsigned char precision, char* buffer);
 
 #endif

@@ -15,7 +15,9 @@
 #include "TestEventClient.h"
 #include "Wire.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
+#include "../WaterMeterCpp/MagnetoSensorNull.h"
 #include "../WaterMeterCpp/MagnetoSensorQmc.h"
+
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -24,7 +26,51 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace WaterMeterCppTest {
     TEST_CLASS(MagnetoSensorReaderTest) {
     public:
-        TEST_METHOD(magnetoSensorReaderTest1) {
+
+        TEST_METHOD(magnetoSensorReaderReadFailsTest) {
+            constexpr int PIN = 23;
+            digitalWrite(PIN, LOW);
+            EventServer eventServer;
+            TestEventClient client(&eventServer);
+            eventServer.subscribe(&client, Topic::NoSensorFound);
+            MagnetoSensorNull nullSensor;
+            MagnetoSensor* list[] = { &nullSensor };
+            MagnetoSensorReader sensorReader(&eventServer);
+            sensorReader.begin(list, 1);
+            Assert::AreEqual<short>(0, sensorReader.read(), L"Read without sensor returns 0");
+
+        }
+
+        TEST_METHOD(magnetoSensorReaderCustomPowerPinTest) {
+            constexpr int PIN = 23;
+            digitalWrite(PIN, LOW);
+            EventServer eventServer;
+            MagnetoSensorNull nullSensor;
+            MagnetoSensor* list[] = { &nullSensor };
+            MagnetoSensorReader sensorReader(&eventServer);
+            sensorReader.configurePowerPort(PIN);
+            sensorReader.begin(list, 1);
+            sensorReader.power(HIGH);
+            Assert::AreEqual<int>(HIGH, digitalRead(PIN), L"Custom pin was toggled");
+        }
+
+        TEST_METHOD(magnetoSensorReaderHardResetTest) {
+            digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+            EventServer eventServer;
+            TestEventClient client(&eventServer);
+            eventServer.subscribe(&client, Topic::NoSensorFound);
+            MagnetoSensorNull nullSensor;
+            MagnetoSensor* list[] = { &nullSensor };
+            MagnetoSensorReader sensorReader(&eventServer);
+            sensorReader.begin(list, 1);
+            Assert::AreEqual(1, client.getCallCount(), L"NoSensorFound triggered");
+            digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+            sensorReader.hardReset();
+            Assert::AreEqual(3, client.getCallCount(), L"NoSensorFound triggered again (off and then on)");
+            Assert::AreEqual<int>(HIGH, digitalRead(MagnetoSensorReader::DEFAULT_POWER_PORT), L"Default Pin was toggled");
+        }
+
+        TEST_METHOD(magnetoSensorReaderQmcTest1) {
             EventServer eventServer;
             TestEventClient resetSensorEventClient(&eventServer);
             TestEventClient alertEventClient(&eventServer);
@@ -32,11 +78,13 @@ namespace WaterMeterCppTest {
             eventServer.subscribe(&alertEventClient, Topic::Alert);
             MagnetoSensorReader reader(&eventServer);
             MagnetoSensorQmc qmcSensor;
-            reader.setSensor(&qmcSensor);
+            MagnetoSensor* list[] = { &qmcSensor };
+            Wire.begin();
+
+            Assert::IsTrue(reader.begin(list, 1), L"Reader found sensor");
             Assert::AreEqual(3000.0f, reader.getGain(), L"Gain = 3000");
             Wire.begin();
             Wire.setFlatline(true);
-            reader.begin();
             Wire.setEndTransmissionTogglePeriod(10);
 
             for (int streaks = 0; streaks < 10; streaks++) {
@@ -59,8 +107,12 @@ namespace WaterMeterCppTest {
                 resetSensorEventClient.getCallCount(),
                 L"Sensor was reset called after ResetSensor command");
             Wire.setEndTransmissionTogglePeriod(0);
-            constexpr uint8_t BUFFER[] = {10, 0x80, 11, 0x01, 9, 0x19};
+            // should contain the register set commands and 5x register 0 read
+            constexpr uint8_t BUFFER[] = {10, 0x80, 11, 0x01, 9, 0x19, 0, 0, 0, 0, 0};
             Assert::AreEqual<short>(sizeof BUFFER, Wire.writeMismatchIndex(BUFFER, sizeof BUFFER), L"test");
         }
+
+
+
     };
 }

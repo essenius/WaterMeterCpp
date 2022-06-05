@@ -18,7 +18,6 @@ public:
     explicit MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory);
     void announceReady() override { }
     void begin(const char* clientName) override { }
-    void connect() override { }
     bool isConnected() override { return _connect; }
     bool publishNextAnnouncement() override { return _connect; }
     bool hasAnnouncement() override;

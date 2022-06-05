@@ -40,6 +40,7 @@ void LedDriver::begin() {
     Led::init(Led::GREEN, Led::OFF);
     Led::init(Led::RED, Led::OFF);
     Led::init(Led::RUNNING, Led::OFF);
+    Led::init(Led::YELLOW, Led::OFF);
 }
 
 void LedDriver::update(const Topic topic, const char* payload) {
@@ -106,8 +107,13 @@ void LedDriver::update(const Topic topic, long payload) {
         _sampleFlasher.signal();
         return;
     case Topic::TimeOverrun:
-        Led::set(Led::RED, Led::ON);
-        Led::set(Led::BLUE, Led::ON);
+        if (payload>0) {
+            Led::set(Led::RED, Led::ON);
+            Led::set(Led::BLUE, Led::ON);
+        } else {
+            Led::set(Led::RED, Led::OFF);
+            Led::set(Led::BLUE, Led::OFF);          
+        }
         break;
     default:
         break;

@@ -15,6 +15,8 @@
 
 constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
 
+// TODO correct name of mqttGatway
+// TODO reduce number of parameters
 Connector::Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
                      FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
                      Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
@@ -57,6 +59,7 @@ void Connector::setup(const Configuration* configuration) {
     _eventServer->subscribe(_communicatorQueueClient, Topic::WifiSummaryReady);
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSize);
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSpaces);
+    _eventServer->subscribe(_communicatorQueueClient, Topic::SetVolume);
 
     _wifi->configure(&configuration->ip);
 }

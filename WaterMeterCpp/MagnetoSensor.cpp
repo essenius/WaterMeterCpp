@@ -17,45 +17,28 @@
 #include "MagnetoSensorQmc.h"
 #include "Wire.h"
 
-MagnetoSensor::MagnetoSensor(const byte address): _address(address) {
+MagnetoSensor::MagnetoSensor(const byte address, TwoWire* wire): 
+    _address(address),
+    _wire(wire) {
 }
 
-void MagnetoSensor::begin() const {
-    pinMode(_powerPort, OUTPUT);
+bool MagnetoSensor::begin() {
     softReset();
+    return true;
 }
 
 void MagnetoSensor::configureAddress(const byte address) {
     _address = address;
 }
 
-void MagnetoSensor::configurePowerPort(const uint8_t port) {
-    _powerPort = port;
-    pinMode(_powerPort, OUTPUT);
-}
-
-void MagnetoSensor::power(uint8_t state) const {
-    digitalWrite(_powerPort, state);
-}
-
-void MagnetoSensor::hardReset() const {
-    power(LOW);
-    while (isOn()) {}
-    power(HIGH);
-    while (!isOn()) {}
-    delay(10);
-    // since this was drastic, we might need to revive Wire too.
-    begin();
-}
-
 bool MagnetoSensor::isOn() const {
-    Wire.beginTransmission(_address);
-    return Wire.endTransmission() == 0;
+    _wire->beginTransmission(_address);
+    return _wire->endTransmission() == 0;
 }
 
 void MagnetoSensor::setRegister(const byte sensorRegister, const byte value) const {
-    Wire.beginTransmission(_address);
-    Wire.write(sensorRegister);
-    Wire.write(value);
-    Wire.endTransmission();
+    _wire->beginTransmission(_address);
+    _wire->write(sensorRegister);
+    _wire->write(value);
+    _wire->endTransmission();
 }

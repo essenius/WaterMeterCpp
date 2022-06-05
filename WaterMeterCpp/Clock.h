@@ -12,8 +12,6 @@
 #ifndef HEADER_CLOCK
 #define HEADER_CLOCK
 
-// ReSharper disable once CppUnusedIncludeDirective - it is used
-#include <sys/time.h>
 #include "EventServer.h"
 
 // We circumvent ESP.h - it defines INPUT which is also defined in windows.h, which time.h uses there

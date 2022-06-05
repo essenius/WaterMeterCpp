@@ -65,7 +65,7 @@ public:
     void putIpConfig(const IpConfig* ipConfig) const;
     void putTlsConfig(const TlsConfig* tlsConfig) const;
     void putWifiConfig(const WifiConfig* wifiConfig) const;
-    int freeBufferSpace();
+    int freeBufferSpace() const;
 private:
     static constexpr int BUFFER_SIZE = 8192;
     Preferences* _preferences;

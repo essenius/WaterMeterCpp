@@ -23,7 +23,7 @@
 class TwoWire {
 public:
     int available();
-    void begin();
+    void begin(int sda = 21, int scl = 22);
     void beginTransmission(uint8_t address);
     int read();
     size_t write(uint8_t value);
@@ -56,4 +56,5 @@ private:
 };
 
 extern TwoWire Wire;
+extern TwoWire Wire1;
 #endif

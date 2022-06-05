@@ -22,12 +22,20 @@
 #pragma warning (disable:26812)
 
 #include <ESP.h>
+#include <Wire.h>
 
 struct SensorData {
     short x;
     short y;
     short z;
     int duration;
+
+    void reset() {
+        x = 0;
+        y = 0;
+        z = 0;
+        duration = 0;
+    }
 };
 
 // not using enum classes as we prefer weak typing to make the code more readable
@@ -35,14 +43,14 @@ struct SensorData {
 class MagnetoSensor {
 public:
     virtual ~MagnetoSensor() = default;
-    explicit MagnetoSensor(byte address);
+    explicit MagnetoSensor(byte address, TwoWire* wire);
     MagnetoSensor(const MagnetoSensor&) = default;
     MagnetoSensor(MagnetoSensor&&) = default;
     MagnetoSensor& operator=(const MagnetoSensor&) = default;
     MagnetoSensor& operator=(MagnetoSensor&&) = default;
 
-    // Start Wire and configure the sensor
-    void begin() const;
+    // Configure the sensor
+    virtual bool begin();
 
     // Configure the sensor according to the configuration parameters (called in begin())
     virtual bool configure() const = 0;
@@ -50,33 +58,26 @@ public:
     // configure the wire address if not default (0x0D). Call before begin()
     void configureAddress(byte address);
 
-    // Configure the GPIO port used for the sensor power if not default (15). 
-    void configurePowerPort(uint8_t port);
-
     virtual float getGain() const = 0;
 
     virtual int getNoiseRange() const = 0;
 
-    // power cycle the sensor
-    void hardReset() const;
-
     // returns whether the sensor is active
-    bool isOn() const;
+    virtual bool isOn() const;
 
-    void power(uint8_t state) const;
-    
+    virtual bool isReal() const {
+        return true;
+    }
+
     // read a sample from the sensor
-    virtual void read(SensorData* sample) const = 0;
+    virtual bool read(SensorData* sample) const = 0;
 
     // soft reset the sensor
     virtual void softReset() const = 0;
 
-    static constexpr byte DEFAULT_POWER_PORT = 15;
-
 protected:
-    uint8_t _powerPort = DEFAULT_POWER_PORT;
     byte _address;
-    byte getRegister(byte sensorRegister) const;
+    TwoWire* _wire;
     void setRegister(byte sensorRegister, byte value) const;
 };
 

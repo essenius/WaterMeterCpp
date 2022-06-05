@@ -38,6 +38,7 @@ constexpr const char* const RESULT = "result";
 constexpr const char* const RESULT_IDLE_RATE = "idle-rate";
 constexpr const char* const RESULT_NON_IDLE_RATE = "non-idle-rate";
 constexpr const char* const RESULT_RATE = "rate";
+constexpr const char* const RESULT_METER = "meter";
 constexpr const char* const RESULT_VALUES = "values";
 constexpr const char* const STATE = "$state";
 
@@ -71,6 +72,7 @@ public:
 protected:
     static constexpr int TOPIC_BUFFER_SIZE = 255;
     static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2500;
+    static constexpr int NUMBER_BUFFER_SIZE = 20;
     PubSubClient* _mqttClient;
     WiFiClientFactory* _wifiClientFactory;
     WiFiClient* _wifiClient = nullptr;
@@ -83,6 +85,7 @@ protected:
     const char* _clientName = nullptr;
     unsigned long _reconnectTimestamp = 0UL;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = {0};
+    char _volume[NUMBER_BUFFER_SIZE] = "";
 
     void callback(const char* topic, const byte* payload, unsigned length);
     void prepareAnnouncementBuffer();
