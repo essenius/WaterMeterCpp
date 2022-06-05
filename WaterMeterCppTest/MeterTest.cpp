@@ -44,8 +44,8 @@ public:
         Assert::AreEqual(1, pulseClient.getCallCount(), L"Pulses published");
         Assert::AreEqual("0", pulseClient.getPayload(), L"Pulse payload is 0");
 
-        const char* expected[] = { "00123.4567313", "00123.4567625", "00123.4567938", "00123.4568250",  "00123.4568563",
-                                   "00123.4568875", "00123.4569188", "00123.4569500", "00123.4569813", "00123.4570125" };
+        const char* expected[] = { "00123.4567301", "00123.4567603", "00123.4567904", "00123.4568206", "00123.4568507",
+                                   "00123.4568809", "00123.4569110", "00123.4569412", "00123.4569713", "00123.4570014" };
         for (unsigned int i = 0; i < std::size(expected); i++) {
             volumeClient.reset();
             pulseClient.reset();

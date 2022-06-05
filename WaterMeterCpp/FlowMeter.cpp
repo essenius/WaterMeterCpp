@@ -36,6 +36,8 @@ constexpr float OUTLIER_AMPLITUDE_MILLIGAUSS = 53.0f * 2.0f;
 // if we have more than this number of outliers in a row, we reset the sensor
 constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 10;
 
+constexpr bool USE_SLOW_MEASUREMENT = true;
+
 FlowMeter::FlowMeter(EventServer* eventServer):
     EventClient(eventServer),
     _exclude(eventServer, Topic::Exclude),
@@ -112,13 +114,19 @@ void FlowMeter::detectPeaks(const int measurement) {
 
     _slowSmooth = lowPassFilter(sample, _slowSmooth, ALPHA_LOW_PASS_SLOW);
     _amplitude = fabsf(_slowSmooth - sample);
-    // If we already have a flow, take the fast signal. If not, calculate the slow signal and take that.
-    // this can result in a bit weirdly shaped output signals, but the important bit is the move from positive to negative.
-    _combinedDerivative = _fastFlow ? _smoothFastDerivative : highPassFilter(_slowSmooth, _previousSlowSmooth, _combinedDerivative, ALPHA_HIGH_PASS_SLOW);
-    _smoothAbsCombinedDerivative = _fastFlow
-             ? _smoothAbsFastDerivative
-             : lowPassFilter(fabsf(_combinedDerivative), _smoothAbsCombinedDerivative, ALPHA_LOW_PASS_SLOW);
-    _flow = _smoothAbsCombinedDerivative > _flowThreshold;
+    if (USE_SLOW_MEASUREMENT) {
+        // If we already have a flow, take the fast signal. If not, calculate the slow signal and take that.
+        // this can result in a bit weirdly shaped output signals, but the important bit is the move from positive to negative.
+        _combinedDerivative = _fastFlow ? _smoothFastDerivative : highPassFilter(_slowSmooth, _previousSlowSmooth, _combinedDerivative, ALPHA_HIGH_PASS_SLOW);
+        _smoothAbsCombinedDerivative = _fastFlow
+            ? _smoothAbsFastDerivative
+            : lowPassFilter(fabsf(_combinedDerivative), _smoothAbsCombinedDerivative, ALPHA_LOW_PASS_SLOW);
+        _flow = _smoothAbsCombinedDerivative > _flowThreshold;
+    } else {
+        _combinedDerivative = _smoothFastDerivative;
+        _smoothAbsCombinedDerivative = _smoothAbsFastDerivative;
+        _flow = _fastFlow;
+    }
 
     // To find the number of peaks in the original signal, we look for a move from positive to negative in this derivative signal.
     // It is still a bit noisy, so we do that in two steps. We define a band that we consider to be indistinguishable from zero,

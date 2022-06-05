@@ -26,8 +26,8 @@ public:
     void update(Topic topic, long payload) override;
 
 private:
-    // 32 pulses per liter, and 1000 liters in a cubic meter
-    static constexpr double PULSES_PER_UNIT = 32000.0;
+    // 33.173 pulses per liter, and 1000 liters in a cubic meter
+    static constexpr double PULSES_PER_UNIT = 33173.0;
     static constexpr double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;
     double _volume = 0.0;
     unsigned long _pulses = 0;
