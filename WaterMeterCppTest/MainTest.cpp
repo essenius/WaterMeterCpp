@@ -248,7 +248,7 @@ MagnetoSensorHmc hmcSensor(&Wire);
             payload1.topic = Topic::Result;
             payload1.timestamp = 1000000;
             payload1.buffer.result.sampleCount = 327;
-            payload1.buffer.result.smoothAbsFastDerivative = 23.02f;
+            payload1.buffer.result.smoothDistance = 23.02f;
             sensorDataQueue.send(&payload1);
             Assert::AreEqual(ConnectionState::MqttReady, connector.connect(), L"Reading queue");
 

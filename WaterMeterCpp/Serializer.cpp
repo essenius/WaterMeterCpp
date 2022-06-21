@@ -56,7 +56,8 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeTimestampParam("timestamp", payload->timestamp);
 
     const auto result = payload->buffer.result;
-    _payloadBuilder->writeParam("lastValue", result.lastSample);
+    _payloadBuilder->writeParam("last.x", result.lastSample.x);
+    _payloadBuilder->writeParam("last.y", result.lastSample.y);
     _payloadBuilder->writeGroupStart("summaryCount");
     _payloadBuilder->writeParam("samples", result.sampleCount);
     _payloadBuilder->writeParam("peaks", result.peakCount);
@@ -75,13 +76,13 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeParam("max", result.maxDuration);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("analysis");
-    _payloadBuilder->writeParam("LPF", result.fastSmooth);
-    _payloadBuilder->writeParam("HPLPF", result.fastDerivative);
-    _payloadBuilder->writeParam("LPHPF", result.smoothFastDerivative);
-    _payloadBuilder->writeParam("LPAHPLPF", result.smoothAbsFastDerivative);
-    _payloadBuilder->writeParam("LFS", result.fastSmooth);
-    _payloadBuilder->writeParam("HPC", result.combinedDerivative);
-    _payloadBuilder->writeParam("LPAHPC", result.combinedDerivative);
+    _payloadBuilder->writeParam("lp.x", result.smooth.x);
+    _payloadBuilder->writeParam("lp.y", result.smooth.y);
+    _payloadBuilder->writeParam("hp.x", result.highPass.x);
+    _payloadBuilder->writeParam("hp.y", result.highPass.y);
+    _payloadBuilder->writeParam("angle", result.angle);
+    _payloadBuilder->writeParam("distance", result.distance);
+    _payloadBuilder->writeParam("smoothDistance", result.smoothDistance);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupEnd();
 }

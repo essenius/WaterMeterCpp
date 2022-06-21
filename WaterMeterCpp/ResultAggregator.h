@@ -20,7 +20,7 @@ public:
     ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
                      uint32_t measureIntervalMicros);
     void addDuration(unsigned long duration);
-    void addMeasurement(int16_t value, const FlowMeter* result);
+    void addMeasurement(Coordinate value, const FlowMeter* result);
     using Aggregator::begin;
     void begin();
     void flush() override;

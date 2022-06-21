@@ -38,7 +38,7 @@ namespace WaterMeterCppTest {
             payload.buffer.result.sampleCount = 81;
             payload.buffer.result.peakCount = 3;
             payload.buffer.result.flowCount = 27;
-            payload.buffer.result.smoothAbsFastDerivative = 23.2f;
+            payload.buffer.result.smoothDistance = 23.2f;
             eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
             Assert::AreEqual(1, testEventClient.getCallCount(), L"Test client called once result");
             Assert::AreEqual(

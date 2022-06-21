@@ -27,7 +27,7 @@ struct Samples {
 // ResultData must be smaller than Samples
 
 struct ResultData {
-    int16_t lastSample;
+    Coordinate lastSample;
     uint32_t sampleCount;
     uint32_t resetCount;
     uint32_t peakCount;
@@ -39,13 +39,11 @@ struct ResultData {
     uint32_t totalDuration;
     uint32_t averageDuration;
     uint32_t maxDuration;
-    float fastSmooth;
-    float fastDerivative;
-    float smoothFastDerivative;
-    float smoothAbsFastDerivative;
-    float slowSmooth;
-    float combinedDerivative;
-    float smoothAbsCombinedDerivative;
+    FloatCoordinate smooth;
+    FloatCoordinate highPass;
+    float angle;
+    float distance;
+    float smoothDistance;
 };
 
 typedef union {

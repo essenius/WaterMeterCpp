@@ -36,7 +36,7 @@ void ResultAggregator::addDuration(const unsigned long duration) {
     _result->averageDuration = static_cast<uint32_t>((_result->totalDuration * 10 / _messageCount + 5) / 10);
 }
 
-void ResultAggregator::addMeasurement(const int16_t value, const FlowMeter* result) {
+void ResultAggregator::addMeasurement(const Coordinate value, const FlowMeter* result) {
     newMessage();
     _result->sampleCount = _messageCount;
 
@@ -69,13 +69,19 @@ void ResultAggregator::addMeasurement(const int16_t value, const FlowMeter* resu
         _result->excludeCount++;
     }
     // we only need these at the end but we don't know when that is
-    _result->fastSmooth = result->getFastSmoothValue();
+    _result->smooth = result->getSmoothSample();
+    _result->highPass = result->getHighPassSample();
+    _result->distance = result->getDistance();
+    _result->smoothDistance = result->getSmoothDistance();
+    _result->angle = result->getAngle();
+
+    /*_result->smooth = result->getSlowSmoothValue();
     _result->fastDerivative = result->getFastDerivative();
     _result->smoothFastDerivative = result->getSmoothFastDerivative();
     _result->smoothAbsFastDerivative = result->getSmoothAbsFastDerivative();
     _result->slowSmooth = result->getSlowSmoothValue();
     _result->combinedDerivative = result->getCombinedDerivative();
-    _result->smoothAbsCombinedDerivative = result->getSmoothAbsCombinedDerivative();
+    _result->smoothAbsCombinedDerivative = result->getSmoothAbsCombinedDerivative(); */
 }
 
 void ResultAggregator::begin() {

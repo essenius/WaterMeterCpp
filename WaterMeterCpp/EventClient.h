@@ -35,6 +35,31 @@ enum class Topic: int16_t {
     SetVolume, Volume, Pulses, NoDisplayFound
 };
 
+struct Coordinate {
+    int16_t x;
+    int16_t y;
+    bool operator==(const Coordinate& other) const {
+        return x == other.x && y == other.y;
+    }
+};
+
+struct FloatCoordinate {
+    float x;
+    float y;
+    float distanceFromOrigin() const {
+        return sqrtf(x * x + y * y);
+    }
+    float angleWithOrigin() const {
+        return atan2f(y, x);
+    }
+};
+
+union EventPayload {
+    int32_t n;
+    Coordinate coordinate;
+    bool b;
+};
+
 class EventServer;
 
 class EventClient {
@@ -53,6 +78,7 @@ public:
     virtual long get(Topic topic, const long defaultValue) { return defaultValue; }
     virtual void update(Topic topic, const char* payload) {}
     virtual void update(Topic topic, long payload);
+    virtual void update(Topic topic, Coordinate payload) {}
 
 protected:
     EventServer* _eventServer;

@@ -36,6 +36,10 @@ struct SensorData {
         z = 0;
         duration = 0;
     }
+
+    bool operator==(const SensorData& other) const {
+        return this->x == other.x && this->y == other.y && this->z == other.z;
+    }
 };
 
 // not using enum classes as we prefer weak typing to make the code more readable

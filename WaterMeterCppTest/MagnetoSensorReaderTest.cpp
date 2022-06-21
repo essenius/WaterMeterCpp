@@ -37,7 +37,9 @@ namespace WaterMeterCppTest {
             MagnetoSensor* list[] = { &nullSensor };
             MagnetoSensorReader sensorReader(&eventServer);
             sensorReader.begin(list, 1);
-            Assert::AreEqual<short>(0, sensorReader.read(), L"Read without sensor returns 0");
+            auto result = sensorReader.read();
+            Assert::AreEqual<short>(0, result.x, L"Read without sensor returns x=0");
+            Assert::AreEqual<short>(0, result.y, L"Read without sensor returns y=0");
 
         }
 
