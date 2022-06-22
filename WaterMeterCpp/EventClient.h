@@ -35,9 +35,12 @@ enum class Topic: int16_t {
     SetVolume, Volume, Pulses, NoDisplayFound
 };
 
-struct Coordinate {
-    int16_t x;
-    int16_t y;
+union Coordinate {
+    struct {
+        int16_t x;
+        int16_t y;
+    };
+    long l;
     bool operator==(const Coordinate& other) const {
         return x == other.x && y == other.y;
     }
@@ -78,7 +81,7 @@ public:
     virtual long get(Topic topic, const long defaultValue) { return defaultValue; }
     virtual void update(Topic topic, const char* payload) {}
     virtual void update(Topic topic, long payload);
-    virtual void update(Topic topic, Coordinate payload) {}
+    virtual void update(Topic topic, Coordinate payload);
 
 protected:
     EventServer* _eventServer;

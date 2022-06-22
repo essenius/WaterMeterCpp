@@ -263,7 +263,7 @@ MagnetoSensorHmc hmcSensor(&Wire);
 [] Free Memory DataQueue #1: 12544
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://localhost/001122334455.version
-[] Result: {"timestamp":1970-01-01T00:00:01.000000,"lastValue":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"LPF":0,"HPLPF":0,"LPHPF":0,"LPAHPLPF":23.02,"LFS":0,"HPC":0,"LPAHPC":0}}
+[] Result: {"timestamp":1970-01-01T00:00:01.000000,"last.x":0,"last.y":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"lp.x":0,"lp.y":0,"hp.x":0,"hp.y":0,"angle":0,"distance":0,"smoothDistance":23.02}}
 [] Free Stack #0: 1564
 )";
             Assert::AreEqual(expected, getPrintOutput(), L"Formatted result came through");

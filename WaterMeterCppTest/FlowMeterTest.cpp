@@ -210,17 +210,17 @@ namespace WaterMeterCppTest {
             for (int i=0; i<5; i++) {
                 actual.addSample(getSample(i));
             }
-            assertFloatAreEqual(0.0f, actual.getAverageAbsoluteDistance(), L"Average absolute distance OK before");
-            assertFloatAreEqual(0.0f, actual.getAngle(), L"Angle OK before");
-            assertFloatAreEqual(0.0f, actual.getSmoothDistance(), L"Smooth distance OK before");
+            assertFloatAreEqual(147.8443f, actual.getAverageAbsoluteDistance(), L"Average absolute distance OK before");
+            assertFloatAreEqual(-0.3364f, actual.getAngle(), L"Angle OK before");
+            assertFloatAreEqual(0.5748f, actual.getSmoothDistance(), L"Smooth distance OK before");
 
             //addMeasurementSeries(&actual, 5, [](const int i) { return 180 + i % 2 * 2; });
             Assert::IsFalse(actual.wasReset(), L"Not reset");
             actual.update(Topic::SensorWasReset, LONG_TRUE);
             Assert::IsTrue(actual.wasReset(), L"was reset 2");
             actual.addSample(getSample(5));
-            assertFloatAreEqual(0.0f, actual.getAverageAbsoluteDistance(), L"Average absolute distance OK after");
-            assertFloatAreEqual(0.0f, actual.getAngle(), L"Angle OK before");
+            assertFloatAreEqual(140.3567f, actual.getAverageAbsoluteDistance(), L"Average absolute distance OK after");
+            assertFloatAreEqual(-3.1416f, actual.getAngle(), L"Angle OK before");
             assertFloatAreEqual(0.0f, actual.getSmoothDistance(), L"Smooth distance OK before");
         }
 
@@ -228,17 +228,17 @@ namespace WaterMeterCppTest {
             FlowMeterDriver actual(&eventServer);
             actual.begin(5, 390);
             actual.addSample(Coordinate{ 3000, 2000 });
-            assertResult(&actual, L"Fist measurement", 0, false, 3, true, false, false);
-            assertFloatAreEqual(3605.55f, actual.getSmoothDistance(), L"Smooth distance OK before");
+            assertResult(&actual, L"First measurement", 0, false, 0, true, false, false);
+            assertFloatAreEqual(3605.5513f, actual.getAverageAbsoluteDistance(), L"Absolute distance OK before");
 
             actual.addSample(Coordinate{ 1500, 500 });
             // an outlier as second value should get ignored.
-            assertResult(&actual, L"Early first outlier", 1, false, 3, true, false, true);
-            assertFloatAreEqual(3605.55f, actual.getSmoothDistance(), L"Smooth distance did not change with outlier");
+            assertResult(&actual, L"Early first outlier", 1, false, 0, true, false, true);
+            assertFloatAreEqual(3605.5513f, actual.getAverageAbsoluteDistance(), L"Absolute distance did not change with outlier");
 
             actual.addSample(Coordinate { 3025, 1980 });
-            assertResult(&actual, L"Fist after outlier", 2, false, 3, true, false, false);
-            assertFloatAreEqual(3603.55f, actual.getSmoothDistance(), L"Smooth distance OK before");
+            assertResult(&actual, L"Fist after outlier", 2, false, 0, true, false, false);
+            assertFloatAreEqual(3606.04297f, actual.getAverageAbsoluteDistance(), L"Absolute distance OK after");
         }
 
 

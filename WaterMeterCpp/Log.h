@@ -40,6 +40,7 @@ public:
     
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
+
 private:
     PayloadBuilder* _wifiPayloadBuilder;
     long _previousConnectionTopic = -1;

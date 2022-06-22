@@ -25,3 +25,7 @@ void EventClient::update(const Topic topic, const long payload) {
     safeSprintf(numberBuffer, "%ld", payload);
     update(topic, numberBuffer);
 }
+
+void EventClient::update(const Topic topic, const Coordinate payload) {
+    update(topic, payload.l);
+}

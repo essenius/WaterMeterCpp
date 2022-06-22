@@ -46,12 +46,12 @@ struct ResultData {
     float smoothDistance;
 };
 
-typedef union {
+union Content {
     Samples samples;
     ResultData result;
     char message[sizeof(Samples)];
     uint32_t value;
-} Content; 
+}; 
 
 struct DataQueuePayload  {
     Topic topic;

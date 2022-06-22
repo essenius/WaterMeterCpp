@@ -90,11 +90,13 @@ namespace WaterMeterCppTest {
             Wire.setEndTransmissionTogglePeriod(10);
 
             for (int streaks = 0; streaks < 10; streaks++) {
-                for (int sample = 0; sample < 250; sample++) {
+                for (int sample = 0; sample < 249; sample++) {
                     reader.read();
                     Assert::AreEqual(streaks, resetSensorEventClient.getCallCount(), L"right number of events fired");
                     Assert::AreEqual(0, alertEventClient.getCallCount(), L"Alert event not fired");
                 }
+                reader.read();
+                Assert::AreEqual(streaks + 1, resetSensorEventClient.getCallCount(), L"ResetSensor event fired");
             }
             reader.read();
             Assert::AreEqual(10, resetSensorEventClient.getCallCount(), L"ResetSensor event fired 10 times");
@@ -113,8 +115,5 @@ namespace WaterMeterCppTest {
             constexpr uint8_t BUFFER[] = {10, 0x80, 11, 0x01, 9, 0x19, 0, 0, 0, 0, 0};
             Assert::AreEqual<short>(sizeof BUFFER, Wire.writeMismatchIndex(BUFFER, sizeof BUFFER), L"test");
         }
-
-
-
     };
 }
