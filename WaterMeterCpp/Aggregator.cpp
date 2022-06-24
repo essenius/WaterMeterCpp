@@ -41,8 +41,8 @@ long Aggregator::convertToLong(const char* stringParam, const long defaultValue)
 
 void Aggregator::flush() {
     _messageCount = 0;
-    for (short& i : _payload->buffer.samples.value) {
-        i = 0;
+    for (Coordinate& i : _payload->buffer.samples.value) {
+        i.l = 0;
     }
     _flushRate = _desiredFlushRate;
 }

@@ -17,11 +17,11 @@
 #include "Clock.h"
 #include "EventClient.h"
 
-constexpr uint16_t MAX_SAMPLES = 50;
+constexpr uint16_t MAX_SAMPLES = 25;
 
 struct Samples {
     uint16_t count;
-    int16_t value[MAX_SAMPLES];
+    Coordinate value[MAX_SAMPLES];
 };
 
 // ResultData must be smaller than Samples

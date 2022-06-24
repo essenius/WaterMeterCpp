@@ -15,6 +15,7 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
+#include "AssertHelper.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -37,18 +38,21 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::BatchSizeDesired, 2);
             Assert::AreEqual(2L, aggregator.getFlushRate(), L"Flush rate changed");
             aggregator.flush();
-            aggregator.addSample(1000);
+            Coordinate sample1{{1000, 1000}};
+            aggregator.addSample(sample1 );
             Assert::IsFalse(aggregator.shouldSend());
             Assert::AreEqual(1U, static_cast<unsigned>(payload.buffer.samples.count), L"One sample added");
-            Assert::AreEqual<int16_t>(1000, payload.buffer.samples.value[0], L"First sample value correct");
+            Assert::AreEqual(sample1, payload.buffer.samples.value[0], L"First sample value correct");
 
-            aggregator.addSample(-1000);
+            Coordinate sample2{ {-1000, -1000} };
+
+            aggregator.addSample(sample2);
             Assert::IsTrue(aggregator.shouldSend(), L"Needs flush after two measurements");
 
             // specialization for uint16_t does not work for some reason
             Assert::AreEqual(2U, static_cast<unsigned>(payload.buffer.samples.count), L"Second sample added");
-            Assert::AreEqual<int16_t>(1000, payload.buffer.samples.value[0], L"First sample value still correct");
-            Assert::AreEqual<int16_t>(-1000, payload.buffer.samples.value[1], L"Second sample value correct");
+            Assert::AreEqual(sample1, payload.buffer.samples.value[0], L"First sample value still correct");
+            Assert::AreEqual(sample2, payload.buffer.samples.value[1], L"Second sample value correct");
 
             aggregator.flush();
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer empty after flush");
@@ -78,7 +82,8 @@ namespace WaterMeterCppTest {
             Assert::AreEqual("2", batchSizeListener.getPayload(), L"batch size is 2");
 
             batchSizeListener.reset();
-            aggregator.addSample(1000);
+            Coordinate sample1{ {1000, 1000} };
+            aggregator.addSample(sample1);
 
             Assert::IsFalse(aggregator.send(), L"No need to send after 1 measurement");
 
@@ -86,12 +91,13 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::BatchSizeDesired, -1L);
             Assert::AreEqual(0, batchSizeListener.getCallCount(), L"batch size not changed");
             Assert::AreEqual(2L, aggregator.getFlushRate(), L"Flush rate not changed");
-            aggregator.addSample(3000);
+            Coordinate sample2{ {3000, 3000} };
+            aggregator.addSample(sample2);
             Assert::IsTrue(aggregator.shouldSend(), L"Must send after two measurements");
             auto currentTimestamp = payload.timestamp;
             Assert::AreEqual(0ULL, currentTimestamp, L"Timestamp not set");
-            Assert::AreEqual(static_cast<int16_t>(1000), payload.buffer.samples.value[0], L"First value OK");
-            Assert::AreEqual(static_cast<int16_t>(3000), payload.buffer.samples.value[1], L"Second value OK");
+            Assert::AreEqual(sample1, payload.buffer.samples.value[0], L"First value OK");
+            Assert::AreEqual(sample2, payload.buffer.samples.value[1], L"Second value OK");
 
             Assert::IsTrue(aggregator.send(), L"Send successful");
             currentTimestamp = payload.timestamp;
@@ -99,7 +105,8 @@ namespace WaterMeterCppTest {
 
             Assert::AreEqual(0L, aggregator.getFlushRate(), L"Flush rate changed");
             aggregator.flush();
-            aggregator.addSample(5000);
+            Coordinate sample3{ {4000, 4000} };
+            aggregator.addSample(sample3);
             Assert::IsFalse(aggregator.shouldSend(), L"No need to send");
             Assert::AreEqual(currentTimestamp, payload.timestamp, L"Timestamp not set");
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer empty");
@@ -107,14 +114,16 @@ namespace WaterMeterCppTest {
             // check whether failure to write is handled OK
             eventServer.publish(Topic::BatchSizeDesired, 2L);
             Assert::AreEqual(2L, aggregator.getFlushRate(), L"Flush rate changed back to 2");
-            aggregator.addSample(-2000);
+            Coordinate sample4{ { -3000, -3000} };
+            aggregator.addSample(sample4);
             setRingBufferBufferFull(dataQueue.handle(), true);
-            aggregator.addSample(-3000);
+            aggregator.addSample(sample4);
             Assert::AreEqual(0U, static_cast<unsigned>(payload.buffer.samples.count), L"Buffer flushed since we can't write");
 
             // reconnect
             setRingBufferBufferFull(dataQueue.handle(), false);
-            aggregator.addSample(-4000);
+            Coordinate sample5{ {-4000, -4000} };
+            aggregator.addSample(sample5);
             Assert::AreEqual(1U, static_cast<unsigned>(payload.buffer.samples.count), L"restarted filling buffer");
 
             Assert::IsFalse(aggregator.shouldSend(), L"No flush needed after first");
@@ -122,11 +131,12 @@ namespace WaterMeterCppTest {
             // Switch to max buffer size 
             batchSizeListener.reset();
             eventServer.publish(Topic::BatchSizeDesired, 10000L);
-            aggregator.addSample(-5000);
+            Coordinate sample6 { {-4000, -4000} };
+            aggregator.addSample(sample5);
             Assert::IsTrue(aggregator.send(), L"sends after reconnect");
 
             Assert::AreEqual(1, batchSizeListener.getCallCount(), L"batch size listener called once");
-            Assert::AreEqual("50", batchSizeListener.getPayload(), L"payload maximizet at 50");
+            Assert::AreEqual("25", batchSizeListener.getPayload(), L"payload maximized at 25");
         }
     };
 }

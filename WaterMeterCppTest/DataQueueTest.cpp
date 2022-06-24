@@ -51,7 +51,8 @@ public:
         payload.topic = Topic::Samples;
 
         for (uint16_t i = 0; i < MAX_SAMPLES; i++) {
-            payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
+            const int16_t value = i + 475;
+            payload.buffer.samples.value[i] = {{value, value}};
         }
 
         for (uint16_t times = 0; times < 5; times++) {
@@ -67,8 +68,8 @@ public:
         // send a result
         payload.topic = Topic::Result;
         // clean out buffer to all 0
-        for (short& i : payload.buffer.samples.value) {
-            i = 0;
+        for (Coordinate& i : payload.buffer.samples.value) {
+            i.l = 0;
         }
         payload.buffer.samples.count = 0;
 

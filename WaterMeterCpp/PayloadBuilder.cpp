@@ -139,3 +139,9 @@ void PayloadBuilder::writeString(const unsigned long input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
     updatePosition();
 }
+
+void PayloadBuilder::writeString(const Coordinate input) {
+    writeString(input.x);
+    writeDelimiter(',');
+    writeString(input.y);
+}

@@ -37,6 +37,11 @@ namespace Microsoft {
                 RETURN_WIDE_STRING(q);
             }
 
+            template <>
+            inline std::wstring ToString<Coordinate>(const Coordinate& q) {
+                RETURN_WIDE_STRING(q.l);
+            }
+
         }
     }
 }

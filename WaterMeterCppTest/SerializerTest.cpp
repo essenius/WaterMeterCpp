@@ -59,14 +59,15 @@ namespace WaterMeterCppTest {
             payload.topic = Topic::Samples;
             payload.buffer.samples.count = MAX_SAMPLES;
             for (uint16_t i = 0; i < payload.buffer.samples.count; i++) {
-                payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
+                const int16_t value = i + 475;
+                payload.buffer.samples.value[i] = {{value, value}};
             }
             eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
             Assert::AreEqual(1, testEventClient.getCallCount(), L"Test client called once max sample");
             Assert::AreEqual(
                 R"({"timestamp":1970-01-01T00:00:00.000000,"measurements":)"
-                R"([475,476,477,478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,)"
-                R"(500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520,521,522,523,524]})",
+                R"([475,475,476,476,477,477,478,478,479,479,480,480,481,481,482,482,483,483,484,484,485,485,486,486,487,)"
+                R"(487,488,488,489,489,490,490,491,491,492,492,493,493,494,494,495,495,496,496,497,497,498,498,499,499]})",
                 testEventClient.getPayload(),
                 "Formatted max sample payload OK");
 
@@ -75,12 +76,13 @@ namespace WaterMeterCppTest {
             payload.buffer.samples.count = 1;
 
             for (int16_t i = 0; i < 10; i++) {
-                payload.buffer.samples.value[i] = static_cast<int16_t>(i + 475);
+                const int16_t value = i + 475;
+                payload.buffer.samples.value[i] = { {value, value} };
             }
             eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
             Assert::AreEqual(1, testEventClient.getCallCount(), L"Test client called once 1 sample");
             Assert::AreEqual(
-                R"({"timestamp":1970-01-01T00:00:00.000000,"measurements":[475]})",
+                R"({"timestamp":1970-01-01T00:00:00.000000,"measurements":[475,475]})",
                 testEventClient.getPayload(),
                 "Formatted 1 sample payload OK");
 

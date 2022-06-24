@@ -16,7 +16,7 @@ SampleAggregator::SampleAggregator(EventServer* eventServer, Clock* theClock, Da
     _flushRate.setTopic(Topic::BatchSize);
 }
 
-void SampleAggregator::addSample(const int16_t measure) {
+void SampleAggregator::addSample(const Coordinate measure) {
     // Only record measurements if we need to
     if (newMessage() && canSend()) {
 
@@ -55,9 +55,11 @@ void SampleAggregator::update(const Topic topic, const long payload) {
     if (topic == Topic::BatchSizeDesired) {
         const auto desiredRate = static_cast<unsigned char>(limit(payload, 0L, MAX_FLUSH_RATE));
         setDesiredFlushRate(desiredRate);
-        return;
     }
+}
+
+void SampleAggregator::update(const Topic topic, const Coordinate payload) {
     if (topic == Topic::Sample) {
-        addSample(static_cast<int16_t>(payload));
+        addSample(payload);
     }
 }
