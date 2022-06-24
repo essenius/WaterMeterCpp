@@ -25,19 +25,14 @@ public:
 	float score(float input, float a, float b) const;
 	float correctedDifference(float previousAngle, float currentAngle);
 	void begin(int noiseRange, float gain);
-	void addSample(int measurement);
 	void addSample(Coordinate sample);
 
-	float getZeroThreshold() const { return _zeroThreshold; }
 	bool hasFlow() const { return _flow; }
 	bool isExcluded() const { return _exclude; }
 	bool isOutlier() const { return _outlier; }
 	bool isPeak() const { return _peak; }
 	bool isSearching() const { return _findNext; }
 	int getZone() const { return _zone;  }
-
-	// TODO: delete
-	bool hasEnteredBand() const { return _hasEnteredBand; }
 
 	void update(Topic topic, long payload) override;
 	void update(Topic topic, Coordinate payload) override;
@@ -51,32 +46,18 @@ public:
 	float getAngle() const { return _angle; }
 	float getDistance() const { return _distance; }
 	float getSmoothDistance() const { return _smoothRelativeDistance; }
-	
 
 protected:
 	unsigned int _consecutiveOutliers = 0;
 	ChangePublisher<bool> _exclude;
 	ChangePublisher<bool> _flow;
 	ChangePublisher<bool> _peak;
-	float _fastSmooth = 0.0f;
-	float _previousFastSmooth = 0.0f;
-	float _fastDerivative = 0.0f;
 	bool _firstCall = true;
 	bool _outlier = false;
-	float _smoothAbsFastDerivative = 0.0f;
-	float _smoothFastDerivative = 0.0f;
-
-	float _zeroThreshold = 0.0f;
-	float _flowThreshold = _zeroThreshold;
-	bool _hasEnteredBand = false;
-	bool _fastFlow = false;
-	float _slowSmooth = 0.0f;
-	float _combinedDerivative = 0.0f;
-	float _previousSlowSmooth = 0.0f;
-	float _smoothAbsCombinedDerivative = 0.0f;
 	float _outlierThreshold = 0.0f;
-	float _previousCombinedDerivative = 0.0f;
-	float _amplitude = 0.0;
+	// TODO: delete
+	float _zeroThreshold = 0.0f;
+
 
 	FloatCoordinate _smooth = {0.0f, 0.0f};
 	FloatCoordinate _previousSmooth = {0.0f, 0.0f};
@@ -92,16 +73,12 @@ protected:
 	float _cordifLowPass;
 	float _averageAbsoluteDistance = 0.0f;
 
-	void detectOutlier(int measurement);
 	void detectOutlier(FloatCoordinate measurement);
 	void detectPeaks(FloatCoordinate sample);
-	void detectPeaks(int measurement);
-
 	static float highPassFilter(float measure, float previous, float filterValue, float alpha);
 	static float lowPassFilter(float measure, float filterValue, float alpha);
 	void markAnomalies();
 	void resetAnomalies();
-	void resetFilters(int initialMeasurement);
 	void resetFilters(FloatCoordinate initialSample);
 };
 

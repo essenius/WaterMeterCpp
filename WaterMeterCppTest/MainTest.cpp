@@ -133,7 +133,6 @@ MagnetoSensorHmc hmcSensor(&Wire);
             // Nothing to send from sampler to connector
             QueueClient connectorSamplerQueueClient(&connectorEventServer, &logger, 0, 4);
             DataQueuePayload connectorDataQueuePayload;
-            //DataQueuePayload communicatorQueuePayload;
             PayloadBuilder serialize2PayloadBuilder(&theClock);
             Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 

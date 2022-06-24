@@ -44,6 +44,10 @@ union Coordinate {
     bool operator==(const Coordinate& other) const {
         return x == other.x && y == other.y;
     }
+    void set(int16_t xIn, int16_t yIn) {
+        x = xIn;
+        y = yIn;
+    }
 };
 
 struct FloatCoordinate {
@@ -55,7 +59,13 @@ struct FloatCoordinate {
     float angleWithOrigin() const {
         return atan2f(y, x);
     }
+
+    void set(const Coordinate input) {
+        x = static_cast<float>(input.x);
+        y = static_cast<float>(input.y);
+    }
 };
+
 
 union EventPayload {
     int32_t n;

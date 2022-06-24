@@ -62,9 +62,7 @@ void ResultAggregator::addMeasurement(const Coordinate value, const FlowMeter* r
     if (result->wasReset()) {
         _result->resetCount++;
     }
-    //if (result->areAllExcluded()) {
-    //    _result->excludeCount = _messageCount;
-    //}
+
     else if (result->isExcluded()) {
         _result->excludeCount++;
     }
@@ -74,14 +72,6 @@ void ResultAggregator::addMeasurement(const Coordinate value, const FlowMeter* r
     _result->distance = result->getDistance();
     _result->smoothDistance = result->getSmoothDistance();
     _result->angle = result->getAngle();
-
-    /*_result->smooth = result->getSlowSmoothValue();
-    _result->fastDerivative = result->getFastDerivative();
-    _result->smoothFastDerivative = result->getSmoothFastDerivative();
-    _result->smoothAbsFastDerivative = result->getSmoothAbsFastDerivative();
-    _result->slowSmooth = result->getSlowSmoothValue();
-    _result->combinedDerivative = result->getCombinedDerivative();
-    _result->smoothAbsCombinedDerivative = result->getSmoothAbsCombinedDerivative(); */
 }
 
 void ResultAggregator::begin() {

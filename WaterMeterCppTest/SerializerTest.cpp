@@ -48,10 +48,6 @@ namespace WaterMeterCppTest {
                 R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},)"
                 R"("duration":{"total":0,"average":0,"max":0},)"
                 R"("analysis":{"lp.x":0,"lp.y":0,"hp.x":0,"hp.y":0,"angle":0,"distance":0,"smoothDistance":23.2}})",
-        
-//                R"({"timestamp":1970-01-01T00:00:00.000000,"lastValue":0,"summaryCount":{"samples":81,"peaks":3,"flows":27,"maxStreak":0},)"
-//                R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},)"
-//                R"("analysis":{"LPF":0,"HPLPF":0,"LPHPF":0,"LPAHPLPF":23.2,"LFS":0,"HPC":0,"LPAHPC":0}})",
                 testEventClient.getPayload(),
                 "Formatted result payload OK");
 

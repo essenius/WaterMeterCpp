@@ -14,19 +14,14 @@
 #include "FlowMeterDriver.h"
 
 // constructor for ResultAggregatorTest. Uses fields that are used for reporting
-FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const int smoothValue, const int derivative, const int smoothDerivative,
-                                 const bool flow, const bool peak, const bool outlier, const bool exclude): FlowMeter(eventServer) {
-    _fastSmooth = static_cast<float>(smoothValue);
-    _fastDerivative = static_cast<float>(derivative);
-    _smoothFastDerivative = static_cast<float>(smoothDerivative);
-    _smoothAbsFastDerivative = 0.0f;
+
+FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue, const FloatCoordinate highPassValue,
+    const bool flow, const bool peak, const bool outlier, const bool exclude) : FlowMeter(eventServer) {
+    _smooth = smoothValue;
+    _highpass = highPassValue;
     _exclude = exclude;
     _flow = flow;
     _outlier = outlier;
     _peak = peak;
     _firstCall = false;
 }
-
-//float FlowMeterDriver::isFirstOutlier() const {
-//    return _firstOutlier;
-//}

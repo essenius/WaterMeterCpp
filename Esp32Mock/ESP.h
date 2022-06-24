@@ -51,7 +51,6 @@ public:
     int available();
     void begin(int speed);
     void print(const char* input);
-    //void printf(const char* format, ...);
     void println(const char* input);
     char read();
     void setTimeout(long timeout);

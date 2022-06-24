@@ -46,46 +46,13 @@ namespace WaterMeterCppTest {
             rateListener.reset();
         }
 
-        /*
-        TEST_METHOD(resultAggregatorAllExcludedTest) {
-            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
-            aggregator.begin();
-            eventServer.publish(Topic::IdleRate, 10);
-            eventServer.publish(Topic::NonIdleRate, 5);
-
-            const auto result = &payload.buffer.result;
-
-            for (int16_t i = 0; i < 15; i++) {
-                FlowMeterDriver fmd(&eventServer, 2400 + (i == 2) * 10, 0, 0, false, false,
-                    i == 2, i == 2 || i == 3, i == 2);
-                aggregator.addMeasurement(static_cast<int16_t>((i == 1) * 7600 + 2400 + (i > 7 ? 200 : 0)), &fmd);
-                eventServer.publish(Topic::ProcessTime, i == 0 ? 2500 : 7500 + i * 5);
-                Assert::AreEqual(i == 4 || i == 14, aggregator.shouldSend(), L"Must send at 5 and 15");
-                Assert::AreEqual(i < 2 || i > 4 ? 10L : 5L, aggregator.getFlushRate(),
-                    L"Flush rate is 10 the first two data points, and after the 5th. In between it is 5");
-                if (i == 4) {
-                    // The right data prepared after 5 points 
-                    assertSummary(2400, 5, 0, 0, 4, result);
-                    assertExceptions(1, 4, 0, result);
-                    assertDuration(32550, 6510, 7520, result);
-                    assertAnalysis(2400.0f, 0.0f, 0.0f, 0.0f, result);
-                    Assert::IsTrue(aggregator.send(), L"sending");
-
-                }
-            }
-            // Without special events, the next flush is after 10 data points
-            assertSummary(2600, 10, 0, 0, 7, result);
-            assertExceptions(0, 0, 0, result);
-            assertDuration(75475, 7548, 7570, result);
-            assertAnalysis(2400.0f, 0.0f, 0.0f, 0.0f, result);
-        } */
-
         TEST_METHOD(resultAggregatorDisconnectTest) {
             ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
             aggregator.begin();
             eventServer.publish(Topic::IdleRate, 5);
             eventServer.publish(Topic::NonIdleRate, 5);
-            const FlowMeterDriver fmd(&eventServer, 500);
+            const FloatCoordinate lowPass{ 500, 500 }; 
+            const FlowMeterDriver fmd(&eventServer, lowPass);
             const Coordinate sample { 500, 500 };
             for (int i = 0; i < 3; i++) {
                 aggregator.addMeasurement(sample, &fmd);
@@ -129,8 +96,16 @@ namespace WaterMeterCppTest {
             Coordinate sample{ 0,0 };
             for (int i = 0; i < 10; i++) {
                 const auto measurement = static_cast<int16_t>(2400 + (i % 2) * 50);
-                FlowMeterDriver fmd(&eventServer, measurement, (i % 2) * 50, 1, i > 7, i == 5);
+                const float floatMeasurement = measurement;
+                const FloatCoordinate smooth { floatMeasurement, floatMeasurement };
+                const float highPassX = static_cast<float>(i % 2) * 50;
+                const float highPassY = static_cast<float>(i % 3) * 50;
+
+            	FloatCoordinate highPass { highPassX, highPassY };
+                FlowMeterDriver fmd(&eventServer, smooth, highPass, i > 7, i == 5);
                 sample.x = measurement;
+                sample.y = measurement;
+
                 aggregator.addMeasurement(sample, &fmd);
                 eventServer.publish(Topic::ProcessTime, 8000 + i);
                 Assert::AreEqual(i == 9, aggregator.shouldSend());
@@ -155,7 +130,11 @@ namespace WaterMeterCppTest {
 
             for (int16_t i = 0; i < 15; i++) {
                 sample.x = static_cast<int16_t>(2400 + (i > 7 ? 200 : 0));
-                FlowMeterDriver fmd(&eventServer, sample.x, -3, 1, false, false, i > 7, i > 7);
+                sample.y = sample.x;
+                FloatCoordinate lowPass{};
+            	lowPass.set(sample);
+                const FloatCoordinate highPass{ 3.0, 3.0 };
+                FlowMeterDriver fmd(&eventServer, lowPass, highPass, false, false, i > 7, i > 7);
                 aggregator.addMeasurement(sample, &fmd);
                 eventServer.publish(Topic::ProcessTime, 7993 + i);
                 Assert::AreEqual(i == 9 || i == 14, aggregator.shouldSend(), (L"Must send - " + std::to_wstring(i)).c_str());
@@ -205,8 +184,11 @@ namespace WaterMeterCppTest {
             Assert::AreEqual(10L, aggregator.getFlushRate(), L"Flush rate not changed from non-idle.");
 
             for (int16_t i = 0; i < 10; i++) {
-                const Coordinate sampleValue = { static_cast<int16_t>(2400 + i), static_cast<int16_t>(1200 + i) };
-                FlowMeterDriver fmd(&eventServer, sampleValue.x, 5, 7);
+                const Coordinate sampleValue = { {static_cast<int16_t>(2400 + i), static_cast<int16_t>(1200 + i) } };
+                FloatCoordinate lowPass{};
+            	lowPass.set(sampleValue);
+                const FloatCoordinate highPass{ 5, 5 };
+                FlowMeterDriver fmd(&eventServer, lowPass, highPass);
                 aggregator.addMeasurement(sampleValue, &fmd);
                 eventServer.publish(Topic::ProcessTime, 1000 + i * 2);
                 if (i == 0) {
@@ -233,8 +215,9 @@ namespace WaterMeterCppTest {
             aggregator.begin();
             eventServer.publish(Topic::IdleRate, 1);
             eventServer.publish(Topic::NonIdleRate, 1);
-            const FlowMeterDriver fmd(&eventServer, 2400, 0, 1);
-            aggregator.addMeasurement(Coordinate {2398, 0}, & fmd);
+            const FloatCoordinate lowPass{ 2400, 2400 };
+            const FlowMeterDriver fmd(&eventServer, lowPass);
+            aggregator.addMeasurement(Coordinate{ {2398, 0} }, &fmd);
             eventServer.publish(Topic::ProcessTime, 10125L);
             Assert::IsTrue(aggregator.shouldSend(), L"Needs flush");
             const auto result = &payload.buffer.result;

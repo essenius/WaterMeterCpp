@@ -131,8 +131,8 @@ namespace WaterMeterCppTest {
             // Switch to max buffer size 
             batchSizeListener.reset();
             eventServer.publish(Topic::BatchSizeDesired, 10000L);
-            Coordinate sample6 { {-4000, -4000} };
-            aggregator.addSample(sample5);
+            Coordinate sample6 { {-5000, -5000} };
+            aggregator.addSample(sample6);
             Assert::IsTrue(aggregator.send(), L"sends after reconnect");
 
             Assert::AreEqual(1, batchSizeListener.getCallCount(), L"batch size listener called once");

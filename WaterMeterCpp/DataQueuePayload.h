@@ -51,7 +51,7 @@ union Content {
     ResultData result;
     char message[sizeof(Samples)];
     uint32_t value;
-}; 
+};
 
 struct DataQueuePayload  {
     Topic topic;

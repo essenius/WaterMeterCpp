@@ -15,18 +15,11 @@
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/EventClient.h"
 #include <iostream>
-#include <fstream>
 
 #include "TestEventClient.h"
 #include "FlowMeterDriver.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-constexpr float RADIUS = 10.0L;
-constexpr int16_t X_OFFSET = -100;
-constexpr int16_t Y_OFFSET = 100;
-constexpr float SAMPLES_PER_CYCLE = 32.0f;
-constexpr int ANGLE_OFFSET_SAMPLES = 8;
 
 namespace WaterMeterCppTest {
     TEST_CLASS(FlowMeterTest) {
@@ -37,7 +30,7 @@ namespace WaterMeterCppTest {
             eventServer.subscribe(&actual, Topic::SensorWasReset);
             TestEventClient client(&eventServer);
             eventServer.subscribe(&client, Topic::ResetSensor);
-            Coordinate sample{ 3500, 3500 };
+            Coordinate sample{{3500, 3500}};
             actual.addSample(sample);
             assertResult(&actual, L"First measurement", 0, false, 0, true, false, false);
             Assert::AreEqual(4949.7474f, actual.getAverageAbsoluteDistance(), L"Absolute distance OK after first");
@@ -73,8 +66,10 @@ namespace WaterMeterCppTest {
             constexpr int16_t Y_OFFSET = 100;
             const float angle = (sampleNumber - angleOffsetSamples) * PI / samplesPerCycle * 2.0f;
             return Coordinate {
-				static_cast<int16_t>(X_OFFSET + round(sin(angle) * RADIUS)),
-				static_cast<int16_t>(Y_OFFSET + round(cos(angle) * RADIUS))
+	            {
+		            static_cast<int16_t>(X_OFFSET + round(sin(angle) * RADIUS)),
+					static_cast<int16_t>(Y_OFFSET + round(cos(angle) * RADIUS))
+	            }
             };
         }
 
@@ -121,7 +116,7 @@ namespace WaterMeterCppTest {
             Assert::IsFalse(flowMeter.hasFlow(), L"No flow yet");
             for (int cycle = 0; cycle < CYCLES; cycle++) {
                 for (int sampleCount = 0; sampleCount < SAMPLES_PER_CYCLE; sampleCount++) {
-                    sample = getSample(sampleCount, SAMPLES_PER_CYCLE, ANGLE_OFFSET_SAMPLES);
+                    sample = getSample(static_cast<float>(sampleCount), SAMPLES_PER_CYCLE, ANGLE_OFFSET_SAMPLES);
                     eventServer.publish(Topic::Sample, sample);
                     totalPeaks += flowMeter.isPeak();
 
@@ -185,20 +180,6 @@ namespace WaterMeterCppTest {
             }
             Assert::AreEqual(2, totalOutliers, L"Found 3 outliers");
 
-            /* while (measurements >> measurement) {
-                std::cout << measurement << ",";
-                eventServer.publish(Topic::Sample, measurement);
-                std::cout << flowMeter.getFastSmoothValue() << "," << flowMeter.getFastDerivative() << ","
-                    << flowMeter.getSmoothFastDerivative() << "," << flowMeter.isPeak() << "," << flowMeter.isExcluded() <<
-                    "\n";
-                Logger::WriteMessage(ss.str().c_str());
-                totalOutliers += flowMeter.isOutlier();
-                index++;
-                measurements.ignore(std::numeric_limits<std::streamsize>::max(), ',');
-            }
-            Assert::AreEqual(3, totalOutliers, L"Found 3 outliers");
-            measurements.close(); */
-
             // restore original buffer for cout
             std::cout.rdbuf(backup);
         }
@@ -208,13 +189,12 @@ namespace WaterMeterCppTest {
             actual.begin(4, 390.0f);
             Assert::IsTrue(actual.wasReset(), L"was reset 1");
             for (int i=0; i<5; i++) {
-                actual.addSample(getSample(i));
+                actual.addSample(getSample(static_cast<float>(i)));
             }
             assertFloatAreEqual(147.8443f, actual.getAverageAbsoluteDistance(), L"Average absolute distance OK before");
             assertFloatAreEqual(-0.3364f, actual.getAngle(), L"Angle OK before");
             assertFloatAreEqual(0.5748f, actual.getSmoothDistance(), L"Smooth distance OK before");
 
-            //addMeasurementSeries(&actual, 5, [](const int i) { return 180 + i % 2 * 2; });
             Assert::IsFalse(actual.wasReset(), L"Not reset");
             actual.update(Topic::SensorWasReset, LONG_TRUE);
             Assert::IsTrue(actual.wasReset(), L"was reset 2");
@@ -227,7 +207,7 @@ namespace WaterMeterCppTest {
         TEST_METHOD(flowMeterSecondValueIsOutlierTest) {
             FlowMeterDriver actual(&eventServer);
             actual.begin(5, 390);
-            actual.addSample(Coordinate{ 3000, 2000 });
+            actual.addSample(Coordinate{{3000, 2000}});
             assertResult(&actual, L"First measurement", 0, false, 0, true, false, false);
             assertFloatAreEqual(3605.5513f, actual.getAverageAbsoluteDistance(), L"Absolute distance OK before");
 
@@ -269,25 +249,12 @@ namespace WaterMeterCppTest {
 
         static void addMeasurementSeries(FlowMeter* flowMeter, const int count, int (*f)(int)) {
             for (int i = 0; i < count; i++) {
-                flowMeter->addSample(f(i));
+                Coordinate sample{};
+                sample.x = static_cast<int16_t>(f(i));
+                sample.y = sample.x;
+                flowMeter->addSample(sample);
             }
         }
-
-        /* void assertResult(const FlowMeter* meter, const wchar_t* description,
-                          const float smoothValue, const float derivative, const float smoothDerivative,
-                          const bool peak = false, const bool excluded = false, const bool outlier = false) const {
-            std::wstring message(description);
-            message += std::wstring(L" @ ");
-
-            assertFloatAreEqual(smoothValue, meter->getFastSmoothValue(), (message + L"Smooth Value").c_str());
-            assertFloatAreEqual(derivative, meter->getFastDerivative(), (message + L"Derivative").c_str());
-            assertFloatAreEqual(smoothDerivative, meter->getSmoothFastDerivative(),
-                                (message + L"Smooth Derivative").c_str());
-            Assert::AreEqual(peak, meter->isPeak(), (message + L"Peak").c_str());
-            Assert::AreEqual(excluded, meter->isExcluded(), (message + L"Excluded").c_str());
-            Assert::AreEqual(outlier, meter->isOutlier(), (message + L"Outlier").c_str());
-            // Assert::AreEqual(excludeAll, meter->areAllExcluded(), (message + L"All excluded").c_str());
-        } */
 
         static void assertFloatAreEqual(
             const float expected, const float actual, const wchar_t* description = L"", const long index = 0) {

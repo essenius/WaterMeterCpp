@@ -17,12 +17,15 @@ class FlowMeterDriver final : public FlowMeter {
 public:
     explicit FlowMeterDriver(EventServer* eventServer) : FlowMeter(eventServer) {}
 
-    FlowMeterDriver(EventServer* eventServer, int smoothValue, int derivative = 0, int smoothDerivative = 0,
-                             bool flow = false, bool peak = false,
-                             bool outlier = false, bool exclude = false);
+    FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = { 0,0 },
+					bool flow = false, bool peak = false, bool outlier = false, bool exclude = false);
 
     float getAverageAbsoluteDistance() const {
 	    return _averageAbsoluteDistance;
+    }
+
+    float getZeroThreshold() const {
+        return _zeroThreshold;
     }
 };
 
