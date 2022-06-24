@@ -30,11 +30,11 @@ namespace WaterMeterCppTest {
 
             SampleAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
             aggregator.begin();
-            Assert::AreEqual(50L, aggregator.getFlushRate(), L"Default flush rate OK");
+            Assert::AreEqual(25L, aggregator.getFlushRate(), L"Default flush rate OK");
             eventServer.publish(Topic::BatchSizeDesired, "5");
             Assert::AreEqual(5L, aggregator.getFlushRate(), L"Flush rate changed");
             eventServer.publish(Topic::BatchSizeDesired, "DEFAULT");
-            Assert::AreEqual(50L, aggregator.getFlushRate(), L"Flush rate changed back to default");
+            Assert::AreEqual(25L, aggregator.getFlushRate(), L"Flush rate changed back to default");
             eventServer.publish(Topic::BatchSizeDesired, 2);
             Assert::AreEqual(2L, aggregator.getFlushRate(), L"Flush rate changed");
             aggregator.flush();
@@ -73,8 +73,8 @@ namespace WaterMeterCppTest {
             Assert::IsFalse(aggregator.send());
 
             Assert::AreEqual(1, batchSizeListener.getCallCount(), L"batch size set");
-            Assert::AreEqual("50", batchSizeListener.getPayload(), L"batch size is 50");
-            Assert::AreEqual(50L, aggregator.getFlushRate(), L"Default flush rate OK");
+            Assert::AreEqual("25", batchSizeListener.getPayload(), L"batch size is 50");
+            Assert::AreEqual(25L, aggregator.getFlushRate(), L"Default flush rate OK");
 
             batchSizeListener.reset();
             eventServer.publish(Topic::BatchSizeDesired, 2L);
