@@ -38,7 +38,7 @@ bool Clock::formatTimestamp(const Timestamp timestamp, char* destination, const 
     const auto microseconds = static_cast<long>(timestamp % MICROSECONDS_PER_SECOND);
     const auto seconds = static_cast<time_t>(timestamp / MICROSECONDS_PER_SECOND);
     xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
-    strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds));  // NOLINT(concurrency-mt-unsafe)
+    strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds)); // NOLINT(concurrency-mt-unsafe)
     xSemaphoreGive(_formatTimeMutex);
     char* currentPosition = destination + strlen(destination);
     snprintf(currentPosition, size - strlen(destination), "%06ld", microseconds);

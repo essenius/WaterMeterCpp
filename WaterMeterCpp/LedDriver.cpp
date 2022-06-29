@@ -50,6 +50,47 @@ void LedDriver::update(const Topic topic, const char* payload) {
     }
 }
 
+void LedDriver::connectionUpdate(const ConnectionState payload) {
+    switch (payload) {
+    case ConnectionState::Disconnected:
+        _connectingFlasher.reset();
+        Led::set(Led::AUX, Led::OFF);
+        Led::set(Led::BLUE, Led::OFF);
+        return;
+    case ConnectionState::MqttReady:
+        _connectingFlasher.reset();
+        Led::set(Led::AUX, Led::ON);
+        Led::set(Led::BLUE, Led::OFF);
+        return;
+    case ConnectionState::CheckFirmware:
+        Led::set(Led::BLUE, Led::ON);
+        _connectingFlasher.signal();
+        return;
+    default:
+        _connectingFlasher.signal();
+    }
+}
+
+void LedDriver::flowOrExcludeUpdate(const bool isFlow, const bool isOn) {
+    unsigned int interval = IDLE_INTERVAL;
+    if (isOn) {
+        interval = isFlow ? FLOW_INTERVAL : EXCLUDE_INTERVAL;
+    }
+    _sampleFlasher.setInterval(interval);
+}
+
+void LedDriver::timeOverrunUpdate(const bool isOn) {
+    if (isOn) {
+        Led::set(Led::RED, Led::ON);
+        Led::set(Led::BLUE, Led::ON);
+    }
+    else {
+        Led::set(Led::RED, Led::OFF);
+        Led::set(Led::BLUE, Led::OFF);
+    }
+}
+
+// ReSharper disable once CyclomaticComplexity - simple case statement
 void LedDriver::update(const Topic topic, long payload) {
     const uint8_t state = payload ? Led::ON : Led::OFF;
     switch (topic) {
@@ -62,35 +103,13 @@ void LedDriver::update(const Topic topic, long payload) {
         Led::set(Led::RED, state);
         return;
     case Topic::Connection:
-        switch (static_cast<ConnectionState>(payload)) {
-        case ConnectionState::Disconnected:
-            _connectingFlasher.reset();
-            Led::set(Led::AUX, Led::OFF);
-            Led::set(Led::BLUE, Led::OFF);
-            return;
-        case ConnectionState::MqttReady:
-            _connectingFlasher.reset();
-            Led::set(Led::AUX, Led::ON);
-            Led::set(Led::BLUE, Led::OFF);
-            return;
-        case ConnectionState::CheckFirmware:
-            Led::set(Led::BLUE, Led::ON);
-            _connectingFlasher.signal();
-            return;
-        default:
-            _connectingFlasher.signal();
-        }
+        connectionUpdate(static_cast<ConnectionState>(payload));
         return;
-        // flow and exclude change the flash rate 
+    // flow and exclude change the flash rate 
     case Topic::Exclude:
-    case Topic::Flow: {
-        unsigned int interval = IDLE_INTERVAL;
-        if (payload) {
-            interval = topic == Topic::Flow ? FLOW_INTERVAL : EXCLUDE_INTERVAL;
-        }
-        _sampleFlasher.setInterval(interval);
+    case Topic::Flow:
+        flowOrExcludeUpdate(topic == Topic::Flow, payload);
         return;
-    }
     case Topic::NoSensorFound:
         Led::set(Led::RED, Led::ON);
         break;
@@ -101,19 +120,12 @@ void LedDriver::update(const Topic topic, long payload) {
         Led::set(Led::GREEN, Led::OFF);
         Led::set(Led::RED, Led::OFF);
         Led::set(Led::BLUE, Led::OFF);
-        
         return;
     case Topic::Sample:
         _sampleFlasher.signal();
         return;
     case Topic::TimeOverrun:
-        if (payload>0) {
-            Led::set(Led::RED, Led::ON);
-            Led::set(Led::BLUE, Led::ON);
-        } else {
-            Led::set(Led::RED, Led::OFF);
-            Led::set(Led::BLUE, Led::OFF);          
-        }
+        timeOverrunUpdate(payload > 0);
         break;
     default:
         break;

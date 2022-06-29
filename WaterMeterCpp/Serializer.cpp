@@ -11,7 +11,8 @@
 
 #include "Serializer.h"
 
-Serializer::Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder) : EventClient(eventServer), _payloadBuilder(payloadBuilder) {}
+Serializer::Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder) : EventClient(eventServer),
+                                                                                   _payloadBuilder(payloadBuilder) {}
 
 void Serializer::update(Topic topic, const char* payload) {
     const auto sensorPayload = reinterpret_cast<const DataQueuePayload*>(payload);

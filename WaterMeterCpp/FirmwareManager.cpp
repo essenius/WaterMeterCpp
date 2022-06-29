@@ -19,7 +19,7 @@
 FirmwareManager::FirmwareManager(
     EventServer* eventServer,
     const WiFiClientFactory* wifiClientFactory,
-    const FirmwareConfig* firmwareConfig, 
+    const FirmwareConfig* firmwareConfig,
     const char* buildVersion) :
 
     EventClient(eventServer),
@@ -98,9 +98,10 @@ bool FirmwareManager::updateAvailable() const {
         if (newBuildAvailable) {
             safeSprintf(buffer, "Current firmware: '%s'; available: '%s'", _buildVersion, newVersion.c_str());
             _eventServer->publish(Topic::Info, buffer);
-        } else {
+        }
+        else {
             safeSprintf(buffer, "Already on latest firmware: '%s'", _buildVersion);
-            _eventServer->publish(Topic::Info, buffer);          
+            _eventServer->publish(Topic::Info, buffer);
         }
     }
     else {

@@ -17,24 +17,24 @@
 
 // ReSharper disable CppClangTidyReadabilityRedundantDeclaration - needed for compilation on device (C++ 11)
 
-    constexpr unsigned char OledDriver::ALERT_LOGO[];
-    constexpr unsigned char OledDriver::DOWNLOAD_LOGO[];
-    constexpr unsigned char OledDriver::FIRMWARE_LOGO[];
-    constexpr unsigned char OledDriver::FLOW_LOGO[];
-    constexpr unsigned char OledDriver::BLOCKED_LOGO[];
-    constexpr unsigned char OledDriver::MQTT_LOGO[];
-    constexpr unsigned char OledDriver::NO_SENSOR_LOGO[];
-    constexpr unsigned char OledDriver::OUTLIER_LOGO[];
-    constexpr unsigned char OledDriver::RESET_LOGO[];
-    constexpr unsigned char OledDriver::SEND_LOGO[];
-    constexpr unsigned char OledDriver::TIME_LOGO[];
-    constexpr unsigned char OledDriver::WIFI_LOGO[];
+constexpr unsigned char OledDriver::ALERT_LOGO[];
+constexpr unsigned char OledDriver::DOWNLOAD_LOGO[];
+constexpr unsigned char OledDriver::FIRMWARE_LOGO[];
+constexpr unsigned char OledDriver::FLOW_LOGO[];
+constexpr unsigned char OledDriver::BLOCKED_LOGO[];
+constexpr unsigned char OledDriver::MQTT_LOGO[];
+constexpr unsigned char OledDriver::NO_SENSOR_LOGO[];
+constexpr unsigned char OledDriver::OUTLIER_LOGO[];
+constexpr unsigned char OledDriver::RESET_LOGO[];
+constexpr unsigned char OledDriver::SEND_LOGO[];
+constexpr unsigned char OledDriver::TIME_LOGO[];
+constexpr unsigned char OledDriver::WIFI_LOGO[];
 
 OledDriver::OledDriver(EventServer* eventServer, TwoWire* wire) :
     EventClient(eventServer),
     _wire(wire),
     _display(SCREEN_WIDTH, SCREEN_HEIGHT, wire) {}
-    
+
 // for testing only
 Adafruit_SSD1306* OledDriver::getDriver() { return &_display; }
 
@@ -43,14 +43,15 @@ bool OledDriver::begin() {
     // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
     // Do an explicit check whether the oled is there (the driver doesn't do that)
     _wire->beginTransmission(OLED_128_32);
+    // ReSharper disable once CppRedundantParentheses -- done to show intent
     if ((_wire->endTransmission() != 0) || !_display.begin(SSD1306_SWITCHCAPVCC, OLED_128_32, false, false)) {
-      _eventServer->publish(Topic::NoDisplayFound, LONG_TRUE);
-      return false;
+        _eventServer->publish(Topic::NoDisplayFound, LONG_TRUE);
+        return false;
     }
     _display.clearDisplay();
-    _display.setTextSize(1);      
+    _display.setTextSize(1);
     _display.setTextColor(WHITE, BLACK); // white text on black background
-    _display.cp437(true);                // Use full 256 char 'Code Page 437' font
+    _display.cp437(true); // Use full 256 char 'Code Page 437' font
     showMessageAtLine("Starting", 3);
     _display.display();
     _needsDisplay = false;
@@ -68,7 +69,7 @@ bool OledDriver::begin() {
 }
 
 void OledDriver::clearConnectionLogo() {
-    clearLogo(118,0);
+    clearLogo(118, 0);
 }
 
 void OledDriver::clearLogo(const int16_t xLocation, const int16_t yLocation) {
@@ -77,13 +78,13 @@ void OledDriver::clearLogo(const int16_t xLocation, const int16_t yLocation) {
 }
 
 unsigned int OledDriver::display() {
-  if (_needsDisplay) {
-      _display.display();
-      _needsDisplay = false;
-      delay(MIN_DELAY_FOR_DISPLAY);
-      return MIN_DELAY_FOR_DISPLAY;
-  }
-  return 0;
+    if (_needsDisplay) {
+        _display.display();
+        _needsDisplay = false;
+        delay(MIN_DELAY_FOR_DISPLAY);
+        return MIN_DELAY_FOR_DISPLAY;
+    }
+    return 0;
 }
 
 void OledDriver::drawBitmap(const unsigned char* logo, const int16_t xLocation, const int16_t yLocation) {
@@ -92,11 +93,11 @@ void OledDriver::drawBitmap(const unsigned char* logo, const int16_t xLocation, 
 }
 
 void OledDriver::setConnectionLogo(const unsigned char* logo) {
-    setLogo(logo, CONNECTION_X, CONNECTION_Y);  
+    setLogo(logo, CONNECTION_X, CONNECTION_Y);
 }
 
 void OledDriver::setLogo(const unsigned char* logo, const int16_t xLocation, const int16_t yLocation) {
-    drawBitmap(logo, xLocation, yLocation);  
+    drawBitmap(logo, xLocation, yLocation);
 }
 
 void OledDriver::showMessageAtLine(const char* message, const int16_t line) {
@@ -114,15 +115,38 @@ void OledDriver::switchFlowLogo(const unsigned char* logo, const long switchOn) 
 }
 
 void OledDriver::switchLogo(const unsigned char* logo, const int16_t xLocation, const int16_t yLocation, const long switchOn) {
-     if (switchOn) {
+    if (switchOn) {
         setLogo(logo, xLocation, yLocation);
-     } else {
+    }
+    else {
         clearLogo(xLocation, yLocation);
-     }
+    }
+}
+
+void OledDriver::updateConnectionState(const ConnectionState payload) {
+
+    switch (static_cast<ConnectionState>(payload)) {
+    case ConnectionState::CheckFirmware:
+        setConnectionLogo(FIRMWARE_LOGO);
+        return;
+    case ConnectionState::Disconnected:
+        clearConnectionLogo();
+        return;
+    case ConnectionState::MqttReady:
+        setConnectionLogo(MQTT_LOGO);
+        return;
+    case ConnectionState::RequestTime:
+        setConnectionLogo(TIME_LOGO);
+        return;
+    case ConnectionState::WifiReady:
+        setConnectionLogo(WIFI_LOGO);
+    default: ;
+    // do nothing, intermediate state
+    }
 }
 
 void OledDriver::update(const Topic topic, const char* payload) {
-    if(topic == Topic::Volume) {
+    if (topic == Topic::Volume) {
         char buffer[20];
         safeSprintf(buffer, "%s m3 ", payload);
         showMessageAtLine(buffer, 1);
@@ -131,30 +155,13 @@ void OledDriver::update(const Topic topic, const char* payload) {
 
 void OledDriver::update(const Topic topic, long payload) {
     char buffer[20];
-    switch(topic) { 
+    switch (topic) {
     case Topic::Connection:
-        switch (static_cast<ConnectionState>(payload)) {
-            case ConnectionState::CheckFirmware:
-                setConnectionLogo(FIRMWARE_LOGO);
-                return;
-            case ConnectionState::Disconnected:
-                clearConnectionLogo();
-                return;
-            case ConnectionState::MqttReady:
-                setConnectionLogo(MQTT_LOGO);
-                return;
-            case ConnectionState::RequestTime:
-                setConnectionLogo(TIME_LOGO);
-                return;
-            case ConnectionState::WifiReady:
-                setConnectionLogo(WIFI_LOGO);
-                return;
-            default:
-                // do nothing, intermediate state
-                return;
-        }
+        updateConnectionState(static_cast<ConnectionState>(payload));
+        return;
     case Topic::Flow:
-        if (payload) showMessageAtLine("Flow on        ", 3); else showMessageAtLine("Flow off       ", 3);
+        if (payload) showMessageAtLine("Flow on        ", 3);
+        else showMessageAtLine("Flow off       ", 3);
         switchFlowLogo(FLOW_LOGO, payload);
         return;
     case Topic::Alert:
@@ -164,7 +171,8 @@ void OledDriver::update(const Topic topic, long payload) {
         switchEventLogo(BLOCKED_LOGO, payload);
         return;
     case Topic::SensorWasReset:
-        if (payload == 2) showMessageAtLine("Hard reset     ", 3); else showMessageAtLine("Soft reset     ", 3);
+        if (payload == 2) showMessageAtLine("Hard reset     ", 3);
+        else showMessageAtLine("Soft reset     ", 3);
         switchEventLogo(RESET_LOGO, payload);
         return;
     case Topic::NoSensorFound:
@@ -175,13 +183,13 @@ void OledDriver::update(const Topic topic, long payload) {
         safeSprintf(buffer, "Overrun: %6ld", payload);
         showMessageAtLine(buffer, 3);
         switchEventLogo(TIME_LOGO, payload);
-        return;        
-    case Topic::Pulses: 
+        return;
+    case Topic::Pulses:
         safeSprintf(buffer, "Pulses: %7ld", payload);
         showMessageAtLine(buffer, 0);
     // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
         return;
-    default:;
-        // do nothing
+    default: ;
+    // do nothing
     }
 }

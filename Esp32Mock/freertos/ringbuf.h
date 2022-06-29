@@ -34,11 +34,11 @@ RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferTy
 size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle);
 
 BaseType_t xRingbufferReceiveSplit(
-    RingbufHandle_t bufferHandle, 
-    void** item1, 
-    void** item2, 
+    RingbufHandle_t bufferHandle,
+    void** item1,
+    void** item2,
     size_t* item1Size,
-    size_t* item2Size, 
+    size_t* item2Size,
     uint32_t ticksToWait);
 
 UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t ticksToWait);

@@ -83,7 +83,7 @@ size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle) {
 }
 
 BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
-    size_t* item2Size, uint32_t ticksToWait) {
+                                   size_t* item2Size, uint32_t ticksToWait) {
     if (bufferHandle == nullptr) return pdFALSE;
     const int i = getIndex(bufferHandle);
     if (container[i].nextReadBufferItem >= container[i].nextBufferItem) return pdFALSE;

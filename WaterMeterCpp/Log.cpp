@@ -60,6 +60,7 @@ const char* Log::getTimestamp() const {
     return _eventServer->request(Topic::Time, "");
 }
 
+// ReSharper disable once CyclomaticComplexity - just a case statement
 void Log::update(Topic topic, const char* payload) {
     switch (topic) {
     case Topic::Alert:

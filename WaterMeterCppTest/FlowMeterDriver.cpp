@@ -9,19 +9,22 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
-
 #include "FlowMeterDriver.h"
 
 // constructor for ResultAggregatorTest. Uses fields that are used for reporting
 
-FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue, const FloatCoordinate highPassValue,
-    const bool flow, const bool peak, const bool outlier, const bool exclude) : FlowMeter(eventServer) {
-    _smooth = smoothValue;
-    _highpass = highPassValue;
-    _exclude = exclude;
-    _flow = flow;
-    _outlier = outlier;
-    _peak = peak;
-    _firstCall = false;
+namespace WaterMeterCppTest {
+
+    FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue,
+                                     const FloatCoordinate highPassValue,
+                                     const bool flow, const bool peak, const bool outlier, const bool exclude) : FlowMeter(
+        eventServer) {
+        _smooth = smoothValue;
+        _highpass = highPassValue;
+        _exclude = exclude;
+        _flow = flow;
+        _outlier = outlier;
+        _peak = peak;
+        _firstCall = false;
+    }
 }

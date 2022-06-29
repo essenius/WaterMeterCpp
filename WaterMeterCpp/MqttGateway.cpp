@@ -22,26 +22,27 @@ using namespace std::placeholders;
 // mapping between topics and whether it can be set, the node, and the property
 // implementing triplet via two pairs
 static const std::map<Topic, std::pair<bool, std::pair<const char*, const char*>>> TOPIC_MAP{
-    {Topic::BatchSize,        {false, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}}},
-    {Topic::BatchSizeDesired, {true,  {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}}},
+    {Topic::BatchSize, {false, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}}},
+    {Topic::BatchSizeDesired, {true, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}}},
     {Topic::SamplesFormatted, {false, {MEASUREMENT, MEASUREMENT_VALUES}}},
-    {Topic::Rate,             {false, {RESULT, RESULT_RATE}}},
-    {Topic::ResultFormatted,  {false, {RESULT, RESULT_VALUES}}},
-    {Topic::IdleRate,         {true,  {RESULT, RESULT_IDLE_RATE}}},
-    {Topic::NonIdleRate,      {true,  {RESULT, RESULT_NON_IDLE_RATE}}},
-    {Topic::Volume,            {false, {RESULT, RESULT_METER}}},
-    {Topic::SetVolume,         {true,  {RESULT, RESULT_METER}}},
-    {Topic::FreeHeap,         {false, {DEVICE, DEVICE_FREE_HEAP}}},
-    {Topic::FreeStack,        {false, {DEVICE, DEVICE_FREE_STACK}}},
-    {Topic::FreeQueueSize,    {false, {DEVICE, DEVICE_FREE_QUEUE_SIZE}}},
-    {Topic::FreeQueueSpaces,  {false, {DEVICE, DEVICE_FREE_QUEUE_SPACES}}},
-    {Topic::SensorWasReset,   {false, {DEVICE, DEVICE_RESET_SENSOR}}},
-    {Topic::ResetSensor,      {true,  {DEVICE, DEVICE_RESET_SENSOR}}}
+    {Topic::Rate, {false, {RESULT, RESULT_RATE}}},
+    {Topic::ResultFormatted, {false, {RESULT, RESULT_VALUES}}},
+    {Topic::IdleRate, {true, {RESULT, RESULT_IDLE_RATE}}},
+    {Topic::NonIdleRate, {true, {RESULT, RESULT_NON_IDLE_RATE}}},
+    {Topic::Volume, {false, {RESULT, RESULT_METER}}},
+    {Topic::SetVolume, {true, {RESULT, RESULT_METER}}},
+    {Topic::FreeHeap, {false, {DEVICE, DEVICE_FREE_HEAP}}},
+    {Topic::FreeStack, {false, {DEVICE, DEVICE_FREE_STACK}}},
+    {Topic::FreeQueueSize, {false, {DEVICE, DEVICE_FREE_QUEUE_SIZE}}},
+    {Topic::FreeQueueSpaces, {false, {DEVICE, DEVICE_FREE_QUEUE_SPACES}}},
+    {Topic::SensorWasReset, {false, {DEVICE, DEVICE_RESET_SENSOR}}},
+    {Topic::ResetSensor, {true, {DEVICE, DEVICE_RESET_SENSOR}}}
 };
 
-static const std::set<Topic> NON_RETAINED_TOPICS{ Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume };
+static const std::set<Topic> NON_RETAINED_TOPICS{Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume};
 
-static const std::set<Topic> RETRIEVED_TOPICS{ Topic::Volume };
+//TODO delete
+//static const std::set<Topic> RETRIEVED_TOPICS{Topic::Volume};
 
 
 constexpr const char* const RATE_RANGE = "0:8640000";
@@ -67,8 +68,7 @@ MqttGateway::MqttGateway(
     _wifiClientFactory(wifiClientFactory),
     _mqttConfig(mqttConfig),
     _dataQueue(dataQueue),
-    _buildVersion(buildVersion) {
-}
+    _buildVersion(buildVersion) {}
 
 MqttGateway::~MqttGateway() {
     delete _wifiClient;
@@ -77,19 +77,19 @@ MqttGateway::~MqttGateway() {
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
     // TODO: it's probably OK to do this just once and leave on. Validate.
-    _eventServer->subscribe(this, Topic::Alert); 
-    _eventServer->subscribe(this, Topic::BatchSize); 
-    _eventServer->subscribe(this, Topic::BatchSizeDesired); 
-    _eventServer->subscribe(this, Topic::FreeHeap); 
-    _eventServer->subscribe(this, Topic::FreeStack); 
-    _eventServer->subscribe(this, Topic::FreeQueueSize); 
-    _eventServer->subscribe(this, Topic::FreeQueueSpaces); 
+    _eventServer->subscribe(this, Topic::Alert);
+    _eventServer->subscribe(this, Topic::BatchSize);
+    _eventServer->subscribe(this, Topic::BatchSizeDesired);
+    _eventServer->subscribe(this, Topic::FreeHeap);
+    _eventServer->subscribe(this, Topic::FreeStack);
+    _eventServer->subscribe(this, Topic::FreeQueueSize);
+    _eventServer->subscribe(this, Topic::FreeQueueSpaces);
     _eventServer->subscribe(this, Topic::IdleRate);
-    _eventServer->subscribe(this, Topic::NonIdleRate); 
-    _eventServer->subscribe(this, Topic::Rate); 
-    _eventServer->subscribe(this, Topic::ResultFormatted); 
+    _eventServer->subscribe(this, Topic::NonIdleRate);
+    _eventServer->subscribe(this, Topic::Rate);
+    _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::SamplesFormatted); // string
-    _eventServer->subscribe(this, Topic::SensorWasReset);      
+    _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::Volume); // string
 }
 
@@ -106,8 +106,8 @@ void MqttGateway::begin(const char* clientName) {
     _mqttClient->setBufferSize(512);
     _mqttClient->setServer(_mqttConfig->broker, static_cast<uint16_t>(_mqttConfig->port));
     _mqttClient->setCallback([=](const char* topic, const uint8_t* payload, const unsigned int length) {
-          this->callback(topic, payload, length);
-         });
+        this->callback(topic, payload, length);
+    });
     connect();
 }
 
@@ -139,7 +139,7 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
         const auto payloadStr = new char[1LL + length];
         for (unsigned int i = 0; i < length; i++) {
             payloadStr[i] = static_cast<char>(payload[i]);
-        } 
+        }
         payloadStr[length] = 0;
         for (const auto& entry : TOPIC_MAP) {
             const auto topicTriplet = entry.second;
@@ -226,7 +226,8 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(RESULT, RESULT_METER, "Meter value", TYPE_FLOAT, "0-99999.9999999", SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_FREE_QUEUE_SIZE, DEVICE_FREE_QUEUE_SPACES, DEVICE_BUILD, DEVICE_MAC);
+    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_FREE_QUEUE_SIZE,
+                DEVICE_FREE_QUEUE_SPACES, DEVICE_BUILD, DEVICE_MAC);
     prepareNode(DEVICE, "Device", "1", payload);
     prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_FREE_STACK, "Free Stack", TYPE_INTEGER);
@@ -315,9 +316,9 @@ void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
         if (!isSetTopic) {
             const auto topicPair = topicTriplet.second;
             publishProperty(
-                topicPair.first, 
-                topicPair.second, 
-                payload, 
+                topicPair.first,
+                topicPair.second,
+                payload,
                 NON_RETAINED_TOPICS.find(topic) == NON_RETAINED_TOPICS.end());
         }
     }

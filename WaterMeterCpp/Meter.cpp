@@ -63,8 +63,9 @@ void Meter::update(const Topic topic, const char* payload) {
 void Meter::update(const Topic topic, const long payload) {
     if (topic == Topic::Peak) {
         newPulse();
-    } else if (topic == Topic::SetVolume) {
-	    const auto volume = reinterpret_cast<char*>(payload);
+    }
+    else if (topic == Topic::SetVolume) {
+        const auto volume = reinterpret_cast<char*>(payload);
         setVolume(volume);
     }
 }

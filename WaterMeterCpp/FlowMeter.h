@@ -21,65 +21,68 @@ constexpr float HIGH_PASS_START_VALUE = 0.0001f;
 
 class FlowMeter : public EventClient {
 public:
-	explicit FlowMeter(EventServer* eventServer);
-	float score(float input, float a, float b) const;
-	float correctedDifference(float previousAngle, float currentAngle);
-	void begin(int noiseRange, float gain);
-	void addSample(Coordinate sample);
+    explicit FlowMeter(EventServer* eventServer);
+    float score(float input, float a, float b) const;
+    static float correctedDifference(float previousAngle, float currentAngle);
+    void begin(int noiseRange, float gain);
+    void addSample(Coordinate sample);
 
-	bool hasFlow() const { return _flow; }
-	bool isExcluded() const { return _exclude; }
-	bool isOutlier() const { return _outlier; }
-	bool isPeak() const { return _peak; }
-	bool isSearching() const { return _findNext; }
-	int getZone() const { return _zone;  }
+    bool hasFlow() const { return _flow; }
+    bool isExcluded() const { return _exclude; }
+    bool isOutlier() const { return _outlier; }
+    bool isPeak() const { return _peak; }
+    bool isSearching() const { return _findNext; }
+    int getZone() const { return _zone; }
 
-	void update(Topic topic, long payload) override;
-	void update(Topic topic, Coordinate payload) override;
-	bool wasReset() const { return _firstCall; }
+    void update(Topic topic, long payload) override;
+    void update(Topic topic, Coordinate payload) override;
+    bool wasReset() const { return _firstCall; }
 
-	static constexpr int SAMPLE_PERIOD_MICROS = 10000;
-	static constexpr float SAMPLE_PERIOD_SECONDS = SAMPLE_PERIOD_MICROS / 1000000.0f;
+    static constexpr int SAMPLE_PERIOD_MICROS = 10000;
+    static constexpr float SAMPLE_PERIOD_SECONDS = SAMPLE_PERIOD_MICROS / 1000000.0f;
 
-	FloatCoordinate getSmoothSample() const { return _smooth; }
-	FloatCoordinate getHighPassSample() const { return _highpass; }
-	float getAngle() const { return _angle; }
-	float getDistance() const { return _distance; }
-	float getSmoothDistance() const { return _smoothRelativeDistance; }
+    FloatCoordinate getSmoothSample() const { return _smooth; }
+    FloatCoordinate getHighPassSample() const { return _highpass; }
+    float getAngle() const { return _angle; }
+    float getDistance() const { return _distance; }
+    float getSmoothDistance() const { return _smoothRelativeDistance; }
 
 protected:
-	unsigned int _consecutiveOutliers = 0;
-	ChangePublisher<bool> _exclude;
-	ChangePublisher<bool> _flow;
-	ChangePublisher<bool> _peak;
-	bool _firstCall = true;
-	bool _outlier = false;
-	float _outlierThreshold = 0.0f;
-	// TODO: delete
-	float _zeroThreshold = 0.0f;
+    unsigned int _consecutiveOutliers = 0;
+    ChangePublisher<bool> _exclude;
+    ChangePublisher<bool> _flow;
+    ChangePublisher<bool> _peak;
+    bool _firstCall = true;
+    bool _outlier = false;
+    float _outlierThreshold = 0.0f;
+    // TODO: delete
+    float _zeroThreshold = 0.0f;
 
 
-	FloatCoordinate _smooth = {0.0f, 0.0f};
-	FloatCoordinate _previousSmooth = {0.0f, 0.0f};
-	FloatCoordinate _highpass = { HIGH_PASS_START_VALUE, HIGH_PASS_START_VALUE};
-	float _smoothRelativeDistance = 0.0f;
-	float _distance = 0.0f;
-	int _zone = 0;
-	int _state = _zone;
-	int _findNext = true;
-	bool _noise = false;
-	bool _stalled = false;
-	float _angle = -PI;
-	float _cordifLowPass;
-	float _averageAbsoluteDistance = 0.0f;
+    FloatCoordinate _smooth = {0.0f, 0.0f};
+    FloatCoordinate _previousSmooth = {0.0f, 0.0f};
+    FloatCoordinate _highpass = {HIGH_PASS_START_VALUE, HIGH_PASS_START_VALUE};
+    float _smoothRelativeDistance = 0.0f;
+    float _distance = 0.0f;
+    int _zone = 0;
+    int _state = _zone;
+    int _findNext = true;
+    bool _noise = false;
+    bool _stalled = false;
+    float _angle = -PI;
+    float _cordifLowPass;
+    float _averageAbsoluteDistance = 0.0f;
 
-	void detectOutlier(FloatCoordinate measurement);
-	void detectPeaks(FloatCoordinate sample);
-	static float highPassFilter(float measure, float previous, float filterValue, float alpha);
-	static float lowPassFilter(float measure, float filterValue, float alpha);
-	void markAnomalies();
-	void resetAnomalies();
-	void resetFilters(FloatCoordinate initialSample);
+    void detectOutlier(FloatCoordinate measurement);
+    static int modulo(int number, int divisor);
+    static bool isPulseCandidate(int stateDifference, int zone);
+    void setFindNext(bool peakCandidate, int stateDifference, int zone);
+    void detectPeaks(FloatCoordinate sample);
+    static float highPassFilter(float measure, float previous, float filterValue, float alpha);
+    static float lowPassFilter(float measure, float filterValue, float alpha);
+    void markAnomalies();
+    void resetAnomalies();
+    void resetFilters(FloatCoordinate initialSample);
 };
 
 #endif

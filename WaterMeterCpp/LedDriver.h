@@ -12,6 +12,7 @@
 #ifndef HEADER_LEDDRIVER
 #define HEADER_LEDDRIVER
 
+#include "ConnectionState.h"
 #include "EventServer.h"
 #include "LedFlasher.h"
 
@@ -20,10 +21,13 @@ public:
     explicit LedDriver(EventServer* eventServer);
     void begin();
     void update(Topic topic, const char* payload) override;
+    void connectionUpdate(ConnectionState payload);
+    void flowOrExcludeUpdate(bool isFlow, bool isOn);
+    static void timeOverrunUpdate(bool isOn);
     void update(Topic topic, long payload) override;
 
     // number of samples for led blinking intervals (* 10 ms)
-    static constexpr unsigned int EXCLUDE_INTERVAL = 25; 
+    static constexpr unsigned int EXCLUDE_INTERVAL = 25;
     static constexpr unsigned int FLOW_INTERVAL = 50;
     static constexpr unsigned int IDLE_INTERVAL = 100;
 

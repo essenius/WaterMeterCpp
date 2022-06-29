@@ -13,7 +13,8 @@
 #include "Connector.h"
 #include "DataQueuePayload.h"
 
-Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, OledDriver* oledDriver, Meter* meter, Device* device,
+Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, OledDriver* oledDriver, Meter* meter,
+                           Device* device,
                            DataQueue* dataQueue, Serializer* serializer,
                            QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient) :
     EventClient(eventServer),
@@ -29,10 +30,10 @@ Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* led
 
 void Communicator::loop() const {
     int i = 0;
-    while (_samplerQueueClient->receive() || _connectorQueueClient->receive()) { 
-      i++;
-      // make sure to wait occasionally to allow other task to run
-      if (i%5 == 0) delay(5); 
+    while (_samplerQueueClient->receive() || _connectorQueueClient->receive()) {
+        i++;
+        // make sure to wait occasionally to allow other task to run
+        if (i % 5 == 0) delay(5);
     }
     DataQueuePayload* payload;
     while ((payload = _dataQueue->receive()) != nullptr) {
@@ -63,7 +64,7 @@ void Communicator::setup() const {
     _eventServer->subscribe(_connectorQueueClient, Topic::NoDisplayFound);
     _eventServer->subscribe(_connectorQueueClient, Topic::Volume);
     _eventServer->subscribe(_serializer, Topic::SensorData);
-    
+
     // can publish NoDisplayFound
     _oledDriver->begin();
 }

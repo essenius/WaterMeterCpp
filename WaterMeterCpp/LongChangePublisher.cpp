@@ -13,10 +13,10 @@
 #include "LongChangePublisher.h"
 
 LongChangePublisher::LongChangePublisher(
-    EventServer* eventServer, 
-    const Topic topic, 
-    const long epsilon, 
-    const long lowThreshold, 
+    EventServer* eventServer,
+    const Topic topic,
+    const long epsilon,
+    const long lowThreshold,
     const int8_t index,
     const long defaultValue) :
     ChangePublisher(eventServer, topic, index, defaultValue), _epsilon(epsilon), _lowThreshold(lowThreshold) {}

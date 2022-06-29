@@ -13,22 +13,25 @@
 
 #include "../WaterMeterCpp/EventServer.h"
 
-class TestEventClient final : public EventClient {
-public:
-    explicit TestEventClient(EventServer* eventServer) : EventClient(eventServer) {
-        _payload[0] = 0;
-    }
+namespace WaterMeterCppTest {
 
-    int getCallCount() const;
-    char* getPayload();
-    Topic getTopic() const;
-    void reset();
-    void update(Topic topic, const char* payload) override;
-    void update(Topic topic, long payload) override;
-    bool wasLong() const;
-private:
-    int _callCount = 0;
-    Topic _topic = Topic::None;
-    char _payload[512]{};
-    bool _wasLong = false;
-};
+    class TestEventClient final : public EventClient {
+    public:
+        explicit TestEventClient(EventServer* eventServer) : EventClient(eventServer) {
+            _payload[0] = 0;
+        }
+
+        int getCallCount() const;
+        char* getPayload();
+        Topic getTopic() const;
+        void reset();
+        void update(Topic topic, const char* payload) override;
+        void update(Topic topic, long payload) override;
+        bool wasLong() const;
+    private:
+        int _callCount = 0;
+        Topic _topic = Topic::None;
+        char _payload[512]{};
+        bool _wasLong = false;
+    };
+}

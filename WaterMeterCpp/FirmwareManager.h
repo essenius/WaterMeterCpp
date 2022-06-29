@@ -27,9 +27,9 @@
 class FirmwareManager final : public EventClient {
 public:
     explicit FirmwareManager(
-        EventServer* eventServer, 
+        EventServer* eventServer,
         const WiFiClientFactory* wifiClientFactory,
-        const FirmwareConfig* firmwareConfig, 
+        const FirmwareConfig* firmwareConfig,
         const char* buildVersion);
     FirmwareManager(const FirmwareManager&) = default;
     FirmwareManager(FirmwareManager&&) = default;

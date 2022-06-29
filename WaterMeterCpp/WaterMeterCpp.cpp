@@ -14,6 +14,8 @@
 // This project implements a water meter using a QMC5883L compass sensor on an ESP32 board.
 // To enable unit testing in Visual Studio, some of the ESP libraries have been mocked in a separate project.
 
+// ReSharper disable CppClangTidyCppcoreguidelinesInterfacesGlobalInit -- Wire is not used before initialization
+
 #include <ESP.h>
 #include <PubSubClient.h>
 
@@ -60,7 +62,7 @@ constexpr int SCL_OLED = 33;
 MagnetoSensorQmc qmcSensor(&Wire);
 MagnetoSensorHmc hmcSensor(&Wire);
 MagnetoSensorNull nullSensor;
-MagnetoSensor* sensor[] = { &qmcSensor, &hmcSensor, &nullSensor };
+MagnetoSensor* sensor[] = {&qmcSensor, &hmcSensor, &nullSensor};
 
 Preferences preferences;
 Configuration configuration(&preferences);
@@ -111,7 +113,8 @@ Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &meter, &device, &connectorDataQueue, &serializer2,
+Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &meter, &device, &connectorDataQueue,
+                          &serializer2,
                           &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
 TimeServer timeServer;
@@ -129,7 +132,7 @@ void setup() {
     // wait for the sensor to be ready for measurements
     delay(50);
     Wire.begin(); // standard SDA=21, SCL=22
-    Wire1.begin(SDA_OLED,SCL_OLED);
+    Wire1.begin(SDA_OLED, SCL_OLED);
 
     configuration.begin();
     // queue for the sampler process

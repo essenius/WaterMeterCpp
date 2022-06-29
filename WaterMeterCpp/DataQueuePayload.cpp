@@ -26,7 +26,7 @@ size_t DataQueuePayload::size() const {
     case Topic::ConnectionError:
     case Topic::Info:
         size += strlen(buffer.message) + 1;
-        break; 
+        break;
     default:
         break;
     }

@@ -20,19 +20,47 @@ constexpr long LONG_FALSE = 0L;
 
 enum class Topic: int16_t {
     None = 0,
-    BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
-    Sample, Samples, SkipSamples, SamplesFormatted, 
-    Result, ResultFormatted, 
+    BatchSize,
+    BatchSizeDesired,
+    Rate,
+    IdleRate,
+    NonIdleRate,
+    Sample,
+    Samples,
+    SkipSamples,
+    SamplesFormatted,
+    Result,
+    ResultFormatted,
     SensorData,
-    FreeHeap, FreeStack, FreeQueueSize, FreeQueueSpaces,
-    Connection, WifiSummaryReady,
+    FreeHeap,
+    FreeStack,
+    FreeQueueSize,
+    FreeQueueSpaces,
+    Connection,
+    WifiSummaryReady,
     ResultWritten,
-    ConnectionError, Info, MessageFormatted, ErrorFormatted, Blocked, Alert,
-    ProcessTime, TimeOverrun,
-    Flow, Exclude, Peak,
-    Time, IpAddress, MacRaw, MacFormatted,
-    ResetSensor, SensorWasReset, NoSensorFound,
-    SetVolume, Volume, Pulses, NoDisplayFound
+    ConnectionError,
+    Info,
+    MessageFormatted,
+    ErrorFormatted,
+    Blocked,
+    Alert,
+    ProcessTime,
+    TimeOverrun,
+    Flow,
+    Exclude,
+    Peak,
+    Time,
+    IpAddress,
+    MacRaw,
+    MacFormatted,
+    ResetSensor,
+    SensorWasReset,
+    NoSensorFound,
+    SetVolume,
+    Volume,
+    Pulses,
+    NoDisplayFound
 };
 
 union Coordinate {
@@ -40,11 +68,14 @@ union Coordinate {
         int16_t x;
         int16_t y;
     };
+
     long l;
+
     bool operator==(const Coordinate& other) const {
         return x == other.x && y == other.y;
     }
-    void set(int16_t xIn, int16_t yIn) {
+
+    void set(const int16_t xIn, const int16_t yIn) {
         x = xIn;
         y = yIn;
     }
@@ -53,9 +84,11 @@ union Coordinate {
 struct FloatCoordinate {
     float x;
     float y;
+
     float distanceFromOrigin() const {
         return sqrtf(x * x + y * y);
     }
+
     float angleWithOrigin() const {
         return atan2f(y, x);
     }

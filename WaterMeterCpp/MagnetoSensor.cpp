@@ -17,10 +17,9 @@
 #include "MagnetoSensorQmc.h"
 #include "Wire.h"
 
-MagnetoSensor::MagnetoSensor(const byte address, TwoWire* wire): 
+MagnetoSensor::MagnetoSensor(const byte address, TwoWire* wire):
     _address(address),
-    _wire(wire) {
-}
+    _wire(wire) {}
 
 bool MagnetoSensor::begin() {
     softReset();

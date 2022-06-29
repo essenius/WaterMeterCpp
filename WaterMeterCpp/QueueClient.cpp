@@ -29,8 +29,7 @@ QueueClient::QueueClient(EventServer* eventServer, Log* logger, const uint16_t s
     _freeSpaces(eventServer, Topic::FreeQueueSpaces, 5, 0, index, size),
     // being careful with reporting on spaces as it may use them as well, so just every 5
     _receiveQueue(createQueue(size)),
-    _index(index) {
-}
+    _index(index) {}
 
 // ReSharper disable once CppParameterMayBeConst -- introduces misplaced const
 void QueueClient::begin(QueueHandle_t sendQueue) {
@@ -45,10 +44,11 @@ bool QueueClient::receive() {
     if (_receiveQueue == nullptr || uxQueueMessagesWaiting(_receiveQueue) == 0) return false;
     ShortMessage message{};
     if (xQueueReceive(_receiveQueue, &message, 0) == pdFALSE) return false;
+    // the leftmost bit was set if the payload is a string
     if (message.topic < 0) {
         _eventServer->publish(
-            this, 
-            static_cast<Topic>(message.topic & 0x7fff), 
+            this,
+            static_cast<Topic>(message.topic & 0x7fff),
             reinterpret_cast<const char*>(message.payload));
     }
     else {
@@ -66,7 +66,7 @@ void QueueClient::update(const Topic topic, const char* payload) {
     if (*endPointer != '\0') {
         send(topic, reinterpret_cast<intptr_t>(payload), true);
         return;
-    } 
+    }
     send(topic, longValue, false);
 }
 
@@ -77,8 +77,9 @@ void QueueClient::update(const Topic topic, const long payload) {
 void QueueClient::send(const Topic topic, const intptr_t payload, const bool isString) {
     if (_sendQueue == nullptr) return;
     auto topic1 = static_cast<int16_t>(topic);
+    // trick to be able to handle strings on receive: force it to be negative by setting the leftmost bit.
     if (isString) topic1 |= static_cast<int16_t>(0x8000);
-    const ShortMessage message = { topic1, payload };
+    const ShortMessage message = {topic1, payload};
     if (xQueueSendToBack(_sendQueue, &message, 0) == pdFALSE) {
         // Catch 22 - we may need a queue to send an error, and that fails. So we're using a direct log.
         // That uses the default format which gives more details 

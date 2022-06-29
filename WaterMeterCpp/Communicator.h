@@ -23,8 +23,10 @@
 // TODO: reduce number of parameters in constructor
 class Communicator final : public EventClient {
 public:
-    Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, OledDriver* oledDriver, Meter* meter, Device* device, 
-        DataQueue* dataQueue, Serializer* serializer, QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
+    Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, OledDriver* oledDriver, Meter* meter,
+                 Device* device,
+                 DataQueue* dataQueue, Serializer* serializer, QueueClient* fromSamplerQueueClient,
+                 QueueClient* fromConnectorQueueClient);
     void loop() const;
     void setup() const;
     static void task(void* parameter);

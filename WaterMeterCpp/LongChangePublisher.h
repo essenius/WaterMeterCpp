@@ -19,10 +19,10 @@
 class LongChangePublisher final : public ChangePublisher<long> {
 public:
     LongChangePublisher(
-        EventServer* eventServer, 
-        Topic topic, 
-        long epsilon, 
-        long lowThreshold, 
+        EventServer* eventServer,
+        Topic topic,
+        long epsilon,
+        long lowThreshold,
         int8_t index = 0,
         long defaultValue = 0);
     LongChangePublisher& operator=(long payload) override;

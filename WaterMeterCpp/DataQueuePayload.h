@@ -53,11 +53,11 @@ union Content {
     uint32_t value;
 };
 
-struct DataQueuePayload  {
+struct DataQueuePayload {
     Topic topic;
     Timestamp timestamp{};
     Content buffer;
-    size_t size() const ;
+    size_t size() const;
     DataQueuePayload() : topic(), buffer() {}
 };
 

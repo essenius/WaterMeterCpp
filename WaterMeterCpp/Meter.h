@@ -35,4 +35,3 @@ private:
     char _buffer[BUFFERSIZE] = "";
 };
 #endif
-

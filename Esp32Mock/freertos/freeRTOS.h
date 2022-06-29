@@ -61,7 +61,7 @@ BaseType_t xTaskCreatePinnedToCore(
     void* pvParameters,
     UBaseType_t uxPriority,
     TaskHandle_t* pxCreatedTask,
-    BaseType_t xCoreID); 
+    BaseType_t xCoreID);
 
 TaskHandle_t xTaskGetCurrentTaskHandle();
 

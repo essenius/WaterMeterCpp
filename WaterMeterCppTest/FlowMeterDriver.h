@@ -13,19 +13,21 @@
 
 #include "../WaterMeterCpp/FlowMeter.h"
 
-class FlowMeterDriver final : public FlowMeter {
-public:
-    explicit FlowMeterDriver(EventServer* eventServer) : FlowMeter(eventServer) {}
+namespace WaterMeterCppTest {
 
-    FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = { 0,0 },
-					bool flow = false, bool peak = false, bool outlier = false, bool exclude = false);
+    class FlowMeterDriver final : public FlowMeter {
+    public:
+        explicit FlowMeterDriver(EventServer* eventServer) : FlowMeter(eventServer) {}
 
-    float getAverageAbsoluteDistance() const {
-	    return _averageAbsoluteDistance;
-    }
+        FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = {0, 0},
+                        bool flow = false, bool peak = false, bool outlier = false, bool exclude = false);
 
-    float getZeroThreshold() const {
-        return _zeroThreshold;
-    }
-};
+        float getAverageAbsoluteDistance() const {
+            return _averageAbsoluteDistance;
+        }
 
+        float getZeroThreshold() const {
+            return _zeroThreshold;
+        }
+    };
+}

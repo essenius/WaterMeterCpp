@@ -45,11 +45,11 @@ constexpr const char* const STATE = "$state";
 class MqttGateway : public EventClient {
 public:
     MqttGateway(
-        EventServer* eventServer, 
+        EventServer* eventServer,
         PubSubClient* mqttClient,
         WiFiClientFactory* wifiClientFactory,
-        const MqttConfig* mqttConfig, 
-        const DataQueue* dataQueue, 
+        const MqttConfig* mqttConfig,
+        const DataQueue* dataQueue,
         const char* buildVersion);
     MqttGateway(const MqttGateway&) = default;
     MqttGateway(MqttGateway&&) = default;
@@ -79,7 +79,7 @@ protected:
     const MqttConfig* _mqttConfig;
     const DataQueue* _dataQueue;
     int _announceIndex = 0;
-    char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = { 0 };
+    char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = {0};
     char* _announcementPointer = _announcementBuffer;
     const char* _buildVersion;
     const char* _clientName = nullptr;
@@ -94,7 +94,7 @@ protected:
     void prepareItem(const char* item);
     void prepareNode(const char* node, const char* name, const char* type, const char* properties);
     void prepareProperty(const char* node, const char* property, const char* attribute,
-        const char* dataType, const char* format = EMPTY, bool settable = false);
+                         const char* dataType, const char* format = EMPTY, bool settable = false);
 
     bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
     bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);

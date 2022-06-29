@@ -26,7 +26,6 @@ void Sampler::begin() {
 }
 
 void Sampler::loop() {
-	const auto startOffset = micros() - _scheduledStartTime;
     const Coordinate measure = _sensorReader->read();
     // this triggers flowMeter, sampleAggregator and the comms task
     _eventServer->publish(Topic::Sample, measure);
@@ -36,7 +35,7 @@ void Sampler::loop() {
     // making sure to use durations to operate on, not timestamps -- to avoid overflow issues
     const unsigned long durationSoFar = micros() - _scheduledStartTime;
     // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
-    _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar  + _additionalDuration));
+    _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar + _additionalDuration));
     _resultAggregator->send();
 
     unsigned long duration = micros() - _scheduledStartTime;
@@ -47,11 +46,11 @@ void Sampler::loop() {
         duration = micros() - _scheduledStartTime;
         // integer mathematics, i.e. no fractions.
         // If we have too many consecutive overruns, skip an extra period.
-        const auto shiftPeriod = 
+        const auto shiftPeriod =
             // ReSharper disable once CppRedundantParentheses - intent clearer this way
-            (duration / _samplePeriod) * _samplePeriod + 
+            (duration / _samplePeriod) * _samplePeriod +
             (_consecutiveOverrunCount > MAX_CONSECUTIVE_OVERRUNS ? _samplePeriod : 0);
-        _eventServer->publish(Topic::SkipSamples, shiftPeriod /_samplePeriod);
+        _eventServer->publish(Topic::SkipSamples, shiftPeriod / _samplePeriod);
         _scheduledStartTime += shiftPeriod;
         // immediately start the next loop in an attempt to catch up.
     }
@@ -59,7 +58,7 @@ void Sampler::loop() {
         _consecutiveOverrunCount = 0;
         // Wait for the next sample time; read the command queue while we're at it.
         if (duration < _maxDurationForChecks) {
-          _queueClient->receive();
+            _queueClient->receive();
         }
 
         // now we have the next scheduled start time, so that is in the future.
@@ -67,15 +66,15 @@ void Sampler::loop() {
         const long delayTime = static_cast<long>(_samplePeriod - duration);
 
         // delayMicroseconds() is less accurate: sometimes up to 1000 us too much wait time.
-        
+
         if (delayTime > 1000) {
-            delayMicroseconds(delayTime - 1000); 
+            delayMicroseconds(delayTime - 1000);
         }
         do {
             duration = micros() - _scheduledStartTime;
-        } while (duration < _samplePeriod);
+        }
+        while (duration < _samplePeriod);
         _scheduledStartTime += _samplePeriod;
-        const auto endOffset = micros() - _scheduledStartTime;
     }
 }
 
@@ -100,7 +99,7 @@ bool Sampler::setup(MagnetoSensor* sensor[], const size_t listSize, const unsign
     // SensorReader.begin can publish these     
     _eventServer->subscribe(_queueClient, Topic::Alert);
     _eventServer->subscribe(_queueClient, Topic::NoSensorFound);
-    
+
     if (!_sensorReader->begin(sensor, listSize)) {
         return false;
     }

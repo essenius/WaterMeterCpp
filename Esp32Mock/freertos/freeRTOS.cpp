@@ -123,8 +123,8 @@ UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle) {
 unsigned long taskHandle = 100;
 
 BaseType_t xTaskCreatePinnedToCore(
-    TaskFunction_t pvTaskCode, 
-    const char* pcName, 
+    TaskFunction_t pvTaskCode,
+    const char* pcName,
     uint16_t usStackDepth,
     void* pvParameters,
     UBaseType_t uxPriority,

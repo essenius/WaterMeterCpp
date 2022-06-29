@@ -31,10 +31,10 @@ void Device::begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, 
 }
 
 long Device::freeStack(TaskHandle_t taskHandle) {
-      return static_cast<long>(uxTaskGetStackHighWaterMark(taskHandle));
+    return static_cast<long>(uxTaskGetStackHighWaterMark(taskHandle));
 }
 
-long  Device::freeHeap() {
+long Device::freeHeap() {
     return ESP.getFreeHeap();
 }
 

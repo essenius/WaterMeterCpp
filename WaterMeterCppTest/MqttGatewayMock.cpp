@@ -9,17 +9,19 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
 #include "MqttGatewayMock.h"
 
-MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory) :
-    MqttGateway(eventServer, mqttClient, wifiClientFactory, &MQTT_CONFIG, nullptr, "1.0.0") {}
+namespace WaterMeterCppTest {
 
-bool MqttGatewayMock::hasAnnouncement() {
-    _announceCounter++;
-    if (_announceCounter == 3) {
-        _announceCounter = 0;
-        return false;
+    MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory) :
+        MqttGateway(eventServer, mqttClient, wifiClientFactory, &MQTT_CONFIG, nullptr, "1.0.0") {}
+
+    bool MqttGatewayMock::hasAnnouncement() {
+        _announceCounter++;
+        if (_announceCounter == 3) {
+            _announceCounter = 0;
+            return false;
+        }
+        return true;
     }
-    return true;
 }

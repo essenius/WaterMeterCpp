@@ -13,21 +13,24 @@
 
 #include "../WaterMeterCpp/WiFiManager.h"
 
-class WiFiMock final : public WiFiManager {
-public:
-    explicit WiFiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder);
-    void begin() override {}
-    void disconnect() override {}
-    bool isConnected() override { return _isConnected; }
-    void reconnect() override {}
-    bool needsReinit() override { return _needsReconnect; }
-    void announceReady() override {}
+namespace WaterMeterCppTest {
 
-    void setIsConnected(const bool connected) { _isConnected = connected; }
-    void setNeedsReconnect(const bool needsReconnect) { _needsReconnect = needsReconnect; }
+    class WiFiMock final : public WiFiManager {
+    public:
+        explicit WiFiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder);
+        void begin() override {}
+        void disconnect() override {}
+        bool isConnected() override { return _isConnected; }
+        void reconnect() override {}
+        bool needsReinit() override { return _needsReconnect; }
+        void announceReady() override {}
 
-private:
-    bool _isConnected = false;
-    bool _needsReconnect = true;
-    static constexpr WifiConfig CONFIG{"ssid", "password", nullptr, nullptr};
-};
+        void setIsConnected(const bool connected) { _isConnected = connected; }
+        void setNeedsReconnect(const bool needsReconnect) { _needsReconnect = needsReconnect; }
+
+    private:
+        bool _isConnected = false;
+        bool _needsReconnect = true;
+        static constexpr WifiConfig CONFIG{"ssid", "password", nullptr, nullptr};
+    };
+}

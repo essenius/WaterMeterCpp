@@ -29,7 +29,7 @@ void ResultAggregator::addDuration(const unsigned long duration) {
         _result->maxDuration = duration;
     }
     if (duration > _measureIntervalMicros) {
-        _timeOverrun = duration - _measureIntervalMicros;  // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
+        _timeOverrun = duration - _measureIntervalMicros; // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
         _result->overrunCount++;
     }
     // this could be optimized by only getting it executed at the end of a cycle
