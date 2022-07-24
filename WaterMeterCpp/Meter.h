@@ -27,7 +27,7 @@ public:
 
 private:
     // 31,308 pulses per cubic meter (i.e. 1000L) - determined empirically (was 33173)
-    static constexpr double PULSES_PER_UNIT = 30000;
+    static constexpr double PULSES_PER_UNIT = 31308;
     static constexpr double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;
     double _volume = 0.0;
     unsigned long _pulses = 0;

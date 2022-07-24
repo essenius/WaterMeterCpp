@@ -127,7 +127,7 @@ namespace WaterMeterCppTest {
             const float highPassY = static_cast<float>(i % 3) * 50;
 
             const FloatCoordinate highPass{highPassX, highPassY};
-            FlowMeterDriver fmd(&eventServer, smooth, highPass, i > 7, i == 5);
+            FlowMeterDriver fmd(&eventServer, smooth, highPass, 0, i > 7, i == 5);
             sample.x = measurement;
             sample.y = measurement;
 
