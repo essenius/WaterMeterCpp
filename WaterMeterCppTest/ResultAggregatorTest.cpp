@@ -159,7 +159,7 @@ namespace WaterMeterCppTest {
             FloatCoordinate lowPass{};
             lowPass.set(sample);
             constexpr FloatCoordinate HIGH_PASS{3.0, 3.0};
-            FlowMeterDriver fmd(&eventServer, lowPass, HIGH_PASS, false, false, i > 7, i > 7);
+            FlowMeterDriver fmd(&eventServer, lowPass, HIGH_PASS, 0, false, false, i > 7, i > 7);
             aggregator.addMeasurement(sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 7993 + i);
             EXPECT_EQ(i == 9 || i == 14, aggregator.shouldSend()) << "Must send - " << i;

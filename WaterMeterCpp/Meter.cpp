@@ -65,6 +65,7 @@ void Meter::update(const Topic topic, const long payload) {
         newPulse();
     }
     else if (topic == Topic::SetVolume) {
+        // TODO: tricky one as pointers are 64 bit on Windows. 
         const auto volume = reinterpret_cast<char*>(payload);
         setVolume(volume);
     }

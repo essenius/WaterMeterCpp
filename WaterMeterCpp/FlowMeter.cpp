@@ -210,10 +210,10 @@ void FlowMeter::detectPeaks(const FloatCoordinate sample) {
         const int zone = _angle >= TOP_THRESHOLD
                              ? Top
                              : _angle >= 0
-                             ? Positive
-                             : _angle >= BOTTOM_THRESHOLD
-                             ? Negative
-                             : Bottom;
+                                 ? Positive
+                                 : _angle >= BOTTOM_THRESHOLD
+                                     ? Negative
+                                     : Bottom;
 
         const int stateDifference = modulo(zone - _state, ZoneCount);
 
@@ -229,6 +229,8 @@ void FlowMeter::detectPeaks(const FloatCoordinate sample) {
 
         setFindNext(peakCandidate, stateDifference, zone);
         _state = zone;
+    } else {
+        _peak = false;
     }
     // prepare values for the next call
     _previousSmooth = _smooth;

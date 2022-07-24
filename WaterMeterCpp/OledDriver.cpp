@@ -140,6 +140,8 @@ void OledDriver::updateConnectionState(const ConnectionState payload) {
         return;
     case ConnectionState::WifiReady:
         setConnectionLogo(WIFI_LOGO);
+        // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
+        return;
     default: ;
     // do nothing, intermediate state
     }
@@ -160,8 +162,11 @@ void OledDriver::update(const Topic topic, long payload) {
         updateConnectionState(static_cast<ConnectionState>(payload));
         return;
     case Topic::Flow:
-        if (payload) showMessageAtLine("Flow on        ", 3);
-        else showMessageAtLine("Flow off       ", 3);
+        if (payload) {
+            showMessageAtLine("Flow on        ", 3);
+        } else {
+            showMessageAtLine("Flow off       ", 3);
+        }
         switchFlowLogo(FLOW_LOGO, payload);
         return;
     case Topic::Alert:
@@ -187,7 +192,7 @@ void OledDriver::update(const Topic topic, long payload) {
     case Topic::Pulses:
         safeSprintf(buffer, "Pulses: %7ld", payload);
         showMessageAtLine(buffer, 0);
-    // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
+        // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
         return;
     default: ;
     // do nothing

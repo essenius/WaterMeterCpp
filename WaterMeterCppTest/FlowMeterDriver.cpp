@@ -16,11 +16,12 @@
 namespace WaterMeterCppTest {
 
     FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue,
-                                     const FloatCoordinate highPassValue,
+        const FloatCoordinate highPassValue, float averageAbsoluteDistance,
                                      const bool flow, const bool peak, const bool outlier, const bool exclude) : FlowMeter(
         eventServer) {
         _smooth = smoothValue;
         _highpass = highPassValue;
+        _averageAbsoluteDistance = averageAbsoluteDistance;
         _exclude = exclude;
         _flow = flow;
         _outlier = outlier;

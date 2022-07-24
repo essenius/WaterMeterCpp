@@ -19,7 +19,7 @@ namespace WaterMeterCppTest {
     public:
         explicit FlowMeterDriver(EventServer* eventServer) : FlowMeter(eventServer) {}
 
-        FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = {0, 0},
+        FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = {0, 0}, float averageAbsoluteDistance = 0, 
                         bool flow = false, bool peak = false, bool outlier = false, bool exclude = false);
 
         float getAverageAbsoluteDistance() const {

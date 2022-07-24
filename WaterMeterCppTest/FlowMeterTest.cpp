@@ -251,4 +251,12 @@ namespace WaterMeterCppTest {
         expectResult(&actual, L"Fist after outlier", 2, false, 0, true, false, false);
         expectFloatAreEqual(3606.04297f, actual.getAverageAbsoluteDistance(), "Absolute distance OK after");
     }
+
+    TEST_F(FlowMeterTest, flowMeterResetPeakTest) {
+        // If we have just found a peak and the next round flow goes off, the peak indicator must be reset
+        FlowMeterDriver actual(&eventServer, {0.0,0.0}, { 0,0 }, 0, true, true, false, false);
+        actual.begin(5, 390);
+        actual.addSample(Coordinate{ {0, 0} });
+        expectResult(&actual, L"First measurement", 0, false, 0, true, false, false);
+    }
 }

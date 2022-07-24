@@ -12,9 +12,9 @@
 #ifndef HEADER_CLOCK
 #define HEADER_CLOCK
 
-#include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/Clock.h"
-#include "../WaterMeterCpp/EventClient.h"
+#include "EventServer.h"
+#include "Clock.h"
+#include "EventClient.h"
 
 // We circumvent ESP.h - it defines INPUT which is also defined in windows.h, which time.h uses there
 // ReSharper disable once CppUnusedIncludeDirective -- semphr.h requires freeRTOS.h
