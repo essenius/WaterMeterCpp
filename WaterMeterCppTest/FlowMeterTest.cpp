@@ -41,7 +41,7 @@ namespace WaterMeterCppTest {
             constexpr float RADIUS = 10.0L;
             constexpr int16_t X_OFFSET = -100;
             constexpr int16_t Y_OFFSET = 100;
-            const float angle = (sampleNumber - angleOffsetSamples) * PI / samplesPerCycle * 2.0f;
+            const float angle = (sampleNumber - angleOffsetSamples) * PI_F / samplesPerCycle * 2.0f;
             return Coordinate{
                 {
                     static_cast<int16_t>(X_OFFSET + round(sin(angle) * RADIUS)),
@@ -134,7 +134,7 @@ namespace WaterMeterCppTest {
         for (int i = 0; i < STARTUP_IDLE_SAMPLES; i++) {
             eventServer.publish(Topic::Sample, sample);
             if (i == 0) {
-                expectFlowAnalysis(&flowMeter, "Init", i, -110.0f, 100.0f, 0, 0, 148.6607f, 0, -PI);
+                expectFlowAnalysis(&flowMeter, "Init", i, -110.0f, 100.0f, 0, 0, 148.6607f, 0, -PI_F);
             }
 
             totalPeaks += flowMeter.isPeak();

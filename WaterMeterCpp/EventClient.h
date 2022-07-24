@@ -14,6 +14,7 @@
 
 #include <cstdarg>
 #include <map>
+#include <cmath>
 
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;

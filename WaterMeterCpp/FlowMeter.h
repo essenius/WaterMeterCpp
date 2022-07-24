@@ -14,10 +14,11 @@
 #include "ChangePublisher.h"
 #include "EventClient.h"
 
-constexpr float PI = 3.1415926536f;
-
 // small value to make sure that atan2 returns a valid value
 constexpr float HIGH_PASS_START_VALUE = 0.0001f;
+
+// Arduino.h already has a macro PI which evaluates to a double
+constexpr float PI_F = 3.1415926536f;
 
 class FlowMeter : public EventClient {
 public:
@@ -69,7 +70,7 @@ protected:
     int _findNext = true;
     bool _noise = false;
     bool _stalled = false;
-    float _angle = -PI;
+    float _angle = -PI_F;
     float _cordifLowPass;
     float _averageAbsoluteDistance = 0.0f;
 

@@ -76,8 +76,8 @@ float FlowMeter::correctedDifference(const float previousAngle, const float curr
     // if there is noise around the extreme values it flips around, giving differences of around 2*PI.
     // As it is not very likely that a normal difference is going to be beyond PI,
     // we assume that if that happens, we have such a flip.
-    if (difference > PI) return difference - 2 * PI;
-    if (difference < -PI) return difference + 2 * PI;
+    if (difference > PI_F) return difference - 2 * PI_F;
+    if (difference < -PI_F) return difference + 2 * PI_F;
     return difference;
 }
 
@@ -201,7 +201,7 @@ void FlowMeter::detectPeaks(const FloatCoordinate sample) {
         // Now we need to determine the pulses. We have a circular movement. We divide the angle space
         // into quadrants, and we count a pulse every time we move into the negative quadrant (i.e. we pass 0 downwards).
 
-        constexpr float TOP_THRESHOLD = PI / 2;
+        constexpr float TOP_THRESHOLD = PI_F / 2;
         constexpr float BOTTOM_THRESHOLD = -TOP_THRESHOLD;
 
 
@@ -269,7 +269,7 @@ void FlowMeter::resetFilters(const FloatCoordinate initialSample) {
     _previousSmooth = initialSample;
     _averageAbsoluteDistance = _smooth.distanceFromOrigin();
     _smoothRelativeDistance = 0.0f;
-    _angle = -PI;
+    _angle = -PI_F;
     // above the threshold to not start with flow too quickly, but not too high to react quick enough if we start with flow
     _cordifLowPass = 0.3f;
     // should not be both 0 as then atan2 is undefined.
