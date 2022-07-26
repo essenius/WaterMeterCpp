@@ -53,6 +53,7 @@ namespace WaterMeterCppTest {
 
     }
 
+    // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
     TEST(SampleAggregatorTest, sampleAggregatorZeroFlushRateTest) {
         EventServer eventServer;
         Clock theClock(&eventServer);

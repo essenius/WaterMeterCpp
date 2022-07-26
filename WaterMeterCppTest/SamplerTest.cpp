@@ -27,7 +27,7 @@ namespace WaterMeterCppTest {
         MagnetoSensorNull noSensor;
         MagnetoSensor* list[] = {&noSensor};
         Sampler sampler(&eventServer, &reader, nullptr, nullptr, nullptr, nullptr);
-        EXPECT_FALSE(sampler.setup(list, 1)) << L"Setup without a sensor fails";
+        EXPECT_FALSE(sampler.begin(list, 1)) << L"Setup without a sensor fails";
         EXPECT_EQ(1, noSensorClient.getCallCount()) << "No-sensor event was fired";
         EXPECT_EQ(1, alertClient.getCallCount()) << "Alert fired";
     }

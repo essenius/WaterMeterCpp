@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/FirmwareManager.h"
+#include "FirmwareManagerDriver.h"
 
 #include "HTTPClient.h"
 #include "HTTPUpdate.h"
@@ -26,6 +27,7 @@ namespace WaterMeterCppTest {
         static TestEventClient errorListener;
         static constexpr FirmwareConfig FIRMWARE_CONFIG{"http://localhost/images/"};
 
+        // ReSharper disable once CppInconsistentNaming
         static void SetUpTestCase() {
             eventServer.subscribe(&infoListener, Topic::Info);
             eventServer.subscribe(&errorListener, Topic::ConnectionError);
@@ -44,7 +46,7 @@ namespace WaterMeterCppTest {
     
     TEST_F(FirmwareManagerTest, firmwareManagerCheckSucceedsNoUpdateNeededTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
         manager.begin("001122334455");
         HTTPClient::ReturnValue = 200;
         HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
@@ -57,7 +59,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(FirmwareManagerTest, firmwareManagerCheckSucceedsUpdateFailsTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
         manager.begin("001122334455");
         // check succeeds and update fails
         HTTPClient::ReturnValue = 200;
@@ -72,7 +74,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(FirmwareManagerTest, firmwareManagerFailedCheckTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
         manager.begin("001122334455");
 
         HTTPClient::ReturnValue = 400;
@@ -85,7 +87,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(FirmwareManagerTest, firmwareManagerNoUpdateAvailableTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
         manager.begin("001122334455");
 
         // Successful check, same version
@@ -97,7 +99,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(FirmwareManagerTest, firmwareManagerOtherVersionTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
         manager.begin("112233445566");
 
         HTTPClient::ReturnValue = 200;

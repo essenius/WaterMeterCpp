@@ -16,6 +16,7 @@
 
 namespace WaterMeterCppTest {
     
+    // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
     TEST(DeviceTest, deviceTest1) {
         EventServer eventServer;
         TestEventClient stackListener(&eventServer), heapListener(&eventServer);

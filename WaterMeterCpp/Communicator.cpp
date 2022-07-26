@@ -28,27 +28,7 @@ Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* led
     _samplerQueueClient(fromSamplerQueueClient),
     _connectorQueueClient(fromConnectorQueueClient) {}
 
-void Communicator::loop() const {
-    int i = 0;
-    while (_samplerQueueClient->receive() || _connectorQueueClient->receive()) {
-        i++;
-        // make sure to wait occasionally to allow other task to run
-        if (i % 5 == 0) delay(5);
-    }
-    DataQueuePayload* payload;
-    while ((payload = _dataQueue->receive()) != nullptr) {
-        _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
-        delay(5);
-    }
-    _device->reportHealth();
-
-    const auto waitedTime = _oledDriver->display();
-    if (waitedTime < 10) {
-        delay(10 - static_cast<int>(waitedTime));
-    }
-}
-
-void Communicator::setup() const {
+void Communicator::begin() const {
     _logger->begin();
     _ledDriver->begin();
     _meter->begin();
@@ -67,6 +47,26 @@ void Communicator::setup() const {
 
     // can publish NoDisplayFound
     _oledDriver->begin();
+}
+
+void Communicator::loop() const {
+    int i = 0;
+    while (_samplerQueueClient->receive() || _connectorQueueClient->receive()) {
+        i++;
+        // make sure to wait occasionally to allow other task to run
+        if (i % 5 == 0) delay(5);
+    }
+    DataQueuePayload* payload;
+    while ((payload = _dataQueue->receive()) != nullptr) {
+        _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
+        delay(5);
+    }
+    _device->reportHealth();
+
+    const auto waitedTime = _oledDriver->display();
+    if (waitedTime < 10) {
+        delay(10 - static_cast<int>(waitedTime));
+    }
 }
 
 [[ noreturn ]] void Communicator::task(void* parameter) {

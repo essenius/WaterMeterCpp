@@ -40,6 +40,7 @@ namespace WaterMeterCppTest {
         static DataQueuePayload payload;
         static DataQueue dataQueue;
 
+        // ReSharper disable once CppInconsistentNaming
         static void SetUpTestCase() {
             eventServer.subscribe(&errorListener, Topic::ConnectionError);
             eventServer.subscribe(&infoListener, Topic::Info);
@@ -83,6 +84,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("", mqttClient.user()) << "User not set";
     }
 
+    // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
     TEST_F(MqttGatewayTest, mqttGatewayScriptTest) {
         // We need to make this a longer test since the init needs to be done for the rest to work
         WiFiClientFactory wifiClientFactory(nullptr);

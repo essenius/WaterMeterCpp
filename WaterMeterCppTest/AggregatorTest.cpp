@@ -30,6 +30,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(-23, AggregatorDriver::convertToLong("-23", 3));
         EXPECT_EQ(0, AggregatorDriver::convertToLong("q", 3));
     }
+    // ReSharper disable once CyclomaticComplexity
     TEST(AggregatorTest, aggregatorFlushTest) {
         EventServer eventServer;
         Clock theClock(&eventServer);

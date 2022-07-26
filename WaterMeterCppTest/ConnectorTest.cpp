@@ -9,6 +9,8 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// ReSharper disable CyclomaticComplexity -- caused by EXPECT macros
+
 #include "gtest/gtest.h"
 
 #include <ESP.h>
@@ -43,6 +45,7 @@ namespace WaterMeterCppTest {
         static DataQueue dataQueue;
         static DataQueue commsDataQueue;
 
+        // ReSharper disable once CppInconsistentNaming
         static void SetUpTestCase() {
             disableDelay(false);
             setRealTime(false);
@@ -76,7 +79,7 @@ namespace WaterMeterCppTest {
     
     TEST_F(ConnectorTest, connectorMaxWifiFailuresTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
-        connector.setup(&configuration);
+        connector.begin(&configuration);
         wifiMock.setIsConnected(false);
 
         EXPECT_EQ(ConnectionState::WifiConnecting, connector.loop()) << "Connecting";
@@ -96,7 +99,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(ConnectorTest, connectorReInitTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
-        connector.setup(&configuration);
+        connector.begin(&configuration);
         wifiMock.setIsConnected(false);
         wifiMock.setNeedsReconnect(true);
         EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Connecting";
@@ -119,7 +122,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
         timeServer.reset();
         // connect before timeout
-        connector.setup(&configuration);
+        connector.begin(&configuration);
         wifiMock.setNeedsReconnect(false);
         wifiMock.setIsConnected(false);
         EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Wifi connecting";
@@ -197,7 +200,7 @@ namespace WaterMeterCppTest {
     TEST_F(ConnectorTest, connectorTimeFailTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
 
-        connector.setup(&configuration);
+        connector.begin(&configuration);
         wifiMock.setIsConnected(true);
         wifiMock.setNeedsReconnect(false);
 
@@ -221,7 +224,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(ConnectorTest, connectorQueueStringPayloadTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
-        connector.setup(&configuration);
+        connector.begin(&configuration);
         constexpr char BUFFER[] = "12345.6789012";
         EventServer receivingEventServer;
         QueueClient receivingQueueClient(&receivingEventServer, &logger, 20);
@@ -249,7 +252,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(ConnectorTest, connectorWifiInitTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
-        connector.setup(&configuration);
+        connector.begin(&configuration);
 
         wifiMock.setNeedsReconnect(true);
         wifiMock.setIsConnected(true);
@@ -275,4 +278,4 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(ConnectionState::CheckFirmware, connector.connect()) << "Checking firmware";
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
     }
-};
+}

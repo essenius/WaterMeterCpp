@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Communicator runs the process that communicates with the user via logging to serial, displaying on OLED, driving LEDs
+// It has its own event server so we keep it separate of the connector and the sampler.
+
 #ifndef HEADER_COMMUNICATOR
 #define HEADER_COMMUNICATOR
 #include "DataQueue.h"
@@ -27,8 +30,8 @@ public:
                  Device* device,
                  DataQueue* dataQueue, Serializer* serializer, QueueClient* fromSamplerQueueClient,
                  QueueClient* fromConnectorQueueClient);
+    void begin() const;
     void loop() const;
-    void setup() const;
     static void task(void* parameter);
 
 private:

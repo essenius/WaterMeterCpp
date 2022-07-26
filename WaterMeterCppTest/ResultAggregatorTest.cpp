@@ -33,6 +33,7 @@ namespace WaterMeterCppTest {
         static DataQueue dataQueue;
         static Clock theClock;
 
+        // ReSharper disable once CppInconsistentNaming
         static void SetUpTestCase() {
             eventServer.subscribe(&rateListener, Topic::Rate);
         }
@@ -77,8 +78,8 @@ namespace WaterMeterCppTest {
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 5);
         eventServer.publish(Topic::NonIdleRate, 5);
-        constexpr FloatCoordinate lowPass{500, 500};
-        const FlowMeterDriver fmd(&eventServer, lowPass);
+        constexpr FloatCoordinate LOW_PASS{500, 500};
+        const FlowMeterDriver fmd(&eventServer, LOW_PASS);
         constexpr Coordinate SAMPLE{{500, 500}};
         for (int i = 0; i < 3; i++) {
             aggregator.addMeasurement(SAMPLE, &fmd);
@@ -113,13 +114,14 @@ namespace WaterMeterCppTest {
         // TODO: analysis of filtered values
     }
 
+    // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
     TEST_F(ResultAggregatorTest, resultAggregatorFlowTest) {
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 10);
         eventServer.publish(Topic::NonIdleRate, 5);
-        Coordinate sample{{0, 0}};
         for (int i = 0; i < 10; i++) {
+            Coordinate sample{};
             const auto measurement = static_cast<int16_t>(2400 + (i % 2) * 50);
             const float floatMeasurement = measurement;
             const FloatCoordinate smooth{floatMeasurement, floatMeasurement};

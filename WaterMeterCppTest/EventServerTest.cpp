@@ -31,6 +31,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(1, client1.getCallCount()) << "one call to client1";
     }
 
+    // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
     TEST(EventServerTest, eventServerScriptTest) {
         EventServer server;
         TestEventClient

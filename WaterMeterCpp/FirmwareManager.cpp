@@ -27,22 +27,9 @@ FirmwareManager::FirmwareManager(
     _buildVersion(buildVersion),
     _firmwareConfig(firmwareConfig) {}
 
-FirmwareManager::~FirmwareManager() {
-    end();
-}
 
 void FirmwareManager::begin(const char* machineId) {
-    if (_client == nullptr) {
-        _client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
-    }
     safeStrcpy(_machineId, machineId);
-}
-
-void FirmwareManager::end() {
-    if (_client != nullptr) {
-        delete _client;
-        _client = nullptr;
-    }
 }
 
 void FirmwareManager::loadUpdate() const {
@@ -51,9 +38,9 @@ void FirmwareManager::loadUpdate() const {
     safeStrcat(buffer, _machineId);
     safeStrcat(buffer, IMAGE_EXTENSION);
 
+    const auto client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
     // This should normally result in a reboot.
-    const t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
-
+    const t_httpUpdate_return returnValue = httpUpdate.update(*client, buffer);
     if (returnValue == HTTP_UPDATE_FAILED) {
         safeSprintf(
             buffer,
@@ -70,6 +57,7 @@ void FirmwareManager::loadUpdate() const {
         httpUpdate.getLastError(),
         httpUpdate.getLastErrorString().c_str());
     _eventServer->publish(Topic::Info, buffer);
+    delete client;
 }
 
 void FirmwareManager::tryUpdate() {
@@ -86,8 +74,10 @@ bool FirmwareManager::updateAvailable() const {
     safeStrcpy(versionUrl, _firmwareConfig->baseUrl);
     safeStrcat(versionUrl, _machineId);
     safeStrcat(versionUrl, VERSION_EXTENSION);
+
+    const auto client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
     HTTPClient httpClient;
-    httpClient.begin(*_client, versionUrl);
+    httpClient.begin(*client, versionUrl);
     bool newBuildAvailable = false;
     char buffer[102]; // max size that the data queue can handle
 
@@ -111,5 +101,6 @@ bool FirmwareManager::updateAvailable() const {
         _eventServer->publish(Topic::Info, versionUrl);
     }
     httpClient.end();
+    delete client;
     return newBuildAvailable;
 }

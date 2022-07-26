@@ -50,7 +50,7 @@ namespace WaterMeterCppTest {
             };
         }
 
-        void expectFloatAreEqual(const float expected, const float actual, const char* description = "", const long index = 0) const {
+        static void expectFloatAreEqual(const float expected, const float actual, const char* description = "", const long index = 0) {
             const float difference = fabsf(expected - actual);
             EXPECT_TRUE(difference < 0.002f) << description << ". expected: " <<  expected << " actual: " << actual << " difference: " << difference << " #" << index;
         }

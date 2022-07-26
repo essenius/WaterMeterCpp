@@ -10,16 +10,13 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
+#include "../WaterMeterCpp/FirmwareManager.h"
 
-#include "../WaterMeterCpp/Aggregator.h"
+// For testing we make two protected methods publicly available. Otherwise it should behave the same as FirmwareManager.
 
-namespace WaterMeterCppTest {
-
-    class AggregatorDriver final : public Aggregator {
-    public:
-        explicit AggregatorDriver(EventServer* eventServer) : Aggregator(eventServer, nullptr, nullptr, nullptr) {}
-        using Aggregator::limit;
-        using Aggregator::convertToLong;
-    }; 
-
-}
+class FirmwareManagerDriver : public FirmwareManager {
+public:
+	using FirmwareManager::FirmwareManager;
+	using FirmwareManager::loadUpdate;
+	using FirmwareManager::updateAvailable;
+};

@@ -11,17 +11,17 @@
 
 #include "gtest/gtest.h"
 #include <ESP.h>
+// ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include <freertos/freeRTOS.h>
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/SafeCString.h"
-// ReSharper disable once CppUnusedIncludeDirective -- false positive
 
 #include "../WaterMeterCpp/Serializer.h"
 
 namespace WaterMeterCppTest {
-    
+        // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
         TEST(DataQueueTest, dataQueueTest1) {
             EventServer eventServer;
             Clock theClock(&eventServer);

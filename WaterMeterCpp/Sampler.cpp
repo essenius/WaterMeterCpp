@@ -18,7 +18,38 @@ Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, Fl
     _eventServer(eventServer), _sensorReader(sensorReader), _flowMeter(flowMeter),
     _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {}
 
-void Sampler::begin() {
+// if it returns false, the setup failed. Don't try any other functions if so.
+bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsigned long samplePeriod) {
+    _samplePeriod = samplePeriod;
+    _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
+
+    // what can be sent to the communicator (note: must be numerical payloads)
+    _eventServer->subscribe(_queueClient, Topic::BatchSize);
+    _eventServer->subscribe(_queueClient, Topic::Blocked);
+    _eventServer->subscribe(_queueClient, Topic::Exclude);
+    _eventServer->subscribe(_queueClient, Topic::Flow);
+    _eventServer->subscribe(_queueClient, Topic::FreeQueueSize);
+    _eventServer->subscribe(_queueClient, Topic::FreeQueueSpaces);
+    _eventServer->subscribe(_queueClient, Topic::Peak);
+    _eventServer->subscribe(_queueClient, Topic::ResultWritten);
+    _eventServer->subscribe(_queueClient, Topic::Sample);
+    _eventServer->subscribe(_queueClient, Topic::SkipSamples);
+    _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
+    _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
+    // SensorReader.begin can publish these     
+    _eventServer->subscribe(_queueClient, Topic::Alert);
+    _eventServer->subscribe(_queueClient, Topic::NoSensorFound);
+
+    if (!_sensorReader->begin(sensor, listSize)) {
+        return false;
+    }
+
+    _flowMeter->begin(_sensorReader->getNoiseRange(), _sensorReader->getGain());
+
+    return true;
+}
+
+void Sampler::beginLoop() {
     // These two publish, so we need to run them when both threads finished setting up the event listeners
     _sampleAggregator->begin();
     _resultAggregator->begin();
@@ -76,35 +107,4 @@ void Sampler::loop() {
         while (duration < _samplePeriod);
         _scheduledStartTime += _samplePeriod;
     }
-}
-
-// if it returns false, the setup failed. Don't try any other functions if so.
-bool Sampler::setup(MagnetoSensor* sensor[], const size_t listSize, const unsigned long samplePeriod) {
-    _samplePeriod = samplePeriod;
-    _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
-
-    // what can be sent to the communicator (note: must be numerical payloads)
-    _eventServer->subscribe(_queueClient, Topic::BatchSize);
-    _eventServer->subscribe(_queueClient, Topic::Blocked);
-    _eventServer->subscribe(_queueClient, Topic::Exclude);
-    _eventServer->subscribe(_queueClient, Topic::Flow);
-    _eventServer->subscribe(_queueClient, Topic::FreeQueueSize);
-    _eventServer->subscribe(_queueClient, Topic::FreeQueueSpaces);
-    _eventServer->subscribe(_queueClient, Topic::Peak);
-    _eventServer->subscribe(_queueClient, Topic::ResultWritten);
-    _eventServer->subscribe(_queueClient, Topic::Sample);
-    _eventServer->subscribe(_queueClient, Topic::SkipSamples);
-    _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
-    _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
-    // SensorReader.begin can publish these     
-    _eventServer->subscribe(_queueClient, Topic::Alert);
-    _eventServer->subscribe(_queueClient, Topic::NoSensorFound);
-
-    if (!_sensorReader->begin(sensor, listSize)) {
-        return false;
-    }
-
-    _flowMeter->begin(_sensorReader->getNoiseRange(), _sensorReader->getGain());
-
-    return true;
 }

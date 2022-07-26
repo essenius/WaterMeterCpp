@@ -27,8 +27,9 @@ namespace WaterMeterCppTest {
             eventServer.publish(Topic::Connection, static_cast<long>(connectionState));
         }
     };
-    
+
     EventServer OledDriverTest::eventServer;
+        // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
         TEST_F(OledDriverTest, oledDriverCycleScriptTest) {
             Wire1.setFlatline(true); // make Wire1.endTransmission return the right value so begin() passes
             OledDriver oledDriver(&eventServer, &Wire1);

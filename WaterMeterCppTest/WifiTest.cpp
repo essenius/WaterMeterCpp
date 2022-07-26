@@ -24,6 +24,7 @@ namespace WaterMeterCppTest {
         static EventServer eventServer;
         static TestEventClient errorListener;
 
+        // ReSharper disable once CppInconsistentNaming
         static void SetUpTestCase() {
             eventServer.subscribe(&errorListener, Topic::ConnectionError);
         }
@@ -33,6 +34,7 @@ namespace WaterMeterCppTest {
             errorListener.reset();
         }
 
+        // ReSharper disable once CppInconsistentNaming
         static void TearDownTestCase() {
             eventServer.unsubscribe(&errorListener);
         }

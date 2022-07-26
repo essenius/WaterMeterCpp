@@ -38,7 +38,7 @@ ConnectionState Connector::loop() {
     return _state;
 }
 
-void Connector::setup(const Configuration* configuration) {
+void Connector::begin(const Configuration* configuration) {
     _state = ConnectionState::Init;
     _waitDuration = WIFI_INITIAL_WAIT_DURATION;
     _wifiConnectionFailureCount = 0;
@@ -62,14 +62,6 @@ void Connector::setup(const Configuration* configuration) {
     _eventServer->subscribe(_communicatorQueueClient, Topic::SetVolume);
 
     _wifi->configure(&configuration->ip);
-}
-
-[[ noreturn]] void Connector::task(void* parameter) {
-    const auto me = static_cast<Connector*>(parameter);
-
-    for (;;) {
-        me->loop();
-    }
 }
 
 ConnectionState Connector::connect() {
@@ -119,7 +111,6 @@ ConnectionState Connector::connect() {
 void Connector::handleCheckFirmware() {
     _firmwareManager->begin(_eventServer->request(Topic::MacRaw, ""));
     _firmwareManager->tryUpdate();
-    _firmwareManager->end();
     _state = ConnectionState::WifiReady;
 }
 
@@ -264,4 +255,12 @@ void Connector::handleWifiReady() {
     }
 
     _state = ConnectionState::Disconnected;
+}
+
+[[ noreturn]] void Connector::task(void* parameter) {
+    const auto me = static_cast<Connector*>(parameter);
+
+    for (;;) {
+        me->loop();
+    }
 }

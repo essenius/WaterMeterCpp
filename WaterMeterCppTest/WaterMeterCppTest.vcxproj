@@ -44,7 +44,6 @@
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="AggregatorDriver.cpp" />
     <ClCompile Include="AggregatorTest.cpp" />
     <ClCompile Include="ClockTest.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
@@ -158,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AggregatorDriver.h" />
+    <ClInclude Include="FirmwareManagerDriver.h" />
     <ClInclude Include="FlowMeterDriver.h" />
     <ClInclude Include="MqttGatewayMock.h" />
     <ClInclude Include="TestEventClient.h" />

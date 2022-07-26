@@ -45,7 +45,7 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.10";
+constexpr const char* const BUILD_VERSION = "0.100.11";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle usually takes quite a bit less than that, unless a write happened.
@@ -147,11 +147,11 @@ void setup() {
     connectorCommunicatorQueueClient.begin(communicatorConnectorQueueClient.getQueueHandle());
     connectorSamplerQueueClient.begin(samplerQueueClient.getQueueHandle());
 
-    communicator.setup();
-    connector.setup(&configuration);
+    communicator.begin();
+    connector.begin(&configuration);
 
     // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
-    sampler.setup(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
+    sampler.begin(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
 
     // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
     xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
@@ -159,8 +159,8 @@ void setup() {
     // the communicator loop takes care of logging and leds, as well as passing on data to the connector if there is a connection
     xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
 
-    // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
-    sampler.begin();
+    // beginLoop can only run when both sampler and connector have finished settting up, since it can start publishing right away
+    sampler.beginLoop();
 
     device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 }

@@ -53,7 +53,8 @@ namespace WaterMeterCppTest {
 
     Preferences MainTest::preferences;
     Configuration MainTest::configuration(&preferences);
-    
+
+    // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
     TEST_F(MainTest, mainTest1) {
             EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
 
@@ -180,10 +181,10 @@ namespace WaterMeterCppTest {
             // disable the timestamps to make it easier to test
             communicatorEventServer.cannotProvide(&theClock, Topic::Time);
             EXPECT_STREQ("", getPrintOutput()) << "Print output empty 1";
-            communicator.setup();
-            connector.setup(&configuration);
+            communicator.begin();
+            connector.begin(&configuration);
 
-            EXPECT_TRUE(sampler.setup(sensor, std::size(sensor), MEASURE_INTERVAL_MICROS)) << "Sampler found a sensor";
+            EXPECT_TRUE(sampler.begin(sensor, std::size(sensor), MEASURE_INTERVAL_MICROS)) << "Sampler found a sensor";
             EXPECT_STREQ("[] Starting\n", getPrintOutput()) << "Print output started";
             clearPrintOutput();
 
@@ -196,7 +197,7 @@ namespace WaterMeterCppTest {
             EXPECT_STREQ("", getPrintOutput()) << "Print output empty 2";
 
             // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
-            sampler.begin();
+            sampler.beginLoop();
 
             device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 

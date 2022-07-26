@@ -23,9 +23,9 @@ class Sampler {
 public:
     Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter,
             SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient);
-    void begin();
+    bool begin(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
+    void beginLoop();
     void loop();
-    bool setup(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
 
 private:
     EventServer* _eventServer;
