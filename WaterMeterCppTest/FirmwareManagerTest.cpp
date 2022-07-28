@@ -127,6 +127,8 @@ namespace WaterMeterCppTest {
     }
 
     TEST_F(FirmwareManagerTest, firmwareManagerUpdateTest) {
+        TestEventClient progressListener(&eventServer);
+        eventServer.subscribe(&progressListener, Topic::UpdateProgress);
         const WiFiClientFactory wifiClientFactory(nullptr);
         FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
         manager.begin("001122334455");
@@ -138,10 +140,13 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(2, infoListener.getCallCount()) << "info on success";
         EXPECT_EQ(0, errorListener.getCallCount()) << "No error on success";
         EXPECT_STREQ("Firmware not updated (2/0): OK", infoListener.getPayload()) << "warning message";
+        EXPECT_EQ(2, progressListener.getCallCount()) << "progress called twice (mock httpUpdate)";
+        EXPECT_STREQ("100", progressListener.getPayload()) << "progress 100";
 
         // second call doesn't do anything
         manager.tryUpdate();
         EXPECT_EQ(2, infoListener.getCallCount()) << "Second call doesn't log info";
         EXPECT_EQ(0, errorListener.getCallCount()) << "Second call doesn't log errors";
+        EXPECT_EQ(2, progressListener.getCallCount()) << "progress not called again";
     }
 }

@@ -76,6 +76,13 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(0b00010000, display->getFirstByte()) << "First byte of flow logo ok";
             EXPECT_EQ(98, display->getX()) << "Flow X=98";
             EXPECT_EQ(0, display->getY()) << "Flow Y=0";
+            EXPECT_STREQ("Flow on        ", display->getMessage()) << "Flow On message OK";
+
+            eventServer.publish(Topic::Flow, LONG_FALSE);
+            EXPECT_EQ(BLACK, display->getForegroundColor()) << "flow off C=BLACK";
+            EXPECT_EQ(98, display->getX()) << "Flow X=98";
+            EXPECT_EQ(0, display->getY()) << "Flow Y=0";
+            EXPECT_STREQ("Flow off       ", display->getMessage()) << "Flow Off message OK";
 
             publishConnectionState(ConnectionState::MqttReady);
             EXPECT_EQ(0b00000000, display->getFirstByte()) << "First byte of mqtt logo ok";
@@ -118,8 +125,13 @@ namespace WaterMeterCppTest {
 
             eventServer.publish(Topic::Blocked, LONG_TRUE);
             EXPECT_EQ(0b00111000, display->getFirstByte()) << "First byte of blocked logo ok";
-            EXPECT_EQ(108, display->getX()) << "Blocked X=0";
+            EXPECT_EQ(108, display->getX()) << "Blocked X=108";
             EXPECT_EQ(0, display->getY()) << "Blocked Y=0";
+
+            eventServer.publish(Topic::UpdateProgress, 35);
+            EXPECT_EQ(0, display->getX()) << "Progress X=0";
+            EXPECT_EQ(24, display->getY()) << "Progress Y=24";
+            EXPECT_STREQ("FW update: 35% ", display->getMessage()) << "Pulses message OK";
         }
 
     }

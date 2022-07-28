@@ -38,9 +38,14 @@ void FirmwareManager::loadUpdate() const {
     safeStrcat(buffer, _machineId);
     safeStrcat(buffer, IMAGE_EXTENSION);
 
-    const auto client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
+    WiFiClient* updateClient = _wifiClientFactory->create(_firmwareConfig->baseUrl);
+
+    httpUpdate.onProgress([=](const int current, const int total) {
+        _eventServer->publish(Topic::UpdateProgress, current * 100 / total);
+    });
+    
     // This should normally result in a reboot.
-    const t_httpUpdate_return returnValue = httpUpdate.update(*client, buffer);
+    const t_httpUpdate_return returnValue = httpUpdate.update(*updateClient, buffer);
     if (returnValue == HTTP_UPDATE_FAILED) {
         safeSprintf(
             buffer,
@@ -57,7 +62,7 @@ void FirmwareManager::loadUpdate() const {
         httpUpdate.getLastError(),
         httpUpdate.getLastErrorString().c_str());
     _eventServer->publish(Topic::Info, buffer);
-    delete client;
+    delete updateClient;
 }
 
 void FirmwareManager::tryUpdate() {
@@ -100,7 +105,7 @@ bool FirmwareManager::updateAvailable() const {
         _eventServer->publish(Topic::ConnectionError, buffer);
         _eventServer->publish(Topic::Info, versionUrl);
     }
+    // this disposes of client as well.
     httpClient.end();
-    delete client;
     return newBuildAvailable;
 }

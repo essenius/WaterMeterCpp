@@ -62,6 +62,7 @@ bool OledDriver::begin() {
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::TimeOverrun);
+    _eventServer->subscribe(this, Topic::UpdateProgress);
     _eventServer->subscribe(this, Topic::Volume);
     _eventServer->subscribe(this, Topic::Pulses);
     delay(MIN_DELAY_FOR_DISPLAY);
@@ -188,6 +189,10 @@ void OledDriver::update(const Topic topic, long payload) {
         safeSprintf(buffer, "Overrun: %6ld", payload);
         showMessageAtLine(buffer, 3);
         switchEventLogo(TIME_LOGO, payload);
+        return;
+    case Topic::UpdateProgress:
+        safeSprintf(buffer, "FW update: %d%% ", payload);
+        showMessageAtLine(buffer, 3);
         return;
     case Topic::Pulses:
         safeSprintf(buffer, "Pulses: %7ld", payload);

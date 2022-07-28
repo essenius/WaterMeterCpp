@@ -19,6 +19,8 @@
 #ifndef HEADER_HTTPUPDATE
 #define HEADER_HTTPUPDATE
 
+#include <functional>
+
 #include "StringArduino.h"
 #include "WiFiClient.h"
 
@@ -27,13 +29,28 @@ constexpr int HTTP_UPDATE_NO_UPDATES = 1;
 constexpr int HTTP_UPDATE_OK = 2;
 
 using t_httpUpdate_return = int;
+using HTTPUpdateStartCB = std::function<void()>;
+using HTTPUpdateEndCB = std::function<void()>;
+using HTTPUpdateErrorCB = std::function<void(int)>;
+using HTTPUpdateProgressCB = std::function<void(int, int)>;
 
 class HTTPUpdate {
 public:
-    t_httpUpdate_return update(WiFiClient& client, const char* url) { return ReturnValue; }
+    t_httpUpdate_return update(WiFiClient& client, const char* url);
+
     int getLastError() { return 0; }
     String getLastErrorString() { return {"OK"}; }
     static int ReturnValue;
+
+    void onStart(HTTPUpdateStartCB cbOnStart) { _cbStart = cbOnStart; }
+    void onEnd(HTTPUpdateEndCB cbOnEnd) { _cbEnd = cbOnEnd; }
+    void onError(HTTPUpdateErrorCB cbOnError) { _cbError = cbOnError; }
+    void onProgress(HTTPUpdateProgressCB cbOnProgress) { _cbProgress = cbOnProgress; }
+private:
+    HTTPUpdateStartCB    _cbStart;
+    HTTPUpdateEndCB      _cbEnd;
+    HTTPUpdateErrorCB    _cbError;
+    HTTPUpdateProgressCB _cbProgress;
 };
 
 extern HTTPUpdate httpUpdate;

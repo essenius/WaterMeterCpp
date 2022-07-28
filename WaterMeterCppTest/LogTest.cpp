@@ -103,5 +103,9 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::NoDisplayFound, LONG_TRUE);
         EXPECT_STREQ("[] No OLED display found\n", getPrintOutput()) << "no display found handled OK";
         clearPrintOutput();
+
+        eventServer.publish(Topic::UpdateProgress, 73);
+        EXPECT_STREQ("[] Firmware update progress: 73%\n", getPrintOutput()) << "Update progress logged OK";
+        clearPrintOutput();
     }
 }

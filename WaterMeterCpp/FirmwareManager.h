@@ -18,8 +18,6 @@
 #ifndef HEADER_FIRMWAREMANAGER
 #define HEADER_FIRMWAREMANAGER
 
-#include <WiFiClient.h>
-
 #include "Configuration.h"
 #include "EventClient.h"
 #include "WiFiClientFactory.h"

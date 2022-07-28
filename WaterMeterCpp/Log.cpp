@@ -53,6 +53,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::SetVolume);
     _eventServer->subscribe(this, Topic::SkipSamples);
     _eventServer->subscribe(this, Topic::TimeOverrun);
+    _eventServer->subscribe(this, Topic::UpdateProgress);
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
 }
 
@@ -104,6 +105,9 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::TimeOverrun:
         log("Time overrun: %s", payload);
+        break;
+    case Topic::UpdateProgress:
+        log("Firmware update progress: %s%%", payload);
         break;
     case Topic::WifiSummaryReady:
         log("Wifi summary: %s", _wifiPayloadBuilder->toString());

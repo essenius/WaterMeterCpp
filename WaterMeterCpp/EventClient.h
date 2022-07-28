@@ -61,7 +61,8 @@ enum class Topic: int16_t {
     SetVolume,
     Volume,
     Pulses,
-    NoDisplayFound
+    NoDisplayFound,
+    UpdateProgress
 };
 
 union Coordinate {

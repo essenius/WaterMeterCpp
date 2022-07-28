@@ -133,4 +133,28 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(1, batchSizeListener.getCallCount()) << "batch size listener called once";
         EXPECT_STREQ("25", batchSizeListener.getPayload()) << "payload maximized at 25";
     }
+
+    TEST(SampleAggregatorTest, sampleAggregator25SampleTest) {
+        EventServer eventServer;
+        Clock theClock(&eventServer);
+        DataQueuePayload payload{};
+        DataQueue dataQueue(&eventServer, &payload);
+
+        TestEventClient batchSizeListener(&eventServer);
+        eventServer.subscribe(&batchSizeListener, Topic::BatchSize);
+        SampleAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload);
+        aggregator.begin();
+        EXPECT_EQ(25L, aggregator.getFlushRate()) << "Default flush rate OK";
+
+        Coordinate sample1{};
+        for (int i = 0; i < 25; i++) {
+            EXPECT_FALSE(aggregator.send()) << "no send before 25 samples";
+            sample1.x = -135 + (i % 5);
+            sample1.y = -190 - (i % 5);
+            aggregator.addSample(sample1);
+        }
+        constexpr Coordinate LASTSAMPLE{ {-131, -194} };
+        EXPECT_EQ(LASTSAMPLE, payload.buffer.samples.value[24]) << "Last sample value correct";
+        EXPECT_TRUE(aggregator.send()) << "sends after 25 samples";
+    }
 }
