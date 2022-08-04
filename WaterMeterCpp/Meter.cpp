@@ -61,7 +61,7 @@ void Meter::update(const Topic topic, const char* payload) {
 }
 
 void Meter::update(const Topic topic, const long payload) {
-    if (topic == Topic::Peak) {
+    if (topic == Topic::Peak && payload == LONG_TRUE) {
         newPulse();
     }
     else if (topic == Topic::SetVolume) {

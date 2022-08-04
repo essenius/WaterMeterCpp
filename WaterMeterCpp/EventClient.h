@@ -62,7 +62,8 @@ enum class Topic: int16_t {
     Volume,
     Pulses,
     NoDisplayFound,
-    UpdateProgress
+    UpdateProgress,
+    InternalError
 };
 
 union Coordinate {
@@ -98,6 +99,18 @@ struct FloatCoordinate {
     void set(const Coordinate input) {
         x = static_cast<float>(input.x);
         y = static_cast<float>(input.y);
+    }
+
+    float distanceFrom(const FloatCoordinate other) const {
+        const auto difference = differenceWith(other);
+        return sqrtf(difference.x * difference.x + difference.y * difference.y);
+    }
+
+    FloatCoordinate differenceWith(const FloatCoordinate other) const {
+        FloatCoordinate result {};
+        result.x = x - other.x;
+        result.y = y - other.y;
+        return result;
     }
 };
 

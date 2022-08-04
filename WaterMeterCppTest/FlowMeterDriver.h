@@ -17,6 +17,17 @@ namespace WaterMeterCppTest {
 
     class FlowMeterDriver final : public FlowMeter {
     public:
+        using FlowMeter::detectPulse;
+        using FlowMeter::getTarget;
+        using FlowMeter::getSearcher;
+        using FlowMeter::_movingAverage;
+        using FlowMeter::_smooth;
+        using FlowMeter::_flowThresholdPassedCount;
+        using FlowMeter::_averageStartValue;
+        using FlowMeter::_flowStarted;
+        using FlowMeter::_searchTarget;
+        using FlowMeter::_currentSearcher;
+
         explicit FlowMeterDriver(EventServer* eventServer) : FlowMeter(eventServer) {}
 
         FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = {0, 0}, float averageAbsoluteDistance = 0, 

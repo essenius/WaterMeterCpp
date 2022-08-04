@@ -72,6 +72,142 @@ namespace WaterMeterCppTest {
 
     EventServer FlowMeterTest::eventServer;
 
+    TEST_F(FlowMeterTest, flowMeterDetectPulseTest) {
+        TestEventClient client(&eventServer);
+        eventServer.subscribe(&client, Topic::Peak);
+        FlowMeterDriver actual(&eventServer);
+
+        // jittering at the start to simulate standstill
+
+        actual.detectPulse({ 100, 50 });
+        EXPECT_EQ(100, actual._movingAverage[0].x);
+        EXPECT_EQ(50, actual._movingAverage[0].y);
+        EXPECT_EQ(0.0f, actual._smooth.x) << "moving average buffer not filled yet 1";
+
+        actual.detectPulse({ 103, 53 });
+        EXPECT_EQ(103, actual._movingAverage[1].x);
+        EXPECT_EQ(53, actual._movingAverage[1].y);
+        EXPECT_EQ(0.0f, actual._smooth.x) << "moving average buffer not filled yet 2";
+
+        actual.detectPulse({ 105, 55 });
+        EXPECT_EQ(105, actual._movingAverage[2].x);
+        EXPECT_EQ(55, actual._movingAverage[2].y);
+        EXPECT_EQ(0.0f, actual._smooth.x) << "moving average buffer not filled yet 3";
+
+        actual.detectPulse({ 104, 54 });
+        EXPECT_EQ(104, actual._movingAverage[3].x);
+        EXPECT_EQ(54, actual._movingAverage[3].y);
+        EXPECT_FLOAT_EQ(103.0f, actual._smooth.x) << "moving average buffer first filled and moved to smooth value";
+        EXPECT_FLOAT_EQ(53.0f, actual._smooth.y);
+        EXPECT_FLOAT_EQ(103.0f, actual._averageStartValue.x) << "average equal to first smooth value";
+        EXPECT_FLOAT_EQ(53.0f, actual._averageStartValue.y);
+
+        actual.detectPulse({ 102, 54 });
+        EXPECT_EQ(102, actual._movingAverage[0].x) << "moving average index moved to 0";
+        EXPECT_EQ(54, actual._movingAverage[0].y);
+        EXPECT_FLOAT_EQ(103.25f, actual._smooth.x) << "Low pass calculated correctly";
+        EXPECT_FLOAT_EQ(53.5f, actual._smooth.y);
+        EXPECT_FLOAT_EQ(103.125f, actual._averageStartValue.x) << "Average start point started correctly" ;
+        EXPECT_FLOAT_EQ(53.25f, actual._averageStartValue.y);
+        EXPECT_EQ(0, actual._flowThresholdPassedCount) << "Still no flow";
+
+        actual.detectPulse({ 80, 70 });
+        EXPECT_EQ(80, actual._movingAverage[1].x);
+        EXPECT_EQ(70, actual._movingAverage[1].y);
+        EXPECT_FLOAT_EQ(100.5f, actual._smooth.x);
+        EXPECT_FLOAT_EQ(55.875f, actual._smooth.y);
+        EXPECT_FLOAT_EQ(102.25f, actual._averageStartValue.x);
+        EXPECT_FLOAT_EQ(54.125f, actual._averageStartValue.y);
+        EXPECT_EQ(0, actual._flowThresholdPassedCount);
+        EXPECT_FALSE(actual._flowStarted) << "Still no flow";
+
+        actual.detectPulse({ 70, 40 });
+        EXPECT_EQ(70, actual._movingAverage[2].x);
+        EXPECT_EQ(40, actual._movingAverage[2].y);
+        EXPECT_FLOAT_EQ(94.75f, actual._smooth.x);
+        EXPECT_FLOAT_EQ(55.1875f, actual._smooth.y);
+        EXPECT_FLOAT_EQ(102.25f, actual._averageStartValue.x);
+        EXPECT_FLOAT_EQ(54.125f, actual._averageStartValue.y);
+        EXPECT_EQ(1, actual._flowThresholdPassedCount) << "First time we see flow";
+        EXPECT_FALSE(actual._flowStarted) << "Flow not started yet as we need two samples";
+        EXPECT_EQ(None, actual._searchTarget) << "Not in search mode yet";
+        EXPECT_EQ(nullptr, actual._currentSearcher) << "No searcher yet";
+
+        actual.detectPulse({ 80, 69 });
+        EXPECT_EQ(80, actual._movingAverage[3].x);
+        EXPECT_EQ(69, actual._movingAverage[3].y);
+        EXPECT_FLOAT_EQ(88.875f, actual._smooth.x);
+        EXPECT_FLOAT_EQ(56.71875f, actual._smooth.y);
+        EXPECT_FLOAT_EQ(102.25f, actual._averageStartValue.x);
+        EXPECT_FLOAT_EQ(54.125f, actual._averageStartValue.y);
+        EXPECT_EQ(2, actual._flowThresholdPassedCount) << "Second time we see flow";
+        EXPECT_TRUE(actual._flowStarted) << "Flow started";
+        EXPECT_NE(nullptr, actual._currentSearcher) << "Searcher defined";
+        EXPECT_EQ(MinX, actual._currentSearcher->target()) << "MinX searcher selected (x going down, y going up)";
+
+        actual.detectPulse({ 60, 70 });
+        actual.detectPulse({ 60, 70 });
+        actual.detectPulse({ 60, 70 });
+        actual.detectPulse({ 65, 75 });
+        actual.detectPulse({ 70, 80 });
+        actual.detectPulse({ 75, 85 });
+        EXPECT_EQ(MinX, actual._currentSearcher->target()) << "Still searching for MinX";
+        EXPECT_EQ(0, client.getCallCount());
+        actual.detectPulse({ 80, 90 });
+        EXPECT_EQ(1, client.getCallCount()) << "Pulse reported for MinX";
+        EXPECT_EQ(MaxY, actual._currentSearcher->target()) << "MaxY searcher selected";
+
+        actual.detectPulse({ 85, 95 });
+        actual.detectPulse({ 90, 100 });
+        actual.detectPulse({ 95, 105 });
+        actual.detectPulse({ 100, 100 });
+        actual.detectPulse({ 105, 95 });
+        actual.detectPulse({ 110, 90 });
+        EXPECT_EQ(MaxY, actual._currentSearcher->target()) << "Still searching for MaxY";
+        EXPECT_EQ(1, client.getCallCount());
+        actual.detectPulse({ 115, 85 });
+        EXPECT_EQ(2, client.getCallCount()) << "Pulse reported for MaxY";
+        EXPECT_EQ(MaxX, actual._currentSearcher->target()) << "MaxX searcher selected";
+
+        actual.detectPulse({ 120, 80 });
+        actual.detectPulse({ 115, 75 });
+        actual.detectPulse({ 110, 70 });
+        actual.detectPulse({ 105, 65 });
+        EXPECT_EQ(MaxX, actual._currentSearcher->target()) << "Still searching for MaxX";
+        EXPECT_EQ(2, client.getCallCount());
+        actual.detectPulse({ 100, 60 });
+        EXPECT_EQ(3, client.getCallCount()) << "Pulse reported for MaxX";
+        EXPECT_EQ(MinY, actual._currentSearcher->target()) << "MinY searcher selected";
+
+        actual.detectPulse({ 95, 55 });
+        actual.detectPulse({ 90, 50 });
+        actual.detectPulse({ 85, 55 });
+        actual.detectPulse({ 80, 60 });
+        actual.detectPulse({ 75, 65 });
+        EXPECT_EQ(MinY, actual._currentSearcher->target()) << "Still searching for MinY";
+        EXPECT_EQ(3, client.getCallCount());
+        actual.detectPulse({ 70, 70 });
+        EXPECT_EQ(4, client.getCallCount()) << "Pulse reported for MinY";
+        EXPECT_EQ(MinX, actual._currentSearcher->target()) << "MinX searcher selected";
+    }
+
+    TEST_F(FlowMeterTest, flowMeterGetTargetTest) {
+        FlowMeterDriver actual(&eventServer);
+        ASSERT_EQ(MinX, actual.getTarget({ -5, 5 })) << "MinX target correctly identified";
+        ASSERT_EQ(MaxY, actual.getTarget({ 0.01f, 2 })) << "MaxY target correctly identified";
+        ASSERT_EQ(MinY, actual.getTarget({ -7, -2 })) << "MinY target correctly identified";
+        ASSERT_EQ(MaxX, actual.getTarget({ 1, -2 })) << "MaxX target correctly identified";
+    }
+
+    TEST_F(FlowMeterTest, flowMeterSearcherTest) {
+        FlowMeterDriver actual(&eventServer);
+        ASSERT_EQ(MinX, actual.getSearcher(MinX)->target()) << "MinX searcher selected OK";
+        ASSERT_EQ(MaxX, actual.getSearcher(MaxX)->target()) << "MaxX searcher selected OK";
+        ASSERT_EQ(MinY, actual.getSearcher(MinY)->target()) << "MinY searcher selected OK";
+        ASSERT_EQ(MaxY, actual.getSearcher(MaxY)->target()) << "MaxY searcher selected OK";
+        ASSERT_EQ(nullptr, actual.getSearcher(None)) << "None selected nullptr";
+    }
+
     TEST_F(FlowMeterTest, flowMeterFirstValueIsOutlierTest) {
         FlowMeterDriver actual(&eventServer);
         eventServer.subscribe(&actual, Topic::SensorWasReset);

@@ -123,6 +123,7 @@
     <ClCompile Include="DeviceTest.cpp" />
     <ClCompile Include="EspTest.cpp" />
     <ClCompile Include="EventServerTest.cpp" />
+    <ClCompile Include="ExtremeSearcherTest.cpp" />
     <ClCompile Include="FirmwareManagerTest.cpp" />
     <ClCompile Include="FlowMeterDriver.cpp" />
     <ClCompile Include="FlowMeterTest.cpp" />
@@ -213,7 +214,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator;Clock;Configuration;Communicator;Connector;DataQueue;DataQueuePayload;Device;EventClient;EventServer;ESP;FirmwareManager;FlowMeter;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;Meter;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator;Clock;Configuration;Communicator;Connector;DataQueue;DataQueuePayload;Device;EventClient;EventServer;ESP;ExtremeSearcher;FirmwareManager;FlowMeter;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;Meter;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
