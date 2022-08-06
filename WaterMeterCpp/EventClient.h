@@ -48,9 +48,8 @@ enum class Topic: int16_t {
     Alert,
     ProcessTime,
     TimeOverrun,
-    Flow,
     Exclude,
-    Peak,
+    Pulse,
     Time,
     IpAddress,
     MacRaw,
@@ -62,8 +61,7 @@ enum class Topic: int16_t {
     Volume,
     Pulses,
     NoDisplayFound,
-    UpdateProgress,
-    InternalError
+    UpdateProgress
 };
 
 union Coordinate {

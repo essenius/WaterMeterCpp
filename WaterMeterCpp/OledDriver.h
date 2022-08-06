@@ -97,7 +97,7 @@ private:
         0b10010100
     };
 
-    static constexpr unsigned char FLOW_LOGO[] =
+   /* static constexpr unsigned char FLOW_LOGO[] =
     {
         0b00010000,
         0b10101010,
@@ -106,7 +106,7 @@ private:
         0b10101010,
         0b01000100,
         0b00000000
-    };
+    }; */
 
     static constexpr unsigned char MQTT_LOGO[] =
     {

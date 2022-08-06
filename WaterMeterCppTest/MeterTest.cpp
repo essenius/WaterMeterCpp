@@ -48,7 +48,7 @@ namespace WaterMeterCppTest {
         for (unsigned int i = 0; i < std::size(expected); i++) {
             volumeClient.reset();
             pulseClient.reset();
-            eventServer.publish(Topic::Peak, LONG_TRUE);
+            eventServer.publish(Topic::Pulse, LONG_TRUE);
             char buffer[10];
             safeSprintf(buffer, "%d", i + 1);
 

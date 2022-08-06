@@ -90,7 +90,7 @@ namespace WaterMeterCppTest {
         constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr};
         PayloadBuilder payloadBuilder;
         WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
-        EXPECT_STREQ("x", wifi.get(Topic::Flow, "x")) << "Unexpected topic returns default";
+        EXPECT_STREQ("x", wifi.get(Topic::Pulse, "x")) << "Unexpected topic returns default";
     }
 
     TEST_F(WiFiTest, wifiNullNameTest) {

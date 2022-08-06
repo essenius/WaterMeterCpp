@@ -152,7 +152,7 @@ void FlowMeter::detectPulse(const Coordinate sample) {
 
     _currentSearcher->addMeasurement(_smooth);
     if (_currentSearcher->foundExtreme()) {
-        _eventServer->publish(Topic::Peak, _searchTarget);
+        _eventServer->publish(Topic::Pulse, _searchTarget);
         _currentSearcher = _currentSearcher->next();
         _searchTarget = _currentSearcher->target();
     }
@@ -205,7 +205,7 @@ FlowMeter::FlowMeter(EventServer* eventServer):
     _minXSearcher(MinX, {MAX_SENSOR_VALUE, 0}, &_maxYSearcher),
     _outlier(eventServer, Topic::Exclude),
     /* _flow(eventServer, Topic::Flow),*/
-    _pulse(eventServer, Topic::Peak) /*,
+    _pulse(eventServer, Topic::Pulse) /*,
     _cordifLowPass(round(_angle)) */ {}
 
 /* float FlowMeter::score(const float input, const float a, const float b) const {

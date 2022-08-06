@@ -89,7 +89,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(FlowMeterTest, flowMeterDetectPulseTest) {
         TestEventClient client(&eventServer);
-        eventServer.subscribe(&client, Topic::Peak);
+        eventServer.subscribe(&client, Topic::Pulse);
         FlowMeterDriver actual(&eventServer);
 
         // jittering at the start to simulate standstill

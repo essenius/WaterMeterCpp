@@ -83,12 +83,12 @@ namespace WaterMeterCppTest {
             expectRunningLed(Led::ON, "In first part", i);
         }
         // set a new state. Check whether it kicks in right away
-        eventServer.publish(Topic::Flow, true);
-        for (unsigned int i = 0; i < LedDriver::FLOW_INTERVAL; i++) {
+        eventServer.publish(Topic::Exclude, true);
+        for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL; i++) {
             eventServer.publish(Topic::Sample, 511);
             expectRunningLed(Led::ON, "Started new cycle high", i);
         }
-        for (unsigned int i = 0; i < LedDriver::FLOW_INTERVAL; i++) {
+        for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL; i++) {
             eventServer.publish(Topic::Sample, 510);
             expectRunningLed(Led::OFF, "Started new cycle low", i);
         }
@@ -97,7 +97,7 @@ namespace WaterMeterCppTest {
         expectRunningLed(Led::ON, "Started second cycle high", 1);
 
         // ending flow. Check whether the cycle adapts
-        eventServer.publish(Topic::Flow, false);
+        eventServer.publish(Topic::Exclude, false);
         for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
             eventServer.publish(Topic::Sample, 514);
             expectRunningLed(Led::ON, "Started new idle cycle high", i);
@@ -112,7 +112,6 @@ namespace WaterMeterCppTest {
         LedDriver ledDriver(&eventServer);
         ledDriver.begin();
         assertLedCycle(&ledDriver, Topic::Exclude, true, LedDriver::EXCLUDE_INTERVAL, "Exclude");
-        assertLedCycle(&ledDriver, Topic::Flow, true, LedDriver::FLOW_INTERVAL, "Flow");
         assertLedCycle(&ledDriver, Topic::Exclude, false, LedDriver::IDLE_INTERVAL, "Wait");
     }
 
@@ -135,8 +134,8 @@ namespace WaterMeterCppTest {
         publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
         assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::ON, Led::OFF, "Connected (blue off, aux on) ");
 
-        eventServer.publish(Topic::Peak, true);
-        assertLeds(Led::OFF, Led::OFF, Led::ON, Led::ON, Led::OFF, "Peak (blue on)");
+        eventServer.publish(Topic::Pulse, true);
+        assertLeds(Led::OFF, Led::OFF, Led::ON, Led::ON, Led::OFF, "Pulse (blue on)");
 
         eventServer.publish(Topic::ResultWritten, true);
         assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::ON, Led::OFF, "Result written (aux on, RGB off)");
@@ -147,7 +146,7 @@ namespace WaterMeterCppTest {
         publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
         assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "Disconnected (aux off, blue off)");
 
-        eventServer.publish(Topic::Peak, false);
+        eventServer.publish(Topic::Pulse, false);
         assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No peak (blue stays off)");
 
         eventServer.publish(Topic::Blocked, LONG_FALSE);

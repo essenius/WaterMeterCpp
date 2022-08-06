@@ -21,7 +21,7 @@ Meter::Meter(EventServer* eventServer) : EventClient(eventServer) {}
 
 void Meter::begin() {
     _eventServer->subscribe(this, Topic::SetVolume);
-    _eventServer->subscribe(this, Topic::Peak);
+    _eventServer->subscribe(this, Topic::Pulse);
 }
 
 const char* Meter::getVolume() {
@@ -61,7 +61,7 @@ void Meter::update(const Topic topic, const char* payload) {
 }
 
 void Meter::update(const Topic topic, const long payload) {
-    if (topic == Topic::Peak && payload == LONG_TRUE) {
+    if (topic == Topic::Pulse && payload == LONG_TRUE) {
         newPulse();
     }
     else if (topic == Topic::SetVolume) {

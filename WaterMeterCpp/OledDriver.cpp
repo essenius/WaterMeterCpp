@@ -20,7 +20,7 @@
 constexpr unsigned char OledDriver::ALERT_LOGO[];
 constexpr unsigned char OledDriver::DOWNLOAD_LOGO[];
 constexpr unsigned char OledDriver::FIRMWARE_LOGO[];
-constexpr unsigned char OledDriver::FLOW_LOGO[];
+/* constexpr unsigned char OledDriver::FLOW_LOGO[]; */
 constexpr unsigned char OledDriver::BLOCKED_LOGO[];
 constexpr unsigned char OledDriver::MQTT_LOGO[];
 constexpr unsigned char OledDriver::NO_SENSOR_LOGO[];
@@ -58,7 +58,7 @@ bool OledDriver::begin() {
     _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
-    _eventServer->subscribe(this, Topic::Flow);
+    /* _eventServer->subscribe(this, Topic::Flow); */
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::TimeOverrun);
@@ -162,14 +162,14 @@ void OledDriver::update(const Topic topic, long payload) {
     case Topic::Connection:
         updateConnectionState(static_cast<ConnectionState>(payload));
         return;
-    case Topic::Flow:
+    /* case Topic::Flow:
         if (payload) {
             showMessageAtLine("Flow on        ", 3);
         } else {
             showMessageAtLine("Flow off       ", 3);
         }
         switchFlowLogo(FLOW_LOGO, payload);
-        return;
+        return; */
     case Topic::Alert:
         switchEventLogo(ALERT_LOGO, payload);
         return;

@@ -29,9 +29,9 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::ConnectionError);
     _eventServer->subscribe(this, Topic::Exclude);
-    _eventServer->subscribe(this, Topic::Flow);
+    /*_eventServer->subscribe(this, Topic::Flow); */
     _eventServer->subscribe(this, Topic::NoSensorFound);
-    _eventServer->subscribe(this, Topic::Peak);
+    _eventServer->subscribe(this, Topic::Pulse);
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::TimeOverrun);
@@ -71,14 +71,6 @@ void LedDriver::connectionUpdate(const ConnectionState payload) {
     }
 }
 
-void LedDriver::flowOrExcludeUpdate(const bool isFlow, const bool isOn) {
-    unsigned int interval = IDLE_INTERVAL;
-    if (isOn) {
-        interval = isFlow ? FLOW_INTERVAL : EXCLUDE_INTERVAL;
-    }
-    _sampleFlasher.setInterval(interval);
-}
-
 void LedDriver::timeOverrunUpdate(const bool isOn) {
     if (isOn) {
         Led::set(Led::RED, Led::ON);
@@ -107,13 +99,13 @@ void LedDriver::update(const Topic topic, long payload) {
         return;
     // flow and exclude change the flash rate 
     case Topic::Exclude:
-    case Topic::Flow:
-        flowOrExcludeUpdate(topic == Topic::Flow, payload);
+    /*case Topic::Flow:*/
+        _sampleFlasher.setInterval(payload ? EXCLUDE_INTERVAL : IDLE_INTERVAL);
         return;
     case Topic::NoSensorFound:
         Led::set(Led::RED, Led::ON);
         break;
-    case Topic::Peak:
+    case Topic::Pulse:
         Led::set(Led::BLUE, state);
         break;
     case Topic::ResultWritten:
