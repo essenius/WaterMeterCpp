@@ -68,9 +68,8 @@ namespace WaterMeterCppTest {
         payload.buffer.samples.count = 0;
 
         payload.buffer.result.sampleCount = 81;
-        payload.buffer.result.flowCount = 27;
-        payload.buffer.result.peakCount = 3;
-        payload.buffer.result.smoothDistance = 23.2f;
+        payload.buffer.result.pulseCount = 12;
+        payload.buffer.result.searchTarget = 2;
         dataQueue.send(&payload);
 
         // send an error message
@@ -94,9 +93,8 @@ namespace WaterMeterCppTest {
         EXPECT_NE(nullptr, payloadReceive2) << "PayloadReceive not null 2";
         EXPECT_EQ(Topic::Result, payloadReceive2->topic) << "Topic 2 is Result";
         EXPECT_EQ(81, payloadReceive2->buffer.result.sampleCount) << "SampleCount=81";
-        EXPECT_EQ(27, payloadReceive2->buffer.result.flowCount) << "FlowCount=27";
-        EXPECT_EQ(3, payloadReceive2->buffer.result.peakCount) << "PeakCount=3";
-        EXPECT_EQ(23.2f, payloadReceive2->buffer.result.smoothDistance) << "smoothDistance=23.2";
+        EXPECT_EQ(12, payloadReceive2->buffer.result.pulseCount) << "PeakCount=12";
+        EXPECT_EQ(2, payloadReceive2->buffer.result.searchTarget) << "searchTarget=2";
 
         // get the error message
         auto payloadReceive3 = dataQueue.receive();

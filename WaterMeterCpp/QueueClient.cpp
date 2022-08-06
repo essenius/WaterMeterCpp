@@ -44,7 +44,8 @@ bool QueueClient::receive() {
     if (_receiveQueue == nullptr || uxQueueMessagesWaiting(_receiveQueue) == 0) return false;
     ShortMessage message{};
     if (xQueueReceive(_receiveQueue, &message, 0) == pdFALSE) return false;
-    // the leftmost bit was set if the payload is a string
+    // the leftmost bit was set if the payload is a string. Then the payload is the start of the string.
+    // A bit crude as it expects that addresses are 32 bits which is true on ESP32 but not on Win64.
     if (message.topic < 0) {
         _eventServer->publish(
             this,

@@ -14,7 +14,7 @@
 
 // For testing we make two protected methods publicly available. Otherwise it should behave the same as FirmwareManager.
 
-class FirmwareManagerDriver : public FirmwareManager {
+class FirmwareManagerDriver final : public FirmwareManager {
 public:
 	using FirmwareManager::FirmwareManager;
 	using FirmwareManager::loadUpdate;

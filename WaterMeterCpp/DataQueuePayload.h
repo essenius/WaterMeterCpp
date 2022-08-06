@@ -30,20 +30,16 @@ struct ResultData {
     Coordinate lastSample;
     uint32_t sampleCount;
     uint32_t resetCount;
-    uint32_t peakCount;
-    uint32_t flowCount;
+    uint32_t pulseCount;
     uint32_t maxStreak;
     uint32_t outlierCount;
-    uint32_t excludeCount;
     uint32_t overrunCount;
     uint32_t totalDuration;
     uint32_t averageDuration;
     uint32_t maxDuration;
     FloatCoordinate smooth;
-    FloatCoordinate highPass;
-    float angle;
-    float distance;
-    float smoothDistance;
+    uint32_t searchTarget;
+    FloatCoordinate extreme;
 };
 
 union Content {

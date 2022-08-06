@@ -42,7 +42,9 @@
 #include "../WaterMeterCpp/MagnetoSensorNull.h"
 // ReSharper restore CppUnusedIncludeDirective
 
-// crude mechanism to test the main part -- copy/paste
+// crude mechanism to test the main part -- copy/paste. We can't do much better than this because we need the
+// objects defined globally so we don't get into heap issues.
+
 namespace WaterMeterCppTest {
     
     class MainTest : public testing::Test {
@@ -62,7 +64,7 @@ namespace WaterMeterCppTest {
             disableDelay(false);
             // make the firmware check fail
             HTTPClient::ReturnValue = 400;
-            // Other tests might have run before, so reset stacks and queues
+            // Other tests might have run before, so begin stacks and queues
             ESP.restart();
             Wire.setFlatline(true);
             Wire.setEndTransmissionTogglePeriod(10);
@@ -249,7 +251,7 @@ namespace WaterMeterCppTest {
             payload1.topic = Topic::Result;
             payload1.timestamp = 1000000;
             payload1.buffer.result.sampleCount = 327;
-            payload1.buffer.result.smoothDistance = 23.02f;
+            payload1.buffer.result.extreme = { 12,34 };
             sensorDataQueue.send(&payload1);
             EXPECT_EQ(ConnectionState::MqttReady, connector.connect()) << "Reading queue";
 
@@ -264,7 +266,7 @@ namespace WaterMeterCppTest {
 [] Free Memory DataQueue #1: 12544
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://localhost/001122334455.version
-[] Result: {"timestamp":1970-01-01T00:00:01.000000,"last.x":0,"last.y":0,"summaryCount":{"samples":327,"peaks":0,"flows":0,"maxStreak":0},"exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"lp.x":0,"lp.y":0,"hp.x":0,"hp.y":0,"angle":0,"distance":0,"smoothDistance":23.02}}
+[] Result: {"timestamp":1970-01-01T00:00:01.000000,"last.x":0,"last.y":0,"summaryCount":{"samples":327,"pulses":0,"maxStreak":0},"exceptionCount":{"outliers":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"lp.x":0,"lp.y":0,"target":0,"xt.x":12,"xt.y":34}}
 [] Free Stack #0: 1564
 )";
             EXPECT_STREQ(expected, getPrintOutput()) << "Formatted result came through";
@@ -297,7 +299,7 @@ namespace WaterMeterCppTest {
 [] Free Spaces Queue #0: 20
 [] Free Heap: 23000
 )";
-            EXPECT_STREQ(expected2, getPrintOutput()) << "Communicator picked up alert and reset";
+            EXPECT_STREQ(expected2, getPrintOutput()) << "Communicator picked up alert and begin";
 
             clearPrintOutput();
             connectorEventServer.publish(Topic::SetVolume, "98765.4321098");

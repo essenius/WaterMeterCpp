@@ -15,6 +15,8 @@
 // ReSharper disable CppMemberFunctionMayBeStatic
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppParameterNeverUsed
+// ReSharper disable CppParameterMayBeConst
+// ReSharper disable CppClangTidyPerformanceUnnecessaryValueParam
 
 #ifndef HEADER_HTTPUPDATE
 #define HEADER_HTTPUPDATE

@@ -30,17 +30,16 @@ namespace WaterMeterCppTest {
         payload.topic = Topic::Result;
         payload.timestamp = 0;
         payload.buffer.result.sampleCount = 81;
-        payload.buffer.result.peakCount = 3;
-        payload.buffer.result.flowCount = 27;
-        payload.buffer.result.smoothDistance = 23.2f;
+        payload.buffer.result.pulseCount = 3;
+        payload.buffer.result.extreme = { 23, 2 };
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once result";
         EXPECT_STREQ(
             R"({"timestamp":1970-01-01T00:00:00.000000,"last.x":0,"last.y":0,)"
-            R"("summaryCount":{"samples":81,"peaks":3,"flows":27,"maxStreak":0},)"
-            R"("exceptionCount":{"outliers":0,"excludes":0,"overruns":0,"resets":0},)"
+            R"("summaryCount":{"samples":81,"pulses":3,"maxStreak":0},)"
+            R"("exceptionCount":{"outliers":0,"overruns":0,"resets":0},)"
             R"("duration":{"total":0,"average":0,"max":0},)"
-            R"("analysis":{"lp.x":0,"lp.y":0,"hp.x":0,"hp.y":0,"angle":0,"distance":0,"smoothDistance":23.2}})",
+            R"("analysis":{"lp.x":0,"lp.y":0,"target":0,"xt.x":23,"xt.y":2}})",
             testEventClient.getPayload()) << "Formatted result payload OK";
 
         testEventClient.reset();

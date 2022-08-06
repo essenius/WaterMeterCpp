@@ -149,8 +149,8 @@ namespace WaterMeterCppTest {
         Coordinate sample1{};
         for (int i = 0; i < 25; i++) {
             EXPECT_FALSE(aggregator.send()) << "no send before 25 samples";
-            sample1.x = -135 + (i % 5);
-            sample1.y = -190 - (i % 5);
+            sample1.x = static_cast <int16_t>(-135 + i % 5);
+            sample1.y = static_cast <int16_t>(-190 - i % 5);
             aggregator.addSample(sample1);
         }
         constexpr Coordinate LASTSAMPLE{ {-131, -194} };

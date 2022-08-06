@@ -52,7 +52,7 @@ int MagnetoSensorHmc::getNoiseRange() const {
     case HmcGain1_9: return 5;
     case HmcGain2_5: return 4;
     case HmcGain4_0: return 4;
-    case HmcGain4_7: return 3;
+    case HmcGain4_7: return 4; // was 3
     case HmcGain5_6:
     default: return 2;
     }

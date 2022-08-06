@@ -45,18 +45,15 @@ namespace WaterMeterCppTest {
         }
 
     protected:
-        void assertSummary(const int lastSample, const int sampleCount, const int peakCount, const int flowCount,
-                           const int maxStreak, const ResultData* result) const {
+        void assertSummary(const int lastSample, const int sampleCount, const int peakCount, const int maxStreak, const ResultData* result) const {
             EXPECT_EQ(lastSample, static_cast<int>(result->lastSample.x)) << "Last sample OK";
             EXPECT_EQ(sampleCount, result->sampleCount) << "sampleCount OK";
-            EXPECT_EQ(peakCount, result->peakCount) << "peakCount OK";
-            EXPECT_EQ(flowCount, result->flowCount) << "flowCount OK";
+            EXPECT_EQ(peakCount, result->pulseCount) << "pulseCount OK";
             EXPECT_EQ(maxStreak, result->maxStreak) << "maxStreak OK";
         }
 
-        void assertExceptions(const int outliers, const int excludes, const int overruns, const ResultData* result) const {
+        void assertExceptions(const int outliers, const int overruns, const ResultData* result) const {
             EXPECT_EQ(outliers, result->outlierCount) << "outlierCount OK";
-            EXPECT_EQ(excludes, result->excludeCount) << "excludeCount OK";
             EXPECT_EQ(overruns, result->overrunCount) << "overrunCount OK";
         }
 
@@ -108,8 +105,8 @@ namespace WaterMeterCppTest {
         const auto result = &payload.buffer.result;
 
         // 10 samples (multiple of 5)
-        assertSummary(500, 10, 0, 0, 10, result);
-        assertExceptions(0, 0, 0, result);
+        assertSummary(500, 10, 0, 10, result);
+        assertExceptions(0, 0, result);
         assertDuration(24980, 2498, 2520, result);
         // TODO: analysis of filtered values
     }
@@ -121,17 +118,12 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::IdleRate, 10);
         eventServer.publish(Topic::NonIdleRate, 5);
         for (int i = 0; i < 10; i++) {
-            Coordinate sample{};
             const auto measurement = static_cast<int16_t>(2400 + (i % 2) * 50);
+            const Coordinate sample = {{measurement, measurement}};
             const float floatMeasurement = measurement;
             const FloatCoordinate smooth{floatMeasurement, floatMeasurement};
-            const float highPassX = static_cast<float>(i % 2) * 50;
-            const float highPassY = static_cast<float>(i % 3) * 50;
 
-            const FloatCoordinate highPass{highPassX, highPassY};
-            FlowMeterDriver fmd(&eventServer, smooth, highPass, 0, i > 7, i == 5);
-            sample.x = measurement;
-            sample.y = measurement;
+            FlowMeterDriver fmd(&eventServer, smooth, i == 5);
 
             aggregator.addMeasurement(sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 8000 + i);
@@ -139,9 +131,9 @@ namespace WaterMeterCppTest {
         }
         const auto result = &payload.buffer.result;
 
-        // After 10 points, we get a summary with 2 flows.
-        assertSummary(2450, 10, 1, 2, 0, result);
-        assertExceptions(0, 0, 0, result);
+        // After 10 points, we get a summary with 1 pulse.
+        assertSummary(2450, 10, 1, 0, result);
+        assertExceptions(0, 0, result);
         assertDuration(80045, 8005, 8009, result);
         // TODO: analysis of filtered values
     }
@@ -160,8 +152,7 @@ namespace WaterMeterCppTest {
             sample.y = sample.x;
             FloatCoordinate lowPass{};
             lowPass.set(sample);
-            constexpr FloatCoordinate HIGH_PASS{3.0, 3.0};
-            FlowMeterDriver fmd(&eventServer, lowPass, HIGH_PASS, 0, false, false, i > 7, i > 7);
+            FlowMeterDriver fmd(&eventServer, lowPass, false, i > 7);
             aggregator.addMeasurement(sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 7993 + i);
             EXPECT_EQ(i == 9 || i == 14, aggregator.shouldSend()) << "Must send - " << i;
@@ -172,8 +163,8 @@ namespace WaterMeterCppTest {
             const auto result = &payload.buffer.result;
             if (i == 9) {
                 // At 10 we get a summary with 2 outliers and 2 excludes
-                assertSummary(2600, 10, 0, 0, 8, result);
-                assertExceptions(2, 2, 0, result);
+                assertSummary(2600, 10, 0, 8, result);
+                assertExceptions(2, 0, result);
                 assertDuration(79975, 7998, 8002, result);
                 // TODO: analysis of filtered values
             }
@@ -182,8 +173,8 @@ namespace WaterMeterCppTest {
             }
             else if (i == 14) {
                 // At 15 we get the next batch with 5 outliers and excludes
-                assertSummary(2600, 5, 0, 0, 5, result);
-                assertExceptions(5, 5, 0, result);
+                assertSummary(2600, 5, 0, 5, result);
+                assertExceptions(5, 0, result);
                 assertDuration(40025, 8005, 8007, result);
                 // TODO: filtered value analysis
             }
@@ -212,8 +203,7 @@ namespace WaterMeterCppTest {
             const Coordinate sampleValue = {{static_cast<int16_t>(2400 + i), static_cast<int16_t>(1200 + i)}};
             FloatCoordinate lowPass{};
             lowPass.set(sampleValue);
-            constexpr FloatCoordinate HIGH_PASS{5, 5};
-            FlowMeterDriver fmd(&eventServer, lowPass, HIGH_PASS);
+            FlowMeterDriver fmd(&eventServer, lowPass);
             aggregator.addMeasurement(sampleValue, &fmd);
             eventServer.publish(Topic::ProcessTime, 1000 + i * 2);
             if (i == 0) {
@@ -223,8 +213,8 @@ namespace WaterMeterCppTest {
             if (i == 9) {
                 const auto result = &payload.buffer.result;
 
-                assertSummary(2409, 10, 0, 0, 0, result);
-                assertExceptions(0, 0, 0, result);
+                assertSummary(2409, 10, 0, 0, result);
+                assertExceptions(0, 0, result);
                 assertDuration(10090, 1009, 1018, result);
                 // TODO: filtered value analysis 
                 aggregator.flush();
@@ -245,8 +235,8 @@ namespace WaterMeterCppTest {
         const auto result = &payload.buffer.result;
 
         // 1 point written, flush rate 1, measures contains sensor value, overrun triggered.
-        assertSummary(2398, 1, 0, 0, 0, result);
-        assertExceptions(0, 0, 1, result);
+        assertSummary(2398, 1, 0, 0, result);
+        assertExceptions(0, 1, result);
         assertDuration(10125, 10125, 10125, result);
         // TODO: filtered value analysis
     }

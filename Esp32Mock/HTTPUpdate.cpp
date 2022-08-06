@@ -13,6 +13,8 @@
 
 // Disabling warnings caused by mimicking existing interface
 // ReSharper disable CppInconsistentNaming
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterNeverUsed
 
 #include "HTTPUpdate.h"
 

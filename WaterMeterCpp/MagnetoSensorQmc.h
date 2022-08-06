@@ -12,8 +12,8 @@
 // Driver for the QMC5883L sensor.
 // We don't care a lot about calibration as we're looking for peaks in the signals.
 //
-// Since the sensor sometimes stops responding, we need a way to hard reset it.
-// For that, we simply give it its power from a GPIO port, which we can bring down to reset it.
+// Since the sensor sometimes stops responding, we need a way to hard begin it.
+// For that, we simply give it its power from a GPIO port, which we can bring down to begin it.
 
 #ifndef HEADER_MAGNETOSENSORQMC
 #define HEADER_MAGNETOSENSORQMC
@@ -85,7 +85,7 @@ public:
     // read a sample from the sensor
     bool read(SensorData* sample) const override;
 
-    // soft reset the sensor
+    // soft begin the sensor
     void softReset() const override;
     int getNoiseRange() const override;
 

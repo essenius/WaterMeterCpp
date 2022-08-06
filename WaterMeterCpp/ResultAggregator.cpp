@@ -53,25 +53,18 @@ void ResultAggregator::addMeasurement(const Coordinate value, const FlowMeter* r
     if (result->isOutlier()) {
         _result->outlierCount++;
     }
-    if (result->isPeak()) {
-        _result->peakCount++;
+    if (result->isPulse()) {
+        _result->pulseCount++;
     }
-    if (result->hasFlow()) {
-        _result->flowCount++;
-    }
+
     if (result->wasReset()) {
         _result->resetCount++;
     }
 
-    else if (result->isExcluded()) {
-        _result->excludeCount++;
-    }
     // we only need these at the end but we don't know when that is
     _result->smooth = result->getSmoothSample();
-    _result->highPass = result->getHighPassSample();
-    _result->distance = result->getDistance();
-    _result->smoothDistance = result->getSmoothDistance();
-    _result->angle = result->getAngle();
+    _result->searchTarget = result->searchTarget();
+    _result->extreme = result->currentExtreme();
 }
 
 void ResultAggregator::begin() {
@@ -114,7 +107,7 @@ void ResultAggregator::setNonIdleFlushRate(const long rate) {
 
 bool ResultAggregator::shouldSend(const bool endOfFile) {
     // We set the flush rate regardless of whether we still need to write something. This can end an idle batch early.
-    const bool isInteresting = _result->flowCount > 0 || _result->excludeCount > 0;
+    const bool isInteresting = _result->pulseCount > 0 || _result->outlierCount > 0;
     if (isInteresting) {
         _flushRate = _nonIdleFlushRate;
     }

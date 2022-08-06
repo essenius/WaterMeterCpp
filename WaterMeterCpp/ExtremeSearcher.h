@@ -24,9 +24,9 @@ enum SearchTarget : uint8_t {
 
 class ExtremeSearcher {
 public:
-    ExtremeSearcher(const SearchTarget target, const FloatCoordinate initValue, const float noiseThreshold, ExtremeSearcher* next) :
-    _target(target), _initValue(initValue), _extreme(initValue), _noiseThreshold(noiseThreshold), _nextSearcher(next) {}
-    void reset();
+    ExtremeSearcher(const SearchTarget target, const FloatCoordinate initValue, ExtremeSearcher* next) :
+    _target(target), _initValue(initValue), _extreme(initValue), _nextSearcher(next) {}
+    void begin(float maxNoiseDistance);
     bool isExtreme(FloatCoordinate sample) const;
     void addMeasurement(FloatCoordinate sample);
     bool foundExtreme() const;
@@ -35,13 +35,21 @@ public:
     SearchTarget target() const { return _target; }
 
 private:
-	bool _foundCandidate = false;
-	bool _wasFound = false;
+    // what extreme are we looking for?
     SearchTarget _target;
+    // Did we find a potential extreme?
+    bool _foundCandidate = false;
+    // could we confirm we found it?
+    bool _wasFound = false;
+    // Values that must be immediately overridden with the first comparison,
+    // i.e. the lowest value the sensor can return for a max, and the highest for a min.
     FloatCoordinate _initValue;
+    // the current extreme
     FloatCoordinate _extreme;
-    float _noiseThreshold;
+    // which extreme will we search for after this one?
     ExtremeSearcher* _nextSearcher;
+    // The maximum amount of noise we can expect
+    float _maxNoiseDistance = 0;
 };
 
 #endif

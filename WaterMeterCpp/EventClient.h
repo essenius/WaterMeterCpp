@@ -82,6 +82,12 @@ union Coordinate {
         x = xIn;
         y = yIn;
     }
+
+    float distanceFrom(const Coordinate other) const {
+        const auto xDifference = static_cast<float>(x - other.x);
+        const auto yDifference = static_cast<float>(y - other.y);
+        return sqrtf(xDifference * xDifference + yDifference * yDifference);
+    }
 };
 
 struct FloatCoordinate {
@@ -107,10 +113,7 @@ struct FloatCoordinate {
     }
 
     FloatCoordinate differenceWith(const FloatCoordinate other) const {
-        FloatCoordinate result {};
-        result.x = x - other.x;
-        result.y = y - other.y;
-        return result;
+        return { x - other.x, y - other.y };
     }
 };
 

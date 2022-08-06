@@ -27,18 +27,14 @@ namespace WaterMeterCppTest {
         using FlowMeter::_flowStarted;
         using FlowMeter::_searchTarget;
         using FlowMeter::_currentSearcher;
+        using FlowMeter::_averageAbsoluteDistance;
 
         explicit FlowMeterDriver(EventServer* eventServer) : FlowMeter(eventServer) {}
 
-        FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = {0, 0}, float averageAbsoluteDistance = 0, 
-                        bool flow = false, bool peak = false, bool outlier = false, bool exclude = false);
+        /*FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = {0, 0}, float averageAbsoluteDistance = 0,
+                        bool flow = false, bool peak = false, bool outlier = false); */
 
-        float getAverageAbsoluteDistance() const {
-            return _averageAbsoluteDistance;
-        }
 
-        float getZeroThreshold() const {
-            return _zeroThreshold;
-        }
+        FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, bool pulse = false, bool outlier = false);
     };
 }

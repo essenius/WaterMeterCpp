@@ -29,7 +29,7 @@
 // above the noise level, we have flow. Noise level for an HMC5883L on 4.7 Gauss is 4, so if our signal is
 // beyond that for both X and Y values, we know this is not noise. In other words, sqrt(4^2 + 4^2) = 5.65685
 
-constexpr float MAX_NOISE_DISTANCE = 5.65685f;
+//constexpr float MAX_NOISE_DISTANCE = 5.65685f;
 
 
 // The signs of the differences tells us where we are on the ellipse, and what
@@ -39,16 +39,21 @@ constexpr float MAX_NOISE_DISTANCE = 5.65685f;
 // From that moment on we come in a state machine where we are consecutively looking for the max Y value,
 // the max X value, the min Y value, and the min X value. 
 
-
+// light smoothening, cut-off frequency (Fc) 16 Hz. Alpha for low pass = dt / (1 / (2 * pi * fc) + dt), with dt = 0.01s
 constexpr float LOW_PASS_ALPHA_XY = 0.5f;
+
+// this should be a lot slower (cut-off around 0.84 Hz). We want it to incorporate drifts/shifts, but be reasonably stable
+constexpr float LOW_PASS_ALPHA_ABSOLUTE_DISTANCE = 0.05f;
 
 // The largest range in distance difference observed in the test data;
 constexpr float DISTANCE_RANGE_MILLIGAUSS = 120.0f;
 constexpr float OUTLIER_DISTANCE_DIFFERENCE = 2.0f * DISTANCE_RANGE_MILLIGAUSS;
 
-// if we have more than this number of outliers in a row, we reset the sensor
-constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 10;
+// if we have more than this number of outliers in a row, we begin the sensor
+constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 20;
 
+constexpr int MIN_SENSOR_VALUE = -4096;
+constexpr int MAX_SENSOR_VALUE = 4096;
 
 SearchTarget FlowMeter::getTarget(const FloatCoordinate direction) {
     if (direction.x > 0) {
@@ -59,11 +64,11 @@ SearchTarget FlowMeter::getTarget(const FloatCoordinate direction) {
     return MinY;
 }
 
-FloatCoordinate FlowMeter::movingAverage() {
+FloatCoordinate FlowMeter::movingAverage() const {
     FloatCoordinate result{};
-    for (int i = 0; i < MOVING_AVERAGE_BUFFER_SIZE; i++) {
-        result.x += _movingAverage[i].x;
-        result.y += _movingAverage[i].y;
+    for (const auto i : _movingAverage) {
+        result.x += static_cast<float>(i.x);
+        result.y += static_cast<float>(i.y);
     }
     result.x /= MOVING_AVERAGE_BUFFER_SIZE;
     result.y /= MOVING_AVERAGE_BUFFER_SIZE;
@@ -71,10 +76,10 @@ FloatCoordinate FlowMeter::movingAverage() {
 }
 
 FloatCoordinate FlowMeter::lowPassFilter(const FloatCoordinate measure, const FloatCoordinate filterValue, const float alpha) const {
-    FloatCoordinate result{};
-    result.x = lowPassFilter(measure.x, filterValue.x, alpha);
-    result.y = lowPassFilter(measure.y, filterValue.y, alpha);
-    return result;
+    return {
+        lowPassFilter(measure.x, filterValue.x, alpha),
+        lowPassFilter(measure.y, filterValue.y, alpha)
+    };
 }
 
 ExtremeSearcher* FlowMeter::getSearcher(const SearchTarget target) {
@@ -88,7 +93,7 @@ ExtremeSearcher* FlowMeter::getSearcher(const SearchTarget target) {
     }
 }
 
-FloatCoordinate FlowMeter::updateAverage(FloatCoordinate coordinate) {
+FloatCoordinate FlowMeter::updateAverage(const FloatCoordinate coordinate) {
     _averageStartValue.x = _averageStartValue.x * _averageCount + coordinate.x;
     _averageStartValue.y = _averageStartValue.y * _averageCount + coordinate.y;
     _averageCount++;
@@ -97,22 +102,25 @@ FloatCoordinate FlowMeter::updateAverage(FloatCoordinate coordinate) {
     return _averageStartValue;
 }
 
-void FlowMeter::detectPulse(const FloatCoordinate sample) {
+void FlowMeter::updateMovingAverage(const Coordinate sample) {
+    _movingAverage[_movingAverageIndex] = sample;
+    ++_movingAverageIndex %= 4;
+}
+
+void FlowMeter::detectPulse(const Coordinate sample) {
     // ignore outliers
     if (_outlier) {
         return;
     }
-    _movingAverage[_movingAverageIndex] = sample;
-    _movingAverageIndex++;
-    _movingAverageIndex %= 4;
+    updateMovingAverage(sample);
     if (_firstRound) {
         // if index is 0, we made the first round and the buffer is full. Otherwise we wait.
         if (_movingAverageIndex != 0) return;
         // Initialize the filter for the next run
         _smooth = movingAverage();
-        _firstSample = _smooth;
-        _averageStartValue = updateAverage(_smooth);
+        _averageStartValue = _smooth;
         _firstRound = false;
+        updateAverage(_smooth);
         return;
     }
     _smooth = lowPassFilter(movingAverage(), _smooth, LOW_PASS_ALPHA_XY);
@@ -121,9 +129,9 @@ void FlowMeter::detectPulse(const FloatCoordinate sample) {
         // While we are not moving, the noise has considerable impact. Take the average value of the measurements to
         // get a reasonable starting value for when we get flow - at that point, we take the difference between
         // the average and the current sample values.
-        const auto distanceFromStart = _smooth.distanceFrom(_firstSample);
-        if (distanceFromStart <= MAX_NOISE_DISTANCE) {
-            _averageStartValue = updateAverage(_smooth);
+        const auto distanceFromStart =sample.distanceFrom(_firstSample);
+        if (distanceFromStart <= _maxNoiseDistance) {
+            updateAverage(_smooth);
             _flowThresholdPassedCount = 0;
             return;
         }
@@ -137,22 +145,21 @@ void FlowMeter::detectPulse(const FloatCoordinate sample) {
         const auto differenceWithStart = _smooth.differenceWith(_averageStartValue);
         _searchTarget = getTarget(differenceWithStart);
         _currentSearcher = getSearcher(_searchTarget);
+        _currentSearcher->begin(_maxNoiseDistance);
     }
 
-    // when we are here, the current searcher should not be null
-    if (_currentSearcher == nullptr) {
-        _eventServer->publish(Topic::InternalError, 1);
-        // TODO: handle comms
-        return;
-    }
+    // when we are here, the current searcher cannot be nullptr, so this is safe
+
     _currentSearcher->addMeasurement(_smooth);
     if (_currentSearcher->foundExtreme()) {
         _eventServer->publish(Topic::Peak, _searchTarget);
         _currentSearcher = _currentSearcher->next();
+        _searchTarget = _currentSearcher->target();
     }
 }
 
-// new
+
+/*
 // cut-off frequency 4 Hz. Alpha for low pass = dt / (1 / (2 * pi * fc) + dt), dt = 0.01s
 constexpr float LOW_PASS_ALPHA_COORDINATE = 0.2f;
 
@@ -164,13 +171,11 @@ constexpr float LOW_PASS_ALPHA_DISTANCE = 0.1f;
 
 constexpr float LOW_PASS_ALPHA_ANGLE = 0.1f;
 
-constexpr float LOW_PASS_ALPHA_ABSOLUTE_DISTANCE = 0.05f;
-
+*/
 
 // Calibrated with test data using HMC5883, gain 4.7
-// TODO: parameterize for sensor ranges
 
-constexpr float SCORE_THRESHOLD = 1.25f;
+/* constexpr float SCORE_THRESHOLD = 1.25f;
 
 constexpr float HIGH_X_LENGTH = 0.24f;
 constexpr float LOW_X_LENGTH = 0.1f;
@@ -182,6 +187,7 @@ constexpr float LOW_X_CORDIF = 0.09f;
 constexpr float A_CORDIF = 1 / (HIGH_X_CORDIF - LOW_X_CORDIF);
 constexpr float B_CORDIF = -A_CORDIF * LOW_X_CORDIF;
 
+
 enum Zones : uint8_t {
     Top = 0,
     Positive,
@@ -189,19 +195,20 @@ enum Zones : uint8_t {
     Bottom,
     ZoneCount
 };
+*/
 
 FlowMeter::FlowMeter(EventServer* eventServer):
     EventClient(eventServer),
-    _maxYSearcher(MaxY, {0, -4096}, MAX_NOISE_DISTANCE, &_maxXSearcher),
-    _maxXSearcher(MaxX, {-4096, 0}, MAX_NOISE_DISTANCE, &_minYSearcher),
-    _minYSearcher(MinY, {0, 4096}, MAX_NOISE_DISTANCE, &_minXSearcher),
-    _minXSearcher(MinX, {4096, 0}, MAX_NOISE_DISTANCE, &_maxYSearcher),
-    _exclude(eventServer, Topic::Exclude),
-    _flow(eventServer, Topic::Flow),
-    _peak(eventServer, Topic::Peak),
-    _cordifLowPass(round(_angle)) {}
+    _maxYSearcher(MaxY, {0, MIN_SENSOR_VALUE}, &_maxXSearcher),
+    _maxXSearcher(MaxX, {MIN_SENSOR_VALUE, 0}, &_minYSearcher),
+    _minYSearcher(MinY, {0, MAX_SENSOR_VALUE}, &_minXSearcher),
+    _minXSearcher(MinX, {MAX_SENSOR_VALUE, 0}, &_maxYSearcher),
+    _outlier(eventServer, Topic::Exclude),
+    /* _flow(eventServer, Topic::Flow),*/
+    _pulse(eventServer, Topic::Peak) /*,
+    _cordifLowPass(round(_angle)) */ {}
 
-float FlowMeter::score(const float input, const float a, const float b) const {
+/* float FlowMeter::score(const float input, const float a, const float b) const {
     return std::min(std::max(a * input + b, 0.0f), 1.0f);
 }
 
@@ -214,28 +221,26 @@ float FlowMeter::correctedDifference(const float previousAngle, const float curr
     if (difference > PI_F) return difference - 2 * PI_F;
     if (difference < -PI_F) return difference + 2 * PI_F;
     return difference;
-}
+} */
 
 void FlowMeter::addSample(const Coordinate sample) {
-
-    const FloatCoordinate floatSample{static_cast<float>(sample.x), static_cast<float>(sample.y)};
 
     // if we don't have a previous measurement yet, use defaults.
     if (_firstCall) {
         // since the filters need initial values, set those. Also initialize the anomaly indicators.
         resetAnomalies();
-        resetFilters(floatSample);
+        resetFilters(sample);
         _firstCall = false;
         return;
     }
-    detectOutlier(floatSample);
+    detectOutlier(sample);
     markAnomalies();
-    detectPeaks(floatSample);
+    detectPulse(sample);
 }
 
-// TODO: replace _zeroThreshold by a/b parameters per range
 void FlowMeter::begin(const int noiseRange, const float gain) {
 
+    /*
     if (noiseRange > 30) {
         // We have a QMC sensor, which is more sensitive and has higher noise range.
         // We only use the 8 Gauss range, and zero threshold was empirically determined via null measurements
@@ -250,26 +255,31 @@ void FlowMeter::begin(const int noiseRange, const float gain) {
         constexpr float THRESHOLD_MARGIN = 0.5f;
         _zeroThreshold = (NOISE_FIT_A * static_cast<float>(noiseRange) + NOISE_FIT_B) * (1 + THRESHOLD_MARGIN);
     }
+    */
+
     // Calculate LSB corresponding to the largest measured magnetic field with margin.
     // If we have an amplitude larger than that, it is an outlier
     _outlierThreshold = OUTLIER_DISTANCE_DIFFERENCE * gain / 1000.0f;
+    // We assume X and Y ranges have the same noise levels. The maximum difference in distance between samples
+    // where we can still be in the noise range is sqrt(maxXdistance^2 + maxYdistance^2)
+    _maxNoiseDistance = sqrtf(static_cast<float>(2 * noiseRange * noiseRange));
     _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::SensorWasReset);
 }
 
-void FlowMeter::detectOutlier(const FloatCoordinate measurement) {
-    const float distance = measurement.distanceFromOrigin();
+void FlowMeter::detectOutlier(const Coordinate measurement) {
+    const float distance = measurement.distanceFrom({{ 0,0 }});
     _outlier = fabsf(distance - _averageAbsoluteDistance) > _outlierThreshold;
     if (_outlier) return;
     _averageAbsoluteDistance = lowPassFilter(distance, _averageAbsoluteDistance, LOW_PASS_ALPHA_ABSOLUTE_DISTANCE);
-
 }
 
+/*
 int FlowMeter::modulo(const int number, const int divisor) {
     auto result = number % divisor;
     if (result < 0) result += divisor;
     return result;
-}
+} 
 
 // ReSharper disable CppRedundantParentheses - done for clarity
 
@@ -358,7 +368,7 @@ void FlowMeter::detectPeaks(const FloatCoordinate sample) {
         // We use the candidate mechanism to deal with noise in the signal which might jitter a bit between quadrants.
         // we only count a peak if we found a candidate, and we were looking for one
 
-        _peak = peakCandidate && _findNext;
+        _pulse = peakCandidate && _findNext;
 
         // Stop looking if we just found a candidate, and start looking again when we left the NEGATIVE quadrant in the right direction
         // Including TOP just in case the signal is too fast and skips BOTTOM (should not happen too often, if at all)
@@ -367,24 +377,23 @@ void FlowMeter::detectPeaks(const FloatCoordinate sample) {
         _state = zone;
     }
     else {
-        _peak = false;
+        _pulse = false;
     }
     // prepare values for the next call
     _previousSmooth = _smooth;
     _angle = newAngle;
-}
+} 
+
 
 float FlowMeter::highPassFilter(const float measure, const float previous, const float filterValue, const float alpha) {
     return alpha * (filterValue + measure - previous);
-}
+} */
 
 float FlowMeter::lowPassFilter(const float measure, const float filterValue, const float alpha) {
     return alpha * measure + (1 - alpha) * filterValue;
 }
 
 void FlowMeter::markAnomalies() {
-    // Publish change if needed
-    _exclude = _outlier;
     if (_outlier) {
         _consecutiveOutliers++;
         if (_consecutiveOutliers == MAX_CONSECUTIVE_OUTLIERS) {
@@ -397,35 +406,35 @@ void FlowMeter::markAnomalies() {
 
 void FlowMeter::resetAnomalies() {
     _outlier = false;
-    _flow = false;
-    _exclude = false;
 }
 
-void FlowMeter::resetFilters(const FloatCoordinate initialSample) {
+void FlowMeter::resetFilters(const Coordinate initialSample) {
     _flowStarted = false;
     _firstSample = initialSample;
     _firstRound = true;
+    _movingAverageIndex = 0;
+    updateMovingAverage(initialSample);
     _flowThresholdPassedCount = 0;
-    _averageStartValue = initialSample;
-    _averageCount = 1;
+    _averageStartValue = {0, 0};
+    _averageCount = 0;
     _searchTarget = None;
 
-    _smooth = initialSample;
-    _previousSmooth = initialSample;
-    _averageAbsoluteDistance = _smooth.distanceFromOrigin();
-    _smoothRelativeDistance = 0.0f;
+    _smooth = {0, 0};
+    /* _previousSmooth = {0,0}; */
+    _averageAbsoluteDistance = initialSample.distanceFrom({{0, 0}});
+    /* _smoothRelativeDistance = 0.0f; 
     _angle = -PI_F;
     // above the threshold to not start with flow too quickly, but not too high to react quick enough if we start with flow
     _cordifLowPass = 0.3f;
     // should not be both 0 as then atan2 is undefined.
     // x and y same to get the angle to round to 1 so we don't start in a flow
-    _highpass = {HIGH_PASS_START_VALUE, HIGH_PASS_START_VALUE};
-    _findNext = true;
+    _highpass = {HIGH_PASS_START_VALUE, HIGH_PASS_START_VALUE}; 
+    _findNext = true; */
 }
 
 void FlowMeter::update(const Topic topic, const long payload) {
     if (topic == Topic::SensorWasReset) {
-        // If we needed to reset the sensor, also reset the measurement process when the next sample comes in
+        // If we needed to begin the sensor, also begin the measurement process when the next sample comes in
         _firstCall = true;
         _consecutiveOutliers = 0;
     }
@@ -435,4 +444,9 @@ void FlowMeter::update(const Topic topic, const Coordinate payload) {
     if (topic == Topic::Sample) {
         addSample(payload);
     }
+}
+
+FloatCoordinate FlowMeter::currentExtreme() const {
+    if (_searchTarget == None) return FloatCoordinate{};
+    return _currentSearcher->extreme();
 }

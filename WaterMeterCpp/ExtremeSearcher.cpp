@@ -1,7 +1,9 @@
 #include "ExtremeSearcher.h"
 
-void ExtremeSearcher::reset() {
+void ExtremeSearcher::begin(const float maxNoiseDistance) {
+    _maxNoiseDistance = maxNoiseDistance;
     _wasFound = false;
+    _foundCandidate = false;
     _extreme = _initValue;
 }
 
@@ -24,7 +26,7 @@ void ExtremeSearcher::addMeasurement(const FloatCoordinate sample) {
     if (isExtreme(sample)) {
         _extreme = sample;
         _foundCandidate = true;
-    } else if (_foundCandidate && _extreme.distanceFrom(sample) > _noiseThreshold) {
+    } else if (_foundCandidate && _extreme.distanceFrom(sample) > _maxNoiseDistance) {
         _wasFound = true;
         _foundCandidate = false;
     }
@@ -35,7 +37,7 @@ bool ExtremeSearcher::foundExtreme() const {
 }
 
 ExtremeSearcher* ExtremeSearcher::next() const {
-    _nextSearcher->reset();
+    _nextSearcher->begin(_maxNoiseDistance);
     return _nextSearcher;
 }
 

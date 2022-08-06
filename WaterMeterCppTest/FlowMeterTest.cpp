@@ -13,7 +13,6 @@
 #include "../WaterMeterCpp/FlowMeter.h"
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/EventClient.h"
-#include <iostream>
 
 #include "TestEventClient.h"
 #include "FlowMeterDriver.h"
@@ -25,14 +24,11 @@ namespace WaterMeterCppTest {
         static EventServer eventServer;
     protected:
         void expectResult(const FlowMeter* meter, const wchar_t* description, const int index,
-                          const bool flow, const int zone, const bool searching, const bool peak,
-                          const bool outlier = false) const {
+                          const SearchTarget searchTarget = None, const bool pulse = false, const bool outlier = false) const {
             std::wstring message(description);
             message += std::wstring(L" #") + std::to_wstring(index) + std::wstring(L" @ ");
-            EXPECT_EQ(flow, meter->hasFlow()) << message << "Flow";
-            EXPECT_EQ(zone, meter->getZone()) << message << "Zone";
-            EXPECT_EQ(searching, meter->isSearching()) << message << "Searching";
-            EXPECT_EQ(peak, meter->isPeak()) << message << "Peak";
+            EXPECT_EQ(searchTarget, meter->searchTarget()) << message << "Search target";
+            EXPECT_EQ(pulse, meter->isPulse()) << message << "Pulse";
             EXPECT_EQ(outlier, meter->isOutlier()) << message << "Outlier";
         }
 
@@ -55,7 +51,7 @@ namespace WaterMeterCppTest {
             EXPECT_TRUE(difference < 0.002f) << description << ". expected: " <<  expected << " actual: " << actual << " difference: " << difference << " #" << index;
         }
         
-        void expectFlowAnalysis(const FlowMeterDriver* actual, const char* description, const int index,
+        /* void expectFlowAnalysis(const FlowMeterDriver* actual, const char* description, const int index,
                                 const float smoothX, const float smoothY, const float highPassX, const float highPassY,
                                 const float distance, const float smoothDistance, const float angle) const {
             std::string message(description);
@@ -67,6 +63,25 @@ namespace WaterMeterCppTest {
             expectFloatAreEqual(distance, actual->getAverageAbsoluteDistance(), (message + "AbsoluteDistance").c_str(), index);
             expectFloatAreEqual(smoothDistance, actual->getSmoothDistance(), (message + "SmoothDistance").c_str(), index);
             expectFloatAreEqual(angle, actual->getAngle(), (message + "angle").c_str(), index);
+        } */
+
+        void expectFlowAnalysis(
+            const FlowMeterDriver* actual,
+            const char* message,
+            const int index, 
+            const FloatCoordinate movingAverage, 
+            const FloatCoordinate smooth = { 0,0 }, 
+            const FloatCoordinate averageStartValue = { 0,0 },
+            const int flowThresholdPassCount = 0,
+            const bool flowStarted = false) const {
+            EXPECT_FLOAT_EQ(movingAverage.x, actual->_movingAverage[index].x) << message << ": moving average X #" << index;
+            EXPECT_FLOAT_EQ(movingAverage.y, actual->_movingAverage[index].y) << message << ": moving average Y #" << index;
+            EXPECT_FLOAT_EQ(smooth.x, actual->_smooth.x) << message << ": smooth X";
+            EXPECT_FLOAT_EQ(smooth.y, actual->_smooth.y) << message << ": smooth Y";
+            EXPECT_FLOAT_EQ(averageStartValue.x, actual->_averageStartValue.x) << message << ": average start value X";
+            EXPECT_FLOAT_EQ(averageStartValue.y, actual->_averageStartValue.y) << message << ": average start value Y";
+            EXPECT_EQ(flowThresholdPassCount, actual->_flowThresholdPassedCount) << message << ": flow threshold passed count";
+            EXPECT_EQ(flowStarted, actual->_flowStarted) << ": flow started";
         }
     };
 
@@ -78,117 +93,83 @@ namespace WaterMeterCppTest {
         FlowMeterDriver actual(&eventServer);
 
         // jittering at the start to simulate standstill
+        actual.begin(5, 390);
 
-        actual.detectPulse({ 100, 50 });
-        EXPECT_EQ(100, actual._movingAverage[0].x);
-        EXPECT_EQ(50, actual._movingAverage[0].y);
-        EXPECT_EQ(0.0f, actual._smooth.x) << "moving average buffer not filled yet 1";
+        actual.addSample({{100, 50}});
+        expectFlowAnalysis(&actual, "First", 0, { 100, 50 });
+        actual.detectPulse({{103, 53}});
+        expectFlowAnalysis(&actual, "Second", 1, { 103, 53 });
+        actual.detectPulse({{105, 55}});
+        expectFlowAnalysis(&actual, "Third", 2, { 105, 55 });
+        actual.detectPulse({{104, 54}});
+        expectFlowAnalysis(&actual, "Fourth", 3, { 104, 54 }, {103, 53}, {103, 53});
+        actual.detectPulse({{102, 54}});
+        expectFlowAnalysis(&actual, "Fifth", 0, { 102, 54 },  { 103.25f, 53.5f }, { 103.125f, 53.25f });
 
-        actual.detectPulse({ 103, 53 });
-        EXPECT_EQ(103, actual._movingAverage[1].x);
-        EXPECT_EQ(53, actual._movingAverage[1].y);
-        EXPECT_EQ(0.0f, actual._smooth.x) << "moving average buffer not filled yet 2";
+        // start moving. This should finalize the average calculation
 
-        actual.detectPulse({ 105, 55 });
-        EXPECT_EQ(105, actual._movingAverage[2].x);
-        EXPECT_EQ(55, actual._movingAverage[2].y);
-        EXPECT_EQ(0.0f, actual._smooth.x) << "moving average buffer not filled yet 3";
-
-        actual.detectPulse({ 104, 54 });
-        EXPECT_EQ(104, actual._movingAverage[3].x);
-        EXPECT_EQ(54, actual._movingAverage[3].y);
-        EXPECT_FLOAT_EQ(103.0f, actual._smooth.x) << "moving average buffer first filled and moved to smooth value";
-        EXPECT_FLOAT_EQ(53.0f, actual._smooth.y);
-        EXPECT_FLOAT_EQ(103.0f, actual._averageStartValue.x) << "average equal to first smooth value";
-        EXPECT_FLOAT_EQ(53.0f, actual._averageStartValue.y);
-
-        actual.detectPulse({ 102, 54 });
-        EXPECT_EQ(102, actual._movingAverage[0].x) << "moving average index moved to 0";
-        EXPECT_EQ(54, actual._movingAverage[0].y);
-        EXPECT_FLOAT_EQ(103.25f, actual._smooth.x) << "Low pass calculated correctly";
-        EXPECT_FLOAT_EQ(53.5f, actual._smooth.y);
-        EXPECT_FLOAT_EQ(103.125f, actual._averageStartValue.x) << "Average start point started correctly" ;
-        EXPECT_FLOAT_EQ(53.25f, actual._averageStartValue.y);
-        EXPECT_EQ(0, actual._flowThresholdPassedCount) << "Still no flow";
-
-        actual.detectPulse({ 80, 70 });
-        EXPECT_EQ(80, actual._movingAverage[1].x);
-        EXPECT_EQ(70, actual._movingAverage[1].y);
-        EXPECT_FLOAT_EQ(100.5f, actual._smooth.x);
-        EXPECT_FLOAT_EQ(55.875f, actual._smooth.y);
-        EXPECT_FLOAT_EQ(102.25f, actual._averageStartValue.x);
-        EXPECT_FLOAT_EQ(54.125f, actual._averageStartValue.y);
-        EXPECT_EQ(0, actual._flowThresholdPassedCount);
-        EXPECT_FALSE(actual._flowStarted) << "Still no flow";
-
-        actual.detectPulse({ 70, 40 });
-        EXPECT_EQ(70, actual._movingAverage[2].x);
-        EXPECT_EQ(40, actual._movingAverage[2].y);
-        EXPECT_FLOAT_EQ(94.75f, actual._smooth.x);
-        EXPECT_FLOAT_EQ(55.1875f, actual._smooth.y);
-        EXPECT_FLOAT_EQ(102.25f, actual._averageStartValue.x);
-        EXPECT_FLOAT_EQ(54.125f, actual._averageStartValue.y);
-        EXPECT_EQ(1, actual._flowThresholdPassedCount) << "First time we see flow";
-        EXPECT_FALSE(actual._flowStarted) << "Flow not started yet as we need two samples";
-        EXPECT_EQ(None, actual._searchTarget) << "Not in search mode yet";
+        actual.detectPulse({{80, 70}});
+        expectFlowAnalysis(&actual, "First flow (not started)", 1, { 80, 70 }, { 100.5f, 55.875f }, { 103.125f, 53.25f }, 1);
+        EXPECT_EQ(None, actual.searchTarget()) << "Not in search mode yet";
         EXPECT_EQ(nullptr, actual._currentSearcher) << "No searcher yet";
+        actual.detectPulse({{70, 40}});
+        expectFlowAnalysis(&actual, "Second flow (started)", 2, { 70, 40 }, { 94.75f, 55.1875f }, { 103.125f, 53.25f }, 2, true);
+        EXPECT_EQ(MinX, actual.searchTarget()) << "MinX searcher selected (x going down, y going up)";
+        actual.detectPulse({{80, 69}});
+        expectFlowAnalysis(&actual, "Found flow 2 (started)", 3, { 80, 69 }, { 88.875f, 56.71875f }, { 103.125f, 53.25f }, 2, true);
 
-        actual.detectPulse({ 80, 69 });
-        EXPECT_EQ(80, actual._movingAverage[3].x);
-        EXPECT_EQ(69, actual._movingAverage[3].y);
-        EXPECT_FLOAT_EQ(88.875f, actual._smooth.x);
-        EXPECT_FLOAT_EQ(56.71875f, actual._smooth.y);
-        EXPECT_FLOAT_EQ(102.25f, actual._averageStartValue.x);
-        EXPECT_FLOAT_EQ(54.125f, actual._averageStartValue.y);
-        EXPECT_EQ(2, actual._flowThresholdPassedCount) << "Second time we see flow";
-        EXPECT_TRUE(actual._flowStarted) << "Flow started";
-        EXPECT_NE(nullptr, actual._currentSearcher) << "Searcher defined";
-        EXPECT_EQ(MinX, actual._currentSearcher->target()) << "MinX searcher selected (x going down, y going up)";
+        // provide a minimal X
 
-        actual.detectPulse({ 60, 70 });
-        actual.detectPulse({ 60, 70 });
-        actual.detectPulse({ 60, 70 });
-        actual.detectPulse({ 65, 75 });
-        actual.detectPulse({ 70, 80 });
-        actual.detectPulse({ 75, 85 });
-        EXPECT_EQ(MinX, actual._currentSearcher->target()) << "Still searching for MinX";
+        actual.detectPulse({{60, 70}});
+        actual.detectPulse({{60, 70}});
+        actual.detectPulse({{60, 70}});
+        actual.detectPulse({{65, 75}});
+        actual.detectPulse({{70, 80}});
+        actual.detectPulse({{75, 85}});
+        EXPECT_EQ(MinX, actual.searchTarget()) << "Still searching for MinX";
         EXPECT_EQ(0, client.getCallCount());
-        actual.detectPulse({ 80, 90 });
+        actual.detectPulse({{80, 90}});
         EXPECT_EQ(1, client.getCallCount()) << "Pulse reported for MinX";
-        EXPECT_EQ(MaxY, actual._currentSearcher->target()) << "MaxY searcher selected";
+        EXPECT_EQ(MaxY, actual.searchTarget()) << "MaxY searcher selected";
 
-        actual.detectPulse({ 85, 95 });
-        actual.detectPulse({ 90, 100 });
-        actual.detectPulse({ 95, 105 });
-        actual.detectPulse({ 100, 100 });
-        actual.detectPulse({ 105, 95 });
-        actual.detectPulse({ 110, 90 });
-        EXPECT_EQ(MaxY, actual._currentSearcher->target()) << "Still searching for MaxY";
+        // provide a maximal Y
+
+        actual.detectPulse({{85, 95}});
+        actual.detectPulse({{90, 100}});
+        actual.detectPulse({{95, 105}});
+        actual.detectPulse({{100, 100}});
+        actual.detectPulse({{105, 95}});
+        actual.detectPulse({{110, 90}});
+        EXPECT_EQ(MaxY, actual.searchTarget()) << "Still searching for MaxY";
         EXPECT_EQ(1, client.getCallCount());
-        actual.detectPulse({ 115, 85 });
+        actual.detectPulse({{115, 85}});
         EXPECT_EQ(2, client.getCallCount()) << "Pulse reported for MaxY";
-        EXPECT_EQ(MaxX, actual._currentSearcher->target()) << "MaxX searcher selected";
+        EXPECT_EQ(MaxX, actual.searchTarget()) << "MaxX searcher selected";
 
-        actual.detectPulse({ 120, 80 });
-        actual.detectPulse({ 115, 75 });
-        actual.detectPulse({ 110, 70 });
-        actual.detectPulse({ 105, 65 });
-        EXPECT_EQ(MaxX, actual._currentSearcher->target()) << "Still searching for MaxX";
+        // provide a maximal X
+
+        actual.detectPulse({{120, 80}});
+        actual.detectPulse({{115, 75}});
+        actual.detectPulse({{110, 70}});
+        actual.detectPulse({{105, 65}});
+        EXPECT_EQ(MaxX, actual.searchTarget()) << "Still searching for MaxX";
         EXPECT_EQ(2, client.getCallCount());
-        actual.detectPulse({ 100, 60 });
+        actual.detectPulse({{100, 60}});
         EXPECT_EQ(3, client.getCallCount()) << "Pulse reported for MaxX";
-        EXPECT_EQ(MinY, actual._currentSearcher->target()) << "MinY searcher selected";
+        EXPECT_EQ(MinY, actual.searchTarget()) << "MinY searcher selected";
 
-        actual.detectPulse({ 95, 55 });
-        actual.detectPulse({ 90, 50 });
-        actual.detectPulse({ 85, 55 });
-        actual.detectPulse({ 80, 60 });
-        actual.detectPulse({ 75, 65 });
-        EXPECT_EQ(MinY, actual._currentSearcher->target()) << "Still searching for MinY";
+        // provide a minimal Y
+
+        actual.detectPulse({{95, 55}});
+        actual.detectPulse({{90, 50}});
+        actual.detectPulse({{85, 55}});
+        actual.detectPulse({{80, 60}});
+        actual.detectPulse({{75, 65}});
+        EXPECT_EQ(MinY, actual.searchTarget()) << "Still searching for MinY";
         EXPECT_EQ(3, client.getCallCount());
-        actual.detectPulse({ 70, 70 });
+        actual.detectPulse({{70, 70}});
         EXPECT_EQ(4, client.getCallCount()) << "Pulse reported for MinY";
-        EXPECT_EQ(MinX, actual._currentSearcher->target()) << "MinX searcher selected";
+        EXPECT_EQ(MinX, actual.searchTarget()) << "MinX searcher selected";
     }
 
     TEST_F(FlowMeterTest, flowMeterGetTargetTest) {
@@ -215,33 +196,33 @@ namespace WaterMeterCppTest {
         eventServer.subscribe(&client, Topic::ResetSensor);
         Coordinate sample{{3500, 3500}};
         actual.addSample(sample);
-        expectResult(&actual, L"First measurement", 0, false, 0, true, false, false);
-        EXPECT_EQ(4949.7474f, actual.getAverageAbsoluteDistance()) << "Absolute distance OK after first";
+        expectResult(&actual, L"First measurement", 0);
+        EXPECT_FLOAT_EQ(4949.7474f, actual._averageAbsoluteDistance) << "Absolute distance OK after first";
         sample.x = 1000;
         sample.y = 1000;
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < 19; i++) {
             actual.addSample(sample);
-            expectResult(&actual, L"Ignore outlier", i, false, 0, true, false, true);
-            EXPECT_EQ(4949.7474f, actual.getAverageAbsoluteDistance()) << "Absolute distance not changed with outlier";
+            expectResult(&actual, L"Ignore outlier", i, None, false, true);
+            EXPECT_FLOAT_EQ(4949.7474f, actual._averageAbsoluteDistance) << "Absolute distance not changed with outlier";
             EXPECT_EQ(0, client.getCallCount()) << "ResetSensor not published";
         }
         sample.x = 1020;
         sample.y = 1020;
         actual.addSample(sample);
-        expectResult(&actual, L"Ignore outlier", 9, false, 0, true, false, true);
+        expectResult(&actual, L"Ignore outlier", 9, None, false, true);
         EXPECT_EQ(1, client.getCallCount()) << "ResetSensor published";
-        EXPECT_EQ(4949.7474f, actual.getAverageAbsoluteDistance()) << "Absolute distance still not changed with outlier";
+        EXPECT_FLOAT_EQ(4949.7474f, actual._averageAbsoluteDistance) << "Absolute distance still not changed with outlier";
 
         eventServer.publish(Topic::SensorWasReset, LONG_TRUE);
         // we're starting from scratch using the next value
         sample.x = 1500;
         sample.y = 1500;
         actual.addSample(sample);
-        expectResult(&actual, L"first after outlier reset", 0, false, 0, true, false, false);
-        EXPECT_EQ(2121.3203f, actual.getAverageAbsoluteDistance()) << "Absolute distance reset";
+        expectResult(&actual, L"first after outlier begin", 0);
+        EXPECT_EQ(2121.3203f, actual._averageAbsoluteDistance) << "Absolute distance begin";
     }
 
-    TEST_F(FlowMeterTest, flowMeterGoodFlowTest) {
+    /*TEST_F(FlowMeterTest, flowMeterGoodFlowTest) {
         FlowMeterDriver flowMeter(&eventServer);
         flowMeter.begin(4, 390);
         expectFloatAreEqual(0.8604f, flowMeter.getZeroThreshold(), "Zero threshold");
@@ -273,7 +254,7 @@ namespace WaterMeterCppTest {
                 expectFlowAnalysis(&flowMeter, "Init", i, -110.0f, 100.0f, 0, 0, 148.6607f, 0, -PI_F);
             }
 
-            totalPeaks += flowMeter.isPeak();
+            totalPeaks += flowMeter.isPulse();
         }
         expectFlowAnalysis(&flowMeter, "Init", STARTUP_IDLE_SAMPLES - 1, -110.0f, 100.0f, 0, 0, 148.6607f, 0, 0.7840f);
         expectResult(&flowMeter, L"After startup", 0, false, 0, true, false, false);
@@ -283,7 +264,7 @@ namespace WaterMeterCppTest {
             for (int sampleCount = 0; sampleCount < SAMPLES_PER_CYCLE; sampleCount++) {
                 sample = getSample(static_cast<float>(sampleCount), SAMPLES_PER_CYCLE, ANGLE_OFFSET_SAMPLES);
                 eventServer.publish(Topic::Sample, sample);
-                totalPeaks += flowMeter.isPeak();
+                totalPeaks += flowMeter.isPulse();
 
                 if (flowMeter.hasFlow() != inFlow) {
                     inFlow = !inFlow;
@@ -310,14 +291,9 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(4, totalPeaks) << "Found 4 peaks";
         EXPECT_EQ(1, flowSwitches) << "Flow switched once";
         EXPECT_EQ(110, longestFlow) << "Longest flow is 110 samples";
-    }
+    } */
 
     TEST_F(FlowMeterTest, flowMeterOutlierTest) {
-        // redirect std::cout so you can see it
-        std::streambuf* backup = std::cout.rdbuf();
-        const std::stringstream ss;
-        std::cout.rdbuf(ss.rdbuf());
-
         FlowMeter flowMeter(&eventServer);
         flowMeter.begin(1, 390.0f);
         int totalOutliers = 0;
@@ -342,57 +318,53 @@ namespace WaterMeterCppTest {
         for (const Coordinate entry : testData) {
             eventServer.publish(Topic::Sample, entry);
             totalOutliers += flowMeter.isOutlier();
-            const auto smooth = flowMeter.getSmoothSample();
-            std::cout << smooth.x << "," << smooth.y << (flowMeter.isExcluded() ? "E" : "I") << "\n";
         }
         EXPECT_EQ(2, totalOutliers) << "Found 3 outliers";
-
-        // restore original buffer for cout
-        std::cout.rdbuf(backup);
     }
 
     TEST_F(FlowMeterTest, flowMeterResetSensorTest) {
         FlowMeterDriver actual(&eventServer);
         actual.begin(4, 390.0f);
-        EXPECT_TRUE(actual.wasReset()) << "was reset 1";
+        EXPECT_TRUE(actual.wasReset()) << "was reset at start";
         for (int i = 0; i < 5; i++) {
             actual.addSample(getSample(static_cast<float>(i)));
         }
-        expectFloatAreEqual(147.8443f, actual.getAverageAbsoluteDistance(), "Average absolute distance OK before");
-        expectFloatAreEqual(-0.3364f, actual.getAngle(), "Angle OK before");
-        expectFloatAreEqual(0.5748f, actual.getSmoothDistance(), "Smooth distance OK before");
 
-        EXPECT_FALSE(actual.wasReset()) << "Not reset";
+        expectFlowAnalysis(&actual, "init", 1, { -98, 110 }, { -96.125f, 108.875f }, { -97, 109.25f }, 1);
+
+        EXPECT_FALSE(actual.wasReset()) << "No reset";
         actual.update(Topic::SensorWasReset, LONG_TRUE);
-        EXPECT_TRUE(actual.wasReset()) << "was reset 2";
+        EXPECT_TRUE(actual.wasReset()) << "was reset";
         actual.addSample(getSample(5));
-        expectFloatAreEqual(140.3567f, actual.getAverageAbsoluteDistance(), "Average absolute distance OK after");
-        expectFloatAreEqual(-3.1416f, actual.getAngle(), "Angle OK before");
-        expectFloatAreEqual(0.0f, actual.getSmoothDistance(), "Smooth distance OK before");
-    }
 
+        expectFlowAnalysis(&actual, "first sample after begin", 0, { -92, 106 });
+    } 
+
+    /*void expectResult(const FlowMeter* meter, const wchar_t* description, const int index,
+    const bool flow, const int zone, const bool searching, const bool peak,
+    const bool outlier = false) const { */
     TEST_F(FlowMeterTest, flowMeterSecondValueIsOutlierTest) {
         FlowMeterDriver actual(&eventServer);
         actual.begin(5, 390);
         actual.addSample(Coordinate{{3000, 2000}});
-        expectResult(&actual, L"First measurement", 0, false, 0, true, false, false);
-        expectFloatAreEqual(3605.5513f, actual.getAverageAbsoluteDistance(), "Absolute distance OK before");
+        expectResult(&actual, L"First measurement", 0);
+        expectFloatAreEqual(3605.5513f, actual._averageAbsoluteDistance, "Absolute distance OK before");
 
         actual.addSample(Coordinate{{1500, 500}});
         // an outlier as second value should get ignored.
-        expectResult(&actual, L"Early first outlier", 1, false, 0, true, false, true);
-        expectFloatAreEqual(3605.5513f, actual.getAverageAbsoluteDistance(), "Absolute distance did not change with outlier");
+        expectResult(&actual, L"Early first outlier", 1, None, false, true);
+        expectFloatAreEqual(3605.5513f, actual._averageAbsoluteDistance, "Absolute distance did not change with outlier");
 
         actual.addSample(Coordinate{{3025, 1980}});
-        expectResult(&actual, L"Fist after outlier", 2, false, 0, true, false, false);
-        expectFloatAreEqual(3606.04297f, actual.getAverageAbsoluteDistance(), "Absolute distance OK after");
+        expectResult(&actual, L"First after outlier", 2);
+        expectFloatAreEqual(3606.04297f, actual._averageAbsoluteDistance, "Absolute distance OK after");
     }
 
-    TEST_F(FlowMeterTest, flowMeterResetPeakTest) {
-        // If we have just found a peak and the next round flow goes off, the peak indicator must be reset
+    /* TEST_F(FlowMeterTest, flowMeterResetPeakTest) {
+        // If we have just found a peak and the next round flow goes off, the peak indicator must be begin
         FlowMeterDriver actual(&eventServer, {0.0,0.0}, { 0,0 }, 0, true, true, false, false);
         actual.begin(5, 390);
         actual.addSample(Coordinate{ {0, 0} });
         expectResult(&actual, L"First measurement", 0, false, 0, true, false, false);
-    }
+    } */
 }

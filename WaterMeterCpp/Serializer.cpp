@@ -61,13 +61,11 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeParam("last.y", result.lastSample.y);
     _payloadBuilder->writeGroupStart("summaryCount");
     _payloadBuilder->writeParam("samples", result.sampleCount);
-    _payloadBuilder->writeParam("peaks", result.peakCount);
-    _payloadBuilder->writeParam("flows", result.flowCount);
+    _payloadBuilder->writeParam("pulses", result.pulseCount);
     _payloadBuilder->writeParam("maxStreak", result.maxStreak);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("exceptionCount");
     _payloadBuilder->writeParam("outliers", result.outlierCount);
-    _payloadBuilder->writeParam("excludes", result.excludeCount);
     _payloadBuilder->writeParam("overruns", result.overrunCount);
     _payloadBuilder->writeParam("resets", result.resetCount);
     _payloadBuilder->writeGroupEnd();
@@ -79,11 +77,9 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeGroupStart("analysis");
     _payloadBuilder->writeParam("lp.x", result.smooth.x);
     _payloadBuilder->writeParam("lp.y", result.smooth.y);
-    _payloadBuilder->writeParam("hp.x", result.highPass.x);
-    _payloadBuilder->writeParam("hp.y", result.highPass.y);
-    _payloadBuilder->writeParam("angle", result.angle);
-    _payloadBuilder->writeParam("distance", result.distance);
-    _payloadBuilder->writeParam("smoothDistance", result.smoothDistance);
+    _payloadBuilder->writeParam("target", result.searchTarget);
+    _payloadBuilder->writeParam("xt.x", result.extreme.x);
+    _payloadBuilder->writeParam("xt.y", result.extreme.y);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupEnd();
 }

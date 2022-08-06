@@ -45,7 +45,7 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.13";
+constexpr const char* const BUILD_VERSION = "0.101.1";
 
 // We measure every 10 ms. That is about the fastest that the sensor can do reliably
 // Processing one cycle usually takes quite a bit less than that, unless a write happened.

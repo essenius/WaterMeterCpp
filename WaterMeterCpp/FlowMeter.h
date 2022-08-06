@@ -25,38 +25,42 @@ constexpr float PI_F = 3.1415926536f;
 class FlowMeter : public EventClient {
 public:
     explicit FlowMeter(EventServer* eventServer);
-    float score(float input, float a, float b) const;
-    float correctedDifference(float previousAngle, float currentAngle);
     void begin(int noiseRange, float gain);
+    /* float score(float input, float a, float b) const; */
+    /* float correctedDifference(float previousAngle, float currentAngle); */
     void addSample(Coordinate sample);
 
-    bool hasFlow() const { return _flow; }
-    bool isExcluded() const { return _exclude; }
+    /*bool hasFlow() const { return _flow; } */
+    /* bool isExcluded() const { return _exclude; } */
     bool isOutlier() const { return _outlier; }
-    bool isPeak() const { return _peak; }
-    bool isSearching() const { return _findNext; }
-    int getZone() const { return _zone; }
+    bool isPulse() const { return _pulse; }
+    SearchTarget searchTarget() const { return _searchTarget; }
+    /*bool isSearching() const { return _findNext; }
+    int getZone() const { return _zone; } */
 
     void update(Topic topic, long payload) override;
     void update(Topic topic, Coordinate payload) override;
     bool wasReset() const { return _firstCall; }
+    FloatCoordinate currentExtreme() const;
 
     static constexpr int SAMPLE_PERIOD_MICROS = 10000;
     static constexpr float SAMPLE_PERIOD_SECONDS = SAMPLE_PERIOD_MICROS / 1000000.0f;
 
     FloatCoordinate getSmoothSample() const { return _smooth; }
-    FloatCoordinate getHighPassSample() const { return _highpass; }
+    /* FloatCoordinate getHighPassSample() const { return _highpass; }
     float getAngle() const { return _angle; }
     float getDistance() const { return _distance; }
-    float getSmoothDistance() const { return _smoothRelativeDistance; }
+    float getSmoothDistance() const { return _smoothRelativeDistance; } */
 
 protected:
     static constexpr int8_t MOVING_AVERAGE_BUFFER_SIZE = 4;
-    FloatCoordinate _movingAverage[MOVING_AVERAGE_BUFFER_SIZE] = {};
+    // will be overwritten in begin()
+    float _maxNoiseDistance = 0;
+    Coordinate _movingAverage[MOVING_AVERAGE_BUFFER_SIZE] = {};
     int8_t _movingAverageIndex = 0;
     int8_t _movingAverageIndexStartupLeft = MOVING_AVERAGE_BUFFER_SIZE - 1;
     bool _flowStarted = false;
-    FloatCoordinate _firstSample;
+    Coordinate _firstSample {};
     int8_t _flowThresholdPassedCount = 0;
 
     FloatCoordinate _averageStartValue = {};
@@ -66,34 +70,18 @@ protected:
     ExtremeSearcher _minYSearcher;
     ExtremeSearcher _minXSearcher;
 
-    FloatCoordinate _maxX;
-    FloatCoordinate _maxY;
-    FloatCoordinate _minX;
-    FloatCoordinate _minY;
-    bool _foundMaxX = false;
-    bool _foundMaxY = false;
-    bool _foundMinX = false;
-    bool _foundMinY = false;
-    bool _maxXCandidate = false;
-    bool _maxYCandidate = false;
-    bool _minXCandidate = false;
-    bool _minYCandidate = false;
-
-
     unsigned int _consecutiveOutliers = 0;
-    ChangePublisher<bool> _exclude;
-    ChangePublisher<bool> _flow;
-    ChangePublisher<bool> _peak;
+    ChangePublisher<bool> _outlier;
+    ChangePublisher<bool> _pulse;
     bool _firstCall = true;
-    bool _outlier = false;
+    // will be overwritten in begin()
     float _outlierThreshold = 0.0f;
-    // TODO: delete
-    float _zeroThreshold = 0.0f;
+    /* float _zeroThreshold = 0.0f; */
     bool _firstRound = true;
 
 
     FloatCoordinate _smooth = {0.0f, 0.0f};
-    FloatCoordinate _previousSmooth = {0.0f, 0.0f};
+    /* FloatCoordinate _previousSmooth = {0.0f, 0.0f};
     FloatCoordinate _highpass = {HIGH_PASS_START_VALUE, HIGH_PASS_START_VALUE};
     float _smoothRelativeDistance = 0.0f;
     float _distance = 0.0f;
@@ -103,31 +91,32 @@ protected:
     bool _noise = false;
     bool _stalled = false;
     float _angle = -PI_F;
-    float _cordifLowPass;
+    float _cordifLowPass; */
     float _averageAbsoluteDistance = 0.0f;
-    FloatCoordinate _filteredSample = {};
-    int _averageCount = 0;
+    /* FloatCoordinate _filteredSample = {}; */
+    float _averageCount = 0.0f;
     SearchTarget _searchTarget = None;
     ExtremeSearcher* _currentSearcher = nullptr;
 
-    void detectOutlier(FloatCoordinate measurement);
+    void detectOutlier(Coordinate measurement);
 
-    void detectPulse(FloatCoordinate sample);
+    void detectPulse(Coordinate sample);
 
-    static int modulo(int number, int divisor);
+    /* static int modulo(int number, int divisor);
     static bool isPulseCandidate(int stateDifference, int zone);
-    void setFindNext(bool peakCandidate, int stateDifference, int zone);
+    void setFindNext(bool peakCandidate, int stateDifference, int zone); */
     static SearchTarget getTarget(FloatCoordinate direction);
-    FloatCoordinate movingAverage();
+    FloatCoordinate movingAverage() const;
     FloatCoordinate lowPassFilter(FloatCoordinate measure, FloatCoordinate filterValue, float alpha) const;
     ExtremeSearcher* getSearcher(SearchTarget target);
     FloatCoordinate updateAverage(FloatCoordinate coordinate);
-    void detectPeaks(FloatCoordinate sample);
-    static float highPassFilter(float measure, float previous, float filterValue, float alpha);
+    void updateMovingAverage(Coordinate sample);
+    /* void detectPeaks(FloatCoordinate sample);
+    static float highPassFilter(float measure, float previous, float filterValue, float alpha); */
     static float lowPassFilter(float measure, float filterValue, float alpha);
     void markAnomalies();
     void resetAnomalies();
-    void resetFilters(FloatCoordinate initialSample);
+    void resetFilters(Coordinate initialSample);
 };
 
 #endif

@@ -65,7 +65,8 @@ void Meter::update(const Topic topic, const long payload) {
         newPulse();
     }
     else if (topic == Topic::SetVolume) {
-        // TODO: tricky one as pointers are 64 bit on Windows. Find better solution 
+        // this is done to minimize payload sizes for the queues (ints only).
+        // A bit crude as it expects that addresses are 32 bits which is true on ESP32 but not on Win64.
         const auto volume = reinterpret_cast<char*>(payload);
         setVolume(volume);
     }
