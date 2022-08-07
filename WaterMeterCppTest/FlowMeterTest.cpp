@@ -53,20 +53,6 @@ namespace WaterMeterCppTest {
             EXPECT_TRUE(difference < 0.002f) << description << ". expected: " <<  expected << " actual: " << actual << " difference: " << difference << " #" << index;
         }
         
-        /* void expectFlowAnalysis(const FlowMeterDriver* actual, const char* description, const int index,
-                                const float smoothX, const float smoothY, const float highPassX, const float highPassY,
-                                const float distance, const float smoothDistance, const float angle) const {
-            std::string message(description);
-            message += std::string(" #") + std::to_string(index) + std::string(" @ ");
-            expectFloatAreEqual(smoothX, actual->getSmoothSample().x, (message + "Smooth X").c_str(), index);
-            expectFloatAreEqual(smoothY, actual->getSmoothSample().y, (message + "Smooth Y").c_str(), index);
-            expectFloatAreEqual(highPassX, actual->getHighPassSample().x, (message + "High pass X").c_str(), index);
-            expectFloatAreEqual(highPassY, actual->getHighPassSample().y, (message + "High pass Y").c_str(), index);
-            expectFloatAreEqual(distance, actual->getAverageAbsoluteDistance(), (message + "AbsoluteDistance").c_str(), index);
-            expectFloatAreEqual(smoothDistance, actual->getSmoothDistance(), (message + "SmoothDistance").c_str(), index);
-            expectFloatAreEqual(angle, actual->getAngle(), (message + "angle").c_str(), index);
-        } */
-
         void expectFlowAnalysis(
             const FlowMeterDriver* actual,
             const char* message,
@@ -270,77 +256,6 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(2121.3203f, actual._averageAbsoluteDistance) << "Absolute distance begin";
     }
 
-    /*TEST_F(FlowMeterTest, flowMeterGoodFlowTest) {
-        FlowMeterDriver flowMeter(&eventServer);
-        flowMeter.begin(4, 390);
-        expectFloatAreEqual(0.8604f, flowMeter.getZeroThreshold(), "Zero threshold");
-
-        int totalPeaks = 0;
-        bool inFlow = false;
-        int flowSwitches = 0;
-        int flowLength = 0;
-        int longestFlow = 0;
-
-        constexpr int STARTUP_IDLE_SAMPLES = 4;
-        constexpr int SAMPLES_PER_CYCLE = 32;
-        constexpr int SHUTDOWN_IDLE_SAMPLES = 88;
-        constexpr int ANGLE_OFFSET_SAMPLES = SAMPLES_PER_CYCLE / 4;
-        constexpr int CYCLES = 4;
-
-        // smoothX, smoothY, highpassX, highpassY, averageAbsolutedistance, smoothDistance, angle
-        constexpr float EXPECTED[][7] = {
-            {-105.1087f, 94.4343f, -4.2356f, -4.0902f, 141.7776f, 7.6763f, -2.3737f}, // after cycle 1
-            {-105.1048f, 94.4299f, -5.7681f, -3.6192f, 140.4442f, 7.0490f, -2.5812f}, // after cycle 2
-            {-105.1048f, 94.4299f, -5.9877f, -3.5511f, 140.1859f, 6.9741f, -2.6063f}, // after cycle 3
-            {-105.1048f, 94.4299f, -6.0191f, -3.5414f, 140.1359f, 6.9652f, -2.6098f}, // after cycle 4
-        };
-
-        Coordinate sample = getSample(0, SAMPLES_PER_CYCLE, ANGLE_OFFSET_SAMPLES);
-        for (int i = 0; i < STARTUP_IDLE_SAMPLES; i++) {
-            eventServer.publish(Topic::Sample, sample);
-            if (i == 0) {
-                expectFlowAnalysis(&flowMeter, "Init", i, -110.0f, 100.0f, 0, 0, 148.6607f, 0, -PI_F);
-            }
-
-            totalPeaks += flowMeter.isPulse();
-        }
-        expectFlowAnalysis(&flowMeter, "Init", STARTUP_IDLE_SAMPLES - 1, -110.0f, 100.0f, 0, 0, 148.6607f, 0, 0.7840f);
-        expectResult(&flowMeter, L"After startup", 0, false, 0, true, false, false);
-        EXPECT_EQ(0, totalPeaks) << "No peaks yet";
-        EXPECT_FALSE(flowMeter.hasFlow()) << "No flow yet";
-        for (int cycle = 0; cycle < CYCLES; cycle++) {
-            for (int sampleCount = 0; sampleCount < SAMPLES_PER_CYCLE; sampleCount++) {
-                sample = getSample(static_cast<float>(sampleCount), SAMPLES_PER_CYCLE, ANGLE_OFFSET_SAMPLES);
-                eventServer.publish(Topic::Sample, sample);
-                totalPeaks += flowMeter.isPulse();
-
-                if (flowMeter.hasFlow() != inFlow) {
-                    inFlow = !inFlow;
-                    flowSwitches++;
-                    flowLength = 0;
-                }
-                if (inFlow) {
-                    flowLength++;
-                    if (flowLength > longestFlow) {
-                        longestFlow = flowLength;
-                    }
-                }
-            }
-            const auto current = EXPECTED[cycle];
-            expectFlowAnalysis(&flowMeter, "Cycle", cycle, current[0], current[1], current[2], current[3], current[4],
-                               current[5], current[6]);
-        }
-        for (int i = 0; i < SHUTDOWN_IDLE_SAMPLES; i++) {
-            eventServer.publish(Topic::Sample, sample);
-        }
-        expectFlowAnalysis(&flowMeter, "shutdown", SHUTDOWN_IDLE_SAMPLES, -110.0f, 98.0f, -0.0595f, 0.00578f, 147.2439f,
-                           0.1347f, 3.04466f);
-        expectResult(&flowMeter, L"Final", SHUTDOWN_IDLE_SAMPLES, false, 0, true, false, false);
-        EXPECT_EQ(4, totalPeaks) << "Found 4 peaks";
-        EXPECT_EQ(1, flowSwitches) << "Flow switched once";
-        EXPECT_EQ(110, longestFlow) << "Longest flow is 110 samples";
-    } */
-
     TEST_F(FlowMeterTest, flowMeterOutlierTest) {
         FlowMeter flowMeter(&eventServer);
         flowMeter.begin(1, 390.0f);
@@ -388,9 +303,6 @@ namespace WaterMeterCppTest {
         expectFlowAnalysis(&actual, "first sample after begin", 0, { -92, 106 });
     } 
 
-    /*void expectResult(const FlowMeter* meter, const wchar_t* description, const int index,
-    const bool flow, const int zone, const bool searching, const bool peak,
-    const bool outlier = false) const { */
     TEST_F(FlowMeterTest, flowMeterSecondValueIsOutlierTest) {
         FlowMeterDriver actual(&eventServer);
         actual.begin(5, 390);
@@ -408,11 +320,4 @@ namespace WaterMeterCppTest {
         expectFloatAreEqual(3606.04297f, actual._averageAbsoluteDistance, "Absolute distance OK after");
     }
 
-    /* TEST_F(FlowMeterTest, flowMeterResetPeakTest) {
-        // If we have just found a peak and the next round flow goes off, the peak indicator must be begin
-        FlowMeterDriver actual(&eventServer, {0.0,0.0}, { 0,0 }, 0, true, true, false, false);
-        actual.begin(5, 390);
-        actual.addSample(Coordinate{ {0, 0} });
-        expectResult(&actual, L"First measurement", 0, false, 0, true, false, false);
-    } */
 }
