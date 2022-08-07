@@ -180,6 +180,32 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="35cycles.txt">
+      <DeploymentContent>false</DeploymentContent>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </TreatOutputAsContent>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="13cyclesSlowFast.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="77cyclesFast.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="1cycleSlow.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="1cycleVerySlow.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="1cycleSlowest.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="0cyclesNoise.txt" />
+  </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

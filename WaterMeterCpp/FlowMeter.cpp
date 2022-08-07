@@ -128,17 +128,20 @@ void FlowMeter::detectPulse(const Coordinate sample) {
 
         // While we are not moving, the noise has considerable impact. Take the average value of the measurements to
         // get a reasonable starting value for when we get flow - at that point, we take the difference between
-        // the average and the current sample values.
+        // the average and the current sample values. We don't take the smooth values here as we don't want to
+        // overlook drift
         const auto distanceFromStart =sample.distanceFrom(_firstSample);
         if (distanceFromStart <= _maxNoiseDistance) {
             updateAverage(_smooth);
             _flowThresholdPassedCount = 0;
             return;
         }
-        // We now established there is flow. We need to be a bit careful and take another measurement 
-        // before we calculate the difference to ensure we filter out AC interference.
         _flowThresholdPassedCount++;
-        if (_flowThresholdPassedCount <= 1) return;
+        // We now established there is flow. We now need to find the direction so we can get the next extreme target
+        // To make sure we are indeed past the noise range (and eliminate potential AC interference), we wait
+        // until the filtered values are beyond the noise range with the average
+        const auto distanceFromAverageStart = _smooth.distanceFrom(_averageStartValue);
+        if (distanceFromAverageStart < _maxNoiseDistance) return;
         _flowStarted = true;
         // The difference between the start point and the current point tells us the direction
         // which in turn tells us the next extreme we're looking for to kickstart the state machine.

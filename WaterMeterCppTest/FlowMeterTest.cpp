@@ -9,6 +9,8 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+#include <fstream>
+
 #include "gtest/gtest.h"
 #include "../WaterMeterCpp/FlowMeter.h"
 #include "../WaterMeterCpp/EventServer.h"
@@ -83,9 +85,55 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(flowThresholdPassCount, actual->_flowThresholdPassedCount) << message << ": flow threshold passed count";
             EXPECT_EQ(flowStarted, actual->_flowStarted) << ": flow started";
         }
+
+        void flowTestWithFile(const char* fileName, int expectedPulses) const {
+            FlowMeter flowMeter(&eventServer);
+            flowMeter.begin(4, 390);
+            TestEventClient pulseClient(&eventServer);
+            eventServer.subscribe(&pulseClient, Topic::Pulse);
+            Coordinate measurement{};
+            std::ifstream measurements(fileName);
+            EXPECT_TRUE(measurements.is_open()) << "File open";
+            measurements.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            while (measurements >> measurement.x) {
+                measurements >> measurement.y;
+                eventServer.publish(Topic::Sample, measurement);
+            }
+            ASSERT_EQ(expectedPulses, pulseClient.getCallCount());
+        }
     };
 
     EventServer FlowMeterTest::eventServer;
+
+    TEST_F(FlowMeterTest, flowMeter0CyclesNoiseTest) {
+        flowTestWithFile("0cyclesNoise.txt", 0);
+    }
+
+    TEST_F(FlowMeterTest, flowMeter1CycleSlowTest) {
+        flowTestWithFile("1cycleSlow.txt", 5);
+    }
+
+    TEST_F(FlowMeterTest, flowMeter1CycleVerySlowTest) {
+        flowTestWithFile("1cycleVerySlow.txt", 4);
+    }
+
+    TEST_F(FlowMeterTest, flowMeter1CycleSlowestTest) {
+        flowTestWithFile("1cycleSlowest.txt", 4);
+    }
+
+
+    TEST_F(FlowMeterTest, flowMeter13CyclesSlowFastTest) {
+        flowTestWithFile("13cyclesSlowFast.txt", 50);
+    }
+
+    TEST_F(FlowMeterTest, flowMeter35CyclesTest) {
+        flowTestWithFile("35cycles.txt", 137);
+    }
+
+    TEST_F(FlowMeterTest, flowMeter77CyclesFastTest) {
+        flowTestWithFile("77cyclesFast.txt", 306);
+    }
+
 
     TEST_F(FlowMeterTest, flowMeterDetectPulseTest) {
         TestEventClient client(&eventServer);
