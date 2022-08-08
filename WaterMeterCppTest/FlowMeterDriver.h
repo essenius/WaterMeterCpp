@@ -31,10 +31,6 @@ namespace WaterMeterCppTest {
 
         explicit FlowMeterDriver(EventServer* eventServer) : FlowMeter(eventServer) {}
 
-        /*FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, FloatCoordinate highPassValue = {0, 0}, float averageAbsoluteDistance = 0,
-                        bool flow = false, bool peak = false, bool outlier = false); */
-
-
-        FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, bool pulse = false, bool outlier = false);
+        FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, bool pulse = false, bool outlier = false, bool first = false);
     };
 }

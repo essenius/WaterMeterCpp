@@ -15,21 +15,11 @@
 
 namespace WaterMeterCppTest {
 
-    /*FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue,
-        const FloatCoordinate highPassValue, float averageAbsoluteDistance,
-                                     const bool flow, const bool peak, const bool outlier) : FlowMeter(
-        eventServer) {
-        _smooth = smoothValue;
-        _averageAbsoluteDistance = averageAbsoluteDistance;
-        _outlier = outlier;
-        _pulse = peak;
-        _firstCall = false;
-    }*/
-
-    FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue, const bool pulse, const bool outlier): FlowMeter(eventServer) {
+    FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue, const bool pulse, const bool outlier, const bool first): FlowMeter(eventServer) {
         _smooth = smoothValue;
         _outlier = outlier;
-        _pulse = pulse;
-        _firstCall = false;
+        _pulse = pulse ? 1 : 0;
+        _isPulse = pulse;
+        _firstCall = first;
     }
 }

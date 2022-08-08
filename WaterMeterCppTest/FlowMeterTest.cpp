@@ -25,6 +25,7 @@ namespace WaterMeterCppTest {
     public:
         static EventServer eventServer;
     protected:
+        static constexpr float PI = 3.1415926536f;
         void expectResult(const FlowMeter* meter, const wchar_t* description, const int index,
                           const SearchTarget searchTarget = None, const bool pulse = false, const bool outlier = false) const {
             std::wstring message(description);
@@ -39,7 +40,7 @@ namespace WaterMeterCppTest {
             constexpr float RADIUS = 10.0L;
             constexpr int16_t X_OFFSET = -100;
             constexpr int16_t Y_OFFSET = 100;
-            const float angle = (sampleNumber - angleOffsetSamples) * PI_F / samplesPerCycle * 2.0f;
+            const float angle = (sampleNumber - angleOffsetSamples) * PI / samplesPerCycle * 2.0f;
             return Coordinate{
                 {
                     static_cast<int16_t>(X_OFFSET + round(sin(angle) * RADIUS)),
@@ -72,6 +73,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(flowStarted, actual->_flowStarted) << ": flow started";
         }
 
+        // run process on test signals with a known number of pulses
         void flowTestWithFile(const char* fileName, int expectedPulses) const {
             FlowMeter flowMeter(&eventServer);
             flowMeter.begin(4, 390);
@@ -107,7 +109,6 @@ namespace WaterMeterCppTest {
         flowTestWithFile("1cycleSlowest.txt", 4);
     }
 
-
     TEST_F(FlowMeterTest, flowMeter13CyclesSlowFastTest) {
         flowTestWithFile("13cyclesSlowFast.txt", 50);
     }
@@ -119,7 +120,6 @@ namespace WaterMeterCppTest {
     TEST_F(FlowMeterTest, flowMeter77CyclesFastTest) {
         flowTestWithFile("77cyclesFast.txt", 306);
     }
-
 
     TEST_F(FlowMeterTest, flowMeterDetectPulseTest) {
         TestEventClient client(&eventServer);
@@ -234,7 +234,7 @@ namespace WaterMeterCppTest {
         EXPECT_FLOAT_EQ(4949.7474f, actual._averageAbsoluteDistance) << "Absolute distance OK after first";
         sample.x = 1000;
         sample.y = 1000;
-        for (int i = 0; i < 19; i++) {
+        for (int i = 0; i < static_cast<int>(FlowMeter::MAX_CONSECUTIVE_OUTLIERS - 1); i++) {
             actual.addSample(sample);
             expectResult(&actual, L"Ignore outlier", i, None, false, true);
             EXPECT_FLOAT_EQ(4949.7474f, actual._averageAbsoluteDistance) << "Absolute distance not changed with outlier";
@@ -319,5 +319,4 @@ namespace WaterMeterCppTest {
         expectResult(&actual, L"First after outlier", 2);
         expectFloatAreEqual(3606.04297f, actual._averageAbsoluteDistance, "Absolute distance OK after");
     }
-
 }

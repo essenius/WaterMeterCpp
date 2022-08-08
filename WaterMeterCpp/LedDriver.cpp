@@ -29,7 +29,6 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::ConnectionError);
     _eventServer->subscribe(this, Topic::Exclude);
-    /*_eventServer->subscribe(this, Topic::Flow); */
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::Pulse);
     _eventServer->subscribe(this, Topic::ResultWritten);
@@ -97,9 +96,7 @@ void LedDriver::update(const Topic topic, long payload) {
     case Topic::Connection:
         connectionUpdate(static_cast<ConnectionState>(payload));
         return;
-    // flow and exclude change the flash rate 
     case Topic::Exclude:
-    /*case Topic::Flow:*/
         _sampleFlasher.setInterval(payload ? EXCLUDE_INTERVAL : IDLE_INTERVAL);
         return;
     case Topic::NoSensorFound:

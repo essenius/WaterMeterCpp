@@ -11,8 +11,8 @@
 
 // ReSharper disable CppClangTidyClangDiagnosticExitTimeDestructors
 
-// This project implements a water meter using a QMC5883L compass sensor on an ESP32 board.
-// To enable unit testing in Visual Studio, some of the ESP libraries have been mocked in a separate project.
+// This project implements a water meter using a HMC5883L or QMC5883L compass sensor on an ESP32 board.
+// To enable unit testing in Windows (Visual Studio/Rider), some of the ESP libraries have been mocked in a separate project.
 
 // ReSharper disable CppClangTidyCppcoreguidelinesInterfacesGlobalInit -- Wire is not used before initialization
 
@@ -45,11 +45,15 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.101.1";
+constexpr const char* const BUILD_VERSION = "0.101.2";
 
-// We measure every 10 ms. That is about the fastest that the sensor can do reliably
-// Processing one cycle usually takes quite a bit less than that, unless a write happened.
+// We measure every 10 ms. That is twice the frequency of the AC in Europe (which we need to take into account since
+// there are water pumps close to the water meter, and about the fastest that the sensor can do reliably.
+// Processing one cycle usually takes quite a bit less than that.
+
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
+
+// We have separate I2C networks for the OLED and the sensor to prevent the sensor having to wait.
 
 constexpr int SDA_OLED = 32;
 constexpr int SCL_OLED = 33;
@@ -107,7 +111,6 @@ QueueClient connectorCommunicatorQueueClient(&connectorEventServer, &logger, 100
 // Nothing to send from sampler to connector
 QueueClient connectorSamplerQueueClient(&connectorEventServer, &logger, 0, 4);
 DataQueuePayload connectorDataQueuePayload;
-//DataQueuePayload communicatorQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);
 Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
@@ -138,8 +141,7 @@ void setup() {
     // queue for the sampler process
     samplerQueueClient.begin(communicatorSamplerQueueClient.getQueueHandle());
 
-    // queues for the communicator process
-    // receive only
+    // queues for the communicator process, receive only
     communicatorSamplerQueueClient.begin();
     communicatorConnectorQueueClient.begin(connectorCommunicatorQueueClient.getQueueHandle());
 

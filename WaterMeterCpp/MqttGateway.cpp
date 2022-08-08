@@ -39,11 +39,8 @@ static const std::map<Topic, std::pair<bool, std::pair<const char*, const char*>
     {Topic::ResetSensor, {true, {DEVICE, DEVICE_RESET_SENSOR}}}
 };
 
+// SetVolume is not retained yet as we are not pushing it back at this stage
 static const std::set<Topic> NON_RETAINED_TOPICS{Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume};
-
-//TODO delete
-//static const std::set<Topic> RETRIEVED_TOPICS{Topic::Volume};
-
 
 constexpr const char* const RATE_RANGE = "0:8640000";
 constexpr const char* const TYPE_INTEGER = "integer";

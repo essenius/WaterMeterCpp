@@ -27,7 +27,6 @@ bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsign
     _eventServer->subscribe(_queueClient, Topic::BatchSize);
     _eventServer->subscribe(_queueClient, Topic::Blocked);
     _eventServer->subscribe(_queueClient, Topic::Exclude);
-    /* _eventServer->subscribe(_queueClient, Topic::Flow); */
     _eventServer->subscribe(_queueClient, Topic::FreeQueueSize);
     _eventServer->subscribe(_queueClient, Topic::FreeQueueSpaces);
     _eventServer->subscribe(_queueClient, Topic::Pulse);

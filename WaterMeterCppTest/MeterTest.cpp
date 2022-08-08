@@ -42,13 +42,13 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("0", pulseClient.getPayload()) << L"Pulse payload is 0";
 
         const char* expected[] = {
-            "00123.4567319", "00123.4567639", "00123.4567958", "00123.4568278", "00123.4568597",
-            "00123.4568916", "00123.4569236", "00123.4569555", "00123.4569875", "00123.4570194"
+            "00123.4567303", "00123.4567606", "00123.4567909", "00123.4568212", "00123.4568515",
+            "00123.4568818", "00123.4569121", "00123.4569424", "00123.4569727", "00123.4570030"
         };
         for (unsigned int i = 0; i < std::size(expected); i++) {
             volumeClient.reset();
             pulseClient.reset();
-            eventServer.publish(Topic::Pulse, LONG_TRUE);
+            eventServer.publish(Topic::Pulse, i*2 + 1);
             char buffer[10];
             safeSprintf(buffer, "%d", i + 1);
 

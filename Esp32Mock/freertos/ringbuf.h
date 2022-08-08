@@ -22,9 +22,9 @@ using RingbufHandle_t = void*;
 
 enum RingbufferType_t { RINGBUF_TYPE_NOSPLIT = 0, RINGBUF_TYPE_ALLOWSPLIT, RINGBUF_TYPE_BYTEBUF, RINGBUF_TYPE_MAX };
 
-// testing only
+// these 3 are for testing only
 void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull);
-// testing only
+void setRingBufferNoMoreEntries(RingbufHandle_t bufferHandle);
 void uxRingbufReset();
 
 inline void vRingbufferReturnItem(RingbufHandle_t bufferHandle, void* item1) {}

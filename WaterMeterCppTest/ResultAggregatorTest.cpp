@@ -240,4 +240,28 @@ namespace WaterMeterCppTest {
         assertDuration(10125, 10125, 10125, result);
         // TODO: filtered value analysis
     }
+
+    TEST_F(ResultAggregatorTest, resultAggregatorResetTest) {
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+        eventServer.publish(Topic::IdleRate, 1);
+        eventServer.publish(Topic::NonIdleRate, 1);
+        constexpr FloatCoordinate LOW_PASS{ 2400, 2400 };
+        const FlowMeterDriver fmd(&eventServer, LOW_PASS, false, false, true);
+        aggregator.addMeasurement(Coordinate{ {2398, 0} }, &fmd);
+        EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush";
+        const auto result = &payload.buffer.result;
+        EXPECT_EQ(1, result->resetCount);
+    }
+
+    TEST_F(ResultAggregatorTest, resultAggregatorUpdateWrongTopicTest) {
+        // check that wrong topics don't change the flush rate (which the valid topics do)
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+        auto rate = aggregator.getFlushRate();
+        aggregator.update(Topic::FreeHeap, 1);
+        const auto testString = "test";
+        eventServer.publish(Topic::FreeHeap, testString);
+        ASSERT_EQ(rate, aggregator.getFlushRate());
+    }
 }

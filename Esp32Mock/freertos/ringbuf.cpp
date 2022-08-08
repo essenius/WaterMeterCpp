@@ -53,6 +53,11 @@ void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull) {
     container[i].bufferIsFull = isFull;
 }
 
+void setRingBufferNoMoreEntries(RingbufHandle_t bufferHandle) {
+    const int i = getIndex(bufferHandle);
+    container[i].nextBufferItem = MAX_ITEMS + 1;
+}
+
 void uxRingbufReset() {
     for (auto& i : container) {
         i.ringbufHandle = nullptr;

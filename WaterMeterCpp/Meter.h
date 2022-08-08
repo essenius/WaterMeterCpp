@@ -26,8 +26,8 @@ public:
     void update(Topic topic, long payload) override;
 
 private:
-    // 31,308 pulses per cubic meter (i.e. 1000L) - determined empirically (was 33173)
-    static constexpr double PULSES_PER_UNIT = 31308;
+    // 2 pulses per cycle, 16500 cycles per 1000L 
+    static constexpr double PULSES_PER_UNIT = 33000;
     static constexpr double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;
     double _volume = 0.0;
     unsigned long _pulses = 0;

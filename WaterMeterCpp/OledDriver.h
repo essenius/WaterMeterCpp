@@ -33,6 +33,7 @@ private:
     void setLogo(const unsigned char* logo, int16_t xLocation, int16_t yLocation);
     void showMessageAtLine(const char* message, int16_t line);
     void switchEventLogo(const unsigned char* logo, long switchOn);
+    // TODO: replace by pulselogo
     void switchFlowLogo(const unsigned char* logo, long switchOn);
     void switchLogo(const unsigned char* logo, int16_t xLocation, int16_t yLocation, long switchOn);
     void updateConnectionState(ConnectionState payload);
@@ -96,17 +97,6 @@ private:
         0b10101010,
         0b10010100
     };
-
-   /* static constexpr unsigned char FLOW_LOGO[] =
-    {
-        0b00010000,
-        0b10101010,
-        0b01000100,
-        0b00010000,
-        0b10101010,
-        0b01000100,
-        0b00000000
-    }; */
 
     static constexpr unsigned char MQTT_LOGO[] =
     {

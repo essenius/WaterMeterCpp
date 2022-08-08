@@ -22,6 +22,18 @@
 
 namespace WaterMeterCppTest {
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
+
+    TEST(DataQueueTest, dataQueueOverrunTest) {
+        EventServer eventServer;
+        DataQueuePayload payload{};
+        DataQueue dataQueue(&eventServer, &payload);
+        setRingBufferBufferFull(dataQueue.handle(),true);
+        ASSERT_FALSE(dataQueue.send(&payload));
+        setRingBufferBufferFull(dataQueue.handle(), false);
+        setRingBufferNoMoreEntries(dataQueue.handle());
+        ASSERT_FALSE(dataQueue.send(&payload));
+    }
+
     TEST(DataQueueTest, dataQueueTest1) {
         EventServer eventServer;
         Clock theClock(&eventServer);

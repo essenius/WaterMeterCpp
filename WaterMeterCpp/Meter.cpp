@@ -61,7 +61,9 @@ void Meter::update(const Topic topic, const char* payload) {
 }
 
 void Meter::update(const Topic topic, const long payload) {
-    if (topic == Topic::Pulse && payload == LONG_TRUE) {
+    // we only register top and bottom extremes (values 1 and 3).
+    // Since we have a tilted ellipse and not a circle, quarters are not reliable. Halves are.
+    if (topic == Topic::Pulse && payload % 2 == 1) {
         newPulse();
     }
     else if (topic == Topic::SetVolume) {
