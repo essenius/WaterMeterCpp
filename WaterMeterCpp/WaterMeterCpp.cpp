@@ -45,7 +45,7 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.101.2";
+constexpr const char* const BUILD_VERSION = "0.101.3";
 
 // We measure every 10 ms. That is twice the frequency of the AC in Europe (which we need to take into account since
 // there are water pumps close to the water meter, and about the fastest that the sensor can do reliably.
