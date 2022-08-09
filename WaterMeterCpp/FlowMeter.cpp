@@ -66,11 +66,15 @@ void FlowMeter::addSample(const Coordinate sample) {
 void FlowMeter::begin(const int noiseRange, const float gain) {
 
     // Calculate LSB corresponding to the largest measured magnetic field with margin.
-    // If we have an amplitude larger than that, it is an outlier
+    // If we have a distance difference larger than that, it is an outlier
     _outlierThreshold = OUTLIER_DISTANCE_DIFFERENCE * gain / 1000.0f;
     // We assume X and Y ranges have the same noise levels. The maximum difference in distance between samples
     // where we can still be in the noise range is sqrt(maxXdistance^2 + maxYdistance^2)
-    _maxNoiseDistance = sqrtf(static_cast<float>(2 * noiseRange * noiseRange));
+    // We take a bit extra margin as we have influence from other factors besides measurement inaccuracy, 
+    // probably other devices in the neighborhood. This was a good 'happy medium' in sensitivity.
+    // Making it much higher (e.g. *2) could make the algorithm miss extremes or start too late.
+    const float noiseBase = static_cast<float>(noiseRange) * 1.4f;
+    _maxNoiseDistance = sqrtf(2 * noiseBase * noiseBase);
     _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::SensorWasReset);
 }
