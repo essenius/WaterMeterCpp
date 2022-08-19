@@ -38,8 +38,6 @@ void ExtremeSearcher::addMeasurement(const FloatCoordinate sample) {
         _extreme = sample;
         _angle.setFrom(_extreme);
     }
-    // TODO: eliminate duplication with FlowMeter::detectPulse
-
     // need to calculate both all the time, since they use previous values (no boolean shortcuts)
     const auto distance = _extreme.distanceFrom(sample);
     const auto angleOk = _angle.isAcceptable(sample);
