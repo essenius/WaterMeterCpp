@@ -21,14 +21,16 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(-1000, searcher.extreme().y) << "Extreme Y value ok";
         EXPECT_EQ(0, searcher.extreme().x) << "Extreme X value ok";
 
-        const float sampleY[] = {10, 20, 30, 35, 38, 35, 30, 20, 10};
-        const float extremeY[] = {10, 20, 30, 35, 38, 38, 38, 38, 38};
+        constexpr FloatCoordinate SAMPLE[] = {
+        {-9.7f, 2.2f}, {-9, 4.3f}, {-7.8f, 6.2f},{-6.2f, 7.8f},{-4.3f, 9},
+        {-2.2f,9.7f},{0,10.0f},{2.2f,9.7f},{4.3f,9}, {6.2f, 7.8f} };
+        constexpr float EXTREME_Y[] = {2.2f, 4.3f, 6.2f, 7.8f,  9, 9.7f, 10, 10, 10, 10};
 
-        for (size_t i = 0; i < std::size(sampleY); i++) {
-            constexpr int EXTREME_INDEX_FOUND = 6;
-            searcher.addMeasurement({static_cast<float>(i), sampleY[i]});
-            EXPECT_EQ(extremeY[i], searcher.extreme().y) << "Extreme value ok";
-            EXPECT_EQ(i >= EXTREME_INDEX_FOUND, searcher.foundExtreme()) << "Extreme value ok";
+        for (size_t i = 0; i < std::size(SAMPLE); i++) {
+            constexpr int EXTREME_INDEX_FOUND = 9;
+            searcher.addMeasurement(SAMPLE[i]);
+            EXPECT_EQ(EXTREME_Y[i], searcher.extreme().y) << "Extreme value ok for i=" << i;
+            EXPECT_EQ(i >= EXTREME_INDEX_FOUND, searcher.foundTarget()) << "Extreme value ok for i=" << i;
         }
     }
 
@@ -38,60 +40,53 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(-1000, searcher.extreme().x) << "Extreme X value ok";
         EXPECT_EQ(0, searcher.extreme().y) << "Extreme Y value ok";
 
-        constexpr float SAMPLE_X[] = {-10, -1, -3, 5, 12, 11, 13, 11, -4};
-        constexpr float EXTREME_X[] = {-10, -1, -1, 5, 12, 12, 13, 13, 13};
-        for (size_t i = 0; i < std::size(SAMPLE_X); i++) {
-            constexpr int EXTREME_INDEX_FOUND = 8;
-            searcher.addMeasurement({SAMPLE_X[i], static_cast<float>(i)});
-            EXPECT_EQ(EXTREME_X[i], searcher.extreme().x) << "Extreme value ok";
-            EXPECT_EQ(i >= EXTREME_INDEX_FOUND, searcher.foundExtreme()) << "Extreme value ok";
+        // arc with x=10*sin(i+3)*pi/14, y=10*cos(i+3)*pi/14, with a dent to force a local extreme
+        constexpr FloatCoordinate SAMPLE[] = {
+            {6.2f, 7.8f}, {7.8f, 6.2f},{9.3f,4.3f},{9.2f,2.2f},
+            {10.0f,0.0f},{9.7f,-2.2f},{9.0f,-4.3f},{7.8f,-6.2f} };
+
+        constexpr float EXTREME_X[] = {6.2f, 7.8f, 9.3f, 9.3f, 10.0f, 10.0f, 10.0f, 10.0f};
+        for (size_t i = 0; i < std::size(SAMPLE); i++) {
+            constexpr int EXTREME_INDEX_FOUND = 7;
+            searcher.addMeasurement(SAMPLE[i]);
+            EXPECT_EQ(EXTREME_X[i], searcher.extreme().x) << "Extreme value ok for i=" << i;
+            EXPECT_EQ(i >= EXTREME_INDEX_FOUND, searcher.foundTarget()) << "Extreme foundfor i=" << i;
         }
     }
 
     TEST(ExtremeSearcherTest, extremeSearcherMinYTest) {
         ExtremeSearcher searcher(MinY, { 100, 1000 }, nullptr);
-        searcher.begin(3);
+        searcher.begin(5);
         EXPECT_EQ(1000, searcher.extreme().y) << "Extreme Y value ok";
         EXPECT_EQ(100, searcher.extreme().x) << "Extreme X value ok";
 
-        const float sampleY[] = { 10, 12, 8, 9, 6, 8, 1, 4 };
-        const float extremeY[] = { 10, 10, 8, 8, 6, 6, 1, 1 };
-        for (size_t i = 0; i < std::size(sampleY); i++) {
+        constexpr FloatCoordinate SAMPLE[] = {
+            {7.8f, -7.9f}, {6.2f, -7.8f},{4.3f,-9.0f},{2.2f,-9.7f},
+            {0.0f,-10.0f},{-2.2f,-9.7f},{-4.3f, -9.0f},{-6.2f,-7.8f} };
+        constexpr float EXTREME_Y[] = { -7.9f, -7.9f, -9.0f, -9.7f, -10.0f, -10.0f, -10.0f, -10.0f };
+        for (size_t i = 0; i < std::size(EXTREME_Y); i++) {
             constexpr int EXTREME_INDEX_FOUND = 7;
-            searcher.addMeasurement({ static_cast<float>(i), sampleY[i] });
-            EXPECT_EQ(extremeY[i], searcher.extreme().y) << "Extreme value ok";
-            EXPECT_EQ(i >= EXTREME_INDEX_FOUND, searcher.foundExtreme()) << "Extreme value ok";
+            searcher.addMeasurement(SAMPLE[i]);
+            EXPECT_EQ(EXTREME_Y[i], searcher.extreme().y) << "Extreme value ok for i=" << i;
+            EXPECT_EQ(i >= EXTREME_INDEX_FOUND, searcher.foundTarget()) << "Extreme found for i=" << i;
         }
     }
 
     TEST(ExtremeSearcherTest, extremeSearcherMinXTest) {
         ExtremeSearcher searcher(MinX, { 1000, 10 }, nullptr);
-        searcher.begin(3);
+        searcher.begin(5);
         EXPECT_EQ(1000, searcher.extreme().x) << "Extreme X value ok";
         EXPECT_EQ(10, searcher.extreme().y) << "Extreme Y value ok";
 
-        const float sampleX[] = { 100, 92, 91, 88, 75, 76, 77, 70, 71, 73 };
-        const float extremeX[] = { 100, 92, 91, 88, 75, 75, 75, 70, 70, 70 };
-        for (size_t i = 0; i < std::size(sampleX); i++) {
-            constexpr int EXTREME_INDEX_FOUND = 9;
-            searcher.addMeasurement({ sampleX[i], static_cast<float>(i) });
-            EXPECT_EQ(extremeX[i], searcher.extreme().x) << "Extreme value ok";
-            EXPECT_EQ(i >= EXTREME_INDEX_FOUND, searcher.foundExtreme()) << "Extreme value ok";
-        }
-    }
-
-    TEST(ExtremeSearcherTest, extremeSearcherNoneTest) {
-        ExtremeSearcher searcher(None, { 50, -50 }, nullptr);
-        searcher.begin(3);
-        EXPECT_EQ(50, searcher.extreme().x) << "Extreme X value ok";
-        EXPECT_EQ(-50, searcher.extreme().y) << "Extreme Y value ok";
-
-        constexpr float SAMPLE_X[] = { 100, 0, -100, 200 };
-        constexpr float EXTREME_X[] = { 50, 50, 50, 50};
-        for (size_t i = 0; i < std::size(SAMPLE_X); i++) {
-            searcher.addMeasurement({ SAMPLE_X[i], static_cast<float>(i) });
-            EXPECT_EQ(EXTREME_X[i], searcher.extreme().x) << "Extreme value not changed";
-            EXPECT_EQ(false, searcher.foundExtreme()) << "No extreme";
+        constexpr FloatCoordinate SAMPLE[] = {
+            {-6.2f, -7.8f}, {-7.8f, -6.2f}, {-9.0f, -4.3f},{-6.0f,-2.2f},{-10.0f,0.0f},
+            {-9.7f, 2.2f}, {-9.0f, 4.3f}, {-7.8f, 6.2f}, {-6.2f, 7.8f}, {-4.3f, 9.0f}, {-2.2f, 9.7f} };
+        constexpr float EXTREME_X[] = { -6.2f, -7.8f, -9.0f, -9.0f, -10.0f, -10.0f, -10.0f, -10.0f, -10.0f, -10.0f, -10.0f };
+        for (size_t i = 0; i < std::size(SAMPLE); i++) {
+            constexpr int EXTREME_INDEX_FOUND = 7;
+            searcher.addMeasurement(SAMPLE[i]);
+            EXPECT_EQ(EXTREME_X[i], searcher.extreme().x) << "Extreme value ok for i=" << i;
+            EXPECT_EQ(i >= EXTREME_INDEX_FOUND, searcher.foundTarget()) << "Extreme value ok for i=" << i;
         }
     }
 
@@ -103,6 +98,6 @@ namespace WaterMeterCppTest {
         const auto nextSearcher = searcher2.next();
         EXPECT_EQ(-1000, nextSearcher->extreme().x) << "Extreme X value ok";
         EXPECT_EQ(0, nextSearcher->extreme().y) << "Extreme Y value ok";
-        EXPECT_FALSE(nextSearcher->foundExtreme()) << "Extreme not found";
+        EXPECT_FALSE(nextSearcher->foundTarget()) << "Extreme not found";
     }
 }

@@ -258,7 +258,7 @@ namespace WaterMeterCppTest {
         // check that wrong topics don't change the flush rate (which the valid topics do)
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
         aggregator.begin();
-        auto rate = aggregator.getFlushRate();
+        const auto rate = aggregator.getFlushRate();
         aggregator.update(Topic::FreeHeap, 1);
         const auto testString = "test";
         eventServer.publish(Topic::FreeHeap, testString);

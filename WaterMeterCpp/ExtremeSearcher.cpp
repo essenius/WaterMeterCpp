@@ -14,8 +14,8 @@
 void ExtremeSearcher::begin(const float maxNoiseDistance) {
     _maxNoiseDistance = maxNoiseDistance;
     _wasFound = false;
-    _foundCandidate = false;
     _extreme = _initValue;
+    _angle.setTarget(_target);
 }
 
 bool ExtremeSearcher::isExtreme(const FloatCoordinate sample) const {
@@ -28,22 +28,25 @@ bool ExtremeSearcher::isExtreme(const FloatCoordinate sample) const {
         return sample.y < _extreme.y;
     case MinX:
         return sample.x < _extreme.x;
-    default:
-        return false;
+    default: // includes None, only set the first time
+        return fabsf(_extreme.x - MIN_SENSOR_VALUE) <= 0.001f;
     }
 }
 
 void ExtremeSearcher::addMeasurement(const FloatCoordinate sample) {
     if (isExtreme(sample)) {
         _extreme = sample;
-        _foundCandidate = true;
-    } else if (_foundCandidate && _extreme.distanceFrom(sample) > _maxNoiseDistance) {
-        _wasFound = true;
-        _foundCandidate = false;
+        _angle.setFrom(_extreme);
     }
+    // TODO: eliminate duplication with FlowMeter::detectPulse
+
+    // need to calculate both all the time, since they use previous values (no boolean shortcuts)
+    const auto distance = _extreme.distanceFrom(sample);
+    const auto angleOk = _angle.isAcceptable(sample);
+    _wasFound = distance > _maxNoiseDistance && angleOk;
 }
 
-bool ExtremeSearcher::foundExtreme() const {
+bool ExtremeSearcher::foundTarget() const {
     return _wasFound;
 }
 
@@ -54,4 +57,9 @@ ExtremeSearcher* ExtremeSearcher::next() const {
 
 FloatCoordinate ExtremeSearcher::extreme() const {
     return _extreme;
+}
+
+SearchTarget ExtremeSearcher::target() const {
+    if (_target == None) return _angle.firstTarget();
+    return _target; 
 }

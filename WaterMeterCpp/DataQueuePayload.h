@@ -16,6 +16,7 @@
 
 #include "Clock.h"
 #include "EventClient.h"
+#include "FloatCoordinate.h"
 
 constexpr uint16_t MAX_SAMPLES = 25;
 

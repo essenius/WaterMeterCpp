@@ -165,6 +165,6 @@ void log_v(const char* format, Arguments ... arguments) {
     log_printf(LogLevel::Verbose, format, arguments...);
 }
 
-//char* dtostrf(float value, signed char width, unsigned char precision, char* buffer);
+//char* dtostrf(float value, signed char width, unsigned char precision, char* _buffer);
 
 #endif

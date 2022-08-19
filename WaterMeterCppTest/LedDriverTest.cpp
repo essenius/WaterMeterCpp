@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "gtest/gtest.h"
-#include <ESP.h>
+#include "../WaterMeterCpp/Led.h"
 
 #include "../WaterMeterCpp/LedDriver.h"
 #include "../WaterMeterCpp/EventServer.h"

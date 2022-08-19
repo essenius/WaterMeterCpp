@@ -22,6 +22,7 @@
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 #include "../WaterMeterCpp/MqttGateway.h"
 #include "../WaterMeterCpp/EventServer.h"
+#include "../WaterMeterCpp/Led.h"
 #include "../WaterMeterCpp/ResultAggregator.h"
 #include "../WaterMeterCpp/TimeServer.h"
 #include "../WaterMeterCpp/WiFiManager.h"

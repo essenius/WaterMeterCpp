@@ -80,10 +80,6 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("[] Time overrun: 1234\n", getPrintOutput()) << "Time overrun handled OK";
 
         clearPrintOutput();
-        eventServer.publish(Topic::ResultWritten, LONG_TRUE);
-        EXPECT_STREQ("[] Result Written: 1\n", getPrintOutput()) << "Result Written handled OK";
-
-        clearPrintOutput();
         eventServer.publish(Topic::Blocked, LONG_TRUE);
         EXPECT_STREQ("[] Blocked: 1\n", getPrintOutput()) << "Blocked handled OK";
 

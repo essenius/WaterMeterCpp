@@ -15,7 +15,7 @@
 
 namespace WaterMeterCppTest {
 
-    class TestEventClient final : public EventClient {
+    class TestEventClient : public EventClient {
     public:
         explicit TestEventClient(EventServer* eventServer) : EventClient(eventServer) {
             _payload[0] = 0;
@@ -25,6 +25,7 @@ namespace WaterMeterCppTest {
         char* getPayload();
         Topic getTopic() const;
         void reset();
+        void update(Topic topic, Coordinate payload) override;
         void update(Topic topic, const char* payload) override;
         void update(Topic topic, long payload) override;
         bool wasLong() const;

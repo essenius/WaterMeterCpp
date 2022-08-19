@@ -22,7 +22,6 @@ public:
     void begin();
     void update(Topic topic, const char* payload) override;
     void connectionUpdate(ConnectionState payload);
-    void flowOrExcludeUpdate(bool isOn);
     static void timeOverrunUpdate(bool isOn);
     void update(Topic topic, long payload) override;
 

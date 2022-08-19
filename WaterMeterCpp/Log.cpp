@@ -48,7 +48,6 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::NoDisplayFound);
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::ResultFormatted);
-    _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::SetVolume);
     _eventServer->subscribe(this, Topic::SkipSamples);
@@ -90,9 +89,6 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::ResultFormatted:
         log("Result: %s", payload);
-        break;
-    case Topic::ResultWritten:
-        log("Result Written: %s", payload);
         break;
     case Topic::SensorWasReset:
         log("Sensor was reset: %s", payload);

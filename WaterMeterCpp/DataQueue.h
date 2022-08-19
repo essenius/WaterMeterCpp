@@ -12,6 +12,7 @@
 #ifndef HEADER_DATAQUEUE
 #define HEADER_DATAQUEUE
 
+// ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include <freertos/freeRTOS.h>
 #include <freertos/ringbuf.h>
 

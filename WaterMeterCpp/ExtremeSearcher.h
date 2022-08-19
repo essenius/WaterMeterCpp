@@ -12,33 +12,30 @@
 #ifndef HEADER_EXTREMESEARCHER
 #define HEADER_EXTREMESEARCHER
 
-#include "EventClient.h"
+#include "Angle.h"
+#include "FloatCoordinate.h"
 
-enum SearchTarget : uint8_t {
-    None = 0,
-    MaxY,
-    MaxX,
-    MinY,
-    MinX
-};
+// Don't use this class with the None target as its behavior is not defined for that 
 
 class ExtremeSearcher {
 public:
+    static constexpr float MIN_SENSOR_VALUE = -4096;
+    static constexpr float MAX_SENSOR_VALUE = 4096;
     ExtremeSearcher(const SearchTarget target, const FloatCoordinate initValue, ExtremeSearcher* next) :
     _target(target), _initValue(initValue), _extreme(initValue), _nextSearcher(next) {}
+
     void begin(float maxNoiseDistance);
     bool isExtreme(FloatCoordinate sample) const;
     void addMeasurement(FloatCoordinate sample);
-    bool foundExtreme() const;
+    bool foundTarget() const;
     ExtremeSearcher* next() const;
     FloatCoordinate extreme() const;
-    SearchTarget target() const { return _target; }
+    SearchTarget target() const;
 
 private:
+    static constexpr int DEFAULT_ANGLE_COUNT = 5;
     // what extreme are we looking for?
     SearchTarget _target;
-    // Did we find a potential extreme?
-    bool _foundCandidate = false;
     // could we confirm we found it?
     bool _wasFound = false;
     // Values that must be immediately overridden with the first comparison,
@@ -48,8 +45,9 @@ private:
     FloatCoordinate _extreme;
     // which extreme will we search for after this one?
     ExtremeSearcher* _nextSearcher;
-    // The maximum amount of noise we can expect
+    // The maximum amount of noise we can expect (set with begin())
     float _maxNoiseDistance = 0;
+    Angle _angle;
 };
 
 #endif

@@ -146,6 +146,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Aggregator.cpp" />
+    <ClCompile Include="Angle.cpp" />
     <ClCompile Include="Communicator.cpp" />
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="Connector.cpp" />
@@ -183,17 +184,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aggregator.h" />
+    <ClInclude Include="Angle.h" />
     <ClInclude Include="ChangePublisher.h" />
     <ClInclude Include="Communicator.h" />
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="Connector.h" />
     <ClInclude Include="ConnectionState.h" />
+    <ClInclude Include="Coodinate.h" />
     <ClInclude Include="DataQueue.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="EventClient.h" />
     <ClInclude Include="EventServer.h" />
     <ClInclude Include="ExtremeSearcher.h" />
     <ClInclude Include="FirmwareManager.h" />
+    <ClInclude Include="FloatCoordinate.h" />
     <ClInclude Include="FlowMeter.h" />
     <ClInclude Include="Led.h" />
     <ClInclude Include="LongChangePublisher.h" />

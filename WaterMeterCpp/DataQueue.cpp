@@ -14,8 +14,6 @@
 #include "SafeCString.h"
 #include "DataQueuePayload.h"
 
-#include <ESP.h>
-
 DataQueue::DataQueue(EventServer* eventServer, DataQueuePayload* payload, const int8_t index, const long queueSize,
                      const long epsilon, const long lowThreshold) :
     EventClient(eventServer),

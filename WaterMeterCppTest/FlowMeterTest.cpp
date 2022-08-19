@@ -18,6 +18,7 @@
 
 #include "TestEventClient.h"
 #include "FlowMeterDriver.h"
+#include "PulseTestEventClient.h"
 
 namespace WaterMeterCppTest {
     
@@ -25,7 +26,7 @@ namespace WaterMeterCppTest {
     public:
         static EventServer eventServer;
     protected:
-        static constexpr float PI = 3.1415926536f;
+        static constexpr float PI_F = 3.1415926536f;
         void expectResult(const FlowMeter* meter, const wchar_t* description, const int index,
                           const SearchTarget searchTarget = None, const bool pulse = false, const bool outlier = false) const {
             std::wstring message(description);
@@ -40,7 +41,7 @@ namespace WaterMeterCppTest {
             constexpr float RADIUS = 10.0L;
             constexpr int16_t X_OFFSET = -100;
             constexpr int16_t Y_OFFSET = 100;
-            const float angle = (sampleNumber - angleOffsetSamples) * PI / samplesPerCycle * 2.0f;
+            const float angle = (sampleNumber - angleOffsetSamples) * PI_F / samplesPerCycle * 2.0f;
             return Coordinate{
                 {
                     static_cast<int16_t>(X_OFFSET + round(sin(angle) * RADIUS)),
@@ -60,25 +61,25 @@ namespace WaterMeterCppTest {
             const int index, 
             const FloatCoordinate movingAverage, 
             const FloatCoordinate smooth = { 0,0 }, 
-            const FloatCoordinate averageStartValue = { 0,0 },
-            const int flowThresholdPassCount = 0,
-            const bool flowStarted = false) const {
+            const FloatCoordinate smoothStartValue = { 0,0 },
+            const bool flowStarted = false,
+            const bool isPulse = false) const {
             EXPECT_FLOAT_EQ(movingAverage.x, actual->_movingAverage[index].x) << message << ": moving average X #" << index;
             EXPECT_FLOAT_EQ(movingAverage.y, actual->_movingAverage[index].y) << message << ": moving average Y #" << index;
             EXPECT_FLOAT_EQ(smooth.x, actual->_smooth.x) << message << ": smooth X";
             EXPECT_FLOAT_EQ(smooth.y, actual->_smooth.y) << message << ": smooth Y";
-            EXPECT_FLOAT_EQ(averageStartValue.x, actual->_averageStartValue.x) << message << ": average start value X";
-            EXPECT_FLOAT_EQ(averageStartValue.y, actual->_averageStartValue.y) << message << ": average start value Y";
-            EXPECT_EQ(flowThresholdPassCount, actual->_flowThresholdPassedCount) << message << ": flow threshold passed count";
+            EXPECT_FLOAT_EQ(smoothStartValue.x, actual->_smoothStartValue.x) << message << ": smooth start value X";
+            EXPECT_FLOAT_EQ(smoothStartValue.y, actual->_smoothStartValue.y) << message << ": smooth start value Y";
             EXPECT_EQ(flowStarted, actual->_flowStarted) << ": flow started";
+            EXPECT_EQ(isPulse, actual->_isPulse) << ": pulse detected";
+
         }
 
         // run process on test signals with a known number of pulses
-        void flowTestWithFile(const char* fileName, int expectedPulses) const {
+        void flowTestWithFile(const char* fileName, const int maxXPulses = 0, const int maxYPulses = 0, const int minXPulses = 0, const int minYPulses = 0) const {
             FlowMeter flowMeter(&eventServer);
+            const PulseTestEventClient pulseClient(&eventServer);
             flowMeter.begin(4, 390);
-            TestEventClient pulseClient(&eventServer);
-            eventServer.subscribe(&pulseClient, Topic::Pulse);
             Coordinate measurement{};
             std::ifstream measurements(fileName);
             EXPECT_TRUE(measurements.is_open()) << "File open";
@@ -87,38 +88,45 @@ namespace WaterMeterCppTest {
                 measurements >> measurement.y;
                 eventServer.publish(Topic::Sample, measurement);
             }
-            ASSERT_EQ(expectedPulses, pulseClient.getCallCount());
+
+           /* ASSERT_STREQ("", pulseClient.pulseHistory()); */
+
+            ASSERT_EQ(maxXPulses, pulseClient.getExtremeCount(MaxX)) << "MaxX";
+            ASSERT_EQ(maxYPulses, pulseClient.getExtremeCount(MaxY)) << "MaxY";
+            ASSERT_EQ(minXPulses, pulseClient.getExtremeCount(MinX)) << "MinX";
+            ASSERT_EQ(minYPulses, pulseClient.getExtremeCount(MinY)) << "MinY";
         }
     };
 
     EventServer FlowMeterTest::eventServer;
 
     TEST_F(FlowMeterTest, flowMeter0CyclesNoiseTest) {
-        flowTestWithFile("0cyclesNoise.txt", 0);
+        flowTestWithFile("0cyclesNoise.txt");
     }
 
     TEST_F(FlowMeterTest, flowMeter1CycleSlowTest) {
-        flowTestWithFile("1cycleSlow.txt", 5);
+        flowTestWithFile("1cycleSlow.txt", 1,1,1, 2);
     }
 
     TEST_F(FlowMeterTest, flowMeter1CycleVerySlowTest) {
-        flowTestWithFile("1cycleVerySlow.txt", 4);
+        flowTestWithFile("1cycleVerySlow.txt", 1,1,1,1);
     }
 
     TEST_F(FlowMeterTest, flowMeter1CycleSlowestTest) {
-        flowTestWithFile("1cycleSlowest.txt", 4);
+        flowTestWithFile("1cycleSlowest.txt", 1,1,1,1);
     }
 
     TEST_F(FlowMeterTest, flowMeter13CyclesSlowFastTest) {
-        flowTestWithFile("13cyclesSlowFast.txt", 50);
+        flowTestWithFile("13cyclesSlowFast.txt", 13,13,12,12);
     }
 
     TEST_F(FlowMeterTest, flowMeter35CyclesTest) {
-        flowTestWithFile("35cycles.txt", 137);
+        flowTestWithFile("35cycles.txt", 34,35,34,34);
+
     }
 
     TEST_F(FlowMeterTest, flowMeter77CyclesFastTest) {
-        flowTestWithFile("77cyclesFast.txt", 306);
+        flowTestWithFile("77cyclesFast.txt", 76,77,77,76);
     }
 
     TEST_F(FlowMeterTest, flowMeterDetectPulseTest) {
@@ -130,27 +138,31 @@ namespace WaterMeterCppTest {
         actual.begin(5, 390);
 
         actual.addSample({{100, 50}});
-        expectFlowAnalysis(&actual, "First", 0, { 100, 50 });
+        expectFlowAnalysis(&actual, "No flow 1", 0, { 100, 50 });
         actual.detectPulse({{103, 53}});
-        expectFlowAnalysis(&actual, "Second", 1, { 103, 53 });
+        expectFlowAnalysis(&actual, "No flow 2", 1, { 103, 53 });
         actual.detectPulse({{105, 55}});
-        expectFlowAnalysis(&actual, "Third", 2, { 105, 55 });
+        expectFlowAnalysis(&actual, "No flow 3", 2, { 105, 55 });
         actual.detectPulse({{104, 54}});
-        expectFlowAnalysis(&actual, "Fourth", 3, { 104, 54 }, {103, 53}, {103, 53});
+        expectFlowAnalysis(&actual, "No flow 4", 3, { 104, 54 }, {103, 53}, {103, 53});
         actual.detectPulse({{102, 54}});
-        expectFlowAnalysis(&actual, "Fifth", 0, { 102, 54 },  { 103.25f, 53.5f }, { 103.125f, 53.25f });
+        expectFlowAnalysis(&actual, "No flow 5", 0, { 102, 54 },  { 103.25f, 53.5f }, { 103, 53 });
 
-        // start moving. This should finalize the average calculation
+        // start moving. 
 
         actual.detectPulse({{80, 70}});
-        expectFlowAnalysis(&actual, "First flow (not started)", 1, { 80, 70 }, { 100.5f, 55.875f }, { 103.125f, 53.25f }, 1);
+        expectFlowAnalysis(&actual, "Flow 1 (distance short)", 1, { 80, 70 }, { 100.5f, 55.875f }, { 103, 53 }, false);
         EXPECT_EQ(None, actual.searchTarget()) << "Not in search mode yet";
         EXPECT_EQ(nullptr, actual._currentSearcher) << "No searcher yet";
         actual.detectPulse({{70, 40}});
-        expectFlowAnalysis(&actual, "Second flow (started)", 2, { 70, 40 }, { 94.75f, 55.1875f }, { 103.125f, 53.25f }, 2, true);
-        EXPECT_EQ(MinX, actual.searchTarget()) << "MinX searcher selected (x going down, y going up)";
+
+        expectFlowAnalysis(&actual, "Flow 2 (distance OK, angle wrong)", 2, { 70, 40 }, { 94.75, 55.1875f }, { 103, 53 }, false);
+        EXPECT_EQ(None, actual.searchTarget()) << "Not in search mode yet";
+        EXPECT_EQ(nullptr, actual._currentSearcher) << "No searcher yet";
+        
         actual.detectPulse({{80, 69}});
-        expectFlowAnalysis(&actual, "Found flow 2 (started)", 3, { 80, 69 }, { 88.875f, 56.71875f }, { 103.125f, 53.25f }, 2, true);
+        expectFlowAnalysis(&actual, "Flow 3 (detected)", 3, { 80, 69 }, { 88.875f, 56.71875f }, { 103, 53 }, true);
+        EXPECT_EQ(MinX, actual.searchTarget()) << "MinX searcher selected (x going down, y going up)";
 
         // provide a minimal X
 
@@ -206,13 +218,13 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(MinX, actual.searchTarget()) << "MinX searcher selected";
     }
 
-    TEST_F(FlowMeterTest, flowMeterGetTargetTest) {
+/*    TEST_F(FlowMeterTest, flowMeterGetTargetTest) {
         FlowMeterDriver actual(&eventServer);
         ASSERT_EQ(MinX, actual.getTarget({ -5, 5 })) << "MinX target correctly identified";
         ASSERT_EQ(MaxY, actual.getTarget({ 0.01f, 2 })) << "MaxY target correctly identified";
         ASSERT_EQ(MinY, actual.getTarget({ -7, -2 })) << "MinY target correctly identified";
         ASSERT_EQ(MaxX, actual.getTarget({ 1, -2 })) << "MaxX target correctly identified";
-    }
+    }*/
 
     TEST_F(FlowMeterTest, flowMeterSearcherTest) {
         FlowMeterDriver actual(&eventServer);
@@ -293,7 +305,7 @@ namespace WaterMeterCppTest {
             actual.addSample(getSample(static_cast<float>(i)));
         }
 
-        expectFlowAnalysis(&actual, "init", 1, { -98, 110 }, { -96.125f, 108.875f }, { -97, 109.25f }, 1);
+        expectFlowAnalysis(&actual, "init", 1, { -98, 110 }, { -96.125f, 108.875f }, { -97, 109.25f }, false);
 
         EXPECT_FALSE(actual.wasReset()) << "No reset";
         actual.update(Topic::SensorWasReset, LONG_TRUE);

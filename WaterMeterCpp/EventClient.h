@@ -14,7 +14,8 @@
 
 #include <cstdarg>
 #include <map>
-#include <cmath>
+
+#include "Coodinate.h"
 
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;
@@ -63,58 +64,6 @@ enum class Topic: int16_t {
     NoDisplayFound,
     UpdateProgress
 };
-
-union Coordinate {
-    struct {
-        int16_t x;
-        int16_t y;
-    };
-
-    long l;
-
-    bool operator==(const Coordinate& other) const {
-        return x == other.x && y == other.y;
-    }
-
-    void set(const int16_t xIn, const int16_t yIn) {
-        x = xIn;
-        y = yIn;
-    }
-
-    float distanceFrom(const Coordinate other) const {
-        const auto xDifference = static_cast<float>(x - other.x);
-        const auto yDifference = static_cast<float>(y - other.y);
-        return sqrtf(xDifference * xDifference + yDifference * yDifference);
-    }
-};
-
-struct FloatCoordinate {
-    float x;
-    float y;
-
-    float distanceFromOrigin() const {
-        return sqrtf(x * x + y * y);
-    }
-
-    float angleWithOrigin() const {
-        return atan2f(y, x);
-    }
-
-    void set(const Coordinate input) {
-        x = static_cast<float>(input.x);
-        y = static_cast<float>(input.y);
-    }
-
-    float distanceFrom(const FloatCoordinate other) const {
-        const auto difference = differenceWith(other);
-        return sqrtf(difference.x * difference.x + difference.y * difference.y);
-    }
-
-    FloatCoordinate differenceWith(const FloatCoordinate other) const {
-        return { x - other.x, y - other.y };
-    }
-};
-
 
 union EventPayload {
     int32_t n;

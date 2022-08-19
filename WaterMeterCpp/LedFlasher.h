@@ -12,7 +12,7 @@
 #ifndef HEADER_LEDFLASHER
 #define HEADER_LEDFLASHER
 
-#include "Led.h"
+#include <ESP.h>
 
 class LedFlasher {
 public:

@@ -26,6 +26,13 @@ namespace WaterMeterCppTest {
         _payload[0] = 0;
     }
 
+    void TestEventClient::update(const Topic topic, const Coordinate payload) {
+        _callCount++;
+        _wasLong = false;
+        _topic = topic;
+        safeSprintf(_payload, "(%d,%d)", payload.x, payload.y);
+
+    }
     void TestEventClient::update(const Topic topic, const char* payload) {
         _callCount++;
         _wasLong = false;

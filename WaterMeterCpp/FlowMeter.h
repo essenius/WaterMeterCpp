@@ -11,12 +11,14 @@
 
 #ifndef HEADER_FLOWMETER
 #define HEADER_FLOWMETER
+#include "Angle.h"
 #include "ChangePublisher.h"
 #include "EventClient.h"
 #include "ExtremeSearcher.h"
 
 class FlowMeter : public EventClient {
 public:
+    static constexpr float PI_F = 3.1415926536f;
     // if we have more than this number of outliers in a row, we reset the sensor
     static constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 50;
     explicit FlowMeter(EventServer* eventServer);
@@ -25,7 +27,7 @@ public:
     FloatCoordinate currentExtreme() const;
     bool isOutlier() const { return _outlier; }
     bool isPulse() const { return _isPulse; }
-    SearchTarget searchTarget() const { return _searchTarget; }
+    SearchTarget searchTarget() const;
 
     void update(Topic topic, long payload) override;
     void update(Topic topic, Coordinate payload) override;
@@ -39,43 +41,50 @@ public:
 protected:
     static constexpr int8_t MOVING_AVERAGE_BUFFER_SIZE = 4;
     float _averageAbsoluteDistance = 0.0f;
-    float _averageCount = 0.0f;
-    FloatCoordinate _averageStartValue = {};
+    /*float _averageCount = 0.0f;*/
+    FloatCoordinate _smoothStartValue = {};
     ExtremeSearcher* _currentSearcher = nullptr;
     unsigned int _consecutiveOutliers = 0;
-    Coordinate _firstSample{};
+    /*Coordinate _firstSample{};*/
     bool _firstCall = true;
     bool _firstRound = true;
     bool _flowStarted = false;
-    int8_t _flowThresholdPassedCount = 0;
     bool _isPulse = false;
     // will be overwritten in begin()
     float _maxNoiseDistance = 0;
+    ExtremeSearcher _noneSearcher;
     ExtremeSearcher _maxXSearcher;
     ExtremeSearcher _maxYSearcher;
     ExtremeSearcher _minXSearcher;
     ExtremeSearcher _minYSearcher;
     Coordinate _movingAverage[MOVING_AVERAGE_BUFFER_SIZE] = {};
     int8_t _movingAverageIndex = 0;
-    int8_t _movingAverageIndexStartupLeft = MOVING_AVERAGE_BUFFER_SIZE - 1;
+    /*int8_t _movingAverageIndexStartupLeft = MOVING_AVERAGE_BUFFER_SIZE - 1;*/
     ChangePublisher<bool> _outlier;
     // will be overwritten in begin()
     float _outlierThreshold = 0.0f;
-    ChangePublisher<int> _pulse;
-    SearchTarget _searchTarget = None;
+    /*ChangePublisher<int> _pulse;*/
+    /*SearchTarget _searchTarget = None;*/
     FloatCoordinate _smooth = {0.0f, 0.0f};
+    /*Angle _direction;*/
 
+    /*float correctedDifference(float previousAngle, float currentAngle); */
     void detectOutlier(Coordinate measurement);
     void detectPulse(Coordinate sample);
+    /*int getAngleCount(float angle, int previousValue, int defaultValue);
+    ExtremeSearcher* getSearcher(int quadrant);*/
     ExtremeSearcher* getSearcher(SearchTarget target);
-    static SearchTarget getTarget(FloatCoordinate direction);
+    /*    ExtremeSearcher* getSearcher(SearchTarget target); 
+    SearchTarget getTarget(float angle);
+    SearchTarget getTarget(int quadrant);
+    static SearchTarget getTarget(FloatCoordinate direction); */
     static float lowPassFilter(float measure, float filterValue, float alpha);
     FloatCoordinate lowPassFilter(FloatCoordinate measure, FloatCoordinate filterValue, float alpha) const;
     void markAnomalies();
     FloatCoordinate movingAverage() const;
     void resetAnomalies();
     void resetFilters(Coordinate initialSample);
-    FloatCoordinate updateAverage(FloatCoordinate coordinate);
+    /*FloatCoordinate updateAverage(FloatCoordinate coordinate); */
     void updateMovingAverage(Coordinate sample);
 };
 

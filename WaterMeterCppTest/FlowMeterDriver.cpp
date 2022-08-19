@@ -17,9 +17,8 @@ namespace WaterMeterCppTest {
 
     FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue, const bool pulse, const bool outlier, const bool first): FlowMeter(eventServer) {
         _smooth = smoothValue;
-        _outlier = outlier;
-        _pulse = pulse ? 1 : 0;
         _isPulse = pulse;
+        _outlier = outlier;
         _firstCall = first;
     }
 }
