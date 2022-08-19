@@ -41,11 +41,9 @@ public:
 protected:
     static constexpr int8_t MOVING_AVERAGE_BUFFER_SIZE = 4;
     float _averageAbsoluteDistance = 0.0f;
-    /*float _averageCount = 0.0f;*/
     FloatCoordinate _smoothStartValue = {};
     ExtremeSearcher* _currentSearcher = nullptr;
     unsigned int _consecutiveOutliers = 0;
-    /*Coordinate _firstSample{};*/
     bool _firstCall = true;
     bool _firstRound = true;
     bool _flowStarted = false;
@@ -59,32 +57,20 @@ protected:
     ExtremeSearcher _minYSearcher;
     Coordinate _movingAverage[MOVING_AVERAGE_BUFFER_SIZE] = {};
     int8_t _movingAverageIndex = 0;
-    /*int8_t _movingAverageIndexStartupLeft = MOVING_AVERAGE_BUFFER_SIZE - 1;*/
     ChangePublisher<bool> _outlier;
     // will be overwritten in begin()
     float _outlierThreshold = 0.0f;
-    /*ChangePublisher<int> _pulse;*/
-    /*SearchTarget _searchTarget = None;*/
     FloatCoordinate _smooth = {0.0f, 0.0f};
-    /*Angle _direction;*/
 
-    /*float correctedDifference(float previousAngle, float currentAngle); */
     void detectOutlier(Coordinate measurement);
     void detectPulse(Coordinate sample);
-    /*int getAngleCount(float angle, int previousValue, int defaultValue);
-    ExtremeSearcher* getSearcher(int quadrant);*/
     ExtremeSearcher* getSearcher(SearchTarget target);
-    /*    ExtremeSearcher* getSearcher(SearchTarget target); 
-    SearchTarget getTarget(float angle);
-    SearchTarget getTarget(int quadrant);
-    static SearchTarget getTarget(FloatCoordinate direction); */
     static float lowPassFilter(float measure, float filterValue, float alpha);
     FloatCoordinate lowPassFilter(FloatCoordinate measure, FloatCoordinate filterValue, float alpha) const;
     void markAnomalies();
     FloatCoordinate movingAverage() const;
     void resetAnomalies();
     void resetFilters(Coordinate initialSample);
-    /*FloatCoordinate updateAverage(FloatCoordinate coordinate); */
     void updateMovingAverage(Coordinate sample);
 };
 

@@ -18,14 +18,6 @@ struct FloatCoordinate {
     float x;
     float y;
 
-    /*float distanceFromOrigin() const {
-        return sqrtf(x * x + y * y);
-    }
-
-    float angleWithOrigin() const {
-        return atan2f(y, x);
-    } */
-
     void set(const Coordinate input) {
         x = static_cast<float>(input.x);
         y = static_cast<float>(input.y);
@@ -39,13 +31,6 @@ struct FloatCoordinate {
     FloatCoordinate differenceWith(const FloatCoordinate other) const {
         return { x - other.x, y - other.y };
     }
-
-    /*float directionFrom(const FloatCoordinate& floatCoordinate, const float defaultValue) const {
-        if (fabsf(distanceFrom(floatCoordinate)) < 0.00001f) {
-            return defaultValue;
-        }
-        return atan2f(y - floatCoordinate.y, x - floatCoordinate.x);
-    }*/
 };
 
 #endif

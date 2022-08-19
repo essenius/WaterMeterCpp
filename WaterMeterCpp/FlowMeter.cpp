@@ -36,11 +36,6 @@ constexpr float DISTANCE_RANGE_MILLIGAUSS = 120.0f;
 constexpr float OUTLIER_DISTANCE_DIFFERENCE = 2.0f * DISTANCE_RANGE_MILLIGAUSS;
 
 
-/*constexpr float MIN_RELATIVE_ANGLE = -0.25;
-constexpr float MAX_RELATIVE_ANGLE = 0.25;*/
-
-/*constexpr int DEFAULT_ANGLE_COUNT = 5;*/
-
 // --- Constructors and public methods ---
 
 FlowMeter::FlowMeter(EventServer* eventServer) :
@@ -50,8 +45,7 @@ FlowMeter::FlowMeter(EventServer* eventServer) :
     _maxYSearcher(MaxY, { 0, ExtremeSearcher::MIN_SENSOR_VALUE }, & _maxXSearcher),
     _minXSearcher(MinX, {ExtremeSearcher::MAX_SENSOR_VALUE, 0 }, & _maxYSearcher),
     _minYSearcher(MinY, { 0, ExtremeSearcher::MAX_SENSOR_VALUE }, & _minXSearcher),
-    _outlier(eventServer, Topic::Exclude) /*,
-    _pulse(eventServer, Topic::Pulse)*/ {}
+    _outlier(eventServer, Topic::Exclude) {}
 
 void FlowMeter::addSample(const Coordinate sample) {
 
@@ -75,12 +69,8 @@ void FlowMeter::begin(const int noiseRange, const float gain) {
     _outlierThreshold = OUTLIER_DISTANCE_DIFFERENCE * gain / 1000.0f;
     // We assume X and Y ranges have the same noise levels. The maximum difference in distance between samples
     // where we can still be in the noise range is sqrt(maxXdistance^2 + maxYdistance^2)
-    /*
-    // We take a bit extra margin as we have influence from other factors besides measurement inaccuracy, 
-    // probably other devices in the neighborhood. This was a good 'happy medium' in sensitivity.
-    // Making it much higher (e.g. *2) could make the algorithm miss extremes or start too late.
-    */
-    const auto noiseBase = static_cast<float>(noiseRange); /* *1.4f; */
+
+    const auto noiseBase = static_cast<float>(noiseRange);
     _maxNoiseDistance = sqrtf(2.0f * noiseBase * noiseBase);
     _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::SensorWasReset);
@@ -112,18 +102,6 @@ void FlowMeter::update(const Topic topic, const Coordinate payload) {
 
 // --- Protected methods ---
 
-/*
-float FlowMeter::correctedDifference(const float previousAngle, const float currentAngle) {
-    const auto difference = currentAngle - previousAngle;
-    // the atan2 function returns values between -PI and PI.
-    // if there is noise around the extreme values it flips around, giving differences of around 2*PI.
-    // As it is not very likely that a normal difference is going to be beyond PI,
-    // we assume that if that happens, we have such a flip.
-    if (difference > PI_F) return difference - 2 * PI_F;
-    if (difference < -PI_F) return difference + 2 * PI_F;
-    return difference;
-}*/
-
 void FlowMeter::detectOutlier(const Coordinate measurement) {
     const float distance = measurement.distanceFrom({ { 0,0 } });
     _outlier = fabsf(distance - _averageAbsoluteDistance) > _outlierThreshold;
@@ -143,9 +121,7 @@ void FlowMeter::detectPulse(const Coordinate sample) {
         // Initialize the filter for the next run
         _smooth = movingAverage();
         _smoothStartValue = _smooth;
-        /*_direction.setFrom(_smoothStartValue);*/
         _firstRound = false;
-        /*updateAverage(_smooth); */
         _noneSearcher.begin(_maxNoiseDistance);
         _noneSearcher.addMeasurement(_smoothStartValue);
         return;
@@ -160,9 +136,6 @@ void FlowMeter::detectPulse(const Coordinate sample) {
         // * the angle difference must be small enough (i.e not random)
 
         _noneSearcher.addMeasurement(_smooth);
-        /*const auto distance = _smooth.distanceFrom(_smoothStartValue);
-        const auto angleOk = _direction.isAcceptable(_smooth);
-        _flowStarted = distance > _maxNoiseDistance && angleOk; */
         _flowStarted = _noneSearcher.foundTarget();
         if (!_flowStarted) return;
         _currentSearcher = getSearcher(_noneSearcher.target());
@@ -180,22 +153,6 @@ void FlowMeter::detectPulse(const Coordinate sample) {
     }
 }
 
-/*int FlowMeter::getAngleCount(const float angle, const int previousValue, const int defaultValue) {
-    if (angle < MIN_RELATIVE_ANGLE || angle > MAX_RELATIVE_ANGLE) return defaultValue;
-    return previousValue - 1;
-}
-
-ExtremeSearcher* FlowMeter::getSearcher(const int quadrant) {
-    switch (quadrant) {
-    case 1: return &_maxYSearcher;
-    case 4: return &_maxXSearcher;
-    case 3: return &_minYSearcher;
-    case 2: return &_minXSearcher;
-    default:
-        return nullptr;
-    }
-} */
-
 ExtremeSearcher* FlowMeter::getSearcher(const SearchTarget target) {
     switch (target) {
     case MaxY: return &_maxYSearcher;
@@ -208,31 +165,6 @@ ExtremeSearcher* FlowMeter::getSearcher(const SearchTarget target) {
 }
 // The angle between the X axis and the line through the start value and the current value tells us where we are on the ellipse,
 // and what the next extreme is that we should encounter.
-
-/*
-SearchTarget FlowMeter::getTarget(const float angle) {
-    if (angle < -PI_F / 2.0f) return MinY;
-    if (angle < 0.0f) return MaxX;
-    if (angle < PI_F / 2.0f) return MaxY;
-    return MinX;
-}
-
-SearchTarget FlowMeter::getTarget(const int quadrant) {
-    if (quadrant == 3) return MinY;
-    if (quadrant == 4) return MaxX;
-    if (quadrant == 1) return MaxY;
-    return MinX;
-}
-
-SearchTarget FlowMeter::getTarget(const FloatCoordinate direction) {
-    if (direction.x > 0) {
-        if (direction.y > 0) return MaxY;
-        return MaxX;
-    }
-    if (direction.y > 0) return MinX;
-    return MinY;
-}
-*/
 
 float FlowMeter::lowPassFilter(const float measure, const float filterValue, const float alpha) {
     return alpha * measure + (1 - alpha) * filterValue;
@@ -274,28 +206,16 @@ void FlowMeter::resetAnomalies() {
 void FlowMeter::resetFilters(const Coordinate initialSample) {
     _flowStarted = false;
     _noneSearcher.begin(_maxNoiseDistance);
-    /*_firstSample = initialSample;*/
     _firstRound = true;
     _movingAverageIndex = 0;
     updateMovingAverage(initialSample);
     _smoothStartValue = {};
-    /*_averageCount = 0; */
     _currentSearcher = nullptr;
     _isPulse = false;
 
     _smooth = {0, 0};
     _averageAbsoluteDistance = initialSample.distanceFrom({{0, 0}});
 }
-
-/*
-FloatCoordinate FlowMeter::updateAverage(const FloatCoordinate coordinate) {
-    _smoothStartValue.x = _smoothStartValue.x * _averageCount + coordinate.x;
-    _smoothStartValue.y = _smoothStartValue.y * _averageCount + coordinate.y;
-    _averageCount++;
-    _smoothStartValue.x /= _averageCount;
-    _smoothStartValue.y /= _averageCount;
-    return _smoothStartValue;
-} */
 
 void FlowMeter::updateMovingAverage(const Coordinate sample) {
     _movingAverage[_movingAverageIndex] = sample;
