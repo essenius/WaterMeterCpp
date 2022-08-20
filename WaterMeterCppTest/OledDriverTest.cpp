@@ -45,7 +45,7 @@ namespace WaterMeterCppTest {
             EXPECT_TRUE(oledDriver.begin()) << "Display found";
             EXPECT_EQ(0, display->getX()) << "cursor X=0";
             EXPECT_EQ(24, display->getY()) << "cursor Y=24";
-            EXPECT_STREQ("Starting", display->getMessage()) << "Message OK";
+            EXPECT_STREQ("Waiting", display->getMessage()) << "Message OK";
             EXPECT_EQ(0, client.getCallCount()) << "No messages";
             EXPECT_EQ(0u, oledDriver.display()) << "No need to display";
 
@@ -72,17 +72,17 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(118, display->getX()) << "Wifi X=118";
             EXPECT_EQ(0, display->getY()) << "Wifi Y=0";
 
-            /*eventServer.publish(Topic::Flow, LONG_TRUE);
-            EXPECT_EQ(0b00010000, display->getFirstByte()) << "First byte of flow logo ok";
-            EXPECT_EQ(98, display->getX()) << "Flow X=98";
+            eventServer.publish(Topic::TimeOverrun, 1234567);
+            EXPECT_EQ(0b00110000, display->getFirstByte()) << "First byte of time logo ok";
+            EXPECT_EQ(108, display->getX()) << "Flow X=108";
             EXPECT_EQ(0, display->getY()) << "Flow Y=0";
-            EXPECT_STREQ("Flow on        ", display->getMessage()) << "Flow On message OK"; 
+            EXPECT_STREQ("Overrun:  1234567", display->getMessage()) << "Overrun message OK"; 
 
-            eventServer.publish(Topic::Flow, LONG_FALSE);
-            EXPECT_EQ(BLACK, display->getForegroundColor()) << "flow off C=BLACK";
-            EXPECT_EQ(98, display->getX()) << "Flow X=98";
+            eventServer.publish(Topic::TimeOverrun, 0);
+            EXPECT_EQ(BLACK, display->getForegroundColor()) << "TimeOverrun off C=BLACK";
+            EXPECT_EQ(108, display->getX()) << "Flow X=108";
             EXPECT_EQ(0, display->getY()) << "Flow Y=0";
-            EXPECT_STREQ("Flow off       ", display->getMessage()) << "Flow Off message OK"; */
+            EXPECT_STREQ("Overrun:        0", display->getMessage()) << "Overrun off message OK"; 
 
             publishConnectionState(ConnectionState::MqttReady);
             EXPECT_EQ(0b00000000, display->getFirstByte()) << "First byte of mqtt logo ok";
@@ -130,7 +130,7 @@ namespace WaterMeterCppTest {
 
             eventServer.publish(Topic::UpdateProgress, 35);
             EXPECT_EQ(0, display->getX()) << "Progress X=0";
-            EXPECT_EQ(24, display->getY()) << "Progress Y=24";
+            EXPECT_EQ(16, display->getY()) << "Progress Y=16";
             EXPECT_STREQ("FW update: 35% ", display->getMessage()) << "Pulses message OK";
         }
 

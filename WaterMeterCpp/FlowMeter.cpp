@@ -112,6 +112,7 @@ void FlowMeter::detectOutlier(const Coordinate measurement) {
 void FlowMeter::detectPulse(const Coordinate sample) {
     // ignore outliers
     if (_outlier) {
+        _isPulse = false;
         return;
     }
     updateMovingAverage(sample);

@@ -51,7 +51,7 @@ bool OledDriver::begin() {
     _display.setTextSize(1);
     _display.setTextColor(WHITE, BLACK); // white text on black background
     _display.cp437(true); // Use full 256 char 'Code Page 437' font
-    showMessageAtLine("Starting", 3);
+    showMessageAtLine("Waiting", 3);
     _display.display();
     _needsDisplay = false;
     _eventServer->subscribe(this, Topic::Alert);
@@ -167,22 +167,22 @@ void OledDriver::update(const Topic topic, long payload) {
         switchEventLogo(BLOCKED_LOGO, payload);
         return;
     case Topic::SensorWasReset:
-        if (payload == 2) showMessageAtLine("Hard reset     ", 3);
-        else showMessageAtLine("Soft reset     ", 3);
+        if (payload == 2) showMessageAtLine("Hard reset       ", 3);
+        else showMessageAtLine("Soft reset       ", 3);
         switchEventLogo(RESET_LOGO, payload);
         return;
     case Topic::NoSensorFound:
-        showMessageAtLine("No sensor      ", 3);
+        showMessageAtLine("No sensor        ", 3);
         switchFlowLogo(NO_SENSOR_LOGO, payload);
         return;
     case Topic::TimeOverrun:
-        safeSprintf(buffer, "Overrun: %6ld", payload);
+        safeSprintf(buffer, "Overrun: %8ld", payload);
         showMessageAtLine(buffer, 3);
         switchEventLogo(TIME_LOGO, payload);
         return;
     case Topic::UpdateProgress:
         safeSprintf(buffer, "FW update: %d%% ", payload);
-        showMessageAtLine(buffer, 3);
+        showMessageAtLine(buffer, 2);
         return;
     case Topic::Pulses:
         safeSprintf(buffer, "Pulses: %7ld", payload);
