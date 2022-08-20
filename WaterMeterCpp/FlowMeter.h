@@ -18,7 +18,6 @@
 
 class FlowMeter : public EventClient {
 public:
-    static constexpr float PI_F = 3.1415926536f;
     // if we have more than this number of outliers in a row, we reset the sensor
     static constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 50;
     explicit FlowMeter(EventServer* eventServer);

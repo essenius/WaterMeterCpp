@@ -15,7 +15,7 @@
 #include <cstdarg>
 #include <map>
 
-#include "Coodinate.h"
+#include "Coordinate.h"
 
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;

@@ -190,7 +190,7 @@
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="Connector.h" />
     <ClInclude Include="ConnectionState.h" />
-    <ClInclude Include="Coodinate.h" />
+    <ClInclude Include="Coordinate.h" />
     <ClInclude Include="DataQueue.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="EventClient.h" />

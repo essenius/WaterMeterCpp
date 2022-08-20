@@ -242,7 +242,7 @@
     <ClInclude Include="ExtremeSearcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Coodinate.h">
+    <ClInclude Include="Coordinate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FloatCoordinate.h">

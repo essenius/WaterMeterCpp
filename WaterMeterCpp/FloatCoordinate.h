@@ -12,7 +12,7 @@
 #ifndef HEADER_FLOATCOORDINATE
 #define HEADER_FLOATCOORDINATE
 
-#include "Coodinate.h"
+#include "Coordinate.h"
 
 struct FloatCoordinate {
     float x;
