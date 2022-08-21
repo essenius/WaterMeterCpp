@@ -60,6 +60,7 @@ void Connector::begin(const Configuration* configuration) {
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSize);
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSpaces);
     _eventServer->subscribe(_communicatorQueueClient, Topic::SetVolume);
+    _eventServer->subscribe(_communicatorQueueClient, Topic::AddVolume);
     _eventServer->subscribe(_communicatorQueueClient, Topic::UpdateProgress);
 
     _wifi->configure(&configuration->ip);
@@ -252,6 +253,12 @@ void Connector::handleWifiReady() {
         _mqttConnectTimestamp = micros();
         // this is a synchronous call, takes a lot of time
         _mqttGateway->begin(_wifi->getHostName());
+
+        // Retrieve a retained volume message frm MQTT and pass it on to the communicator.
+        // This should happen only once.
+        if (_mqttGateway->getPreviousVolume()) {
+            _eventServer->unsubscribe(_communicatorQueueClient, Topic::AddVolume);
+        }
         return;
     }
 

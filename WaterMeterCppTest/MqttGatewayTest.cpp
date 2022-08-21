@@ -94,6 +94,19 @@ namespace WaterMeterCppTest {
 
         gateway.begin("client1");
 
+        TestEventClient volumeListener(&eventServer);
+        eventServer.subscribe(&volumeListener, Topic::AddVolume);
+
+        constexpr int LOOP_PAYLOAD_SIZE = 7;
+        uint8_t loopPayload[LOOP_PAYLOAD_SIZE] = { '1','2','3','.','4','5','6' };
+        mqttClient.setLoopCallback("homie/client1/result/meter", loopPayload, LOOP_PAYLOAD_SIZE);
+
+        EXPECT_TRUE(gateway.getPreviousVolume()) << "Found previous volume";
+        ASSERT_EQ(1, volumeListener.getCallCount()) << "Volume published";
+        ASSERT_STREQ("123.456", volumeListener.getPayload()) << "volume payload ok";
+        EXPECT_FALSE(gateway.getPreviousVolume()) << "Previous volume only works once";
+        mqttClient.setLoopCallback("\0", {}, 0);
+
         int count = 0;
         while (gateway.hasAnnouncement()) {
             EXPECT_TRUE(gateway.publishNextAnnouncement()) << "Announcement #" << count;
@@ -133,6 +146,7 @@ namespace WaterMeterCppTest {
 
         TestEventClient callBackListener(&eventServer);
         eventServer.subscribe(&callBackListener, Topic::BatchSizeDesired);
+
         char topic[100];
         constexpr int PAYLOAD_SIZE = 2;
         uint8_t payload1[PAYLOAD_SIZE] = {'2', '0'};
@@ -140,16 +154,21 @@ namespace WaterMeterCppTest {
         mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
         EXPECT_EQ(1, callBackListener.getCallCount()) << "callBackListener called";
         EXPECT_STREQ("20", callBackListener.getPayload()) << "callBackListener got right payload";
+        callBackListener.reset();
 
         // Meter setup
-        callBackListener.reset();
         eventServer.subscribe(&callBackListener, Topic::SetVolume);
 
         safeStrcpy(topic, "homie/device_id/result/meter/set");
         mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
         EXPECT_EQ(1, callBackListener.getCallCount()) << "callBackListener called";
         EXPECT_STREQ("20", callBackListener.getPayload()) << "callBackListener got right payload";
+        callBackListener.reset();
 
+        // Empty payload should get ignored
+        mqttClient.callBack(topic, payload1, 0);
+        EXPECT_EQ(0, callBackListener.getCallCount()) << "callBackListener not called";
+        callBackListener.reset();
 
         // Invalid callback should get ignored
 

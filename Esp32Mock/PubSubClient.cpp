@@ -33,6 +33,20 @@ bool PubSubClient::connect(const char* id, const char* user, const char* pass,
     return connect(id, willTopic, willQos, willRetain, willMessage);
 }
 
+void PubSubClient::setLoopCallback(const char* topic, const uint8_t* payload, int size) {
+    safeStrcpy(_loopTopic, topic);
+    memcpy(_loopPayload, payload, size);
+    _loopPayloadSize = size;
+}
+
+bool PubSubClient::loop() {
+        _loopCount++;
+        if (_loopTopic[0] != 0) {
+            _callback(_loopTopic, _loopPayload, _loopPayloadSize);
+        }
+        return true;
+}
+
 bool PubSubClient::publish(const char* topic, const char* payload, bool retain) {
     if (strlen(topic) + strlen(_topic) > TOPIC_SIZE - 1) return false;
     safeStrcat(_topic, topic);
@@ -55,6 +69,9 @@ void PubSubClient::reset() {
     _canConnect = true;
     _canSubscribe = true;
     _canPublish = true;
+    _loopCount = 0;
+    _loopTopic[0] = 0;
+    _loopPayloadSize = 0;
 }
 
 PubSubClient& PubSubClient::setCallback(MQTT_CALLBACK_SIGNATURE) {

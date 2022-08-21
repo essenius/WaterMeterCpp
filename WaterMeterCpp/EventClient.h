@@ -59,6 +59,7 @@ enum class Topic: int16_t {
     SensorWasReset,
     NoSensorFound,
     SetVolume,
+    AddVolume,
     Volume,
     Pulses,
     NoDisplayFound,

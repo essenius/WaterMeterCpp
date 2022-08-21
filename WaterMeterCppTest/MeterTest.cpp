@@ -35,10 +35,16 @@ namespace WaterMeterCppTest {
         eventServer.subscribe(&pulseClient, Topic::Pulses);
 
         meter.begin();
-        eventServer.publish(Topic::SetVolume, "123.4567");
+        eventServer.publish(Topic::SetVolume, "0.4567");
         EXPECT_EQ(1, volumeClient.getCallCount()) << "Volume published";
-        EXPECT_STREQ("00123.4567000", volumeClient.getPayload()) << L"Volume payload returns initial value";
+        EXPECT_STREQ("00000.4567000", volumeClient.getPayload()) << L"Volume payload returns initial value";
         EXPECT_EQ(1, pulseClient.getCallCount()) << "Pulses published";
+        EXPECT_STREQ("0", pulseClient.getPayload()) << L"Pulse payload is 0";
+
+        eventServer.publish(Topic::AddVolume, "123");
+        EXPECT_EQ(2, volumeClient.getCallCount()) << "Volume published";
+        EXPECT_STREQ("00123.4567000", volumeClient.getPayload()) << L"Volume payload returns sum of published and kept value";
+        EXPECT_EQ(2, pulseClient.getCallCount()) << "Pulses published";
         EXPECT_STREQ("0", pulseClient.getPayload()) << L"Pulse payload is 0";
 
         const char* expected[] = {

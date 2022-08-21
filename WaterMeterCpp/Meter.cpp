@@ -20,8 +20,9 @@
 Meter::Meter(EventServer* eventServer) : EventClient(eventServer) {}
 
 void Meter::begin() {
-    _eventServer->subscribe(this, Topic::SetVolume);
     _eventServer->subscribe(this, Topic::Pulse);
+    _eventServer->subscribe(this, Topic::SetVolume);
+    _eventServer->subscribe(this, Topic::AddVolume);
 }
 
 const char* Meter::getVolume() {
@@ -38,15 +39,15 @@ void Meter::newPulse() {
 
 void Meter::publishValues() {
     _eventServer->publish(Topic::Pulses, _pulses);
-    _eventServer->publish(Topic::Volume, getVolume());
+    _eventServer->publish(this, Topic::Volume, getVolume());
 }
 
-bool Meter::setVolume(const char* meterValue) {
+bool Meter::setVolume(const char* meterValue, const double addition) {
     char* end;
     const auto volume = std::strtod(meterValue, &end);
     const auto allCharactersParsed = *end == '\0';
     if (allCharactersParsed) {
-        _volume = volume;
+        _volume = volume + addition;
         _pulses = 0;
         publishValues();
         return true;
@@ -56,7 +57,14 @@ bool Meter::setVolume(const char* meterValue) {
 
 void Meter::update(const Topic topic, const char* payload) {
     if (topic == Topic::SetVolume) {
+        // if it was set via a set topic, don't add current value - this is a deliberate override
         setVolume(payload);
+    } else if (topic == Topic::AddVolume) {
+        // if it was set via a retained get topic, add volume that we found so far
+        // This caters for any usage between the device boot and MQTT being up.
+        // This happens just once, but we can't unsubscribe while we are iterating through the subscribers.
+        // it is also not really necessary as the connector is guaranteed to send it only once.
+        setVolume(payload, _volume);
     }
 }
 
@@ -65,11 +73,11 @@ void Meter::update(const Topic topic, const long payload) {
     // Since we have a tilted ellipse and not a circle, quarters are not reliable. Halves are.
     if (topic == Topic::Pulse && payload % 2 == 1) {
         newPulse();
-    }
-    else if (topic == Topic::SetVolume) {
+    }/*
+    else if (topic == Topic::SetVolume || topic == Topic::Volume) {
         // this is done to minimize payload sizes for the queues (ints only).
         // A bit crude as it expects that addresses are 32 bits which is true on ESP32 but not on Win64.
         const auto volume = reinterpret_cast<char*>(payload);
         setVolume(volume);
-    }
+    } */
 }

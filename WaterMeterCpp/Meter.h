@@ -21,7 +21,7 @@ public:
     const char* getVolume();
     void newPulse();
     void publishValues();
-    bool setVolume(const char* meterValue);
+    bool setVolume(const char* meterValue, double addition = 0.0);
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
 

@@ -52,6 +52,20 @@ constexpr const char* const NAME = "$name";
 
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
 
+// thread safe alternative for strtok
+char* nextToken(char** start, const int delimiter) {
+    char* token = *start;
+    char* nextDelimiter = token != nullptr ? strchr(token, delimiter) : nullptr;
+    if (nextDelimiter == nullptr) {
+        *start = nullptr;
+    }
+    else {
+        *nextDelimiter = '\0';
+        *start = nextDelimiter + 1;
+    }
+    return token;
+}
+
 MqttGateway::MqttGateway(
     EventServer* eventServer,
     PubSubClient* mqttClient,
@@ -70,6 +84,8 @@ MqttGateway::MqttGateway(
 MqttGateway::~MqttGateway() {
     delete _wifiClient;
 }
+
+// ---- Public methods ----
 
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
@@ -108,59 +124,6 @@ void MqttGateway::begin(const char* clientName) {
     connect();
 }
 
-// thread safe alternative for strtok
-char* nextToken(char** start, const int delimiter) {
-    char* token = *start;
-    char* nextDelimiter = token != nullptr ? strchr(token, delimiter) : nullptr;
-    if (nextDelimiter == nullptr) {
-        *start = nullptr;
-    }
-    else {
-        *nextDelimiter = '\0';
-        *start = nextDelimiter + 1;
-    }
-    return token;
-}
-
-void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
-    char* copyTopic = strdup(topic);
-    constexpr int DELIMITER = '/';
-    // if the topic is invalid, ignore the message
-    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // homie, ignore
-    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // device ID, ignore
-    const char* node = nextToken(&copyTopic, DELIMITER);
-    const char* property = nextToken(&copyTopic, DELIMITER);
-    const char* set = nextToken(&copyTopic, DELIMITER);
-    if (set != nullptr && strcmp(set, "set") == 0) {
-        // 1LL is a trick to avoid C26451
-        const auto payloadStr = new char[1LL + length];
-        for (unsigned int i = 0; i < length; i++) {
-            payloadStr[i] = static_cast<char>(payload[i]);
-        }
-        payloadStr[length] = 0;
-        for (const auto& entry : TOPIC_MAP) {
-            const auto topicTriplet = entry.second;
-            const auto isSetProperty = topicTriplet.first;
-            if (isSetProperty) {
-                const auto topicPair = topicTriplet.second;
-                if (strcmp(topicPair.first, node) == 0 && strcmp(topicPair.second, property) == 0) {
-                    // There is one set-value that requires a string, and that needs to be persistent across tasks
-                    if (entry.first == Topic::SetVolume) {
-                        safeStrcpy(_volume, payloadStr);
-                        _eventServer->publish(this, entry.first, _volume);
-                    }
-                    else {
-                        _eventServer->publish(this, entry.first, payloadStr);
-                    }
-                    break;
-                }
-            }
-        }
-        delete[] payloadStr;
-    }
-    free(copyTopic);
-}
-
 void MqttGateway::connect() {
     _announcementPointer = _announcementBuffer;
     safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, STATE);
@@ -171,7 +134,7 @@ void MqttGateway::connect() {
     }
     else {
         success = _mqttClient->connect(_clientName, _mqttConfig->user, _mqttConfig->password, _topicBuffer, 0, true,
-                                       LAST_WILL_MESSAGE);
+            LAST_WILL_MESSAGE);
     }
 
     // should get picked up by isConnected later
@@ -186,6 +149,19 @@ void MqttGateway::connect() {
     }
 }
 
+bool MqttGateway::getPreviousVolume() {
+    if (!_justStarted) return false;
+    // just after a boot, see if we have a previous meter value
+    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, RESULT);
+    safeStrcat(_topicBuffer, "/");
+    safeStrcat(_topicBuffer, RESULT_METER);
+    _mqttClient->subscribe(_topicBuffer);
+    handleQueue();
+    _justStarted = false;
+    _mqttClient->unsubscribe(_topicBuffer);
+    return true;
+}
+
 bool MqttGateway::handleQueue() {
     return isConnected() && _mqttClient->loop();
 }
@@ -196,6 +172,63 @@ bool MqttGateway::hasAnnouncement() {
 
 bool MqttGateway::isConnected() {
     return _mqttClient->connected();
+}
+
+bool MqttGateway::publishNextAnnouncement() {
+    const char* topic = _announcementPointer;
+    _announcementPointer += strlen(topic) + 1;
+    if (strlen(topic) == 0) return false;
+    const char* payload = _announcementPointer;
+    _announcementPointer += strlen(payload) + 1;
+    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, topic);
+    return _mqttClient->publish(_topicBuffer, payload, true);
+}
+
+
+// incoming event from EventServer. This only happens if we are connected
+void MqttGateway::update(const Topic topic, const char* payload) {
+    publishUpdate(topic, payload);
+}
+
+// ---- Protected methods ----
+
+void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
+    // ignore messages with an empty payload.
+    if (length == 0) return;
+
+    char* copyTopic = strdup(topic);
+    constexpr int DELIMITER = '/';
+    // if the topic is invalid, ignore the message
+    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // homie, ignore
+    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // device ID, ignore
+    const char* node = nextToken(&copyTopic, DELIMITER);
+    const char* property = nextToken(&copyTopic, DELIMITER);
+    const char* set = nextToken(&copyTopic, DELIMITER);
+    if (node == nullptr || property == nullptr) return;
+    const auto isSetter = set != nullptr && strcmp(set, "set") == 0;
+    const auto payloadStr = new char[length + 1];
+    for (unsigned int i = 0; i < length; i++) {
+        payloadStr[i] = static_cast<char>(payload[i]);
+    }
+    payloadStr[length] = 0;
+    for (const auto& entry : TOPIC_MAP) {
+        const auto topicTriplet = entry.second;
+        const auto isSetProperty = topicTriplet.first;
+        if (isSetter == isSetProperty) {
+            const auto topicPair = topicTriplet.second;
+            if (isRightTopic(topicPair, node, property)) {
+                publishToEventServer(entry.first, payloadStr);
+                break;
+            }
+        }
+    }
+    delete[] payloadStr;
+    /* } */
+    free(copyTopic);
+}
+
+bool MqttGateway::isRightTopic(std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty) {
+    return strcmp(topicPair.first, expectedNode) == 0 && strcmp(topicPair.second, expectedProperty) == 0;
 }
 
 void MqttGateway::prepareAnnouncementBuffer() {
@@ -285,20 +318,22 @@ void MqttGateway::publishError(const char* message) {
     _eventServer->publish<const char*>(Topic::ConnectionError, _topicBuffer);
 }
 
-bool MqttGateway::publishNextAnnouncement() {
-    const char* topic = _announcementPointer;
-    _announcementPointer += strlen(topic) + 1;
-    if (strlen(topic) == 0) return false;
-    const char* payload = _announcementPointer;
-    _announcementPointer += strlen(payload) + 1;
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, topic);
-    return _mqttClient->publish(_topicBuffer, payload, true);
-}
-
 bool MqttGateway::publishProperty(const char* node, const char* property, const char* payload, const bool retain) {
     char baseTopic[50];
     safeSprintf(baseTopic, "%s/%s", _clientName, node);
     return publishEntity(baseTopic, property, payload, retain);
+}
+
+void MqttGateway::publishToEventServer(Topic topic, const char* payload) {
+    if (topic != Topic::SetVolume && topic != Topic::Volume) {
+        _eventServer->publish(this, topic, payload);
+        return;
+    }
+    // There is one set-value that requires a string, and that needs to be persistent across tasks
+    // This also happens to be the only value that can be set from the getter (just once, right after reboot)
+    safeStrcpy(_volume, payload);
+    const auto topicToSend = topic == Topic::SetVolume ? Topic::SetVolume : Topic::AddVolume;
+    _eventServer->publish(this, topicToSend, _volume);
 }
 
 void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
@@ -319,9 +354,4 @@ void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
                 NON_RETAINED_TOPICS.find(topic) == NON_RETAINED_TOPICS.end());
         }
     }
-}
-
-// incoming event from EventServer. This only happens if we are connected
-void MqttGateway::update(const Topic topic, const char* payload) {
-    publishUpdate(topic, payload);
 }

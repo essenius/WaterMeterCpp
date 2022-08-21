@@ -60,14 +60,13 @@ public:
     virtual void announceReady();
     virtual void begin(const char* clientName);
     virtual void connect();
+    bool getPreviousVolume();
     bool handleQueue();
     virtual bool hasAnnouncement();
     virtual bool isConnected();
-    void publishError(const char* message);
     virtual bool publishNextAnnouncement();
     using EventClient::update;
     void update(Topic topic, const char* payload) override;
-    void publishUpdate(Topic topic, const char* payload);
 
 protected:
     static constexpr int TOPIC_BUFFER_SIZE = 255;
@@ -79,6 +78,7 @@ protected:
     const MqttConfig* _mqttConfig;
     const DataQueue* _dataQueue;
     int _announceIndex = 0;
+    bool _justStarted = true;
     char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = {0};
     char* _announcementPointer = _announcementBuffer;
     const char* _buildVersion;
@@ -88,6 +88,7 @@ protected:
     char _volume[NUMBER_BUFFER_SIZE] = "";
 
     void callback(const char* topic, const byte* payload, unsigned length);
+    static bool isRightTopic(std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty);
     void prepareAnnouncementBuffer();
     void prepareEntity(const char* entity, const char* payload);
     void prepareEntity(const char* baseTopic, const char* entity, const char* payload);
@@ -97,7 +98,10 @@ protected:
                          const char* dataType, const char* format = EMPTY, bool settable = false);
 
     bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
+    void publishError(const char* message);
     bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);
+    void publishToEventServer(Topic topic, const char* payload);
+    void publishUpdate(Topic topic, const char* payload);
 };
 
 #endif
