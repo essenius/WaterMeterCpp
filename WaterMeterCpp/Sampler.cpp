@@ -13,16 +13,16 @@
 
 constexpr int MAX_CONSECUTIVE_OVERRUNS = 3;
 
-Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter,
+Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter, Button* button,
                  SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
-    _eventServer(eventServer), _sensorReader(sensorReader), _flowMeter(flowMeter),
+    _eventServer(eventServer), _sensorReader(sensorReader), _flowMeter(flowMeter), _button(button),
     _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {}
 
 // if it returns false, the setup failed. Don't try any other functions if so.
 bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsigned long samplePeriod) {
     _samplePeriod = samplePeriod;
     _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
-
+    _button->begin();
     // what can be sent to the communicator (note: must be numerical payloads)
     _eventServer->subscribe(_queueClient, Topic::BatchSize);
     _eventServer->subscribe(_queueClient, Topic::Blocked);
@@ -89,6 +89,7 @@ void Sampler::loop() {
         // Wait for the next sample time; read the command queue while we're at it.
         if (duration < _maxDurationForChecks) {
             _queueClient->receive();
+            _button->check();
         }
 
         // now we have the next scheduled start time, so that is in the future.

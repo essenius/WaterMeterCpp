@@ -21,7 +21,6 @@ public:
     // if we have more than this number of outliers in a row, we reset the sensor
     static constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 50;
     explicit FlowMeter(EventServer* eventServer);
-    void addSample(Coordinate sample);
     void begin(int noiseRange, float gain);
     FloatCoordinate currentExtreme() const;
     bool isOutlier() const { return _outlier; }
@@ -49,7 +48,7 @@ protected:
     bool _isPulse = false;
     // will be overwritten in begin()
     float _maxNoiseDistance = 0;
-    ExtremeSearcher _noneSearcher;
+    ExtremeSearcher _flowSearcher;
     ExtremeSearcher _maxXSearcher;
     ExtremeSearcher _maxYSearcher;
     ExtremeSearcher _minXSearcher;
@@ -61,6 +60,7 @@ protected:
     float _outlierThreshold = 0.0f;
     FloatCoordinate _smooth = {0.0f, 0.0f};
 
+    void addSample(Coordinate sample);
     void detectOutlier(Coordinate measurement);
     void detectPulse(Coordinate sample);
     ExtremeSearcher* getSearcher(SearchTarget target);

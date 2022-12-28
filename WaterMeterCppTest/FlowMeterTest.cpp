@@ -125,6 +125,10 @@ namespace WaterMeterCppTest {
 
     }
 
+    TEST_F(FlowMeterTest, flowMeter60CyclesTest) {
+        flowTestWithFile("60cycles.txt", 60, 60, 61, 60);
+
+    }
     TEST_F(FlowMeterTest, flowMeter77CyclesFastTest) {
         flowTestWithFile("77cyclesFast.txt", 76,77,77,76);
     }

@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -45,6 +45,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="AggregatorTest.cpp" />
+    <ClCompile Include="ButtonTest.cpp" />
     <ClCompile Include="ClockTest.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
@@ -208,6 +209,9 @@
   <ItemGroup>
     <CopyFileToFolders Include="0cyclesNoise.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="60cycles.txt" />
+  </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -242,7 +246,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator;Angle;Clock;Configuration;Communicator;Connector;DataQueue;DataQueuePayload;Device;EventClient;EventServer;ESP;ExtremeSearcher;FirmwareManager;FlowMeter;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;Meter;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator;Angle;Button;Clock;Configuration;Communicator;Connector;DataQueue;DataQueuePayload;Device;EventClient;EventServer;ESP;ExtremeSearcher;FirmwareManager;FlowMeter;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;Meter;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

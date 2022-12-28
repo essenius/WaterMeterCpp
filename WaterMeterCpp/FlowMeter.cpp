@@ -40,27 +40,12 @@ constexpr float OUTLIER_DISTANCE_DIFFERENCE = 2.0f * DISTANCE_RANGE_MILLIGAUSS;
 
 FlowMeter::FlowMeter(EventServer* eventServer) :
     EventClient(eventServer),
-    _noneSearcher(None, {ExtremeSearcher::MIN_SENSOR_VALUE, ExtremeSearcher:: MIN_SENSOR_VALUE}, nullptr),
+    _flowSearcher(None, {ExtremeSearcher::MIN_SENSOR_VALUE, ExtremeSearcher:: MIN_SENSOR_VALUE}, nullptr),
     _maxXSearcher(MaxX, {ExtremeSearcher::MIN_SENSOR_VALUE, 0 }, & _minYSearcher),
     _maxYSearcher(MaxY, { 0, ExtremeSearcher::MIN_SENSOR_VALUE }, & _maxXSearcher),
     _minXSearcher(MinX, {ExtremeSearcher::MAX_SENSOR_VALUE, 0 }, & _maxYSearcher),
     _minYSearcher(MinY, { 0, ExtremeSearcher::MAX_SENSOR_VALUE }, & _minXSearcher),
     _outlier(eventServer, Topic::Exclude) {}
-
-void FlowMeter::addSample(const Coordinate sample) {
-
-    // if we don't have a previous measurement yet, use defaults.
-    if (_firstCall) {
-        // since the filters need initial values, set those. Also initialize the anomaly indicators.
-        resetAnomalies();
-        resetFilters(sample);
-        _firstCall = false;
-        return;
-    }
-    detectOutlier(sample);
-    markAnomalies();
-    detectPulse(sample);
-}
 
 void FlowMeter::begin(const int noiseRange, const float gain) {
 
@@ -88,7 +73,7 @@ SearchTarget FlowMeter::searchTarget() const {
 
 void FlowMeter::update(const Topic topic, const long payload) {
     if (topic == Topic::SensorWasReset) {
-        // If we needed to begin the sensor, also begin the measurement process when the next sample comes in
+        // If we needed to reset the sensor, also reset the measurement process when the next sample comes in
         _firstCall = true;
         _consecutiveOutliers = 0;
     }
@@ -101,6 +86,21 @@ void FlowMeter::update(const Topic topic, const Coordinate payload) {
 }
 
 // --- Protected methods ---
+
+void FlowMeter::addSample(const Coordinate sample) {
+
+    // if we don't have a previous measurement yet, use defaults.
+    if (_firstCall) {
+        // since the filters need initial values, set those. Also initialize the anomaly indicators.
+        resetAnomalies();
+        resetFilters(sample);
+        _firstCall = false;
+        return;
+    }
+    detectOutlier(sample);
+    markAnomalies();
+    detectPulse(sample);
+}
 
 void FlowMeter::detectOutlier(const Coordinate measurement) {
     const float distance = measurement.distanceFrom({ { 0,0 } });
@@ -123,8 +123,8 @@ void FlowMeter::detectPulse(const Coordinate sample) {
         _smooth = movingAverage();
         _smoothStartValue = _smooth;
         _firstRound = false;
-        _noneSearcher.begin(_maxNoiseDistance);
-        _noneSearcher.addMeasurement(_smoothStartValue);
+        _flowSearcher.begin(_maxNoiseDistance);
+        _flowSearcher.addMeasurement(_smoothStartValue);
         return;
     }
     // we are beyond the first run. Moving average buffer is filled.
@@ -136,10 +136,10 @@ void FlowMeter::detectPulse(const Coordinate sample) {
         // * the distance between the initial sample and the current sample must be beyond noise threshold
         // * the angle difference must be small enough (i.e not random)
 
-        _noneSearcher.addMeasurement(_smooth);
-        _flowStarted = _noneSearcher.foundTarget();
+        _flowSearcher.addMeasurement(_smooth);
+        _flowStarted = _flowSearcher.foundTarget();
         if (!_flowStarted) return;
-        _currentSearcher = getSearcher(_noneSearcher.target());
+        _currentSearcher = getSearcher(_flowSearcher.target());
         _currentSearcher->begin(_maxNoiseDistance);
     }
 
@@ -206,7 +206,7 @@ void FlowMeter::resetAnomalies() {
 
 void FlowMeter::resetFilters(const Coordinate initialSample) {
     _flowStarted = false;
-    _noneSearcher.begin(_maxNoiseDistance);
+    _flowSearcher.begin(_maxNoiseDistance);
     _firstRound = true;
     _movingAverageIndex = 0;
     updateMovingAverage(initialSample);

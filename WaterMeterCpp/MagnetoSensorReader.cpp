@@ -134,7 +134,7 @@ void MagnetoSensorReader::reset() {
 }
 
 void MagnetoSensorReader::update(const Topic topic, long payload) {
-    if (topic == Topic::ResetSensor) {
+    if (topic == Topic::ResetSensor && payload != 0) {
         hardReset();
     }
 }

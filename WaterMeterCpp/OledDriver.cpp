@@ -157,6 +157,12 @@ void OledDriver::update(const Topic topic, const char* payload) {
 void OledDriver::update(const Topic topic, long payload) {
     char buffer[20];
     switch (topic) {
+    case Topic::Begin:
+        // this one must be done after logging has started, controlled via payload.
+        if (payload == LONG_TRUE) {
+            begin();
+        }
+        break;
     case Topic::Connection:
         updateConnectionState(static_cast<ConnectionState>(payload));
         return;

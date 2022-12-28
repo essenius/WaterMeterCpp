@@ -28,6 +28,7 @@ bool Angle::isAcceptable(const FloatCoordinate to) {
 }
 
 // based on the direction we are going, determine the next extreme we will see
+
 SearchTarget Angle::firstTarget() const {
     if (_value < -PI_F / 2) return MinY;
     if (_value < 0.0f) return MaxX;

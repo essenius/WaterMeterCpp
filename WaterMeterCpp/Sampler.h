@@ -12,6 +12,7 @@
 #ifndef HEADER_SAMPLER
 #define HEADER_SAMPLER
 
+#include "Button.h"
 #include "EventClient.h"
 #include "FlowMeter.h"
 #include "MagnetoSensorReader.h"
@@ -21,7 +22,7 @@
 
 class Sampler {
 public:
-    Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter,
+    Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter, Button* button, 
             SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient);
     bool begin(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
     void beginLoop();
@@ -31,6 +32,7 @@ private:
     EventServer* _eventServer;
     MagnetoSensorReader* _sensorReader;
     FlowMeter* _flowMeter;
+    Button* _button;
     SampleAggregator* _sampleAggregator;
     ResultAggregator* _resultAggregator;
     QueueClient* _queueClient;

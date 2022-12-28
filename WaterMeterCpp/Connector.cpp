@@ -15,14 +15,13 @@
 
 constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
 
-// TODO correct name of mqttGatway
 // TODO reduce number of parameters
-Connector::Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
+Connector::Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGateway, TimeServer* timeServer,
                      FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
                      Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
     EventClient(eventServer),
     _wifi(wifi),
-    _mqttGateway(mqttGatway),
+    _mqttGateway(mqttGateway),
     _timeServer(timeServer),
     _firmwareManager(firmwareManager),
     _samplerDataQueue(samplerDataQueue),

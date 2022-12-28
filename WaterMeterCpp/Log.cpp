@@ -32,7 +32,9 @@ constexpr static const char* const MESSAGES[] = {
 };
 
 Log::Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder) :
-    EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {}
+    EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {
+    eventServer->subscribe(this, Topic::Begin);
+}
 
 void Log::begin() {
     update(Topic::MessageFormatted, "Starting");
@@ -69,10 +71,9 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Blocked:
         log("Blocked: %s", payload);
         break;
-    case Topic::Connection: // NOLINT(bugprone-branch-clone) -- looks like a false positive
-        log("%s", payload);
-        break;
+    case Topic::Connection: 
     case Topic::ErrorFormatted:
+    case Topic::MessageFormatted:
         log("%s", payload);
         break;
     case Topic::FreeHeap:
@@ -83,9 +84,6 @@ void Log::update(Topic topic, const char* payload) {
         break;
     case Topic::NoSensorFound:
         log("No sensor found: %s", payload);
-        break;
-    case Topic::MessageFormatted:
-        log("%s", payload);
         break;
     case Topic::ResultFormatted:
         log("Result: %s", payload);
@@ -115,6 +113,12 @@ void Log::update(Topic topic, const char* payload) {
 
 void Log::update(const Topic topic, const long payload) {
     switch (topic) {
+    case Topic::Begin:
+        // do this as early as possible, i.e. when called with LONG_FALSE
+        if (payload == LONG_FALSE) {
+            begin();
+            }
+        break;
     case Topic::Connection:
         if (_previousConnectionTopic != payload) {
             _previousConnectionTopic = payload;

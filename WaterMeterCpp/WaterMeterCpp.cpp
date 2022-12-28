@@ -19,6 +19,7 @@
 #include <ESP.h>
 #include <PubSubClient.h>
 
+#include "Button.h"
 #include "Configuration.h"
 #include "Communicator.h"
 #include "Connector.h"
@@ -57,6 +58,7 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
 constexpr int SDA_OLED = 32;
 constexpr int SCL_OLED = 33;
+constexpr int BUTTON_PORT = 34;
 
 // This is where you would normally use an injector framework,
 // We define the objects globally to avoid using (and fragmenting) the heap.
@@ -114,10 +116,14 @@ DataQueuePayload connectorDataQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);
 Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
+// we need the button in the sampler loop and digitalRead() is fast enough, so we don't use the detour via Communicator here
+ChangePublisher<uint8_t> buttonPublisher(&samplerEventServer, Topic::ResetSensor);
+Button button(&buttonPublisher, BUTTON_PORT);
+
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
-Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &meter, &device, &connectorDataQueue,
-                          &serializer2,
+Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &button, &sampleAggregator, &resultAggregator, &samplerQueueClient);
+Communicator communicator(&communicatorEventServer, &oledDriver, &device, 
+                          &connectorDataQueue, &serializer2, 
                           &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
 TimeServer timeServer;

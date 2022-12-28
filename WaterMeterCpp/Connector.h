@@ -33,7 +33,7 @@ constexpr unsigned long WIFI_RECONNECT_WAIT_DURATION = 10UL * SECONDS;
 
 class Connector final : public EventClient {
 public:
-    Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
+    Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGateway, TimeServer* timeServer,
               FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
               Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
     void begin(const Configuration* configuration);

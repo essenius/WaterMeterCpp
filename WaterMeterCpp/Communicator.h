@@ -16,29 +16,22 @@
 #define HEADER_COMMUNICATOR
 #include "DataQueue.h"
 #include "Device.h"
-#include "LedDriver.h"
-#include "Log.h"
 #include "Meter.h"
 #include "OledDriver.h"
 #include "QueueClient.h"
 #include "Serializer.h"
 
-// TODO: reduce number of parameters in constructor
 class Communicator final : public EventClient {
 public:
-    Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, OledDriver* oledDriver, Meter* meter,
-                 Device* device,
-                 DataQueue* dataQueue, Serializer* serializer, QueueClient* fromSamplerQueueClient,
-                 QueueClient* fromConnectorQueueClient);
+    Communicator(EventServer* eventServer, OledDriver* oledDriver, Device* device,
+                 DataQueue* dataQueue, Serializer* serializer, 
+                 QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
     void begin() const;
     void loop() const;
     static void task(void* parameter);
 
 private:
-    Log* _logger;
-    LedDriver* _ledDriver;
     OledDriver* _oledDriver;
-    Meter* _meter;
     Device* _device;
     DataQueue* _dataQueue;
     Serializer* _serializer;

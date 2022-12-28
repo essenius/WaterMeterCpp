@@ -17,7 +17,9 @@
 #include "SafeCString.h"
 
 
-Meter::Meter(EventServer* eventServer) : EventClient(eventServer) {}
+Meter::Meter(EventServer* eventServer) : EventClient(eventServer) {
+    eventServer->subscribe(this, Topic::Begin);
+}
 
 void Meter::begin() {
     _eventServer->subscribe(this, Topic::Pulse);
@@ -80,4 +82,8 @@ void Meter::update(const Topic topic, const long payload) {
         const auto volume = reinterpret_cast<char*>(payload);
         setVolume(volume);
     } */
+    // we initialize after the base services like logger and led driver were initialized
+    else if (topic == Topic::Begin && payload == LONG_TRUE) {
+        begin();
+    }
 }

@@ -21,7 +21,9 @@
 LedDriver::LedDriver(EventServer* eventServer) :
     EventClient(eventServer),
     _connectingFlasher(Led::AUX, CONNECTING_INTERVAL),
-    _sampleFlasher(Led::RUNNING, IDLE_INTERVAL) {}
+    _sampleFlasher(Led::RUNNING, IDLE_INTERVAL) {
+    eventServer->subscribe(this, Topic::Begin);
+}
 
 void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Alert);
@@ -85,6 +87,12 @@ void LedDriver::timeOverrunUpdate(const bool isOn) {
 void LedDriver::update(const Topic topic, long payload) {
     const uint8_t state = payload ? Led::ON : Led::OFF;
     switch (topic) {
+    case Topic::Begin:
+        // do this as early as possible as sensors might need to signal issues
+        if (payload == LONG_FALSE) {
+            begin();
+        }
+        break;
     // no connection causes a flashing green led, and blue while firmware is checked
     case Topic::Alert:
         Led::set(Led::RED, state);

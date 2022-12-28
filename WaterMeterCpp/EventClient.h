@@ -63,7 +63,9 @@ enum class Topic: int16_t {
     Volume,
     Pulses,
     NoDisplayFound,
-    UpdateProgress
+    UpdateProgress,
+    ButtonPushed,
+    Begin
 };
 
 union EventPayload {

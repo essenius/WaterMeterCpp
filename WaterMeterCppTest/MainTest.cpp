@@ -15,6 +15,8 @@
 
 #include <ESP.h>
 #include <PubSubClient.h>
+
+#include "../WaterMeterCpp/Button.h"
 #include "../WaterMeterCpp/Device.h"
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/FlowMeter.h"
@@ -33,7 +35,7 @@
 #include "../WaterMeterCpp/SampleAggregator.h"
 #include "../WaterMeterCpp/QueueClient.h"
 #include "../WaterMeterCpp/Sampler.h"
-// ReSharper disable CppUnusedIncludeDirective - false positive
+// zReSharper disable CppUnusedIncludeDirective - false positive
 #include "HTTPClient.h"
 #include "TestEventClient.h"
 #include "WiFi.h"
@@ -82,6 +84,7 @@ namespace WaterMeterCppTest {
 
             constexpr int SDA_OLED = 32;
             constexpr int SCL_OLED = 33;
+            constexpr int BUTTON_PORT = 34;
 
             // This is where you would normally use an injector framework,
             // We define the objects globally to avoid using (and fragmenting) the heap.
@@ -139,10 +142,14 @@ namespace WaterMeterCppTest {
             PayloadBuilder serialize2PayloadBuilder(&theClock);
             Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
+            // we need the button in the sampler loop and digitalRead() is fast enough, so we don't use the detour via Communicator here
+            ChangePublisher<uint8_t> buttonPublisher(&samplerEventServer, Topic::ResetSensor);
+            Button button(&buttonPublisher, BUTTON_PORT);
+
             DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
-            Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator,
+            Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &button, &sampleAggregator, &resultAggregator,
                             &samplerQueueClient);
-            Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &meter, &device,
+            Communicator communicator(&communicatorEventServer, &oledDriver, &device,
                                       &connectorDataQueue, &serializer2,
                                       &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
@@ -283,7 +290,7 @@ namespace WaterMeterCppTest {
 
             EXPECT_EQ(ConnectionState::MqttReady, connector.loop()) << "Connector loop";
             communicator.loop();
-            EXPECT_STREQ("[] Time overrun: 105400\n[] Skipped 11 samples\n[] Free Stack #0: 1628\n", getPrintOutput()) << "Time overrun";
+            EXPECT_STREQ("[] Time overrun: 90400\n[] Skipped 10 samples\n[] Free Stack #0: 1628\n", getPrintOutput()) << "Time overrun";
 
             connectorEventServer.publish(Topic::ResetSensor, 2);
             TestEventClient client(&samplerEventServer);

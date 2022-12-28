@@ -30,8 +30,10 @@ using byte = uint8_t;
 constexpr uint8_t INPUT = 0x0;
 constexpr uint8_t OUTPUT = 0x1;
 constexpr uint8_t INPUT_PULLUP = 0x2;
+
 constexpr uint8_t LOW = 0x0;
 constexpr uint8_t HIGH = 0x1;
+
 constexpr uint8_t LED_BUILTIN = 13;
 
 #define PI 3.1415926535897932384626433832795
