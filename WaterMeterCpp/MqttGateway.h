@@ -86,6 +86,7 @@ protected:
     unsigned long _reconnectTimestamp = 0UL;
     char _topicBuffer[TOPIC_BUFFER_SIZE] = {0};
     char _volume[NUMBER_BUFFER_SIZE] = "";
+    bool _volumeReceived = false;
 
     void callback(const char* topic, const byte* payload, unsigned length);
     static bool isRightTopic(std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty);

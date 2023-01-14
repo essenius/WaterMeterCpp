@@ -147,16 +147,27 @@ void MqttGateway::connect() {
     if (!_mqttClient->subscribe(_topicBuffer)) {
         publishError("Could not subscribe to setters");
     }
+
+    if (!_justStarted) return;
+
+    // just after a boot, see if we have a previous meter value
+
+    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, RESULT);
+    safeStrcat(_topicBuffer, "/");
+    safeStrcat(_topicBuffer, RESULT_METER);
+
+    if (!_mqttClient->subscribe(_topicBuffer)) {
+        publishError("Could not subscribe to result meter");
+    }
 }
 
 bool MqttGateway::getPreviousVolume() {
     if (!_justStarted) return false;
-    // just after a boot, see if we have a previous meter value
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, RESULT);
-    safeStrcat(_topicBuffer, "/");
-    safeStrcat(_topicBuffer, RESULT_METER);
-    _mqttClient->subscribe(_topicBuffer);
-    handleQueue();
+    const auto startTime = micros();
+    while (!_volumeReceived && micros() - startTime < 1e6) {
+        _mqttClient->loop(); 
+        delay(10);      
+    }
     _justStarted = false;
     _mqttClient->unsubscribe(_topicBuffer);
     return true;
@@ -329,6 +340,7 @@ void MqttGateway::publishToEventServer(Topic topic, const char* payload) {
         _eventServer->publish(this, topic, payload);
         return;
     }
+    _volumeReceived = true;
     // There is one set-value that requires a string, and that needs to be persistent across tasks
     // This also happens to be the only value that can be set from the getter (just once, right after reboot)
     safeStrcpy(_volume, payload);

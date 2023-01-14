@@ -74,7 +74,7 @@ namespace WaterMeterCppTest {
         WiFiClientFactory wifiClientFactory(nullptr);
         MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);
         gateway.begin("client1");
-        EXPECT_STREQ("MQTT: Could not subscribe to setters [state = 3]", errorListener.getPayload()) << "Error happened";
+        EXPECT_STREQ("MQTT: Could not subscribe to result meter [state = 3]", errorListener.getPayload()) << "Error happened";
     }
 
     TEST_F(MqttGatewayTest, mqttGatewayNoUserTest) {

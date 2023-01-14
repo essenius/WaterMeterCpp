@@ -42,7 +42,7 @@ void Angle::setFrom(const FloatCoordinate from) {
 
 void Angle::setTarget(const SearchTarget target) {
     _maxAngle = startAngleFromExtreme(target);
-    // the minumum angle is 45 degrees less. Not entirely true with an ellipse,
+    // the minimum angle is 45 degrees less. Not entirely true with an ellipse,
     // but since the ellipse is not very flat it is close enough.
     _minAngle = target == None ? -PI_F : _maxAngle - PI_F / 4;
 }

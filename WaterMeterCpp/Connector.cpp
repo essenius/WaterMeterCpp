@@ -167,6 +167,12 @@ void Connector::handleMqttReady() {
     while (_samplerQueueClient->receive()) {}
     while (_communicatorQueueClient->receive()) {}
 
+    // Retrieve a retained volume message from MQTT and pass it on to the communicator.
+    // This should happen only once.
+    if (_mqttGateway->getPreviousVolume()) {
+        _eventServer->unsubscribe(_communicatorQueueClient, Topic::AddVolume);
+    }
+    
     // returns false if disconnected, minimizing risk of losing data from the queue
     if (!_mqttGateway->handleQueue()) {
         return;
@@ -252,12 +258,6 @@ void Connector::handleWifiReady() {
         _mqttConnectTimestamp = micros();
         // this is a synchronous call, takes a lot of time
         _mqttGateway->begin(_wifi->getHostName());
-
-        // Retrieve a retained volume message frm MQTT and pass it on to the communicator.
-        // This should happen only once.
-        if (_mqttGateway->getPreviousVolume()) {
-            _eventServer->unsubscribe(_communicatorQueueClient, Topic::AddVolume);
-        }
         return;
     }
 
