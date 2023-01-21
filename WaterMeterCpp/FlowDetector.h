@@ -41,26 +41,26 @@ protected:
     void updateMovingAverageArray(const IntCoordinate& sample);
 
     static constexpr unsigned int MOVING_AVERAGE_SIZE = 4;
+	static constexpr double MOVING_AVERAGE_NOISE_REDUCTION = 2; // = sqrt(MOVING_AVERAGE_SIZE)
 	IntCoordinate _movingAverageArray[MOVING_AVERAGE_SIZE] = {};
 	int8_t _movingAverageIndex = 0;
 	bool _justStarted = true;
 	CartesianEllipse _confirmedGoodFit;
 	EllipseFit* _ellipseFit;
 	unsigned int _previousQuadrant = 0;
-	unsigned int _previousQuadrantFromStart = 1;
 	Coordinate _startPoint;
 	Coordinate _referencePoint;
 
-	unsigned int _currentIndex = 0; 
+	unsigned int _currentIndex = 0; // remove when removing debug statements
 	Coordinate _previousPoint;
 	Angle _startTangent = {NAN};
 	unsigned int _waitCount = 0;
 	bool _searchingForPulse = true;
 	Angle _previousAngleWithCenter = { NAN };
 	double _angleDistanceTravelled = 0;
-	unsigned int _pointCount = 0;
+	unsigned int _pointCount = 0; // remove when removing debug statements
 	bool _foundAnomaly = false;
-	double _distanceThreshold = 2.378414; // noise factor = 4, distance = sqrt(32), MA reduces noise to sqrt(distance)
+	double _distanceThreshold = 2.12132; // noise range = 3, distance = sqrt(18), MA(4) reduces noise with factor 2
     bool _firstCall = true;
 	bool _firstRound = true;
 	Coordinate _movingAverage = { NAN, NAN };

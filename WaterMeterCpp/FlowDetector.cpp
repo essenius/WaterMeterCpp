@@ -39,10 +39,10 @@ FlowDetector::FlowDetector(EventServer* eventServer, EllipseFit* ellipseFit): Ev
 
 // Public methods
 
-void FlowDetector::begin(const unsigned int noiseRange = 4) {
-	// noise reduction throught moving average is sqrt(number of points in average) = sqrt(4) = 2
+void FlowDetector::begin(const unsigned int noiseRange = 3) {
 	// we assume that the noise range for X and Y is the same.
-	_distanceThreshold = sqrt(2.0 * noiseRange * noiseRange) / 2;
+	// If the distance between two points is beyond this, it is beyond noise
+	_distanceThreshold = sqrt(2.0 * noiseRange * noiseRange) / MOVING_AVERAGE_NOISE_REDUCTION;
 	_eventServer->subscribe(this, Topic::Sample);
 	_eventServer->subscribe(this, Topic::SensorWasReset);
 }
@@ -100,6 +100,18 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 
 	_previousPoint = averageSample;
 }
+
+Coordinate FlowDetector::calcMovingAverage() {
+	_movingAverage = { 0,0 };
+	for (const auto i : _movingAverageArray) {
+		_movingAverage.x += static_cast<double>(i.x);
+		_movingAverage.y += static_cast<double>(i.y);
+	}
+	_movingAverage.x /= MOVING_AVERAGE_SIZE;
+	_movingAverage.y /= MOVING_AVERAGE_SIZE;
+	return _movingAverage;
+}
+
 
 void FlowDetector::detectPulse(const Coordinate point) {
 	if (_confirmedGoodFit.hasData) {
@@ -207,17 +219,6 @@ bool FlowDetector::isRelevant(const Coordinate& point) {
 	return true;
 }
 
-Coordinate FlowDetector::calcMovingAverage() {
-	_movingAverage = { 0,0 };
-	for (const auto i : _movingAverageArray) {
-		_movingAverage.x += static_cast<double>(i.x);
-		_movingAverage.y += static_cast<double>(i.y);
-	}
-	_movingAverage.x /= MOVING_AVERAGE_SIZE;
-	_movingAverage.y /= MOVING_AVERAGE_SIZE;
-	return _movingAverage;
-}
-
 void FlowDetector::updateEllipseFit(const Coordinate point) {
 	if (!_confirmedGoodFit.hasData) {
 		// The first time we always run a fit. Re-run if the first time(s) didn't result in a good fit
@@ -225,7 +226,6 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		const auto center = fittedEllipse.center;
 		// number of points per ellipse defines whether the fit is reliable.
 		const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
-		/*const auto passedCycles = getPassedCycles(_startPoint.angleFrom(center), point.angleFrom(center)); */
 		printf(", passed cycles: %.3f ", passedCycles);
 		if (abs(passedCycles) >= MIN_CYCLE_FOR_FIT) {
 			_confirmedGoodFit = fittedEllipse;
@@ -237,16 +237,14 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 			// we need another round
 			printf("\n[%4d] Bad first Fit - %.1f", _currentIndex, _angleDistanceTravelled * 180);
 			_eventServer->publish(Topic::NoFit, static_cast <int16_t>(round(_tangentDistanceTravelled * 180)));
-
-			_tangentDistanceTravelled = 0;
-			_ellipseFit->begin();
 		}
+		_tangentDistanceTravelled = 0;
 	}
 	else {
 		// If we already had a reliable fit, check whether the new data is good enough to warrant a new fit.
-		// Otherwise we keep the old one. 'Good enough' means we covered at least 2/3rd of a cycle.
+		// Otherwise we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
 		// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
-		if (fabs(_angleDistanceTravelled) > 4 * M_PI / 3) {
+		if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MIN_CYCLE_FOR_FIT) {
 			_confirmedGoodFit = executeFit();
 			printf("\n[%4d] Good Fit - %.1f", _currentIndex, _angleDistanceTravelled * 180);
 		}
