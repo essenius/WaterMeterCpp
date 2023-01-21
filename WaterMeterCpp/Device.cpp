@@ -15,8 +15,7 @@
 
 #include "Device.h"
 
-Device::Device(EventServer* eventServer) :
-    EventClient(eventServer),
+Device::Device(EventServer* eventServer) : EventClient(eventServer),
     // Only catch larger variations or alarmingly low values to avoid very frequent updates
     _freeHeap(eventServer, Topic::FreeHeap, 5000L, 20000L),
     // catch all changes as this is not expected to change
@@ -31,10 +30,10 @@ void Device::begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, 
 }
 
 long Device::freeStack(TaskHandle_t taskHandle) {
-      return static_cast<long>(uxTaskGetStackHighWaterMark(taskHandle));
+    return static_cast<long>(uxTaskGetStackHighWaterMark(taskHandle));
 }
 
-long  Device::freeHeap() {
+long Device::freeHeap() {
     return ESP.getFreeHeap();
 }
 

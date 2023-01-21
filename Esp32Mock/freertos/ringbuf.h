@@ -22,9 +22,9 @@ using RingbufHandle_t = void*;
 
 enum RingbufferType_t { RINGBUF_TYPE_NOSPLIT = 0, RINGBUF_TYPE_ALLOWSPLIT, RINGBUF_TYPE_BYTEBUF, RINGBUF_TYPE_MAX };
 
-// testing only
+// these 3 are for testing only
 void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull);
-// testing only
+void setRingBufferNoMoreEntries(RingbufHandle_t bufferHandle);
 void uxRingbufReset();
 
 inline void vRingbufferReturnItem(RingbufHandle_t bufferHandle, void* item1) {}
@@ -34,11 +34,11 @@ RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferTy
 size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle);
 
 BaseType_t xRingbufferReceiveSplit(
-    RingbufHandle_t bufferHandle, 
-    void** item1, 
-    void** item2, 
+    RingbufHandle_t bufferHandle,
+    void** item1,
+    void** item2,
     size_t* item1Size,
-    size_t* item2Size, 
+    size_t* item2Size,
     uint32_t ticksToWait);
 
 UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t ticksToWait);

@@ -21,13 +21,13 @@ public:
     const char* getVolume();
     void newPulse();
     void publishValues();
-    bool setVolume(const char* meterValue);
+    bool setVolume(const char* meterValue, double addition = 0.0);
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
 
 private:
-    // 33.173 pulses per liter, and 1000 liters in a cubic meter
-    static constexpr double PULSES_PER_UNIT = 33173.0;
+    // 2 pulses per cycle, 16500 cycles per 1000L 
+    static constexpr double PULSES_PER_UNIT = 33000;
     static constexpr double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;
     double _volume = 0.0;
     unsigned long _pulses = 0;
@@ -35,4 +35,3 @@ private:
     char _buffer[BUFFERSIZE] = "";
 };
 #endif
-

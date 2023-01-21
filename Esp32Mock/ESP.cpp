@@ -75,7 +75,8 @@ void shiftMicros(long long shift) {
 void delayMicroseconds(int delay) {
     if (RealTimeOn) {
         microShift += delay;
-    } else {
+    }
+    else {
         Micros += delay;
     }
 }
@@ -88,7 +89,8 @@ void delay(int delay) {
     if (DisableDelay) return;
     if (RealTimeOn) {
         microShift += delay * 1000LL;
-    } else {
+    }
+    else {
         Micros += delay * 1000UL;
     }
 }
@@ -97,7 +99,8 @@ void setRealTime(bool on) {
     RealTimeOn = on;
     if (RealTimeOn) {
         startTime = std::chrono::high_resolution_clock::now();
-    } else {
+    }
+    else {
         Micros = 0;
     }
 }

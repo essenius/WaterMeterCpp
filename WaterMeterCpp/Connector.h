@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Connector runs a process that connects with the outside world. The connect method uses a state machine
+// to make the connection with Wifi, get the time, check for a firmware upgrade and connect to the MQTT server
+
 #ifndef HEADER_CONNECTION
 #define HEADER_CONNECTION
 #include "MqttGateway.h"
@@ -30,12 +33,12 @@ constexpr unsigned long WIFI_RECONNECT_WAIT_DURATION = 10UL * SECONDS;
 
 class Connector final : public EventClient {
 public:
-    Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
+    Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGateway, TimeServer* timeServer,
               FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
               Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
+    void begin(const Configuration* configuration);
     ConnectionState connect();
     ConnectionState loop();
-    void setup(const Configuration* configuration);
     static void task(void* parameter);
 
 private:

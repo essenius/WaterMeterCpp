@@ -29,14 +29,14 @@ void ResultAggregator::addDuration(const unsigned long duration) {
         _result->maxDuration = duration;
     }
     if (duration > _measureIntervalMicros) {
-        _timeOverrun = duration - _measureIntervalMicros;  // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
+        _timeOverrun = duration - _measureIntervalMicros; // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
         _result->overrunCount++;
     }
     // this could be optimized by only getting it executed at the end of a cycle
     _result->averageDuration = static_cast<uint32_t>((_result->totalDuration * 10 / _messageCount + 5) / 10);
 }
 
-void ResultAggregator::addMeasurement(const int16_t value, const FlowMeter* result) {
+void ResultAggregator::addMeasurement(const Coordinate value, const FlowMeter* result) {
     newMessage();
     _result->sampleCount = _messageCount;
 
@@ -53,29 +53,18 @@ void ResultAggregator::addMeasurement(const int16_t value, const FlowMeter* resu
     if (result->isOutlier()) {
         _result->outlierCount++;
     }
-    if (result->isPeak()) {
-        _result->peakCount++;
+    if (result->isPulse()) {
+        _result->pulseCount++;
     }
-    if (result->hasFlow()) {
-        _result->flowCount++;
-    }
+
     if (result->wasReset()) {
         _result->resetCount++;
     }
-    //if (result->areAllExcluded()) {
-    //    _result->excludeCount = _messageCount;
-    //}
-    else if (result->isExcluded()) {
-        _result->excludeCount++;
-    }
+
     // we only need these at the end but we don't know when that is
-    _result->fastSmooth = result->getFastSmoothValue();
-    _result->fastDerivative = result->getFastDerivative();
-    _result->smoothFastDerivative = result->getSmoothFastDerivative();
-    _result->smoothAbsFastDerivative = result->getSmoothAbsFastDerivative();
-    _result->slowSmooth = result->getSlowSmoothValue();
-    _result->combinedDerivative = result->getCombinedDerivative();
-    _result->smoothAbsCombinedDerivative = result->getSmoothAbsCombinedDerivative();
+    _result->smooth = result->getSmoothSample();
+    _result->searchTarget = result->searchTarget();
+    _result->extreme = result->currentExtreme();
 }
 
 void ResultAggregator::begin() {
@@ -118,7 +107,7 @@ void ResultAggregator::setNonIdleFlushRate(const long rate) {
 
 bool ResultAggregator::shouldSend(const bool endOfFile) {
     // We set the flush rate regardless of whether we still need to write something. This can end an idle batch early.
-    const bool isInteresting = _result->flowCount > 0 || _result->excludeCount > 0;
+    const bool isInteresting = _result->pulseCount > 0 || _result->outlierCount > 0;
     if (isInteresting) {
         _flushRate = _nonIdleFlushRate;
     }

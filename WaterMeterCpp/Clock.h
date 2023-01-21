@@ -9,9 +9,14 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+
+
 #ifndef HEADER_CLOCK
 #define HEADER_CLOCK
 
+#include "Clock.h"
+#include "EventClient.h"
+// ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include "EventServer.h"
 
 // We circumvent ESP.h - it defines INPUT which is also defined in windows.h, which time.h uses there

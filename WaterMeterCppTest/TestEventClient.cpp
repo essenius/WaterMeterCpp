@@ -9,34 +9,43 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/SafeCString.h"
 
-int TestEventClient::getCallCount() const { return _callCount; }
+namespace WaterMeterCppTest {
 
-char* TestEventClient::getPayload() { return _payload; }
+    int TestEventClient::getCallCount() const { return _callCount; }
 
-Topic TestEventClient::getTopic() const { return _topic; }
+    char* TestEventClient::getPayload() { return _payload; }
 
-void TestEventClient::reset() {
-    _callCount = 0;
-    _topic = Topic::None;
-    _payload[0] = 0;
+    Topic TestEventClient::getTopic() const { return _topic; }
+
+    void TestEventClient::reset() {
+        _callCount = 0;
+        _topic = Topic::None;
+        _payload[0] = 0;
+    }
+
+    void TestEventClient::update(const Topic topic, const Coordinate payload) {
+        _callCount++;
+        _wasLong = false;
+        _topic = topic;
+        safeSprintf(_payload, "(%d,%d)", payload.x, payload.y);
+
+    }
+    void TestEventClient::update(const Topic topic, const char* payload) {
+        _callCount++;
+        _wasLong = false;
+        _topic = topic;
+        safeStrcpy(_payload, payload);
+    }
+
+    void TestEventClient::update(const Topic topic, const long payload) {
+        _callCount++;
+        _wasLong = true;
+        _topic = topic;
+        safeSprintf(_payload, "%ld", payload);
+    }
+
+    bool TestEventClient::wasLong() const { return _wasLong; }
 }
-
-void TestEventClient::update(const Topic topic, const char* payload) {
-    _callCount++;
-    _wasLong = false;
-    _topic = topic;
-    safeStrcpy(_payload, payload);
-}
-
-void TestEventClient::update(const Topic topic, const long payload) {
-    _callCount++;
-    _wasLong = true;
-    _topic = topic;
-    safeSprintf(_payload, "%ld", payload);
-}
-
-bool TestEventClient::wasLong() const { return _wasLong; }

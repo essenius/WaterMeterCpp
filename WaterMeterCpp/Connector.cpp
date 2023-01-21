@@ -15,14 +15,13 @@
 
 constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
 
-// TODO correct name of mqttGatway
 // TODO reduce number of parameters
-Connector::Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGatway, TimeServer* timeServer,
+Connector::Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGateway, TimeServer* timeServer,
                      FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
                      Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient) :
     EventClient(eventServer),
     _wifi(wifi),
-    _mqttGateway(mqttGatway),
+    _mqttGateway(mqttGateway),
     _timeServer(timeServer),
     _firmwareManager(firmwareManager),
     _samplerDataQueue(samplerDataQueue),
@@ -38,7 +37,7 @@ ConnectionState Connector::loop() {
     return _state;
 }
 
-void Connector::setup(const Configuration* configuration) {
+void Connector::begin(const Configuration* configuration) {
     _state = ConnectionState::Init;
     _waitDuration = WIFI_INITIAL_WAIT_DURATION;
     _wifiConnectionFailureCount = 0;
@@ -60,16 +59,10 @@ void Connector::setup(const Configuration* configuration) {
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSize);
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSpaces);
     _eventServer->subscribe(_communicatorQueueClient, Topic::SetVolume);
+    _eventServer->subscribe(_communicatorQueueClient, Topic::AddVolume);
+    _eventServer->subscribe(_communicatorQueueClient, Topic::UpdateProgress);
 
     _wifi->configure(&configuration->ip);
-}
-
-[[ noreturn]] void Connector::task(void* parameter) {
-    const auto me = static_cast<Connector*>(parameter);
-
-    for (;;) {
-        me->loop();
-    }
 }
 
 ConnectionState Connector::connect() {
@@ -119,7 +112,6 @@ ConnectionState Connector::connect() {
 void Connector::handleCheckFirmware() {
     _firmwareManager->begin(_eventServer->request(Topic::MacRaw, ""));
     _firmwareManager->tryUpdate();
-    _firmwareManager->end();
     _state = ConnectionState::WifiReady;
 }
 
@@ -175,6 +167,12 @@ void Connector::handleMqttReady() {
     while (_samplerQueueClient->receive()) {}
     while (_communicatorQueueClient->receive()) {}
 
+    // Retrieve a retained volume message from MQTT and pass it on to the communicator.
+    // This should happen only once.
+    if (_mqttGateway->getPreviousVolume()) {
+        _eventServer->unsubscribe(_communicatorQueueClient, Topic::AddVolume);
+    }
+    
     // returns false if disconnected, minimizing risk of losing data from the queue
     if (!_mqttGateway->handleQueue()) {
         return;
@@ -264,4 +262,12 @@ void Connector::handleWifiReady() {
     }
 
     _state = ConnectionState::Disconnected;
+}
+
+[[ noreturn]] void Connector::task(void* parameter) {
+    const auto me = static_cast<Connector*>(parameter);
+
+    for (;;) {
+        me->loop();
+    }
 }

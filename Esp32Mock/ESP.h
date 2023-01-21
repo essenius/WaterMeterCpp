@@ -30,9 +30,13 @@ using byte = uint8_t;
 constexpr uint8_t INPUT = 0x0;
 constexpr uint8_t OUTPUT = 0x1;
 constexpr uint8_t INPUT_PULLUP = 0x2;
+
 constexpr uint8_t LOW = 0x0;
 constexpr uint8_t HIGH = 0x1;
+
 constexpr uint8_t LED_BUILTIN = 13;
+
+#define PI 3.1415926535897932384626433832795
 
 // emulation of the relevant Arduino capabilities
 
@@ -51,7 +55,6 @@ public:
     int available();
     void begin(int speed);
     void print(const char* input);
-    //void printf(const char* format, ...);
     void println(const char* input);
     char read();
     void setTimeout(long timeout);
@@ -164,6 +167,6 @@ void log_v(const char* format, Arguments ... arguments) {
     log_printf(LogLevel::Verbose, format, arguments...);
 }
 
-//char* dtostrf(float value, signed char width, unsigned char precision, char* buffer);
+//char* dtostrf(float value, signed char width, unsigned char precision, char* _buffer);
 
 #endif

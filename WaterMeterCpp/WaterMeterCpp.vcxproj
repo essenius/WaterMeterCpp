@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -146,12 +146,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Aggregator.cpp" />
+    <ClCompile Include="Angle.cpp" />
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="Communicator.cpp" />
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="Connector.cpp" />
     <ClCompile Include="DataQueue.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="EventClient.cpp" />
+    <ClCompile Include="ExtremeSearcher.cpp" />
     <ClCompile Include="FirmwareManager.cpp" />
     <ClCompile Include="FlowMeter.cpp" />
     <ClCompile Include="Led.cpp" />
@@ -182,16 +185,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aggregator.h" />
+    <ClInclude Include="Angle.h" />
+    <ClInclude Include="Button.h" />
     <ClInclude Include="ChangePublisher.h" />
     <ClInclude Include="Communicator.h" />
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="Connector.h" />
     <ClInclude Include="ConnectionState.h" />
+    <ClInclude Include="Coordinate.h" />
     <ClInclude Include="DataQueue.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="EventClient.h" />
     <ClInclude Include="EventServer.h" />
+    <ClInclude Include="ExtremeSearcher.h" />
     <ClInclude Include="FirmwareManager.h" />
+    <ClInclude Include="FloatCoordinate.h" />
     <ClInclude Include="FlowMeter.h" />
     <ClInclude Include="Led.h" />
     <ClInclude Include="LongChangePublisher.h" />

@@ -11,66 +11,66 @@
 
 #ifndef HEADER_FLOWMETER
 #define HEADER_FLOWMETER
+#include "Angle.h"
 #include "ChangePublisher.h"
 #include "EventClient.h"
+#include "ExtremeSearcher.h"
 
 class FlowMeter : public EventClient {
 public:
+    // if we have more than this number of outliers in a row, we reset the sensor
+    static constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 50;
     explicit FlowMeter(EventServer* eventServer);
     void begin(int noiseRange, float gain);
-    void addSample(int measurement);
-    // bool areAllExcluded() const;
-    float getAmplitude() const;
-    float getCombinedDerivative() const;
-    float getFastDerivative() const;
-    float getFastSmoothValue() const;
-    float getSlowSmoothValue() const;
-    float getSmoothAbsCombinedDerivative() const;
-    float getSmoothAbsFastDerivative() const;
-    float getSmoothFastDerivative() const;
-    float getZeroThreshold() const;
-    bool hasFlow() const;
-    bool isExcluded() const;
-    bool isOutlier() const;
-    bool isPeak() const;
-    bool hasEnteredBand() const;
+    FloatCoordinate currentExtreme() const;
+    bool isOutlier() const { return _outlier; }
+    bool isPulse() const { return _isPulse; }
+    SearchTarget searchTarget() const;
+
     void update(Topic topic, long payload) override;
-    bool wasReset() const;
+    void update(Topic topic, Coordinate payload) override;
+    bool wasReset() const { return _firstCall; }
+
     static constexpr int SAMPLE_PERIOD_MICROS = 10000;
     static constexpr float SAMPLE_PERIOD_SECONDS = SAMPLE_PERIOD_MICROS / 1000000.0f;
 
+    FloatCoordinate getSmoothSample() const { return _smooth; }
+
 protected:
+    static constexpr int8_t MOVING_AVERAGE_BUFFER_SIZE = 4;
+    float _averageAbsoluteDistance = 0.0f;
+    FloatCoordinate _smoothStartValue = {};
+    ExtremeSearcher* _currentSearcher = nullptr;
     unsigned int _consecutiveOutliers = 0;
-    ChangePublisher<bool> _exclude;
-    ChangePublisher<bool> _flow;
-    ChangePublisher<bool> _peak;
-    float _fastSmooth = 0.0f;
-    float _previousFastSmooth = 0.0f;
-    float _fastDerivative = 0.0f;
     bool _firstCall = true;
-    bool _outlier = false;
-    float _smoothAbsFastDerivative = 0.0f;
-    float _smoothFastDerivative = 0.0f;
-
-    float _zeroThreshold = 0.0f;
-    float _flowThreshold = _zeroThreshold;
-    bool _hasEnteredBand = false;
-    bool _fastFlow = false;
-    float _slowSmooth = 0.0f;
-    float _combinedDerivative = 0.0f;
-    float _previousSlowSmooth = 0.0f;
-    float _smoothAbsCombinedDerivative = 0.0f;
+    bool _firstRound = true;
+    bool _flowStarted = false;
+    bool _isPulse = false;
+    // will be overwritten in begin()
+    float _maxNoiseDistance = 0;
+    ExtremeSearcher _flowSearcher;
+    ExtremeSearcher _maxXSearcher;
+    ExtremeSearcher _maxYSearcher;
+    ExtremeSearcher _minXSearcher;
+    ExtremeSearcher _minYSearcher;
+    Coordinate _movingAverage[MOVING_AVERAGE_BUFFER_SIZE] = {};
+    int8_t _movingAverageIndex = 0;
+    ChangePublisher<bool> _outlier;
+    // will be overwritten in begin()
     float _outlierThreshold = 0.0f;
-    float _previousCombinedDerivative = 0.0f;
-    float _amplitude = 0.0;
+    FloatCoordinate _smooth = {0.0f, 0.0f};
 
-    void detectOutlier(int measurement);
-    void detectPeaks(int measurement);
-    static float highPassFilter(float measure, float previous, float filterValue, float alpha);
+    void addSample(Coordinate sample);
+    void detectOutlier(Coordinate measurement);
+    void detectPulse(Coordinate sample);
+    ExtremeSearcher* getSearcher(SearchTarget target);
     static float lowPassFilter(float measure, float filterValue, float alpha);
+    FloatCoordinate lowPassFilter(FloatCoordinate measure, FloatCoordinate filterValue, float alpha) const;
     void markAnomalies();
+    FloatCoordinate movingAverage() const;
     void resetAnomalies();
-    void resetFilters(int initialMeasurement);
+    void resetFilters(Coordinate initialSample);
+    void updateMovingAverage(Coordinate sample);
 };
 
 #endif

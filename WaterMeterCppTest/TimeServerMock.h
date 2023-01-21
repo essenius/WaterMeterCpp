@@ -13,11 +13,12 @@
 
 #include "../WaterMeterCpp/TimeServer.h"
 
-class TimeServerMock final : public TimeServer
-{
-public:
-    void setTime() override { _wasSet = true; }
-    bool timeWasSet() const override { return _wasSet; }
-    void reset() { _wasSet = false; }
-};
-    
+namespace WaterMeterCppTest {
+
+    class TimeServerMock final : public TimeServer {
+    public:
+        void setTime() override { _wasSet = true; }
+        bool timeWasSet() const override { return _wasSet; }
+        void reset() { _wasSet = false; }
+    };
+}

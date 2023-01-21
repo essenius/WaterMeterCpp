@@ -46,13 +46,13 @@ float MagnetoSensorHmc::getGain() const {
 }
 
 int MagnetoSensorHmc::getNoiseRange() const {
-    switch(_gain) {
+    switch (_gain) {
     case HmcGain0_88: return 8;
     case HmcGain1_3: return 5;
     case HmcGain1_9: return 5;
     case HmcGain2_5: return 4;
     case HmcGain4_0: return 4;
-    case HmcGain4_7: return 3;
+    case HmcGain4_7: return 4;
     case HmcGain5_6:
     default: return 2;
     }
@@ -71,6 +71,7 @@ float MagnetoSensorHmc::getGain(const HmcGain gain) {
     }
 
 }
+
 void MagnetoSensorHmc::getTestMeasurement(SensorData* reading) const {
     startMeasurement();
     delay(5);

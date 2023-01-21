@@ -11,7 +11,8 @@
 
 #include "Serializer.h"
 
-Serializer::Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder) : EventClient(eventServer), _payloadBuilder(payloadBuilder) {}
+Serializer::Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder) : EventClient(eventServer),
+                                                                                   _payloadBuilder(payloadBuilder) {}
 
 void Serializer::update(Topic topic, const char* payload) {
     const auto sensorPayload = reinterpret_cast<const DataQueuePayload*>(payload);
@@ -56,16 +57,15 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeTimestampParam("timestamp", payload->timestamp);
 
     const auto result = payload->buffer.result;
-    _payloadBuilder->writeParam("lastValue", result.lastSample);
+    _payloadBuilder->writeParam("last.x", result.lastSample.x);
+    _payloadBuilder->writeParam("last.y", result.lastSample.y);
     _payloadBuilder->writeGroupStart("summaryCount");
     _payloadBuilder->writeParam("samples", result.sampleCount);
-    _payloadBuilder->writeParam("peaks", result.peakCount);
-    _payloadBuilder->writeParam("flows", result.flowCount);
+    _payloadBuilder->writeParam("pulses", result.pulseCount);
     _payloadBuilder->writeParam("maxStreak", result.maxStreak);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("exceptionCount");
     _payloadBuilder->writeParam("outliers", result.outlierCount);
-    _payloadBuilder->writeParam("excludes", result.excludeCount);
     _payloadBuilder->writeParam("overruns", result.overrunCount);
     _payloadBuilder->writeParam("resets", result.resetCount);
     _payloadBuilder->writeGroupEnd();
@@ -75,13 +75,11 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeParam("max", result.maxDuration);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("analysis");
-    _payloadBuilder->writeParam("LPF", result.fastSmooth);
-    _payloadBuilder->writeParam("HPLPF", result.fastDerivative);
-    _payloadBuilder->writeParam("LPHPF", result.smoothFastDerivative);
-    _payloadBuilder->writeParam("LPAHPLPF", result.smoothAbsFastDerivative);
-    _payloadBuilder->writeParam("LFS", result.fastSmooth);
-    _payloadBuilder->writeParam("HPC", result.combinedDerivative);
-    _payloadBuilder->writeParam("LPAHPC", result.combinedDerivative);
+    _payloadBuilder->writeParam("lp.x", result.smooth.x);
+    _payloadBuilder->writeParam("lp.y", result.smooth.y);
+    _payloadBuilder->writeParam("target", result.searchTarget);
+    _payloadBuilder->writeParam("xt.x", result.extreme.x);
+    _payloadBuilder->writeParam("xt.y", result.extreme.y);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupEnd();
 }

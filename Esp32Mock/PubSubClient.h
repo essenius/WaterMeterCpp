@@ -33,11 +33,9 @@ public:
                  const char* willMessage);
     bool connected() { return _canConnect; }
 
-    bool loop() {
-        _loopCount++;
-        return true;
-    }
+    void setLoopCallback(const char* topic, const uint8_t* payload, int size);
 
+    bool loop();
     bool publish(const char* topic, const char* payload, bool retain = false);
     bool setBufferSize(int size) { return true; }
     PubSubClient& setCallback(MQTT_CALLBACK_SIGNATURE);
@@ -45,6 +43,7 @@ public:
     PubSubClient& setKeepAlive(uint16_t period) { return *this; }
     PubSubClient& setServer(const char* broker, uint16_t port) { return *this; }
     bool subscribe(const char* topic) { return _canSubscribe; }
+    bool unsubscribe(const char* topic) { return true; }
     int state() { return 3; }
 
     // test assistance functions
@@ -75,6 +74,9 @@ private:
     char _payload[PAYLOAD_SIZE] = {};
     char _topic[TOPIC_SIZE] = {};
     char _user[FIELD_SIZE] = {};
+    char _loopTopic[100] = "\0";
+    uint8_t _loopPayload[10] = {};
+    int _loopPayloadSize = 0;
 };
 
 #endif

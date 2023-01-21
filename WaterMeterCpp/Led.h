@@ -23,10 +23,6 @@
 // sda = 21 -- reserved
 // scl = 22
 
-// static constexpr unsigned char RED_LED2 = 15;
-// static constexpr unsigned char GREEN_LED2 = 4;
-// static constexpr unsigned char BLUE_LED2 = 5;
-
 class Led {
 public:
     static constexpr unsigned char AUX = 19; // now red

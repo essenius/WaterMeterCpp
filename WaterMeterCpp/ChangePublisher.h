@@ -23,8 +23,8 @@ template <class PayloadType>
 class ChangePublisher {
 public:
     ChangePublisher(
-        EventServer* eventServer, 
-        const Topic topic, 
+        EventServer* eventServer,
+        const Topic topic,
         const int8_t index = 0,
         PayloadType defaultValue = PayloadType()):
         _eventServer(eventServer),

@@ -21,12 +21,13 @@ size_t DataQueuePayload::size() const {
         size += sizeof(ResultData);
         break;
     case Topic::Samples:
-        size += sizeof Samples::count + buffer.samples.count * sizeof Samples::value[0];
+        // this assumes that value is the last element in the struct
+        size += offsetof(Samples, value) + buffer.samples.count * sizeof Samples::value[0];
         break;
     case Topic::ConnectionError:
     case Topic::Info:
         size += strlen(buffer.message) + 1;
-        break; 
+        break;
     default:
         break;
     }

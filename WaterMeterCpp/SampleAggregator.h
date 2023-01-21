@@ -18,14 +18,15 @@ class SampleAggregator final : public Aggregator {
 public:
     SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
     using Aggregator::begin;
-    void addSample(int16_t measure);
+    void addSample(Coordinate measure);
     void begin();
     void flush() override;
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
+    void update(Topic topic, Coordinate payload) override;
 protected:
-    static constexpr unsigned char DEFAULT_FLUSH_RATE = 50;
-    static constexpr unsigned char MAX_FLUSH_RATE = 50;
+    static constexpr unsigned char DEFAULT_FLUSH_RATE = 25;
+    static constexpr unsigned char MAX_FLUSH_RATE = 25;
     uint16_t _currentSample = 0;
 };
 

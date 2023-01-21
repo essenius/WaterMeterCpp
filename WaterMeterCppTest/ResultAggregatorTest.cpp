@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2022 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -11,22 +11,19 @@
 
 // ReSharper disable CppRedundantParentheses - intent clearer with the parentheses
 
-#include "pch.h"
-#include "CppUnitTest.h"
+#include "gtest/gtest.h"
 #include "../WaterMeterCpp/ResultAggregator.h"
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/Serializer.h"
 #include "FlowMeterDriver.h"
-#include <iostream>
 
 #include "TestEventClient.h"
-
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
 namespace WaterMeterCppTest {
-    TEST_CLASS(ResultAggregatorTest) {
+
+    class ResultAggregatorTest : public testing::Test {
     public:
         static EventServer eventServer;
         static DataQueuePayload payload;
@@ -36,240 +33,35 @@ namespace WaterMeterCppTest {
         static DataQueue dataQueue;
         static Clock theClock;
 
-        TEST_CLASS_INITIALIZE(resultAggregatorTestClassInitialize) {
+        // ReSharper disable once CppInconsistentNaming
+        static void SetUpTestCase() {
             eventServer.subscribe(&rateListener, Topic::Rate);
         }
 
-        TEST_METHOD_INITIALIZE(resultAggregatorTestMethodInitialize) {
+        void SetUp() override {
             uxQueueReset();
             uxRingbufReset();
             rateListener.reset();
         }
 
-        /*
-        TEST_METHOD(resultAggregatorAllExcludedTest) {
-            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
-            aggregator.begin();
-            eventServer.publish(Topic::IdleRate, 10);
-            eventServer.publish(Topic::NonIdleRate, 5);
-
-            const auto result = &payload.buffer.result;
-
-            for (int16_t i = 0; i < 15; i++) {
-                FlowMeterDriver fmd(&eventServer, 2400 + (i == 2) * 10, 0, 0, false, false,
-                    i == 2, i == 2 || i == 3, i == 2);
-                aggregator.addMeasurement(static_cast<int16_t>((i == 1) * 7600 + 2400 + (i > 7 ? 200 : 0)), &fmd);
-                eventServer.publish(Topic::ProcessTime, i == 0 ? 2500 : 7500 + i * 5);
-                Assert::AreEqual(i == 4 || i == 14, aggregator.shouldSend(), L"Must send at 5 and 15");
-                Assert::AreEqual(i < 2 || i > 4 ? 10L : 5L, aggregator.getFlushRate(),
-                    L"Flush rate is 10 the first two data points, and after the 5th. In between it is 5");
-                if (i == 4) {
-                    // The right data prepared after 5 points 
-                    assertSummary(2400, 5, 0, 0, 4, result);
-                    assertExceptions(1, 4, 0, result);
-                    assertDuration(32550, 6510, 7520, result);
-                    assertAnalysis(2400.0f, 0.0f, 0.0f, 0.0f, result);
-                    Assert::IsTrue(aggregator.send(), L"sending");
-
-                }
-            }
-            // Without special events, the next flush is after 10 data points
-            assertSummary(2600, 10, 0, 0, 7, result);
-            assertExceptions(0, 0, 0, result);
-            assertDuration(75475, 7548, 7570, result);
-            assertAnalysis(2400.0f, 0.0f, 0.0f, 0.0f, result);
-        } */
-
-        TEST_METHOD(resultAggregatorDisconnectTest) {
-            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
-            aggregator.begin();
-            eventServer.publish(Topic::IdleRate, 5);
-            eventServer.publish(Topic::NonIdleRate, 5);
-            const FlowMeterDriver fmd(&eventServer, 500);
-            for (int i = 0; i < 3; i++) {
-                aggregator.addMeasurement(500, &fmd);
-                eventServer.publish(Topic::ProcessTime, 2500 + 10 * i);
-                Assert::IsFalse(aggregator.send(), L"First 3 measurements don't send");
-            }
-            setRingBufferBufferFull(dataQueue.handle(), true);
-
-            for (int i = 0; i < 4; i++) {
-                aggregator.addMeasurement(500, &fmd);
-                eventServer.publish(Topic::ProcessTime, 2500 - 10 * i);
-                Assert::IsFalse(aggregator.send(), L"Next 4 measurements still don't send (can't after 5th)");
-            }
-
-            setRingBufferBufferFull(dataQueue.handle(), false);
-
-            for (int i = 0; i < 2; i++) {
-                aggregator.addMeasurement(500, &fmd);
-                eventServer.publish(Topic::ProcessTime, 2510 - 10 * i);
-                Assert::IsFalse(aggregator.send(),
-                    L"Next 2 measurements still don't send (as waiting for next round");
-            }
-            aggregator.addMeasurement(500, &fmd);
-            eventServer.publish(Topic::ProcessTime, 2500);
-            Assert::IsTrue(aggregator.shouldSend(), L"next round complete, so must send");
-
-            const auto result = &payload.buffer.result;
-
-            // 10 samples (multiple of 5)
-            assertSummary(500, 10, 0, 0, 10, result);
-            assertExceptions(0, 0, 0, result);
-            assertDuration(24980, 2498, 2520, result);
-            assertAnalysis(500.0f, 0.0f, 0.0f, 0.0f, result);
+    protected:
+        void assertSummary(const int lastSample, const int sampleCount, const int peakCount, const int maxStreak, const ResultData* result) const {
+            EXPECT_EQ(lastSample, static_cast<int>(result->lastSample.x)) << "Last sample OK";
+            EXPECT_EQ(sampleCount, result->sampleCount) << "sampleCount OK";
+            EXPECT_EQ(peakCount, result->pulseCount) << "pulseCount OK";
+            EXPECT_EQ(maxStreak, result->maxStreak) << "maxStreak OK";
         }
 
-        TEST_METHOD(resultAggregatorFlowTest) {
-            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
-            aggregator.begin();
-            eventServer.publish(Topic::IdleRate, 10);
-            eventServer.publish(Topic::NonIdleRate, 5);
-            for (int i = 0; i < 10; i++) {
-                const auto measurement = static_cast<int16_t>(2400 + (i % 2) * 50);
-                FlowMeterDriver fmd(&eventServer, measurement, (i % 2) * 50, 1, i > 7, i == 5);
-
-                aggregator.addMeasurement(measurement, &fmd);
-                eventServer.publish(Topic::ProcessTime, 8000 + i);
-                Assert::AreEqual(i == 9, aggregator.shouldSend());
-            }
-            const auto result = &payload.buffer.result;
-
-            // After 10 points, we get a summary with 2 flows.
-            assertSummary(2450, 10, 1, 2, 0, result);
-            assertExceptions(0, 0, 0, result);
-            assertDuration(80045, 8005, 8009, result);
-            assertAnalysis(2450.0f, 50.0f, 1.0f, 0.0f, result);
+        void assertExceptions(const int outliers, const int overruns, const ResultData* result) const {
+            EXPECT_EQ(outliers, result->outlierCount) << "outlierCount OK";
+            EXPECT_EQ(overruns, result->overrunCount) << "overrunCount OK";
         }
 
-        TEST_METHOD(resultAggregatorIdleOutlierTest) {
-            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
-            aggregator.begin();
-            eventServer.publish(Topic::IdleRate, "10");
-            eventServer.publish(Topic::NonIdleRate, "5");
-            Assert::AreEqual(2, rateListener.getCallCount(), L"two rate announcements");
-            Assert::AreEqual(10L, aggregator.getFlushRate(), L"Flush rate at last set idle rate.");
-
-            for (int16_t i = 0; i < 15; i++) {
-                const auto measurement = static_cast<int16_t>(2400 + (i > 7 ? 200 : 0));
-                FlowMeterDriver fmd(&eventServer, measurement, -3, 1, false, false, i > 7, i > 7);
-                aggregator.addMeasurement(measurement, &fmd);
-                eventServer.publish(Topic::ProcessTime, 7993 + i);
-                Assert::AreEqual(i == 9 || i == 14, aggregator.shouldSend(), (L"Must send - " + std::to_wstring(i)).c_str());
-
-                // we haven't sent yet, so #9 and #14 are still on the old flush rates (i.e. 5)
-                Assert::AreEqual(i < 8 ? 10L : 5L, aggregator.getFlushRate(), (L"FlushRate OK based on outliers - " + std::to_wstring(i)).c_str());
-
-                const auto result = &payload.buffer.result;
-                if (i == 9) {
-                    // At 10 we get a summary with 2 outliers and 2 excludes
-                    assertSummary(2600, 10, 0, 0, 8, result);
-                    assertExceptions(2, 2, 0, result);
-                    assertDuration(79975, 7998, 8002, result);
-                    assertAnalysis(2600.0f, -3.0f, 1.0f, 0.0f, result);
-
-                }
-                else if (i == 13) {
-                    Assert::IsTrue(true);
-                }
-                else if (i == 14) {
-                    // At 15 we get the next batch with 5 outliers and excludes
-                    assertSummary(2600, 5, 0, 0, 5, result);
-                    assertExceptions(5, 5, 0, result);
-                    assertDuration(40025, 8005, 8007, result);
-                    assertAnalysis(2600.0f, -3.0f, 1.0f, 0.0f, result);
-
-                }
-                Assert::AreEqual(i == 9 || i == 14, aggregator.send(), L"Sending at 9 and 14");
-            }
+        void assertDuration(const int totalDuration, const int averageDuration, const int maxDuration, const ResultData* result) const {
+            EXPECT_EQ(totalDuration, result->totalDuration) << "totalDuration OK";
+            EXPECT_EQ(averageDuration, result->averageDuration) << "averageDuration OK";
+            EXPECT_EQ(maxDuration, result->maxDuration) << "maxDuration OK";
         }
-
-        TEST_METHOD(resultAggregatorIdleTest) {
-            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
-            aggregator.begin();
-
-            Assert::AreEqual(1, rateListener.getCallCount(), L"rate set");
-            Assert::AreEqual(6000L, aggregator.getFlushRate(), L"Default flush rate OK.");
-            Assert::AreEqual("6000", rateListener.getPayload(), L"rate was published");
-
-            eventServer.publish(Topic::IdleRate, 10);
-            Assert::AreEqual(2, rateListener.getCallCount(), L"rate set again");
-            Assert::AreEqual("10", rateListener.getPayload(), L"rate was taken from idlerate");
-            Assert::AreEqual(10L, aggregator.getFlushRate(), L"Default flush rate OK.");
-
-            eventServer.publish(Topic::NonIdleRate, 5);
-            Assert::AreEqual(2, rateListener.getCallCount(), L"no new rate from non-idle");
-            Assert::AreEqual(10L, aggregator.getFlushRate(), L"Flush rate not changed from non-idle.");
-
-            for (int16_t i = 0; i < 10; i++) {
-                const auto sampleValue = static_cast<int16_t>(2400 + i);
-                FlowMeterDriver fmd(&eventServer, sampleValue, 5, 7);
-                aggregator.addMeasurement(sampleValue, &fmd);
-                eventServer.publish(Topic::ProcessTime, 1000 + i * 2);
-                if (i == 0) {
-                    Assert::AreEqual(
-                        10L,
-                        aggregator.getFlushRate(),
-                        L"Flush rate stays idle when there is nothing special.");
-                }
-                Assert::AreEqual(i == 9, aggregator.shouldSend());
-                if (i == 9) {
-                    const auto result = &payload.buffer.result;
-
-                    assertSummary(2409, 10, 0, 0, 0, result);
-                    assertExceptions(0, 0, 0, result);
-                    assertDuration(10090, 1009, 1018, result);
-                    assertAnalysis(2409.0f, 5.0f, 7.0f, 0.0f, result);
-                    aggregator.flush();
-                }
-            }
-        }
-
-        TEST_METHOD(resultAggregatorOverrunTest) {
-            ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
-            aggregator.begin();
-            eventServer.publish(Topic::IdleRate, 1);
-            eventServer.publish(Topic::NonIdleRate, 1);
-            const FlowMeterDriver fmd(&eventServer, 2400, 0, 1);
-            aggregator.addMeasurement(2398, &fmd);
-            eventServer.publish(Topic::ProcessTime, 10125L);
-            Assert::IsTrue(aggregator.shouldSend(), L"Needs flush");
-            const auto result = &payload.buffer.result;
-
-            // 1 point written, flush rate 1, measures contains sensor value, overrun triggered.
-            assertSummary(2398, 1, 0, 0, 0, result);
-            assertExceptions(0, 0, 1, result);
-            assertDuration(10125, 10125, 10125, result);
-            assertAnalysis(2400.0f, 0.0f, 1.0f, 0.0f, result);
-        }
-
-        private:
-            void assertSummary(const int lastSample, const int sampleCount, const int peakCount, const int flowCount, const int maxStreak, const ResultData* result) const {
-                Assert::AreEqual(lastSample, static_cast<int>(result->lastSample), L"Last sample OK");
-                Assert::AreEqual<uint32_t>(sampleCount, result->sampleCount, L"sampleCount OK");
-                Assert::AreEqual<uint32_t>(peakCount, result->peakCount, L"peakCount OK");
-                Assert::AreEqual<uint32_t>(flowCount, result->flowCount, L"flowCount OK");
-                Assert::AreEqual<uint32_t>(maxStreak, result->maxStreak, L"maxStreak OK");
-            }
-
-            void assertExceptions(const int outliers, const int excludes, const int overruns, const ResultData* result) const {
-                Assert::AreEqual<uint32_t>(outliers, result->outlierCount, L"outlierCount OK");
-                Assert::AreEqual<uint32_t>(excludes, result->excludeCount, L"excludeCount OK");
-                Assert::AreEqual<uint32_t>(overruns, result->overrunCount, L"overrunCount OK");
-            }
-
-            void assertDuration(const int totalDuration, const int averageDuration, const int maxDuration, const ResultData* result) const {
-                Assert::AreEqual<uint32_t>(totalDuration, result->totalDuration, L"totalDuration OK");
-                Assert::AreEqual<uint32_t>(averageDuration, result->averageDuration, L"averageDuration OK");
-                Assert::AreEqual<uint32_t>(maxDuration, result->maxDuration, L"maxDuration OK");
-            }
-
-            void assertAnalysis(const float smooth, const float derivativeSmooth, const float smoothDerivativeSmooth, const float smoothAbsDerivativeSmooth, const ResultData* result) const {
-                Assert::AreEqual(smooth, result->fastSmooth, L"fastSmooth OK");
-                Assert::AreEqual(derivativeSmooth, result->fastDerivative, L"fastDerivative OK");
-                Assert::AreEqual(smoothDerivativeSmooth, result->smoothFastDerivative, L"smoothFastDerivative OK");
-                Assert::AreEqual(smoothAbsDerivativeSmooth, result->smoothAbsFastDerivative, L"smoothAbsFastDerivative OK");
-            }
     };
 
     EventServer ResultAggregatorTest::eventServer;
@@ -277,4 +69,199 @@ namespace WaterMeterCppTest {
     DataQueuePayload ResultAggregatorTest::payload;
     TestEventClient ResultAggregatorTest::rateListener(&eventServer);
     DataQueue ResultAggregatorTest::dataQueue(&eventServer, &payload);
+
+    TEST_F(ResultAggregatorTest, resultAggregatorDisconnectTest) {
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+        eventServer.publish(Topic::IdleRate, 5);
+        eventServer.publish(Topic::NonIdleRate, 5);
+        constexpr FloatCoordinate LOW_PASS{500, 500};
+        const FlowMeterDriver fmd(&eventServer, LOW_PASS);
+        constexpr Coordinate SAMPLE{{500, 500}};
+        for (int i = 0; i < 3; i++) {
+            aggregator.addMeasurement(SAMPLE, &fmd);
+            eventServer.publish(Topic::ProcessTime, 2500 + 10 * i);
+            EXPECT_FALSE(aggregator.send()) << "First 3 measurements don't send";
+        }
+        setRingBufferBufferFull(dataQueue.handle(), true);
+
+        for (int i = 0; i < 4; i++) {
+            aggregator.addMeasurement(SAMPLE, &fmd);
+            eventServer.publish(Topic::ProcessTime, 2500 - 10 * i);
+            EXPECT_FALSE(aggregator.send()) << "Next 4 measurements still don't send (can't after 5th)";
+        }
+
+        setRingBufferBufferFull(dataQueue.handle(), false);
+
+        for (int i = 0; i < 2; i++) {
+            aggregator.addMeasurement(SAMPLE, &fmd);
+            eventServer.publish(Topic::ProcessTime, 2510 - 10 * i);
+            EXPECT_FALSE(aggregator.send()) << "Next 2 measurements still don't send (as waiting for next round";
+        }
+        aggregator.addMeasurement(SAMPLE, &fmd);
+        eventServer.publish(Topic::ProcessTime, 2500);
+        EXPECT_TRUE(aggregator.shouldSend()) << "next round complete, so must send";
+
+        const auto result = &payload.buffer.result;
+
+        // 10 samples (multiple of 5)
+        assertSummary(500, 10, 0, 10, result);
+        assertExceptions(0, 0, result);
+        assertDuration(24980, 2498, 2520, result);
+        // TODO: analysis of filtered values
+    }
+
+    // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
+    TEST_F(ResultAggregatorTest, resultAggregatorFlowTest) {
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+        eventServer.publish(Topic::IdleRate, 10);
+        eventServer.publish(Topic::NonIdleRate, 5);
+        for (int i = 0; i < 10; i++) {
+            const auto measurement = static_cast<int16_t>(2400 + (i % 2) * 50);
+            const Coordinate sample = {{measurement, measurement}};
+            const float floatMeasurement = measurement;
+            const FloatCoordinate smooth{floatMeasurement, floatMeasurement};
+
+            FlowMeterDriver fmd(&eventServer, smooth, i == 5);
+
+            aggregator.addMeasurement(sample, &fmd);
+            eventServer.publish(Topic::ProcessTime, 8000 + i);
+            EXPECT_EQ(i == 9, aggregator.shouldSend()) << "Should send(" << i << ")";
+        }
+        const auto result = &payload.buffer.result;
+
+        // After 10 points, we get a summary with 1 pulse.
+        assertSummary(2450, 10, 1, 0, result);
+        assertExceptions(0, 0, result);
+        assertDuration(80045, 8005, 8009, result);
+        // TODO: analysis of filtered values
+    }
+
+    TEST_F(ResultAggregatorTest, resultAggregatorIdleOutlierTest) {
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+        eventServer.publish(Topic::IdleRate, "10");
+        eventServer.publish(Topic::NonIdleRate, "5");
+        EXPECT_EQ(2, rateListener.getCallCount()) << "two rate announcements";
+        EXPECT_EQ(10L, aggregator.getFlushRate()) << "Flush rate at last set idle rate.";
+        Coordinate sample{{0, 0}};
+
+        for (int16_t i = 0; i < 15; i++) {
+            sample.x = static_cast<int16_t>(2400 + (i > 7 ? 200 : 0));
+            sample.y = sample.x;
+            FloatCoordinate lowPass{};
+            lowPass.set(sample);
+            FlowMeterDriver fmd(&eventServer, lowPass, false, i > 7);
+            aggregator.addMeasurement(sample, &fmd);
+            eventServer.publish(Topic::ProcessTime, 7993 + i);
+            EXPECT_EQ(i == 9 || i == 14, aggregator.shouldSend()) << "Must send - " << i;
+
+            // we haven't sent yet, so #9 and #14 are still on the old flush rates (i.e. 5)
+            EXPECT_EQ(i < 8 ? 10L : 5L, aggregator.getFlushRate()) << "FlushRate OK based on outliers - " << i;
+
+            const auto result = &payload.buffer.result;
+            if (i == 9) {
+                // At 10 we get a summary with 2 outliers and 2 excludes
+                assertSummary(2600, 10, 0, 8, result);
+                assertExceptions(2, 0, result);
+                assertDuration(79975, 7998, 8002, result);
+                // TODO: analysis of filtered values
+            }
+            else if (i == 13) {
+                EXPECT_TRUE(true);
+            }
+            else if (i == 14) {
+                // At 15 we get the next batch with 5 outliers and excludes
+                assertSummary(2600, 5, 0, 5, result);
+                assertExceptions(5, 0, result);
+                assertDuration(40025, 8005, 8007, result);
+                // TODO: filtered value analysis
+            }
+            EXPECT_EQ(i == 9 || i == 14, aggregator.send()) << "Sending at 9 and 14";
+        }
+    }
+
+    TEST_F(ResultAggregatorTest, resultAggregatorIdleTest) {
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+
+        EXPECT_EQ(1, rateListener.getCallCount()) << "rate set";
+        EXPECT_EQ(6000L, aggregator.getFlushRate()) << "Default flush rate OK.";
+        EXPECT_STREQ("6000", rateListener.getPayload()) << "rate was published";
+
+        eventServer.publish(Topic::IdleRate, 10);
+        EXPECT_EQ(2, rateListener.getCallCount()) << "rate set again";
+        EXPECT_STREQ("10", rateListener.getPayload()) << "rate was taken from idlerate";
+        EXPECT_EQ(10L, aggregator.getFlushRate()) << "Default flush rate OK.";
+
+        eventServer.publish(Topic::NonIdleRate, 5);
+        EXPECT_EQ(2, rateListener.getCallCount()) << "no new rate from non-idle";
+        EXPECT_EQ(10L, aggregator.getFlushRate()) << "Flush rate not changed from non-idle.";
+
+        for (int16_t i = 0; i < 10; i++) {
+            const Coordinate sampleValue = {{static_cast<int16_t>(2400 + i), static_cast<int16_t>(1200 + i)}};
+            FloatCoordinate lowPass{};
+            lowPass.set(sampleValue);
+            FlowMeterDriver fmd(&eventServer, lowPass);
+            aggregator.addMeasurement(sampleValue, &fmd);
+            eventServer.publish(Topic::ProcessTime, 1000 + i * 2);
+            if (i == 0) {
+                EXPECT_EQ(10L, aggregator.getFlushRate()) << "Flush rate stays idle when there is nothing special.";
+            }
+            EXPECT_EQ(i == 9, aggregator.shouldSend()) << "Should send - " << i;
+            if (i == 9) {
+                const auto result = &payload.buffer.result;
+
+                assertSummary(2409, 10, 0, 0, result);
+                assertExceptions(0, 0, result);
+                assertDuration(10090, 1009, 1018, result);
+                // TODO: filtered value analysis 
+                aggregator.flush();
+            }
+        }
+    }
+
+    TEST_F(ResultAggregatorTest, resultAggregatorOverrunTest) {
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+        eventServer.publish(Topic::IdleRate, 1);
+        eventServer.publish(Topic::NonIdleRate, 1);
+        constexpr FloatCoordinate LOW_PASS{2400, 2400};
+        const FlowMeterDriver fmd(&eventServer, LOW_PASS);
+        aggregator.addMeasurement(Coordinate{{2398, 0}}, &fmd);
+        eventServer.publish(Topic::ProcessTime, 10125L);
+        EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush";
+        const auto result = &payload.buffer.result;
+
+        // 1 point written, flush rate 1, measures contains sensor value, overrun triggered.
+        assertSummary(2398, 1, 0, 0, result);
+        assertExceptions(0, 1, result);
+        assertDuration(10125, 10125, 10125, result);
+        // TODO: filtered value analysis
+    }
+
+    TEST_F(ResultAggregatorTest, resultAggregatorResetTest) {
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+        eventServer.publish(Topic::IdleRate, 1);
+        eventServer.publish(Topic::NonIdleRate, 1);
+        constexpr FloatCoordinate LOW_PASS{ 2400, 2400 };
+        const FlowMeterDriver fmd(&eventServer, LOW_PASS, false, false, true);
+        aggregator.addMeasurement(Coordinate{ {2398, 0} }, &fmd);
+        EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush";
+        const auto result = &payload.buffer.result;
+        EXPECT_EQ(1, result->resetCount);
+    }
+
+    TEST_F(ResultAggregatorTest, resultAggregatorUpdateWrongTopicTest) {
+        // check that wrong topics don't change the flush rate (which the valid topics do)
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        aggregator.begin();
+        const auto rate = aggregator.getFlushRate();
+        aggregator.update(Topic::FreeHeap, 1);
+        const auto testString = "test";
+        eventServer.publish(Topic::FreeHeap, testString);
+        ASSERT_EQ(rate, aggregator.getFlushRate());
+    }
 }

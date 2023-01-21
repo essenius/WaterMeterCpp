@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -13,10 +13,25 @@
 
 #include "../WaterMeterCpp/FlowMeter.h"
 
-class FlowMeterDriver final : public FlowMeter {
-public:
-    FlowMeterDriver(EventServer* eventServer, int smoothValue, int derivative = 0, int smoothDerivative = 0,
-                             bool flow = false, bool peak = false,
-                             bool outlier = false, bool exclude = false);
-};
+namespace WaterMeterCppTest {
 
+    class FlowMeterDriver final : public FlowMeter {
+    public:
+        using FlowMeter::addSample;
+        using FlowMeter::detectPulse;
+        using FlowMeter::getSearcher;
+        using FlowMeter::_movingAverage;
+        using FlowMeter::_smooth;
+        using FlowMeter::_smoothStartValue;
+        using FlowMeter::_flowStarted;
+        using FlowMeter::_currentSearcher;
+        using FlowMeter::_averageAbsoluteDistance;
+        using FlowMeter::_isPulse;
+
+        explicit FlowMeterDriver(EventServer* eventServer) : FlowMeter(eventServer) {}
+
+        FlowMeterDriver(EventServer* eventServer, FloatCoordinate smoothValue, bool pulse = false, bool outlier = false, bool first = false);
+
+        void setSearcher(ExtremeSearcher* searcher) { _currentSearcher = searcher; }
+    };
+}

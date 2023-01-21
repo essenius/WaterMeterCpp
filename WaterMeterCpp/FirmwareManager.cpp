@@ -19,7 +19,7 @@
 FirmwareManager::FirmwareManager(
     EventServer* eventServer,
     const WiFiClientFactory* wifiClientFactory,
-    const FirmwareConfig* firmwareConfig, 
+    const FirmwareConfig* firmwareConfig,
     const char* buildVersion) :
 
     EventClient(eventServer),
@@ -27,22 +27,9 @@ FirmwareManager::FirmwareManager(
     _buildVersion(buildVersion),
     _firmwareConfig(firmwareConfig) {}
 
-FirmwareManager::~FirmwareManager() {
-    end();
-}
 
 void FirmwareManager::begin(const char* machineId) {
-    if (_client == nullptr) {
-        _client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
-    }
     safeStrcpy(_machineId, machineId);
-}
-
-void FirmwareManager::end() {
-    if (_client != nullptr) {
-        delete _client;
-        _client = nullptr;
-    }
 }
 
 void FirmwareManager::loadUpdate() const {
@@ -51,9 +38,14 @@ void FirmwareManager::loadUpdate() const {
     safeStrcat(buffer, _machineId);
     safeStrcat(buffer, IMAGE_EXTENSION);
 
-    // This should normally result in a reboot.
-    const t_httpUpdate_return returnValue = httpUpdate.update(*_client, buffer);
+    WiFiClient* updateClient = _wifiClientFactory->create(_firmwareConfig->baseUrl);
 
+    httpUpdate.onProgress([=](const int current, const int total) {
+        _eventServer->publish(Topic::UpdateProgress, current * 100 / total);
+    });
+    
+    // This should normally result in a reboot.
+    const t_httpUpdate_return returnValue = httpUpdate.update(*updateClient, buffer);
     if (returnValue == HTTP_UPDATE_FAILED) {
         safeSprintf(
             buffer,
@@ -70,6 +62,7 @@ void FirmwareManager::loadUpdate() const {
         httpUpdate.getLastError(),
         httpUpdate.getLastErrorString().c_str());
     _eventServer->publish(Topic::Info, buffer);
+    delete updateClient;
 }
 
 void FirmwareManager::tryUpdate() {
@@ -86,8 +79,10 @@ bool FirmwareManager::updateAvailable() const {
     safeStrcpy(versionUrl, _firmwareConfig->baseUrl);
     safeStrcat(versionUrl, _machineId);
     safeStrcat(versionUrl, VERSION_EXTENSION);
+
+    const auto client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
     HTTPClient httpClient;
-    httpClient.begin(*_client, versionUrl);
+    httpClient.begin(*client, versionUrl);
     bool newBuildAvailable = false;
     char buffer[102]; // max size that the data queue can handle
 
@@ -98,9 +93,10 @@ bool FirmwareManager::updateAvailable() const {
         if (newBuildAvailable) {
             safeSprintf(buffer, "Current firmware: '%s'; available: '%s'", _buildVersion, newVersion.c_str());
             _eventServer->publish(Topic::Info, buffer);
-        } else {
+        }
+        else {
             safeSprintf(buffer, "Already on latest firmware: '%s'", _buildVersion);
-            _eventServer->publish(Topic::Info, buffer);          
+            _eventServer->publish(Topic::Info, buffer);
         }
     }
     else {
@@ -109,6 +105,7 @@ bool FirmwareManager::updateAvailable() const {
         _eventServer->publish(Topic::ConnectionError, buffer);
         _eventServer->publish(Topic::Info, versionUrl);
     }
+    // this disposes of client as well.
     httpClient.end();
     return newBuildAvailable;
 }

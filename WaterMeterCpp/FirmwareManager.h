@@ -18,35 +18,28 @@
 #ifndef HEADER_FIRMWAREMANAGER
 #define HEADER_FIRMWAREMANAGER
 
-#include <WiFiClient.h>
-
 #include "Configuration.h"
 #include "EventClient.h"
 #include "WiFiClientFactory.h"
 
-class FirmwareManager final : public EventClient {
+class FirmwareManager : public EventClient {
 public:
     explicit FirmwareManager(
-        EventServer* eventServer, 
+        EventServer* eventServer,
         const WiFiClientFactory* wifiClientFactory,
-        const FirmwareConfig* firmwareConfig, 
+        const FirmwareConfig* firmwareConfig,
         const char* buildVersion);
-    FirmwareManager(const FirmwareManager&) = default;
-    FirmwareManager(FirmwareManager&&) = default;
-    FirmwareManager& operator=(const FirmwareManager&) = default;
-    FirmwareManager& operator=(FirmwareManager&&) = default;
-    ~FirmwareManager() override;
+
     void begin(const char* machineId);
-    void end();
-    void loadUpdate() const;
     void tryUpdate();
+protected:
+    void loadUpdate() const;
     bool updateAvailable() const;
 private:
     static constexpr int BASE_URL_SIZE = 100;
     static constexpr const char* IMAGE_EXTENSION = ".bin";
     static constexpr const char* VERSION_EXTENSION = ".version";
     const WiFiClientFactory* _wifiClientFactory;
-    WiFiClient* _client = nullptr;
     const char* _buildVersion;
     bool _justRebooted = true;
     char _machineId[20] = {};

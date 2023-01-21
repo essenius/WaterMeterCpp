@@ -16,50 +16,45 @@
 
 #include "Clock.h"
 #include "EventClient.h"
+#include "FloatCoordinate.h"
 
-constexpr uint16_t MAX_SAMPLES = 50;
+constexpr uint16_t MAX_SAMPLES = 25;
 
 struct Samples {
     uint16_t count;
-    int16_t value[MAX_SAMPLES];
+    Coordinate value[MAX_SAMPLES];
 };
 
 // ResultData must be smaller than Samples
 
 struct ResultData {
-    int16_t lastSample;
+    Coordinate lastSample;
     uint32_t sampleCount;
     uint32_t resetCount;
-    uint32_t peakCount;
-    uint32_t flowCount;
+    uint32_t pulseCount;
     uint32_t maxStreak;
     uint32_t outlierCount;
-    uint32_t excludeCount;
     uint32_t overrunCount;
     uint32_t totalDuration;
     uint32_t averageDuration;
     uint32_t maxDuration;
-    float fastSmooth;
-    float fastDerivative;
-    float smoothFastDerivative;
-    float smoothAbsFastDerivative;
-    float slowSmooth;
-    float combinedDerivative;
-    float smoothAbsCombinedDerivative;
+    FloatCoordinate smooth;
+    uint32_t searchTarget;
+    FloatCoordinate extreme;
 };
 
-typedef union {
+union Content {
     Samples samples;
     ResultData result;
     char message[sizeof(Samples)];
     uint32_t value;
-} Content; 
+};
 
-struct DataQueuePayload  {
+struct DataQueuePayload {
     Topic topic;
     Timestamp timestamp{};
     Content buffer;
-    size_t size() const ;
+    size_t size() const;
     DataQueuePayload() : topic(), buffer() {}
 };
 

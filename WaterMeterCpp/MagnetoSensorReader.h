@@ -13,7 +13,6 @@
 #define HEADER_MAGNETOSENSORREADER
 
 #include "MagnetoSensor.h"
-#include "EventServer.h"
 #include "ChangePublisher.h"
 
 constexpr int SOFT_RESET = 1;
@@ -21,14 +20,14 @@ constexpr int HARD_RESET = 2;
 
 class MagnetoSensorReader final : public EventClient {
 public:
-	explicit MagnetoSensorReader(EventServer* eventServer);
+    explicit MagnetoSensorReader(EventServer* eventServer);
     bool begin(MagnetoSensor* sensor[], size_t listSize);
     void configurePowerPort(uint8_t port);
     float getGain() const;
     int getNoiseRange() const;
     void hardReset();
     void power(uint8_t state) const;
-    int16_t read();
+    Coordinate read();
     void reset();
     void update(Topic topic, long payload) override;
     static constexpr byte DEFAULT_POWER_PORT = 15;
@@ -44,7 +43,7 @@ private:
     ChangePublisher<bool> _alert;
     ChangePublisher<bool> _noSensor;
     int _consecutiveStreakCount = 0;
-    int16_t _previousSample = -32768;
+    SensorData _previousSample = {0, 0, 0, 0};
     int _streakCount = 0;
     uint8_t _powerPort = DEFAULT_POWER_PORT;
     MagnetoSensor** _sensorList = nullptr;

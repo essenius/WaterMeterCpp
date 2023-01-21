@@ -12,6 +12,7 @@
 #ifndef HEADER_DATAQUEUE
 #define HEADER_DATAQUEUE
 
+// ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include <freertos/freeRTOS.h>
 #include <freertos/ringbuf.h>
 
@@ -21,7 +22,8 @@
 
 class DataQueue final : public EventClient {
 public:
-    DataQueue(EventServer* eventServer, DataQueuePayload* payload, int8_t index = 0, long queueSize = 40960, long epsilon = 1024, long lowThreshold = 2048);
+    DataQueue(EventServer* eventServer, DataQueuePayload* payload, int8_t index = 0, long queueSize = 40960,
+              long epsilon = 1024, long lowThreshold = 2048);
 
     bool canSend(const DataQueuePayload* payload);
     size_t freeSpace();

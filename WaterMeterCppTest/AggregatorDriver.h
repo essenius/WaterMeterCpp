@@ -1,4 +1,4 @@
-// Copyright 2021 Rik Essenius
+// Copyright 2021-2022 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -11,19 +11,15 @@
 
 #pragma once
 
-#include "pch.h"
-#include "CppUnitTest.h"
-#include <string>
-#include "../WaterMeterCpp/EventServer.h"
+#include "../WaterMeterCpp/Aggregator.h"
 
-namespace Microsoft {
-    namespace VisualStudio {
-        namespace CppUnitTestFramework {
+namespace WaterMeterCppTest {
 
-            template <>
-            inline std::wstring ToString<Topic>(const Topic& q) { 
-                RETURN_WIDE_STRING(static_cast<int>(q));
-            }
-        }
-    }
+    class AggregatorDriver final : public Aggregator {
+    public:
+        explicit AggregatorDriver(EventServer* eventServer) : Aggregator(eventServer, nullptr, nullptr, nullptr) {}
+        using Aggregator::limit;
+        using Aggregator::convertToLong;
+    }; 
+
 }

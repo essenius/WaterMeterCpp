@@ -11,12 +11,15 @@
 
 // ReSharper disable CppClangTidyClangDiagnosticExitTimeDestructors
 
-// This project implements a water meter using a QMC5883L compass sensor on an ESP32 board.
-// To enable unit testing in Visual Studio, some of the ESP libraries have been mocked in a separate project.
+// This project implements a water meter using a HMC5883L or QMC5883L compass sensor on an ESP32 board.
+// To enable unit testing in Windows (Visual Studio/Rider), some of the ESP libraries have been mocked in a separate project.
+
+// ReSharper disable CppClangTidyCppcoreguidelinesInterfacesGlobalInit -- Wire is not used before initialization
 
 #include <ESP.h>
 #include <PubSubClient.h>
 
+#include "Button.h"
 #include "Configuration.h"
 #include "Communicator.h"
 #include "Connector.h"
@@ -43,14 +46,19 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.100.9";
+constexpr const char* const BUILD_VERSION = "0.101.5";
 
-// We measure every 10 ms. That is about the fastest that the sensor can do reliably
-// Processing one cycle usually takes quite a bit less than that, unless a write happened.
+// We measure every 10 ms. That is twice the frequency of the AC in Europe (which we need to take into account since
+// there are water pumps close to the water meter, and about the fastest that the sensor can do reliably.
+// Processing one cycle usually takes quite a bit less than that.
+
 constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
+
+// We have separate I2C networks for the OLED and the sensor to prevent the sensor having to wait.
 
 constexpr int SDA_OLED = 32;
 constexpr int SCL_OLED = 33;
+constexpr int BUTTON_PORT = 34;
 
 // This is where you would normally use an injector framework,
 // We define the objects globally to avoid using (and fragmenting) the heap.
@@ -60,7 +68,7 @@ constexpr int SCL_OLED = 33;
 MagnetoSensorQmc qmcSensor(&Wire);
 MagnetoSensorHmc hmcSensor(&Wire);
 MagnetoSensorNull nullSensor;
-MagnetoSensor* sensor[] = { &qmcSensor, &hmcSensor, &nullSensor };
+MagnetoSensor* sensor[] = {&qmcSensor, &hmcSensor, &nullSensor};
 
 Preferences preferences;
 Configuration configuration(&preferences);
@@ -105,13 +113,17 @@ QueueClient connectorCommunicatorQueueClient(&connectorEventServer, &logger, 100
 // Nothing to send from sampler to connector
 QueueClient connectorSamplerQueueClient(&connectorEventServer, &logger, 0, 4);
 DataQueuePayload connectorDataQueuePayload;
-//DataQueuePayload communicatorQueuePayload;
 PayloadBuilder serialize2PayloadBuilder(&theClock);
 Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
+// we need the button in the sampler loop and digitalRead() is fast enough, so we don't use the detour via Communicator here
+ChangePublisher<uint8_t> buttonPublisher(&samplerEventServer, Topic::ResetSensor);
+Button button(&buttonPublisher, BUTTON_PORT);
+
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
-Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &sampleAggregator, &resultAggregator, &samplerQueueClient);
-Communicator communicator(&communicatorEventServer, &logger, &ledDriver, &oledDriver, &meter, &device, &connectorDataQueue, &serializer2,
+Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &button, &sampleAggregator, &resultAggregator, &samplerQueueClient);
+Communicator communicator(&communicatorEventServer, &oledDriver, &device, 
+                          &connectorDataQueue, &serializer2, 
                           &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);
 
 TimeServer timeServer;
@@ -129,14 +141,13 @@ void setup() {
     // wait for the sensor to be ready for measurements
     delay(50);
     Wire.begin(); // standard SDA=21, SCL=22
-    Wire1.begin(SDA_OLED,SCL_OLED);
+    Wire1.begin(SDA_OLED, SCL_OLED);
 
     configuration.begin();
     // queue for the sampler process
     samplerQueueClient.begin(communicatorSamplerQueueClient.getQueueHandle());
 
-    // queues for the communicator process
-    // receive only
+    // queues for the communicator process, receive only
     communicatorSamplerQueueClient.begin();
     communicatorConnectorQueueClient.begin(connectorCommunicatorQueueClient.getQueueHandle());
 
@@ -144,11 +155,11 @@ void setup() {
     connectorCommunicatorQueueClient.begin(communicatorConnectorQueueClient.getQueueHandle());
     connectorSamplerQueueClient.begin(samplerQueueClient.getQueueHandle());
 
-    communicator.setup();
-    connector.setup(&configuration);
+    communicator.begin();
+    connector.begin(&configuration);
 
     // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
-    sampler.setup(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
+    sampler.begin(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
 
     // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
     xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
@@ -156,8 +167,8 @@ void setup() {
     // the communicator loop takes care of logging and leds, as well as passing on data to the connector if there is a connection
     xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
 
-    // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
-    sampler.begin();
+    // beginLoop can only run when both sampler and connector have finished settting up, since it can start publishing right away
+    sampler.beginLoop();
 
     device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 }

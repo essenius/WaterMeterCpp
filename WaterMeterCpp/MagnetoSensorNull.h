@@ -14,8 +14,7 @@
 
 #include "MagnetoSensor.h"
 
-class MagnetoSensorNull final : public MagnetoSensor
-{
+class MagnetoSensorNull final : public MagnetoSensor {
 public:
     MagnetoSensorNull() : MagnetoSensor(0, nullptr) {}
 
@@ -26,6 +25,7 @@ public:
     bool configure() const override {
         return false;
     }
+
     float getGain() const override {
         return 0.0f;
     }

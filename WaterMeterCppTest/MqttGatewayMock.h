@@ -13,22 +13,25 @@
 
 #include "../WaterMeterCpp/MqttGateway.h"
 
-class MqttGatewayMock final : public MqttGateway {
-public:
-    explicit MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory);
-    void announceReady() override { }
-    void begin(const char* clientName) override { }
-    bool isConnected() override { return _connect; }
-    bool publishNextAnnouncement() override { return _connect; }
-    bool hasAnnouncement() override;
+namespace WaterMeterCppTest {
 
-    void setIsConnected(const bool isConnected) {
-        _connect = isConnected;
-        _announceCounter = 0;
-    }
+    class MqttGatewayMock final : public MqttGateway {
+    public:
+        explicit MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory);
+        void announceReady() override { }
+        void begin(const char* clientName) override { }
+        bool isConnected() override { return _connect; }
+        bool publishNextAnnouncement() override { return _connect; }
+        bool hasAnnouncement() override;
 
-private:
-    bool _connect = false;
-    int _announceCounter = 0;
-    constexpr static MqttConfig MQTT_CONFIG{ "broker", 1883, "user", "password", false };
-};
+        void setIsConnected(const bool isConnected) {
+            _connect = isConnected;
+            _announceCounter = 0;
+        }
+
+    private:
+        bool _connect = false;
+        int _announceCounter = 0;
+        constexpr static MqttConfig MQTT_CONFIG{"broker", 1883, "user", "password", false};
+    };
+}

@@ -11,7 +11,7 @@
 #ifndef HEADER_LOG
 #define HEADER_LOG
 
-#include <ESP.h>  
+#include <ESP.h>
 
 #ifndef ESP32
 // hack to redirect printf to capture the output
@@ -19,7 +19,6 @@
 #define printf redirectPrintf
 #endif
 
-#include "EventServer.h"
 #include "PayloadBuilder.h"
 
 class Log final : public EventClient {
@@ -27,19 +26,20 @@ public:
     using EventClient::update;
     Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder);
     void begin();
-    
+
     template <typename... Arguments>
     void log(const char* format, Arguments ... arguments) const {
-      // printf doesn't seem to influence other tasks (unlike Serial.printf)
+        // printf doesn't seem to influence other tasks (unlike Serial.printf)
         xSemaphoreTake(_printMutex, portMAX_DELAY);
         printf("[%s] ", getTimestamp());
         printf(format, arguments...);
         printf("\n");
         xSemaphoreGive(_printMutex);
     }
-    
+
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
+
 private:
     PayloadBuilder* _wifiPayloadBuilder;
     long _previousConnectionTopic = -1;

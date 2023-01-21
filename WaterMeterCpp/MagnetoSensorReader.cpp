@@ -18,9 +18,7 @@
 MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer) :
     EventClient(eventServer),
     _alert(eventServer, Topic::Alert),
-    _noSensor(eventServer, Topic::NoSensorFound) {
-
-}
+    _noSensor(eventServer, Topic::NoSensorFound) {}
 
 bool MagnetoSensorReader::setSensor() {
     // The last one (null sensor) always matches so _sensor can't be nullptr
@@ -83,7 +81,7 @@ void MagnetoSensorReader::hardReset() {
     delay(DELAY_SENSOR_MILLIS);
     _noSensor = false;
     setSensor();
-    
+
     _streakCount = 0;
     _consecutiveStreakCount = 0;
     _eventServer->publish(Topic::SensorWasReset, HARD_RESET);
@@ -93,15 +91,14 @@ void MagnetoSensorReader::power(const uint8_t state) const {
     digitalWrite(_powerPort, state);
 }
 
-int16_t MagnetoSensorReader::read() {
+Coordinate MagnetoSensorReader::read() {
     SensorData sample{};
     if (!_sensor->read(&sample)) {
         _alert = true;
         _noSensor = true;
     }
-    // Empirically determined that Y gave the best data for this meter
     // check whether the sensor still works
-    if (sample.y == _previousSample) {
+    if (sample == _previousSample) {
         _streakCount++;
         // if we have too many of the same results in a row, reset the sensor
         if (_streakCount >= FLATLINE_STREAK) {
@@ -112,15 +109,16 @@ int16_t MagnetoSensorReader::read() {
         // all good, reset the statistics
         _streakCount = 0;
         _consecutiveStreakCount = 0;
-        _previousSample = sample.y;
+        _previousSample = sample;
         _alert = false;
     }
-    return sample.y;
+    // We use the X/Y plane as that gives the clearest results
+    return Coordinate{{sample.x, sample.y}};
 }
 
 void MagnetoSensorReader::reset() {
     _consecutiveStreakCount++;
-    // If we have done this a number of times in a row, we do a hard reset and post an alert
+    // If we have done the soft reset a number of times in a row, we do a hard reset and post an alert
     if (_consecutiveStreakCount >= MAX_STREAKS_TO_ALERT || !_sensor->isReal()) {
         _alert = true;
         hardReset();
@@ -136,7 +134,7 @@ void MagnetoSensorReader::reset() {
 }
 
 void MagnetoSensorReader::update(const Topic topic, long payload) {
-    if (topic == Topic::ResetSensor) {
+    if (topic == Topic::ResetSensor && payload != 0) {
         hardReset();
     }
 }

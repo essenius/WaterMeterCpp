@@ -15,24 +15,63 @@
 #include <cstdarg>
 #include <map>
 
+#include "Coordinate.h"
+
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;
 
 enum class Topic: int16_t {
     None = 0,
-    BatchSize, BatchSizeDesired, Rate, IdleRate, NonIdleRate,
-    Sample, Samples, SkipSamples, SamplesFormatted, 
-    Result, ResultFormatted, 
+    BatchSize,
+    BatchSizeDesired,
+    Rate,
+    IdleRate,
+    NonIdleRate,
+    Sample,
+    Samples,
+    SkipSamples,
+    SamplesFormatted,
+    Result,
+    ResultFormatted,
     SensorData,
-    FreeHeap, FreeStack, FreeQueueSize, FreeQueueSpaces,
-    Connection, WifiSummaryReady,
+    FreeHeap,
+    FreeStack,
+    FreeQueueSize,
+    FreeQueueSpaces,
+    Connection,
+    WifiSummaryReady,
     ResultWritten,
-    ConnectionError, Info, MessageFormatted, ErrorFormatted, Blocked, Alert,
-    ProcessTime, TimeOverrun,
-    Flow, Exclude, Peak,
-    Time, IpAddress, MacRaw, MacFormatted,
-    ResetSensor, SensorWasReset, NoSensorFound,
-    SetVolume, Volume, Pulses, NoDisplayFound
+    ConnectionError,
+    Info,
+    MessageFormatted,
+    ErrorFormatted,
+    Blocked,
+    Alert,
+    ProcessTime,
+    TimeOverrun,
+    Exclude,
+    Pulse,
+    Time,
+    IpAddress,
+    MacRaw,
+    MacFormatted,
+    ResetSensor,
+    SensorWasReset,
+    NoSensorFound,
+    SetVolume,
+    AddVolume,
+    Volume,
+    Pulses,
+    NoDisplayFound,
+    UpdateProgress,
+    ButtonPushed,
+    Begin
+};
+
+union EventPayload {
+    int32_t n;
+    Coordinate coordinate;
+    bool b;
 };
 
 class EventServer;
@@ -53,6 +92,7 @@ public:
     virtual long get(Topic topic, const long defaultValue) { return defaultValue; }
     virtual void update(Topic topic, const char* payload) {}
     virtual void update(Topic topic, long payload);
+    virtual void update(Topic topic, Coordinate payload);
 
 protected:
     EventServer* _eventServer;

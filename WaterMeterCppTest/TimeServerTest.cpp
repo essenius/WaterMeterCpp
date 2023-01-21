@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2022 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -9,22 +9,15 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
-
-#include "CppUnitTest.h"
-
+#include "gtest/gtest.h"
 #include "TimeServerMock.h"
 #include <ESP.h>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace WaterMeterCppTest {
-    TEST_CLASS(TimeServerTest) {
-    public:
-        TEST_METHOD(timeServerScriptTest) {
-            TimeServer timeServer;
-            timeServer.setTime();
-            Assert::IsTrue(timeServer.timeWasSet(), L"Time is set on Windows devices");
-        }
-    };
+
+    TEST(TimeServerTest, timeServerScriptTest) {
+        TimeServer timeServer;
+        timeServer.setTime();
+        EXPECT_TRUE(timeServer.timeWasSet()) << "Time is set on Windows devices";
+    }
 }

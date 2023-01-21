@@ -32,7 +32,9 @@ constexpr static const char* const MESSAGES[] = {
 };
 
 Log::Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder) :
-    EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {}
+    EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {
+    eventServer->subscribe(this, Topic::Begin);
+}
 
 void Log::begin() {
     update(Topic::MessageFormatted, "Starting");
@@ -48,11 +50,11 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::NoDisplayFound);
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::ResultFormatted);
-    _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::SetVolume);
     _eventServer->subscribe(this, Topic::SkipSamples);
     _eventServer->subscribe(this, Topic::TimeOverrun);
+    _eventServer->subscribe(this, Topic::UpdateProgress);
     _eventServer->subscribe(this, Topic::WifiSummaryReady);
 }
 
@@ -60,6 +62,7 @@ const char* Log::getTimestamp() const {
     return _eventServer->request(Topic::Time, "");
 }
 
+// ReSharper disable once CyclomaticComplexity - just a case statement
 void Log::update(Topic topic, const char* payload) {
     switch (topic) {
     case Topic::Alert:
@@ -68,10 +71,9 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Blocked:
         log("Blocked: %s", payload);
         break;
-    case Topic::Connection: // NOLINT(bugprone-branch-clone) -- looks like a false positive
-        log("%s", payload);
-        break;
+    case Topic::Connection: 
     case Topic::ErrorFormatted:
+    case Topic::MessageFormatted:
         log("%s", payload);
         break;
     case Topic::FreeHeap:
@@ -83,14 +85,8 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::NoSensorFound:
         log("No sensor found: %s", payload);
         break;
-    case Topic::MessageFormatted:
-        log("%s", payload);
-        break;
     case Topic::ResultFormatted:
         log("Result: %s", payload);
-        break;
-    case Topic::ResultWritten:
-        log("Result Written: %s", payload);
         break;
     case Topic::SensorWasReset:
         log("Sensor was reset: %s", payload);
@@ -104,6 +100,9 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::TimeOverrun:
         log("Time overrun: %s", payload);
         break;
+    case Topic::UpdateProgress:
+        log("Firmware update progress: %s%%", payload);
+        break;
     case Topic::WifiSummaryReady:
         log("Wifi summary: %s", _wifiPayloadBuilder->toString());
         break;
@@ -114,6 +113,12 @@ void Log::update(Topic topic, const char* payload) {
 
 void Log::update(const Topic topic, const long payload) {
     switch (topic) {
+    case Topic::Begin:
+        // do this as early as possible, i.e. when called with LONG_FALSE
+        if (payload == LONG_FALSE) {
+            begin();
+            }
+        break;
     case Topic::Connection:
         if (_previousConnectionTopic != payload) {
             _previousConnectionTopic = payload;

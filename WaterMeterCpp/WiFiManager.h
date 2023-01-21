@@ -19,7 +19,7 @@
 #include "PayloadBuilder.h"
 #include "Configuration.h"
 
-const IPAddress NO_IP(0,0,0,0);
+const IPAddress NO_IP(0, 0, 0, 0);
 
 class WiFiManager : public EventClient {
 public:
@@ -48,7 +48,7 @@ private:
     IPAddress _subnetMaskIp = NO_IP;
     IPAddress _dns1Ip = NO_IP;
     IPAddress _dns2Ip = NO_IP;
-    char _hostNameBuffer[HOSTNAME_LENGTH] = { 0 };
+    char _hostNameBuffer[HOSTNAME_LENGTH] = {0};
     char* _hostName = _hostNameBuffer;
     char _ipAddress[IP_ADDRESS_SIZE] = "";
     char _macAddress[MAC_ADDRESS_SIZE] = "";

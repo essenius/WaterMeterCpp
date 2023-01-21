@@ -14,10 +14,18 @@
 
 
 enum class ConnectionState {
-    Init = 0, Disconnected,
-    WifiConnecting, WifiConnected, WifiReady,
-    MqttConnecting, WaitingForMqttReconnect, MqttConnected, MqttReady,
-    RequestTime, SettingTime, CheckFirmware
+    Init = 0,
+    Disconnected,
+    WifiConnecting,
+    WifiConnected,
+    WifiReady,
+    MqttConnecting,
+    WaitingForMqttReconnect,
+    MqttConnected,
+    MqttReady,
+    RequestTime,
+    SettingTime,
+    CheckFirmware
 };
 
 #endif

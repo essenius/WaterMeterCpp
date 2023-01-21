@@ -9,24 +9,16 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#include "pch.h"
-
 #include "FlowMeterDriver.h"
 
 // constructor for ResultAggregatorTest. Uses fields that are used for reporting
-FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const int smoothValue, const int derivative, const int smoothDerivative,
-                                 const bool flow, const bool peak, const bool outlier, const bool exclude): FlowMeter(eventServer) {
-    _fastSmooth = static_cast<float>(smoothValue);
-    _fastDerivative = static_cast<float>(derivative);
-    _smoothFastDerivative = static_cast<float>(smoothDerivative);
-    _smoothAbsFastDerivative = 0.0f;
-    _exclude = exclude;
-    _flow = flow;
-    _outlier = outlier;
-    _peak = peak;
-    _firstCall = false;
-}
 
-//float FlowMeterDriver::isFirstOutlier() const {
-//    return _firstOutlier;
-//}
+namespace WaterMeterCppTest {
+
+    FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue, const bool pulse, const bool outlier, const bool first): FlowMeter(eventServer) {
+        _smooth = smoothValue;
+        _isPulse = pulse;
+        _outlier = outlier;
+        _firstCall = first;
+    }
+}

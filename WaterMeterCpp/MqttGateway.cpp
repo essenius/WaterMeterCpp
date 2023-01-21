@@ -22,27 +22,25 @@ using namespace std::placeholders;
 // mapping between topics and whether it can be set, the node, and the property
 // implementing triplet via two pairs
 static const std::map<Topic, std::pair<bool, std::pair<const char*, const char*>>> TOPIC_MAP{
-    {Topic::BatchSize,        {false, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}}},
-    {Topic::BatchSizeDesired, {true,  {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}}},
+    {Topic::BatchSize, {false, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}}},
+    {Topic::BatchSizeDesired, {true, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}}},
     {Topic::SamplesFormatted, {false, {MEASUREMENT, MEASUREMENT_VALUES}}},
-    {Topic::Rate,             {false, {RESULT, RESULT_RATE}}},
-    {Topic::ResultFormatted,  {false, {RESULT, RESULT_VALUES}}},
-    {Topic::IdleRate,         {true,  {RESULT, RESULT_IDLE_RATE}}},
-    {Topic::NonIdleRate,      {true,  {RESULT, RESULT_NON_IDLE_RATE}}},
-    {Topic::Volume,            {false, {RESULT, RESULT_METER}}},
-    {Topic::SetVolume,         {true,  {RESULT, RESULT_METER}}},
-    {Topic::FreeHeap,         {false, {DEVICE, DEVICE_FREE_HEAP}}},
-    {Topic::FreeStack,        {false, {DEVICE, DEVICE_FREE_STACK}}},
-    {Topic::FreeQueueSize,    {false, {DEVICE, DEVICE_FREE_QUEUE_SIZE}}},
-    {Topic::FreeQueueSpaces,  {false, {DEVICE, DEVICE_FREE_QUEUE_SPACES}}},
-    {Topic::SensorWasReset,   {false, {DEVICE, DEVICE_RESET_SENSOR}}},
-    {Topic::ResetSensor,      {true,  {DEVICE, DEVICE_RESET_SENSOR}}}
+    {Topic::Rate, {false, {RESULT, RESULT_RATE}}},
+    {Topic::ResultFormatted, {false, {RESULT, RESULT_VALUES}}},
+    {Topic::IdleRate, {true, {RESULT, RESULT_IDLE_RATE}}},
+    {Topic::NonIdleRate, {true, {RESULT, RESULT_NON_IDLE_RATE}}},
+    {Topic::Volume, {false, {RESULT, RESULT_METER}}},
+    {Topic::SetVolume, {true, {RESULT, RESULT_METER}}},
+    {Topic::FreeHeap, {false, {DEVICE, DEVICE_FREE_HEAP}}},
+    {Topic::FreeStack, {false, {DEVICE, DEVICE_FREE_STACK}}},
+    {Topic::FreeQueueSize, {false, {DEVICE, DEVICE_FREE_QUEUE_SIZE}}},
+    {Topic::FreeQueueSpaces, {false, {DEVICE, DEVICE_FREE_QUEUE_SPACES}}},
+    {Topic::SensorWasReset, {false, {DEVICE, DEVICE_RESET_SENSOR}}},
+    {Topic::ResetSensor, {true, {DEVICE, DEVICE_RESET_SENSOR}}}
 };
 
-static const std::set<Topic> NON_RETAINED_TOPICS{ Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume };
-
-static const std::set<Topic> RETRIEVED_TOPICS{ Topic::Volume };
-
+// SetVolume is not retained yet as we are not pushing it back at this stage
+static const std::set<Topic> NON_RETAINED_TOPICS{Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume};
 
 constexpr const char* const RATE_RANGE = "0:8640000";
 constexpr const char* const TYPE_INTEGER = "integer";
@@ -53,6 +51,20 @@ constexpr bool SETTABLE = true;
 constexpr const char* const NAME = "$name";
 
 constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
+
+// thread safe alternative for strtok
+char* nextToken(char** start, const int delimiter) {
+    char* token = *start;
+    char* nextDelimiter = token != nullptr ? strchr(token, delimiter) : nullptr;
+    if (nextDelimiter == nullptr) {
+        *start = nullptr;
+    }
+    else {
+        *nextDelimiter = '\0';
+        *start = nextDelimiter + 1;
+    }
+    return token;
+}
 
 MqttGateway::MqttGateway(
     EventServer* eventServer,
@@ -67,29 +79,30 @@ MqttGateway::MqttGateway(
     _wifiClientFactory(wifiClientFactory),
     _mqttConfig(mqttConfig),
     _dataQueue(dataQueue),
-    _buildVersion(buildVersion) {
-}
+    _buildVersion(buildVersion) {}
 
 MqttGateway::~MqttGateway() {
     delete _wifiClient;
 }
 
+// ---- Public methods ----
+
 void MqttGateway::announceReady() {
     // this is safe to do more than once. So after a disconnect it doesn't hurt
     // TODO: it's probably OK to do this just once and leave on. Validate.
-    _eventServer->subscribe(this, Topic::Alert); 
-    _eventServer->subscribe(this, Topic::BatchSize); 
-    _eventServer->subscribe(this, Topic::BatchSizeDesired); 
-    _eventServer->subscribe(this, Topic::FreeHeap); 
-    _eventServer->subscribe(this, Topic::FreeStack); 
-    _eventServer->subscribe(this, Topic::FreeQueueSize); 
-    _eventServer->subscribe(this, Topic::FreeQueueSpaces); 
+    _eventServer->subscribe(this, Topic::Alert);
+    _eventServer->subscribe(this, Topic::BatchSize);
+    _eventServer->subscribe(this, Topic::BatchSizeDesired);
+    _eventServer->subscribe(this, Topic::FreeHeap);
+    _eventServer->subscribe(this, Topic::FreeStack);
+    _eventServer->subscribe(this, Topic::FreeQueueSize);
+    _eventServer->subscribe(this, Topic::FreeQueueSpaces);
     _eventServer->subscribe(this, Topic::IdleRate);
-    _eventServer->subscribe(this, Topic::NonIdleRate); 
-    _eventServer->subscribe(this, Topic::Rate); 
-    _eventServer->subscribe(this, Topic::ResultFormatted); 
+    _eventServer->subscribe(this, Topic::NonIdleRate);
+    _eventServer->subscribe(this, Topic::Rate);
+    _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::SamplesFormatted); // string
-    _eventServer->subscribe(this, Topic::SensorWasReset);      
+    _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::Volume); // string
 }
 
@@ -106,62 +119,9 @@ void MqttGateway::begin(const char* clientName) {
     _mqttClient->setBufferSize(512);
     _mqttClient->setServer(_mqttConfig->broker, static_cast<uint16_t>(_mqttConfig->port));
     _mqttClient->setCallback([=](const char* topic, const uint8_t* payload, const unsigned int length) {
-          this->callback(topic, payload, length);
-         });
+        this->callback(topic, payload, length);
+    });
     connect();
-}
-
-// thread safe alternative for strtok
-char* nextToken(char** start, const int delimiter) {
-    char* token = *start;
-    char* nextDelimiter = token != nullptr ? strchr(token, delimiter) : nullptr;
-    if (nextDelimiter == nullptr) {
-        *start = nullptr;
-    }
-    else {
-        *nextDelimiter = '\0';
-        *start = nextDelimiter + 1;
-    }
-    return token;
-}
-
-void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
-    char* copyTopic = strdup(topic);
-    constexpr int DELIMITER = '/';
-    // if the topic is invalid, ignore the message
-    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // homie, ignore
-    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // device ID, ignore
-    const char* node = nextToken(&copyTopic, DELIMITER);
-    const char* property = nextToken(&copyTopic, DELIMITER);
-    const char* set = nextToken(&copyTopic, DELIMITER);
-    if (set != nullptr && strcmp(set, "set") == 0) {
-        // 1LL is a trick to avoid C26451
-        const auto payloadStr = new char[1LL + length];
-        for (unsigned int i = 0; i < length; i++) {
-            payloadStr[i] = static_cast<char>(payload[i]);
-        } 
-        payloadStr[length] = 0;
-        for (const auto& entry : TOPIC_MAP) {
-            const auto topicTriplet = entry.second;
-            const auto isSetProperty = topicTriplet.first;
-            if (isSetProperty) {
-                const auto topicPair = topicTriplet.second;
-                if (strcmp(topicPair.first, node) == 0 && strcmp(topicPair.second, property) == 0) {
-                    // There is one set-value that requires a string, and that needs to be persistent across tasks
-                    if (entry.first == Topic::SetVolume) {
-                        safeStrcpy(_volume, payloadStr);
-                        _eventServer->publish(this, entry.first, _volume);
-                    }
-                    else {
-                        _eventServer->publish(this, entry.first, payloadStr);
-                    }
-                    break;
-                }
-            }
-        }
-        delete[] payloadStr;
-    }
-    free(copyTopic);
 }
 
 void MqttGateway::connect() {
@@ -174,7 +134,7 @@ void MqttGateway::connect() {
     }
     else {
         success = _mqttClient->connect(_clientName, _mqttConfig->user, _mqttConfig->password, _topicBuffer, 0, true,
-                                       LAST_WILL_MESSAGE);
+            LAST_WILL_MESSAGE);
     }
 
     // should get picked up by isConnected later
@@ -187,6 +147,30 @@ void MqttGateway::connect() {
     if (!_mqttClient->subscribe(_topicBuffer)) {
         publishError("Could not subscribe to setters");
     }
+
+    if (!_justStarted) return;
+
+    // just after a boot, see if we have a previous meter value
+
+    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, RESULT);
+    safeStrcat(_topicBuffer, "/");
+    safeStrcat(_topicBuffer, RESULT_METER);
+
+    if (!_mqttClient->subscribe(_topicBuffer)) {
+        publishError("Could not subscribe to result meter");
+    }
+}
+
+bool MqttGateway::getPreviousVolume() {
+    if (!_justStarted) return false;
+    const auto startTime = micros();
+    while (!_volumeReceived && micros() - startTime < 1e6) {
+        _mqttClient->loop(); 
+        delay(10);      
+    }
+    _justStarted = false;
+    _mqttClient->unsubscribe(_topicBuffer);
+    return true;
 }
 
 bool MqttGateway::handleQueue() {
@@ -199,6 +183,63 @@ bool MqttGateway::hasAnnouncement() {
 
 bool MqttGateway::isConnected() {
     return _mqttClient->connected();
+}
+
+bool MqttGateway::publishNextAnnouncement() {
+    const char* topic = _announcementPointer;
+    _announcementPointer += strlen(topic) + 1;
+    if (strlen(topic) == 0) return false;
+    const char* payload = _announcementPointer;
+    _announcementPointer += strlen(payload) + 1;
+    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, topic);
+    return _mqttClient->publish(_topicBuffer, payload, true);
+}
+
+
+// incoming event from EventServer. This only happens if we are connected
+void MqttGateway::update(const Topic topic, const char* payload) {
+    publishUpdate(topic, payload);
+}
+
+// ---- Protected methods ----
+
+void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
+    // ignore messages with an empty payload.
+    if (length == 0) return;
+
+    char* copyTopic = strdup(topic);
+    constexpr int DELIMITER = '/';
+    // if the topic is invalid, ignore the message
+    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // homie, ignore
+    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // device ID, ignore
+    const char* node = nextToken(&copyTopic, DELIMITER);
+    const char* property = nextToken(&copyTopic, DELIMITER);
+    const char* set = nextToken(&copyTopic, DELIMITER);
+    if (node == nullptr || property == nullptr) return;
+    const auto isSetter = set != nullptr && strcmp(set, "set") == 0;
+    const auto payloadStr = new char[length + 1];
+    for (unsigned int i = 0; i < length; i++) {
+        payloadStr[i] = static_cast<char>(payload[i]);
+    }
+    payloadStr[length] = 0;
+    for (const auto& entry : TOPIC_MAP) {
+        const auto topicTriplet = entry.second;
+        const auto isSetProperty = topicTriplet.first;
+        if (isSetter == isSetProperty) {
+            const auto topicPair = topicTriplet.second;
+            if (isRightTopic(topicPair, node, property)) {
+                publishToEventServer(entry.first, payloadStr);
+                break;
+            }
+        }
+    }
+    delete[] payloadStr;
+    /* } */
+    free(copyTopic);
+}
+
+bool MqttGateway::isRightTopic(std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty) {
+    return strcmp(topicPair.first, expectedNode) == 0 && strcmp(topicPair.second, expectedProperty) == 0;
 }
 
 void MqttGateway::prepareAnnouncementBuffer() {
@@ -226,7 +267,8 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(RESULT, RESULT_METER, "Meter value", TYPE_FLOAT, "0-99999.9999999", SETTABLE);
     prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_FREE_QUEUE_SIZE, DEVICE_FREE_QUEUE_SPACES, DEVICE_BUILD, DEVICE_MAC);
+    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_FREE_QUEUE_SIZE,
+                DEVICE_FREE_QUEUE_SPACES, DEVICE_BUILD, DEVICE_MAC);
     prepareNode(DEVICE, "Device", "1", payload);
     prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap", TYPE_INTEGER);
     prepareProperty(DEVICE, DEVICE_FREE_STACK, "Free Stack", TYPE_INTEGER);
@@ -287,20 +329,23 @@ void MqttGateway::publishError(const char* message) {
     _eventServer->publish<const char*>(Topic::ConnectionError, _topicBuffer);
 }
 
-bool MqttGateway::publishNextAnnouncement() {
-    const char* topic = _announcementPointer;
-    _announcementPointer += strlen(topic) + 1;
-    if (strlen(topic) == 0) return false;
-    const char* payload = _announcementPointer;
-    _announcementPointer += strlen(payload) + 1;
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, topic);
-    return _mqttClient->publish(_topicBuffer, payload, true);
-}
-
 bool MqttGateway::publishProperty(const char* node, const char* property, const char* payload, const bool retain) {
     char baseTopic[50];
     safeSprintf(baseTopic, "%s/%s", _clientName, node);
     return publishEntity(baseTopic, property, payload, retain);
+}
+
+void MqttGateway::publishToEventServer(Topic topic, const char* payload) {
+    if (topic != Topic::SetVolume && topic != Topic::Volume) {
+        _eventServer->publish(this, topic, payload);
+        return;
+    }
+    _volumeReceived = true;
+    // There is one set-value that requires a string, and that needs to be persistent across tasks
+    // This also happens to be the only value that can be set from the getter (just once, right after reboot)
+    safeStrcpy(_volume, payload);
+    const auto topicToSend = topic == Topic::SetVolume ? Topic::SetVolume : Topic::AddVolume;
+    _eventServer->publish(this, topicToSend, _volume);
 }
 
 void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
@@ -315,15 +360,10 @@ void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
         if (!isSetTopic) {
             const auto topicPair = topicTriplet.second;
             publishProperty(
-                topicPair.first, 
-                topicPair.second, 
-                payload, 
+                topicPair.first,
+                topicPair.second,
+                payload,
                 NON_RETAINED_TOPICS.find(topic) == NON_RETAINED_TOPICS.end());
         }
     }
-}
-
-// incoming event from EventServer. This only happens if we are connected
-void MqttGateway::update(const Topic topic, const char* payload) {
-    publishUpdate(topic, payload);
 }

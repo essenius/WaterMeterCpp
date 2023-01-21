@@ -12,238 +12,213 @@
 #include <cmath>
 
 #include "FlowMeter.h"
+
+#include "Angle.h"
 #include "EventServer.h"
 
-// most signals are between 1 Hz and 8 Hz. We call that fast. But smetimes with very slow flows (e.g. someone
-// didn't close the tap completely) slower frequencies  occur, and the filter would suppress those.
-// That's why we also use a slower filter, checking for 0.05 Hz to 1 Hz. We call that slow.
+// It was empirically established that relative measurements are less reliable (losing slow moves in the noise),
+// so now using absolutes measurements. Since absolute values are not entirely predictable, the tactic is to
+// follow the clockwise elliptic move that the signal makes, and tracking high Y, high X, low Y and low X,
+// respectively. The pattern is a state machine.
 
-// Fast cut-off frequency 8 Hz. Alpha for low pass = dt/(1/(2*pi*fc)+dt), dt = 0.01s
-constexpr float ALPHA_LOW_PASS_FAST =0.335f;
-// Slow cut-off frequency 1 Hz
-constexpr float ALPHA_LOW_PASS_SLOW = 0.0591f;
+// To eliminate the noise caused by eletric devices (water pump) we use a sampling rate of 100Hz, which is twice
+// the rate frequency of electricity in Europe. Then we take a moving average over 4 measurements.
+// Over that signal we do another fast smoothening.
 
-// Fast cut-off frequency 1 Hz
-// alpha for high pass = 1/(2*pi*dt*fc+1)
-constexpr float ALPHA_HIGH_PASS_FAST = 0.941f;
-// slow cut-off frequncy 0.05 Hz
-constexpr float ALPHA_HIGH_PASS_SLOW = 0.997f;
+// light smoothening, cut-off frequency (Fc) 16 Hz. Alpha for low pass = dt / (1 / (2 * pi * fc) + dt), with dt = 0.01s
+constexpr float LOW_PASS_ALPHA_XY = 0.5f;
 
-// take the highest measured range times 2 as outlier limit
-// If the amplitude ls larger than this, it's very likely we have an outlier
-constexpr float OUTLIER_AMPLITUDE_MILLIGAUSS = 53.0f * 2.0f;
+// this should be a lot slower (cut-off around 0.84 Hz). We want it to incorporate drifts/shifts, but be reasonably stable
+constexpr float LOW_PASS_ALPHA_ABSOLUTE_DISTANCE = 0.05f;
 
-// if we have more than this number of outliers in a row, we reset the sensor
-constexpr unsigned int MAX_CONSECUTIVE_OUTLIERS = 10;
+// The largest range in distance difference observed in the test data;
+constexpr float DISTANCE_RANGE_MILLIGAUSS = 120.0f;
+constexpr float OUTLIER_DISTANCE_DIFFERENCE = 2.0f * DISTANCE_RANGE_MILLIGAUSS;
 
-constexpr bool USE_SLOW_MEASUREMENT = true;
 
-FlowMeter::FlowMeter(EventServer* eventServer):
+// --- Constructors and public methods ---
+
+FlowMeter::FlowMeter(EventServer* eventServer) :
     EventClient(eventServer),
-    _exclude(eventServer, Topic::Exclude),
-    _flow(eventServer, Topic::Flow),
-    _peak(eventServer, Topic::Peak) {}
+    _flowSearcher(None, {ExtremeSearcher::MIN_SENSOR_VALUE, ExtremeSearcher:: MIN_SENSOR_VALUE}, nullptr),
+    _maxXSearcher(MaxX, {ExtremeSearcher::MIN_SENSOR_VALUE, 0 }, & _minYSearcher),
+    _maxYSearcher(MaxY, { 0, ExtremeSearcher::MIN_SENSOR_VALUE }, & _maxXSearcher),
+    _minXSearcher(MinX, {ExtremeSearcher::MAX_SENSOR_VALUE, 0 }, & _maxYSearcher),
+    _minYSearcher(MinY, { 0, ExtremeSearcher::MAX_SENSOR_VALUE }, & _minXSearcher),
+    _outlier(eventServer, Topic::Exclude) {}
 
-void FlowMeter::addSample(const int measurement) {
+void FlowMeter::begin(const int noiseRange, const float gain) {
+
+    // Calculate LSB corresponding to the largest measured magnetic field with margin.
+    // If we have a distance difference larger than that, it is an outlier
+    _outlierThreshold = OUTLIER_DISTANCE_DIFFERENCE * gain / 1000.0f;
+    // We assume X and Y ranges have the same noise levels. The maximum difference in distance between samples
+    // where we can still be in the noise range is sqrt(maxXdistance^2 + maxYdistance^2)
+
+    const auto noiseBase = static_cast<float>(noiseRange);
+    _maxNoiseDistance = sqrtf(2.0f * noiseBase * noiseBase);
+    _eventServer->subscribe(this, Topic::Sample);
+    _eventServer->subscribe(this, Topic::SensorWasReset);
+}
+
+FloatCoordinate FlowMeter::currentExtreme() const {
+    if (_currentSearcher == nullptr) return FloatCoordinate{};
+    return _currentSearcher->extreme();
+}
+
+SearchTarget FlowMeter::searchTarget() const {
+    if (_currentSearcher == nullptr) return None;
+    return _currentSearcher->target();
+}
+
+void FlowMeter::update(const Topic topic, const long payload) {
+    if (topic == Topic::SensorWasReset) {
+        // If we needed to reset the sensor, also reset the measurement process when the next sample comes in
+        _firstCall = true;
+        _consecutiveOutliers = 0;
+    }
+}
+
+void FlowMeter::update(const Topic topic, const Coordinate payload) {
+    if (topic == Topic::Sample) {
+        addSample(payload);
+    }
+}
+
+// --- Protected methods ---
+
+void FlowMeter::addSample(const Coordinate sample) {
 
     // if we don't have a previous measurement yet, use defaults.
     if (_firstCall) {
         // since the filters need initial values, set those. Also initialize the anomaly indicators.
         resetAnomalies();
-        resetFilters(measurement);
+        resetFilters(sample);
         _firstCall = false;
         return;
     }
-    detectOutlier(measurement);
+    detectOutlier(sample);
     markAnomalies();
-    detectPeaks(measurement);
+    detectPulse(sample);
 }
 
-//bool FlowMeter::areAllExcluded() const {
-//    return _excludeAll;
-//}
-
-float FlowMeter::getAmplitude() const {
-    return _amplitude;
+void FlowMeter::detectOutlier(const Coordinate measurement) {
+    const float distance = measurement.distanceFrom({ { 0,0 } });
+    _outlier = fabsf(distance - _averageAbsoluteDistance) > _outlierThreshold;
+    if (_outlier) return;
+    _averageAbsoluteDistance = lowPassFilter(distance, _averageAbsoluteDistance, LOW_PASS_ALPHA_ABSOLUTE_DISTANCE);
 }
 
-void FlowMeter::begin(const int noiseRange, const float gain) {
-
-    if (noiseRange > 30) {
-        // We have a QMC sensor, which is more sensitive and has higher noise range.
-        // We only use the 8 Gauss range, and zero threshold was empirically determined via null measurements
-        _zeroThreshold = 12.0f;
-    } else {
-        // We have an HMC sensor with much lower noise ranges in the different measurement ranges.
-        // Emprirically determined a linear relation between range and maximum noise in the filtered signal.
-        // We take a margin of 50% to be sure. This should come down to ~0.86 for the 4.7 Gauss range
-        constexpr float NOISE_FIT_A = 0.1088f;
-        constexpr float NOISE_FIT_B = 0.1384f;
-        constexpr float THRESHOLD_MARGIN = 0.5f;
-        _zeroThreshold = (NOISE_FIT_A * static_cast<float>(noiseRange) + NOISE_FIT_B) * (1 + THRESHOLD_MARGIN);
-    }
-    _flowThreshold = _zeroThreshold;
-    // Calculate LSB corresponding to the largest measured magnetic field with margin.
-    // If we have an amplitude larger than that, it is an outlier
-    _outlierThreshold = OUTLIER_AMPLITUDE_MILLIGAUSS * gain / 1000.0f;
-    _eventServer->subscribe(this, Topic::Sample);
-    _eventServer->subscribe(this, Topic::SensorWasReset);
-}
-
-void FlowMeter::detectOutlier(const int measurement) {
-    const float amplitude = fabsf(_slowSmooth - static_cast<float>(measurement));
-    _outlier = amplitude > _outlierThreshold;
-}
-
-void FlowMeter::detectPeaks(const int measurement) {
+void FlowMeter::detectPulse(const Coordinate sample) {
     // ignore outliers
     if (_outlier) {
+        _isPulse = false;
         return;
     }
-    const auto sample = static_cast<float>(measurement);
-    _fastSmooth = lowPassFilter(sample, _fastSmooth, ALPHA_LOW_PASS_FAST);
-    // first we do a high pass to center values around zero and approximate a derivative-like function so we can find peaks
-    _fastDerivative = highPassFilter(_fastSmooth, _previousFastSmooth, _fastDerivative, ALPHA_HIGH_PASS_FAST);
-    // on that we apply a low pass filter
-    _smoothFastDerivative = lowPassFilter(_fastDerivative, _smoothFastDerivative, ALPHA_LOW_PASS_FAST);
+    updateMovingAverage(sample);
+    if (_firstRound) {
+        // if index is 0, we made the first round and the buffer is full. Otherwise we wait.
+        if (_movingAverageIndex != 0) return;
+        // Initialize the filter for the next run
+        _smooth = movingAverage();
+        _smoothStartValue = _smooth;
+        _firstRound = false;
+        _flowSearcher.begin(_maxNoiseDistance);
+        _flowSearcher.addMeasurement(_smoothStartValue);
+        return;
+    }
+    // we are beyond the first run. Moving average buffer is filled.
+    _smooth = lowPassFilter(movingAverage(), _smooth, LOW_PASS_ALPHA_XY);
+    if (!_flowStarted) {
 
-     // we take a low pass filter on the absolute value as well to be able to see if we have flow,
-     // i.e. a sinusoid signal with an amplitude above a threshold
-    _smoothAbsFastDerivative = lowPassFilter(fabsf(_smoothFastDerivative), _smoothAbsFastDerivative, ALPHA_LOW_PASS_SLOW);
-    _fastFlow = _smoothAbsFastDerivative > _flowThreshold;
+        // We need to wait while we are not moving, as we don't know where we are in the ellipse.
+        // Move is determined via two factors:
+        // * the distance between the initial sample and the current sample must be beyond noise threshold
+        // * the angle difference must be small enough (i.e not random)
 
-    _slowSmooth = lowPassFilter(sample, _slowSmooth, ALPHA_LOW_PASS_SLOW);
-    _amplitude = fabsf(_slowSmooth - sample);
-    if (USE_SLOW_MEASUREMENT) {
-        // If we already have a flow, take the fast signal. If not, calculate the slow signal and take that.
-        // this can result in a bit weirdly shaped output signals, but the important bit is the move from positive to negative.
-        _combinedDerivative = _fastFlow ? _smoothFastDerivative : highPassFilter(_slowSmooth, _previousSlowSmooth, _combinedDerivative, ALPHA_HIGH_PASS_SLOW);
-        _smoothAbsCombinedDerivative = _fastFlow
-            ? _smoothAbsFastDerivative
-            : lowPassFilter(fabsf(_combinedDerivative), _smoothAbsCombinedDerivative, ALPHA_LOW_PASS_SLOW);
-        _flow = _smoothAbsCombinedDerivative > _flowThreshold;
-    } else {
-        _combinedDerivative = _smoothFastDerivative;
-        _smoothAbsCombinedDerivative = _smoothAbsFastDerivative;
-        _flow = _fastFlow;
+        _flowSearcher.addMeasurement(_smooth);
+        _flowStarted = _flowSearcher.foundTarget();
+        if (!_flowStarted) return;
+        _currentSearcher = getSearcher(_flowSearcher.target());
+        _currentSearcher->begin(_maxNoiseDistance);
     }
 
-    // To find the number of peaks in the original signal, we look for a move from positive to negative in this derivative signal.
-    // It is still a bit noisy, so we do that in two steps. We define a band that we consider to be indistinguishable from zero,
-    // and we have a peak if the signal has entered and exited that band with a downward slope.
-    _hasEnteredBand |= _previousCombinedDerivative > _zeroThreshold && _combinedDerivative <= _zeroThreshold;
-    const bool hasExitedBand = _previousCombinedDerivative >= -_zeroThreshold && _combinedDerivative < -_zeroThreshold;
-    _peak = _hasEnteredBand && hasExitedBand;
-    if (_peak) {
-        _hasEnteredBand = false;
+    // Now we are in an eternal loop of finding an extreme, sending a pulse, and moving to the next.
+    // The current searcher cannot be nullptr, so this is safe
+
+    _currentSearcher->addMeasurement(_smooth);
+    _isPulse = _currentSearcher->foundTarget();
+    if (_isPulse) {
+        _eventServer->publish(Topic::Pulse, _currentSearcher->target());
+        _currentSearcher = _currentSearcher->next();
     }
-
-    _previousFastSmooth = _fastSmooth;
-    _previousSlowSmooth = _slowSmooth;
-    _previousCombinedDerivative = _combinedDerivative;
 }
 
-float FlowMeter::getCombinedDerivative() const {
-    return _combinedDerivative;
+ExtremeSearcher* FlowMeter::getSearcher(const SearchTarget target) {
+    switch (target) {
+    case MaxY: return &_maxYSearcher;
+    case MaxX: return &_maxXSearcher;
+    case MinY: return &_minYSearcher;
+    case MinX: return &_minXSearcher;
+    default:
+        return nullptr;
+    }
 }
-
-float FlowMeter::getFastDerivative() const {
-    return _fastDerivative;
-}
-
-float FlowMeter::getFastSmoothValue() const {
-    return _fastSmooth;
-}
-
-float FlowMeter::getSmoothAbsCombinedDerivative() const {
-    return _smoothAbsCombinedDerivative;
-}
-
-float FlowMeter::getSmoothAbsFastDerivative() const {
-    return _smoothAbsFastDerivative;
-}
-
-float FlowMeter::getSmoothFastDerivative() const {
-    return _smoothFastDerivative;
-}
-
-float FlowMeter::getSlowSmoothValue() const {
-    return _slowSmooth;
-}
-
-float FlowMeter::getZeroThreshold() const {
-    return _zeroThreshold;
-}
-
-bool FlowMeter::hasFlow() const {
-    return _flow;
-}
-
-float FlowMeter::highPassFilter(const float measure, const float previous, const float filterValue, const float alpha) {
-    return alpha * (filterValue + measure - previous);
-}
-
-bool FlowMeter::isExcluded() const {
-    return _exclude;
-}
-
-bool FlowMeter::isOutlier() const {
-    return _outlier;
-}
-
-bool FlowMeter::isPeak() const {
-    return _peak;
-}
-
-bool FlowMeter::hasEnteredBand() const {
-    return _hasEnteredBand;
-}
+// The angle between the X axis and the line through the start value and the current value tells us where we are on the ellipse,
+// and what the next extreme is that we should encounter.
 
 float FlowMeter::lowPassFilter(const float measure, const float filterValue, const float alpha) {
     return alpha * measure + (1 - alpha) * filterValue;
 }
 
+FloatCoordinate FlowMeter::lowPassFilter(const FloatCoordinate measure, const FloatCoordinate filterValue, const float alpha) const {
+    return {
+        lowPassFilter(measure.x, filterValue.x, alpha),
+        lowPassFilter(measure.y, filterValue.y, alpha)
+    };
+}
+
 void FlowMeter::markAnomalies() {
-    _exclude = _outlier;
     if (_outlier) {
         _consecutiveOutliers++;
         if (_consecutiveOutliers == MAX_CONSECUTIVE_OUTLIERS) {
-          _eventServer->publish(Topic::ResetSensor, LONG_TRUE);
+            _eventServer->publish(Topic::ResetSensor, LONG_TRUE);
         }
         return;
     }
     _consecutiveOutliers = 0;
 }
 
+FloatCoordinate FlowMeter::movingAverage() const {
+    FloatCoordinate result{};
+    for (const auto i : _movingAverage) {
+        result.x += static_cast<float>(i.x);
+        result.y += static_cast<float>(i.y);
+    }
+    result.x /= MOVING_AVERAGE_BUFFER_SIZE;
+    result.y /= MOVING_AVERAGE_BUFFER_SIZE;
+    return result;
+}
+
 void FlowMeter::resetAnomalies() {
     _outlier = false;
-    _flow = false;
-    _exclude = false;
 }
 
-void FlowMeter::resetFilters(const int initialMeasurement) {
-    _fastSmooth = static_cast<float>(initialMeasurement);
-    _previousFastSmooth = _fastSmooth;
-    _slowSmooth = _fastSmooth;
-    _previousSlowSmooth = _fastSmooth;
-    _fastDerivative = 0.0f;
-    _smoothFastDerivative = 0.0f;
-    _smoothAbsFastDerivative = 0.0f;
-    _combinedDerivative = 0.0f;
-    _previousCombinedDerivative = 0.0f;
-    _smoothAbsCombinedDerivative = 0.0F;
+void FlowMeter::resetFilters(const Coordinate initialSample) {
+    _flowStarted = false;
+    _flowSearcher.begin(_maxNoiseDistance);
+    _firstRound = true;
+    _movingAverageIndex = 0;
+    updateMovingAverage(initialSample);
+    _smoothStartValue = {};
+    _currentSearcher = nullptr;
+    _isPulse = false;
+
+    _smooth = {0, 0};
+    _averageAbsoluteDistance = initialSample.distanceFrom({{0, 0}});
 }
 
-void FlowMeter::update(const Topic topic, const long payload) {
-    if (topic == Topic::Sample) {
-        addSample(static_cast<int>(payload));
-    } else if (topic == Topic::SensorWasReset) {
-        // If we needed to reset the sensor, also reset the measurement process when the next sample comes in
-       _firstCall = true;
-       _consecutiveOutliers = 0;
-    }
-}
-
-bool FlowMeter::wasReset() const {
-    return _firstCall;
+void FlowMeter::updateMovingAverage(const Coordinate sample) {
+    _movingAverage[_movingAverageIndex] = sample;
+    ++_movingAverageIndex %= 4;
 }

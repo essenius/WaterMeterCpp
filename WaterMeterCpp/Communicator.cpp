@@ -13,44 +13,18 @@
 #include "Connector.h"
 #include "DataQueuePayload.h"
 
-Communicator::Communicator(EventServer* eventServer, Log* logger, LedDriver* ledDriver, OledDriver* oledDriver, Meter* meter, Device* device,
+Communicator::Communicator(EventServer* eventServer,  OledDriver* oledDriver, Device* device,
                            DataQueue* dataQueue, Serializer* serializer,
                            QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient) :
     EventClient(eventServer),
-    _logger(logger),
-    _ledDriver(ledDriver),
     _oledDriver(oledDriver),
-    _meter(meter),
     _device(device),
     _dataQueue(dataQueue),
     _serializer(serializer),
     _samplerQueueClient(fromSamplerQueueClient),
     _connectorQueueClient(fromConnectorQueueClient) {}
 
-void Communicator::loop() const {
-    int i = 0;
-    while (_samplerQueueClient->receive() || _connectorQueueClient->receive()) { 
-      i++;
-      // make sure to wait occasionally to allow other task to run
-      if (i%5 == 0) delay(5); 
-    }
-    DataQueuePayload* payload;
-    while ((payload = _dataQueue->receive()) != nullptr) {
-        _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
-        delay(5);
-    }
-    _device->reportHealth();
-
-    const auto waitedTime = _oledDriver->display();
-    if (waitedTime < 10) {
-        delay(10 - static_cast<int>(waitedTime));
-    }
-}
-
-void Communicator::setup() const {
-    _logger->begin();
-    _ledDriver->begin();
-    _meter->begin();
+void Communicator::begin() const {
 
     // what can be sent to mqtt (note: nothing sent to the sampler)
     _eventServer->subscribe(_connectorQueueClient, Topic::Alert);
@@ -63,9 +37,37 @@ void Communicator::setup() const {
     _eventServer->subscribe(_connectorQueueClient, Topic::NoDisplayFound);
     _eventServer->subscribe(_connectorQueueClient, Topic::Volume);
     _eventServer->subscribe(_serializer, Topic::SensorData);
-    
-    // can publish NoDisplayFound
-    _oledDriver->begin();
+
+    // Dependencies are reduced by publishing a Begin event for objects that only need to get initialized.
+    // oledDriver begin can publish a NoDisplayFound, so we need that to happen last. We control that via the payload:
+    // false for as quickly as possible, true for starting after base services are up.
+
+    _eventServer->publish(Topic::Begin, LONG_FALSE);
+    _eventServer->publish(Topic::Begin, LONG_TRUE);
+
+}
+
+void Communicator::loop() const {
+    int i = 0;
+    while (_samplerQueueClient->receive() || _connectorQueueClient->receive()) {
+        i++;
+        // make sure to wait occasionally to allow other task to run
+        if (i % 5 == 0) delay(5);
+    }
+    DataQueuePayload* payload;
+    while ((payload = _dataQueue->receive()) != nullptr) {
+        _eventServer->publish(Topic::SensorData, reinterpret_cast<const char*>(payload));
+        delay(5);
+    }
+    _device->reportHealth();
+    //if (digitalRead(34) == LOW) {
+    //    _eventServer->publish(Topic::ButtonPushed, LONG_TRUE);
+    //}
+
+    const auto waitedTime = _oledDriver->display();
+    if (waitedTime < 10) {
+        delay(10 - static_cast<int>(waitedTime));
+    }
 }
 
 [[ noreturn ]] void Communicator::task(void* parameter) {
