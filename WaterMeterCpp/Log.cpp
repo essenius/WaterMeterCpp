@@ -48,6 +48,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::FreeQueueSpaces);
     _eventServer->subscribe(this, Topic::MessageFormatted);
     _eventServer->subscribe(this, Topic::NoDisplayFound);
+    _eventServer->subscribe(this, Topic::NoFit);
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::SensorWasReset);
@@ -133,6 +134,9 @@ void Log::update(const Topic topic, const long payload) {
         return;
     case Topic::FreeStack:
         printIndexedPayload("Stack", payload);
+        return;
+    case Topic::NoFit:
+        log("No fit: %ld deg", payload);
         return;
     default:
         EventClient::update(topic, payload);

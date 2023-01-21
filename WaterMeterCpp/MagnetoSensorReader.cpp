@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -91,7 +91,7 @@ void MagnetoSensorReader::power(const uint8_t state) const {
     digitalWrite(_powerPort, state);
 }
 
-Coordinate MagnetoSensorReader::read() {
+IntCoordinate MagnetoSensorReader::read() {
     SensorData sample{};
     if (!_sensor->read(&sample)) {
         _alert = true;
@@ -113,7 +113,7 @@ Coordinate MagnetoSensorReader::read() {
         _alert = false;
     }
     // We use the X/Y plane as that gives the clearest results
-    return Coordinate{{sample.x, sample.y}};
+    return {{sample.x, sample.y}};
 }
 
 void MagnetoSensorReader::reset() {
@@ -133,7 +133,7 @@ void MagnetoSensorReader::reset() {
     _eventServer->publish(Topic::SensorWasReset, SOFT_RESET);
 }
 
-void MagnetoSensorReader::update(const Topic topic, long payload) {
+void MagnetoSensorReader::update(const Topic topic, const long payload) {
     if (topic == Topic::ResetSensor && payload != 0) {
         hardReset();
     }

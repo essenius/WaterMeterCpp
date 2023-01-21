@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -109,7 +109,7 @@ void PayloadBuilder::writeString(const char* input) {
     updatePosition();
 }
 
-void PayloadBuilder::writeString(const float input) {
+void PayloadBuilder::writeString(const double input) {
     safePointerSprintf(_currentPosition, _resultBuffer, "%.2f", input);
     updatePosition();
     // clean up any overprecision
@@ -140,7 +140,7 @@ void PayloadBuilder::writeString(const unsigned long input) {
     updatePosition();
 }
 
-void PayloadBuilder::writeString(const Coordinate input) {
+void PayloadBuilder::writeString(const IntCoordinate input) {
     writeString(input.x);
     writeDelimiter(',');
     writeString(input.y);

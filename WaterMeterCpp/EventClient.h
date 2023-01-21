@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 #include <cstdarg>
 #include <map>
 
-#include "Coordinate.h"
+#include "IntCoordinate.h"
 
 constexpr long LONG_TRUE = 1L;
 constexpr long LONG_FALSE = 0L;
@@ -65,12 +65,13 @@ enum class Topic: int16_t {
     NoDisplayFound,
     UpdateProgress,
     ButtonPushed,
-    Begin
+    Begin,
+    NoFit
 };
 
 union EventPayload {
     int32_t n;
-    Coordinate coordinate;
+    IntCoordinate coordinate;
     bool b;
 };
 
@@ -92,7 +93,7 @@ public:
     virtual long get(Topic topic, const long defaultValue) { return defaultValue; }
     virtual void update(Topic topic, const char* payload) {}
     virtual void update(Topic topic, long payload);
-    virtual void update(Topic topic, Coordinate payload);
+    virtual void update(Topic topic, IntCoordinate payload);
 
 protected:
     EventServer* _eventServer;

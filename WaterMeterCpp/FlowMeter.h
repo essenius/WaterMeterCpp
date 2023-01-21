@@ -9,8 +9,10 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+/*
 #ifndef HEADER_FLOWMETER
 #define HEADER_FLOWMETER
+
 #include "Angle.h"
 #include "ChangePublisher.h"
 #include "EventClient.h"
@@ -24,7 +26,7 @@ public:
     void begin(int noiseRange, float gain);
     FloatCoordinate currentExtreme() const;
     bool isOutlier() const { return _outlier; }
-    bool isPulse() const { return _isPulse; }
+    bool isPulse() const { return _foundPulse; }
     SearchTarget searchTarget() const;
 
     void update(Topic topic, long payload) override;
@@ -45,7 +47,7 @@ protected:
     bool _firstCall = true;
     bool _firstRound = true;
     bool _flowStarted = false;
-    bool _isPulse = false;
+    bool _foundPulse = false;
     // will be overwritten in begin()
     float _maxNoiseDistance = 0;
     ExtremeSearcher _flowSearcher;
@@ -53,7 +55,7 @@ protected:
     ExtremeSearcher _maxYSearcher;
     ExtremeSearcher _minXSearcher;
     ExtremeSearcher _minYSearcher;
-    Coordinate _movingAverage[MOVING_AVERAGE_BUFFER_SIZE] = {};
+    Coordinate _movingAverageArray[MOVING_AVERAGE_BUFFER_SIZE] = {};
     int8_t _movingAverageIndex = 0;
     ChangePublisher<bool> _outlier;
     // will be overwritten in begin()
@@ -67,10 +69,10 @@ protected:
     static float lowPassFilter(float measure, float filterValue, float alpha);
     FloatCoordinate lowPassFilter(FloatCoordinate measure, FloatCoordinate filterValue, float alpha) const;
     void markAnomalies();
-    FloatCoordinate movingAverage() const;
+    FloatCoordinate calcMovingAverage() const;
     void resetAnomalies();
     void resetFilters(Coordinate initialSample);
-    void updateMovingAverage(Coordinate sample);
+    void updateMovingAverageArray(Coordinate sample);
 };
-
 #endif
+*/

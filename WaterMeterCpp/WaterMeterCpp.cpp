@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -26,7 +26,7 @@
 #include "Device.h"
 #include "EventServer.h"
 #include "FirmwareManager.h"
-#include "FlowMeter.h"
+#include "FlowDetector.h"
 #include "LedDriver.h"
 #include "Log.h"
 #include "MagnetoSensorHmc.h"
@@ -46,7 +46,7 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.101.5";
+constexpr const char* const BUILD_VERSION = "0.102.0";
 
 // We measure every 10 ms. That is twice the frequency of the AC in Europe (which we need to take into account since
 // there are water pumps close to the water meter, and about the fastest that the sensor can do reliably.
@@ -75,7 +75,8 @@ Configuration configuration(&preferences);
 WiFiClientFactory wifiClientFactory(&configuration.tls);
 EventServer samplerEventServer;
 MagnetoSensorReader sensorReader(&samplerEventServer);
-FlowMeter flowMeter(&samplerEventServer);
+EllipseFit ellipseFit;
+FlowDetector flowDetector(&samplerEventServer, &ellipseFit);
 
 EventServer communicatorEventServer;
 EventServer connectorEventServer;
@@ -121,7 +122,7 @@ ChangePublisher<uint8_t> buttonPublisher(&samplerEventServer, Topic::ResetSensor
 Button button(&buttonPublisher, BUTTON_PORT);
 
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
-Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &button, &sampleAggregator, &resultAggregator, &samplerQueueClient);
+Sampler sampler(&samplerEventServer, &sensorReader, &flowDetector, &button, &sampleAggregator, &resultAggregator, &samplerQueueClient);
 Communicator communicator(&communicatorEventServer, &oledDriver, &device, 
                           &connectorDataQueue, &serializer2, 
                           &communicatorSamplerQueueClient, &communicatorConnectorQueueClient);

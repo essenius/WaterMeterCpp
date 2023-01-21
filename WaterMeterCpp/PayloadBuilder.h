@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -60,12 +60,12 @@ private:
     static constexpr int RESULT_BUFFER_SIZE = 512;
 
     void writeString(const char* input);
-    void writeString(float input);
+    void writeString(double input);
     void writeString(int input);
     void writeString(long input);
     void writeString(uint32_t input);
     void writeString(unsigned long input);
-    void writeString(Coordinate input);
+    void writeString(IntCoordinate input);
 
     Clock* _clock;
     char* _currentPosition = _resultBuffer;

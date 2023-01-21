@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -13,14 +13,14 @@
 #define HEADER_RESULTAGGREGATOR
 
 #include "Aggregator.h"
-#include "FlowMeter.h"
+#include "FlowDetector.h"
 
 class ResultAggregator final : public Aggregator {
 public:
     ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
                      uint32_t measureIntervalMicros);
     void addDuration(unsigned long duration);
-    void addMeasurement(Coordinate value, const FlowMeter* result);
+    void addMeasurement(const IntCoordinate& value, const FlowDetector* result);
     using Aggregator::begin;
     void begin();
     void flush() override;

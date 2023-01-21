@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -36,7 +36,7 @@ void ResultAggregator::addDuration(const unsigned long duration) {
     _result->averageDuration = static_cast<uint32_t>((_result->totalDuration * 10 / _messageCount + 5) / 10);
 }
 
-void ResultAggregator::addMeasurement(const Coordinate value, const FlowMeter* result) {
+void ResultAggregator::addMeasurement(const IntCoordinate& value, const FlowDetector* result) {
     newMessage();
     _result->sampleCount = _messageCount;
 
@@ -50,21 +50,26 @@ void ResultAggregator::addMeasurement(const Coordinate value, const FlowMeter* r
         _streak = 1;
         _result->lastSample = value;
     }
-    if (result->isOutlier()) {
-        _result->outlierCount++;
+    if (result->foundAnomaly()) {
+        _result->anomalyCount++;
     }
-    if (result->isPulse()) {
+    if (result->foundPulse()) {
         _result->pulseCount++;
     }
 
     if (result->wasReset()) {
         _result->resetCount++;
     }
+    if (result->isSearching()) {
+        _result->searchCount++;
+    }
 
-    // we only need these at the end but we don't know when that is
-    _result->smooth = result->getSmoothSample();
-    _result->searchTarget = result->searchTarget();
-    _result->extreme = result->currentExtreme();
+    if (result->wasSkipped()) {
+        _result->skipCount++;
+    }
+
+    // we only need this at the end but we don't know when that is
+    _result->averaged = result->movingAverage();
 }
 
 void ResultAggregator::begin() {
@@ -107,7 +112,7 @@ void ResultAggregator::setNonIdleFlushRate(const long rate) {
 
 bool ResultAggregator::shouldSend(const bool endOfFile) {
     // We set the flush rate regardless of whether we still need to write something. This can end an idle batch early.
-    const bool isInteresting = _result->pulseCount > 0 || _result->outlierCount > 0;
+    const bool isInteresting = _result->pulseCount > 0 || _result->anomalyCount > 0;
     if (isInteresting) {
         _flushRate = _nonIdleFlushRate;
     }

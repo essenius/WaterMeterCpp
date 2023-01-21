@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -27,7 +27,7 @@ public:
     int getNoiseRange() const;
     void hardReset();
     void power(uint8_t state) const;
-    Coordinate read();
+    IntCoordinate read();
     void reset();
     void update(Topic topic, long payload) override;
     static constexpr byte DEFAULT_POWER_PORT = 15;

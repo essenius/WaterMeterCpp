@@ -1,0 +1,122 @@
+#include <gtest/gtest.h>
+#include <corecrt_math_defines.h>
+
+#include <fstream>
+#include "../WaterMeterCpp/FlowDetector.h"
+#include "FlowDetectorDriver.h"
+#include "PulseTestEventClient.h"
+#include "TestHelper.h"
+
+namespace WaterMeterCppTest {
+	class FlowDetectorTest : public testing::Test {
+	public:
+		static EventServer eventServer;
+		static EllipseFit ellipseFit;
+	protected:
+		void expectResult(const FlowDetector* meter, const wchar_t* description, const int index,
+			const bool pulse = false, const bool skipped = false, const bool outlier = false) const {
+			std::wstring message(description);
+			message += std::wstring(L" #") + std::to_wstring(index) + std::wstring(L" @ ");
+			EXPECT_EQ(pulse, meter->foundPulse()) << message << "Pulse";
+			EXPECT_EQ(skipped, meter->wasSkipped()) << message << "Skipped";
+			EXPECT_EQ(outlier, meter->foundAnomaly()) << message << "Anomaly";
+		}
+
+		IntCoordinate getSample(const double sampleNumber, const double samplesPerCycle = 32,
+			const double angleOffsetSamples = 0) const {
+			constexpr double RADIUS = 10.0L;
+			constexpr int16_t X_OFFSET = -100;
+			constexpr int16_t Y_OFFSET = 100;
+			const double angle = (sampleNumber - angleOffsetSamples) * M_PI / samplesPerCycle * 2.0;
+			return IntCoordinate{
+				{
+					static_cast<int16_t>(X_OFFSET + round(sin(angle) * RADIUS)),
+					static_cast<int16_t>(Y_OFFSET + round(cos(angle) * RADIUS))
+				}
+			};
+		}
+
+		void expectFlowAnalysis(
+			const FlowDetectorDriver* actual,
+			const std::string& message,
+			const int index,
+			const IntCoordinate movingAverage,
+			const bool flowStarted = false,
+			const bool isPulse = false) const {
+			assertIntCoordinatesEqual(movingAverage, actual->_movingAverageArray[index], message + " Moving average #" + std::to_string(index));
+			EXPECT_EQ(flowStarted, actual->_justStarted) << message << ": just started";
+			EXPECT_EQ(isPulse, actual->_foundPulse) << message << ": pulse detected";
+
+		}
+
+		// run process on test signals with a known number of pulses
+		void flowTestWithFile(const char* fileName, const unsigned int firstPulses = 0, const unsigned int nextPulses = 0, const unsigned int anomalies = 0, const unsigned int noFits = 0, const unsigned int noiseLimit = 3) const {
+			FlowDetector flowDetector(&eventServer, &ellipseFit);
+			const PulseTestEventClient pulseClient(&eventServer);
+			flowDetector.begin(noiseLimit);
+			IntCoordinate measurement{};
+			std::ifstream measurements(fileName);
+			EXPECT_TRUE(measurements.is_open()) << "File open";
+			measurements.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			while (measurements >> measurement.x) {
+				measurements >> measurement.y;
+				eventServer.publish(Topic::Sample, measurement);
+			}
+
+			ASSERT_EQ(firstPulses, pulseClient.pulses(false)) << "First Pulses";
+			ASSERT_EQ(nextPulses, pulseClient.pulses(true)) << "Next Pulses";
+			ASSERT_EQ(anomalies, pulseClient.anomalies()) << "Anomalies";
+			ASSERT_EQ(noFits, pulseClient.noFits()) << "NoFits";
+		}
+	};
+
+	EventServer FlowDetectorTest::eventServer;
+	EllipseFit FlowDetectorTest::ellipseFit;
+
+	TEST_F(FlowDetectorTest, VerySlowFlowTest) {
+		flowTestWithFile("verySlow.txt", 1,0, 0);
+	}
+
+	TEST_F(FlowDetectorTest, NoFlowTest) {
+		flowTestWithFile("noise.txt", 0, 0, 0);
+	}
+
+	TEST_F(FlowDetectorTest, FastFlowTest) {
+		flowTestWithFile("fast.txt", 2, 75, 0);
+	}
+
+	TEST_F(FlowDetectorTest, SlowFastFlowTest) {
+		flowTestWithFile("slowFast.txt", 1, 11, 0);
+	}
+	TEST_F(FlowDetectorTest, SlowFlowTest) {
+		flowTestWithFile("slow.txt", 1, 1, 0);
+	}
+
+	TEST_F(FlowDetectorTest, SlowestFlowTest) {
+		flowTestWithFile("slowest.txt", 1, 0, 0);
+	}
+
+	TEST_F(FlowDetectorTest, FastFlowThenNoisyTest) {
+		// should not trigger on the noisy data
+		flowTestWithFile("fastThenNoisy.txt", 2, 3, 0, 0, 12);
+	}
+
+	TEST_F(FlowDetectorTest, AnomalyTest) {
+		// should not trigger on non-typical movement
+		flowTestWithFile("anomaly.txt", 1, 3, 678);
+	}
+
+	TEST_F(FlowDetectorTest, 60CyclesTest) {
+		// should not trigger on non-typical movement
+		flowTestWithFile("60cycles.txt", 1, 59, 0);
+	}
+
+	TEST_F(FlowDetectorTest, NoiseAtEndTest) {
+		// should not trigger on non-typical movement
+		flowTestWithFile("noiseAtEnd.txt", 1, 5, 0);
+	}
+
+	TEST_F(FlowDetectorTest, NoFitTest) {
+		flowTestWithFile("forceNoFit.txt", 1, 0, 0, 1);
+	}
+}

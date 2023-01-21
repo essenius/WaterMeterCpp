@@ -45,7 +45,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="AggregatorTest.cpp" />
+    <ClCompile Include="AngleTest.cpp" />
     <ClCompile Include="ButtonTest.cpp" />
+    <ClCompile Include="CartesianEllipseTest.cpp" />
     <ClCompile Include="ClockTest.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
@@ -120,13 +122,15 @@
     </ClCompile>
     <ClCompile Include="ConfigurationTest.cpp" />
     <ClCompile Include="ConnectorTest.cpp" />
+    <ClCompile Include="CoordinateTest.cpp" />
     <ClCompile Include="DataQueueTest.cpp" />
     <ClCompile Include="DeviceTest.cpp" />
+    <ClCompile Include="EllipseFitTest.cpp" />
     <ClCompile Include="EspTest.cpp" />
     <ClCompile Include="EventServerTest.cpp" />
-    <ClCompile Include="ExtremeSearcherTest.cpp" />
     <ClCompile Include="FirmwareManagerTest.cpp" />
-    <ClCompile Include="FlowMeterDriver.cpp" />
+    <ClCompile Include="FlowDetectorTest.cpp" />
+    <ClCompile Include="FlowDetectorDriver.cpp" />
     <ClCompile Include="FlowMeterTest.cpp" />
     <ClCompile Include="LedDriverTest.cpp" />
     <ClCompile Include="LogTest.cpp" />
@@ -134,6 +138,7 @@
     <ClCompile Include="MagnetoSensorNullTest.cpp" />
     <ClCompile Include="MagnetoSensorQmcTest.cpp" />
     <ClCompile Include="MainTest.cpp" />
+    <ClCompile Include="MathUtilsTest.cpp" />
     <ClCompile Include="MeterTest.cpp" />
     <ClCompile Include="MqttGatewayMock.cpp" />
     <ClCompile Include="MqttGatewayTest.cpp" />
@@ -141,6 +146,7 @@
     <ClCompile Include="PayloadBuilderTest.cpp" />
     <ClCompile Include="PreferencesMockTest.cpp" />
     <ClCompile Include="PulseTestEventClient.cpp" />
+    <ClCompile Include="QuadraticEllipseTest.cpp" />
     <ClCompile Include="QueueClientTest.cpp" />
     <ClCompile Include="ResultAggregatorTest.cpp" />
     <ClCompile Include="SafeCStringTest.cpp" />
@@ -148,6 +154,7 @@
     <ClCompile Include="SamplerTest.cpp" />
     <ClCompile Include="SerializerTest.cpp" />
     <ClCompile Include="TestEventClient.cpp" />
+    <ClCompile Include="TestHelper.cpp" />
     <ClCompile Include="TimeServerTest.cpp" />
     <ClCompile Include="WiFiMock.cpp" />
     <ClCompile Include="WifiTest.cpp" />
@@ -161,10 +168,11 @@
   <ItemGroup>
     <ClInclude Include="AggregatorDriver.h" />
     <ClInclude Include="FirmwareManagerDriver.h" />
-    <ClInclude Include="FlowMeterDriver.h" />
+    <ClInclude Include="FlowDetectorDriver.h" />
     <ClInclude Include="MqttGatewayMock.h" />
     <ClInclude Include="PulseTestEventClient.h" />
     <ClInclude Include="TestEventClient.h" />
+    <ClInclude Include="TestHelper.h" />
     <ClInclude Include="TimeServerMock.h" />
     <ClInclude Include="WiFiMock.h" />
   </ItemGroup>
@@ -184,33 +192,21 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="35cycles.txt">
-      <DeploymentContent>false</DeploymentContent>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </TreatOutputAsContent>
-    </CopyFileToFolders>
+    <CopyFileToFolders Include="testData\fast.txt" />
+    <CopyFileToFolders Include="testData\fastThenNoisy.txt" />
+    <CopyFileToFolders Include="testData\anomaly.txt" />
+    <CopyFileToFolders Include="testData\60cycles.txt" />
+    <CopyFileToFolders Include="testData\noise.txt" />
+    <CopyFileToFolders Include="testData\slow.txt" />
+    <CopyFileToFolders Include="testData\slowest.txt" />
+    <CopyFileToFolders Include="testData\slowFast.txt" />
+    <CopyFileToFolders Include="testData\noiseAtEnd.txt" />
+    <CopyFileToFolders Include="testData\singlecycle.txt" />
+    <CopyFileToFolders Include="testData\forceNoFit.txt" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="13cyclesSlowFast.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="77cyclesFast.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="1cycleSlow.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="1cycleVerySlow.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="1cycleSlowest.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="0cyclesNoise.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="60cycles.txt" />
+    <Text Include="testData\10points.txt" />
+    <CopyFileToFolders Include="testData\verySlow.txt" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -246,7 +242,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator;Angle;Button;Clock;Configuration;Communicator;Connector;DataQueue;DataQueuePayload;Device;EventClient;EventServer;ESP;ExtremeSearcher;FirmwareManager;FlowMeter;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;Meter;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator;Angle;Button;CartesianEllipse;Clock;Configuration;Communicator;Connector;Coordinate;DataQueue;DataQueuePayload;Device;EllipseFit;EventClient;EventServer;ESP;FirmwareManager;FlowDetector;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;Meter;MathUtils;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QuadraticEllipse;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

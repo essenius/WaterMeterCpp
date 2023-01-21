@@ -132,6 +132,13 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(0, display->getX()) << "Progress X=0";
             EXPECT_EQ(16, display->getY()) << "Progress Y=16";
             EXPECT_STREQ("FW update: 35% ", display->getMessage()) << "Pulses message OK";
+
+            eventServer.publish(Topic::NoFit, 35);
+            EXPECT_EQ(0b00111001, display->getFirstByte()) << "First byte of NoFit logo ok";
+            EXPECT_EQ(98, display->getX()) << "NoFit X=98";
+            EXPECT_EQ(0, display->getY()) << "NoFit Y=0";
+            EXPECT_STREQ("No fit:   35 deg ", display->getMessage()) << "NoFit message OK";
+
         }
 
     }

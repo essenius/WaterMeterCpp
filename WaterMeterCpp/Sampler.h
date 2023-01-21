@@ -14,7 +14,7 @@
 
 #include "Button.h"
 #include "EventClient.h"
-#include "FlowMeter.h"
+#include "FlowDetector.h"
 #include "MagnetoSensorReader.h"
 #include "QueueClient.h"
 #include "ResultAggregator.h"
@@ -22,7 +22,7 @@
 
 class Sampler {
 public:
-    Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter, Button* button, 
+    Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowDetector* flowDetector, Button* button, 
             SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient);
     bool begin(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
     void beginLoop();
@@ -31,7 +31,7 @@ public:
 private:
     EventServer* _eventServer;
     MagnetoSensorReader* _sensorReader;
-    FlowMeter* _flowMeter;
+    FlowDetector* _flowDetector;
     Button* _button;
     SampleAggregator* _sampleAggregator;
     ResultAggregator* _resultAggregator;

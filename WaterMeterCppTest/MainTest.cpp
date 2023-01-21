@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -19,7 +19,6 @@
 #include "../WaterMeterCpp/Button.h"
 #include "../WaterMeterCpp/Device.h"
 #include "../WaterMeterCpp/DataQueue.h"
-#include "../WaterMeterCpp/FlowMeter.h"
 #include "../WaterMeterCpp/LedDriver.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 #include "../WaterMeterCpp/MqttGateway.h"
@@ -99,7 +98,8 @@ namespace WaterMeterCppTest {
             WiFiClientFactory wifiClientFactory(&configuration.tls);
             EventServer samplerEventServer;
             MagnetoSensorReader sensorReader(&samplerEventServer);
-            FlowMeter flowMeter(&samplerEventServer);
+            EllipseFit ellipseFit;
+            FlowDetector flowDetector(&samplerEventServer, &ellipseFit);
 
             EventServer communicatorEventServer;
             EventServer connectorEventServer;
@@ -147,7 +147,7 @@ namespace WaterMeterCppTest {
             Button button(&buttonPublisher, BUTTON_PORT);
 
             DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
-            Sampler sampler(&samplerEventServer, &sensorReader, &flowMeter, &button, &sampleAggregator, &resultAggregator,
+            Sampler sampler(&samplerEventServer, &sensorReader, &flowDetector, &button, &sampleAggregator, &resultAggregator,
                             &samplerQueueClient);
             Communicator communicator(&communicatorEventServer, &oledDriver, &device,
                                       &connectorDataQueue, &serializer2,
@@ -259,7 +259,8 @@ namespace WaterMeterCppTest {
             payload1.topic = Topic::Result;
             payload1.timestamp = 1000000;
             payload1.buffer.result.sampleCount = 327;
-            payload1.buffer.result.extreme = { 12,34 };
+            payload1.buffer.result.skipCount = 34;
+            payload1.buffer.result.averaged = { -1.0, -55.3 };
             sensorDataQueue.send(&payload1);
             EXPECT_EQ(ConnectionState::MqttReady, connector.connect()) << "Reading queue";
 
@@ -274,7 +275,7 @@ namespace WaterMeterCppTest {
 [] Free Memory DataQueue #1: 12544
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://localhost/001122334455.version
-[] Result: {"timestamp":1970-01-01T00:00:01.000000,"last.x":0,"last.y":0,"summaryCount":{"samples":327,"pulses":0,"maxStreak":0},"exceptionCount":{"outliers":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"lp.x":0,"lp.y":0,"target":0,"xt.x":12,"xt.y":34}}
+[] Result: {"timestamp":1970-01-01T00:00:01.000000,"last.x":0,"last.y":0,"summaryCount":{"samples":327,"pulses":0,"maxStreak":0,"skips":34},"exceptionCount":{"outliers":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"av.x":-1,"av.y":-55.3}}
 [] Free Stack #0: 1564
 )";
             EXPECT_STREQ(expected, getPrintOutput()) << "Formatted result came through";

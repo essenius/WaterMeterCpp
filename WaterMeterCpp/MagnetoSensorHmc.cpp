@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -52,7 +52,7 @@ int MagnetoSensorHmc::getNoiseRange() const {
     case HmcGain1_9: return 5;
     case HmcGain2_5: return 4;
     case HmcGain4_0: return 4;
-    case HmcGain4_7: return 4;
+    case HmcGain4_7: return 3; // was 4
     case HmcGain5_6:
     default: return 2;
     }

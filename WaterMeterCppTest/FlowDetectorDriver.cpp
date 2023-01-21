@@ -9,28 +9,19 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_FLOATCOORDINATE
-#define HEADER_FLOATCOORDINATE
 
-#include "Coordinate.h"
+#include "FlowDetectorDriver.h"
 
-struct FloatCoordinate {
-    float x;
-    float y;
+// constructor for ResultAggregatorTest. Uses fields that are used for reporting
 
-    void set(const Coordinate input) {
-        x = static_cast<float>(input.x);
-        y = static_cast<float>(input.y);
+namespace WaterMeterCppTest {
+
+    FlowDetectorDriver::FlowDetectorDriver(EventServer* eventServer, EllipseFit* ellipseFit, const Coordinate average, 
+        const bool pulse, const bool outlier, const bool first)
+    : FlowDetector(eventServer, ellipseFit) {
+        _movingAverage = average;
+        _foundPulse = pulse;
+        _foundAnomaly = outlier;
+        _firstCall = first;
     }
-
-    float distanceFrom(const FloatCoordinate other) const {
-        const auto difference = differenceWith(other);
-        return sqrtf(difference.x * difference.x + difference.y * difference.y);
-    }
-
-    FloatCoordinate differenceWith(const FloatCoordinate other) const {
-        return { x - other.x, y - other.y };
-    }
-};
-
-#endif
+}

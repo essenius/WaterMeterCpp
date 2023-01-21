@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -26,6 +26,6 @@ void EventClient::update(const Topic topic, const long payload) {
     update(topic, numberBuffer);
 }
 
-void EventClient::update(const Topic topic, const Coordinate payload) {
+void EventClient::update(const Topic topic, const IntCoordinate payload) {
     update(topic, payload.l);
 }

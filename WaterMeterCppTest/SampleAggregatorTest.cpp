@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -32,13 +32,13 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::BatchSizeDesired, 2);
         EXPECT_EQ(2L, aggregator.getFlushRate()) << "Flush rate changed";
         aggregator.flush();
-        constexpr Coordinate SAMPLE1{{1000, 1000}};
+        constexpr IntCoordinate SAMPLE1{{1000, 1000}};
         aggregator.addSample(SAMPLE1);
         EXPECT_FALSE(aggregator.shouldSend()) << "Should send";
         EXPECT_EQ(1U, static_cast<unsigned>(payload.buffer.samples.count)) << "One sample added";
         EXPECT_EQ(SAMPLE1, payload.buffer.samples.value[0]) << "First sample value correct";
 
-        constexpr Coordinate SAMPLE2{{-1000, -1000}};
+        constexpr IntCoordinate SAMPLE2{{-1000, -1000}};
 
         aggregator.addSample(SAMPLE2);
         EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush after two measurements";
@@ -77,7 +77,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("2", batchSizeListener.getPayload()) << "batch size is 2";
 
         batchSizeListener.reset();
-        Coordinate sample1{{1000, 1000}};
+        IntCoordinate sample1{{1000, 1000}};
         aggregator.addSample(sample1);
 
         EXPECT_FALSE(aggregator.send()) << "No need to send after 1 measurement";
@@ -86,7 +86,7 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::BatchSizeDesired, -1L);
         EXPECT_EQ(0, batchSizeListener.getCallCount()) << "batch size not changed";
         EXPECT_EQ(2L, aggregator.getFlushRate()) << "Flush rate not changed";
-        Coordinate sample2{{3000, 3000}};
+        IntCoordinate sample2{{3000, 3000}};
         aggregator.addSample(sample2);
         EXPECT_TRUE(aggregator.shouldSend()) << "Must send after two measurements";
         auto currentTimestamp = payload.timestamp;
@@ -100,7 +100,7 @@ namespace WaterMeterCppTest {
 
         EXPECT_EQ(0L, aggregator.getFlushRate()) << "Flush rate changed";
         aggregator.flush();
-        Coordinate sample3{{4000, 4000}};
+        IntCoordinate sample3{{4000, 4000}};
         aggregator.addSample(sample3);
         EXPECT_FALSE(aggregator.shouldSend()) << "No need to send";
         EXPECT_EQ(currentTimestamp, payload.timestamp) << "Timestamp not set";
@@ -109,7 +109,7 @@ namespace WaterMeterCppTest {
         // check whether failure to write is handled OK
         eventServer.publish(Topic::BatchSizeDesired, 2L);
         EXPECT_EQ(2L, aggregator.getFlushRate()) << "Flush rate changed back to 2";
-        Coordinate sample4{{-3000, -3000}};
+        IntCoordinate sample4{{-3000, -3000}};
         aggregator.addSample(sample4);
         setRingBufferBufferFull(dataQueue.handle(), true);
         aggregator.addSample(sample4);
@@ -117,7 +117,7 @@ namespace WaterMeterCppTest {
 
         // reconnect
         setRingBufferBufferFull(dataQueue.handle(), false);
-        Coordinate sample5{{-4000, -4000}};
+        IntCoordinate sample5{{-4000, -4000}};
         aggregator.addSample(sample5);
         EXPECT_EQ(1U, static_cast<unsigned>(payload.buffer.samples.count)) << "restarted filling buffer";
 
@@ -126,7 +126,7 @@ namespace WaterMeterCppTest {
         // Switch to max buffer size 
         batchSizeListener.reset();
         eventServer.publish(Topic::BatchSizeDesired, 10000L);
-        Coordinate sample6{{-5000, -5000}};
+        IntCoordinate sample6{{-5000, -5000}};
         aggregator.addSample(sample6);
         EXPECT_TRUE(aggregator.send()) << "sends after reconnect";
 
@@ -146,14 +146,14 @@ namespace WaterMeterCppTest {
         aggregator.begin();
         EXPECT_EQ(25L, aggregator.getFlushRate()) << "Default flush rate OK";
 
-        Coordinate sample1{};
+        IntCoordinate sample1{};
         for (int i = 0; i < 25; i++) {
             EXPECT_FALSE(aggregator.send()) << "no send before 25 samples";
             sample1.x = static_cast <int16_t>(-135 + i % 5);
             sample1.y = static_cast <int16_t>(-190 - i % 5);
             aggregator.addSample(sample1);
         }
-        constexpr Coordinate LASTSAMPLE{ {-131, -194} };
+        constexpr IntCoordinate LASTSAMPLE{ {-131, -194} };
         EXPECT_EQ(LASTSAMPLE, payload.buffer.samples.value[24]) << "Last sample value correct";
         EXPECT_TRUE(aggregator.send()) << "sends after 25 samples";
     }

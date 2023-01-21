@@ -57,6 +57,7 @@ bool OledDriver::begin() {
     _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
+    _eventServer->subscribe(this, Topic::NoFit);
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::TimeOverrun);
@@ -176,6 +177,11 @@ void OledDriver::update(const Topic topic, long payload) {
         if (payload == 2) showMessageAtLine("Hard reset       ", 3);
         else showMessageAtLine("Soft reset       ", 3);
         switchEventLogo(RESET_LOGO, payload);
+        return;
+    case Topic::NoFit:
+        safeSprintf(buffer, "No fit: %4ld deg ", payload);
+        showMessageAtLine(buffer, 3);
+        switchFlowLogo(NO_FIT_LOGO, payload);
         return;
     case Topic::NoSensorFound:
         showMessageAtLine("No sensor        ", 3);
