@@ -149,23 +149,23 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::Pulse, false);
         assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No peak (blue stays off)");
 
-        eventServer.publish(Topic::Blocked, LONG_FALSE);
+        eventServer.publish(Topic::Blocked, false);
         assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No more block (red off)");
         eventServer.publish(Topic::ConnectionError, "Problem");
         assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "Error (red on)");
 
-        eventServer.publish(Topic::Blocked, LONG_FALSE);
+        eventServer.publish(Topic::Blocked, false);
         assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No more block (red off)");
 
-        eventServer.publish(Topic::Alert, LONG_TRUE);
+        eventServer.publish(Topic::Alert, true);
         assertLeds(Led::ON, Led::ON, Led::OFF, Led::OFF, Led::OFF, "Alert (red and green on)");
 
-        eventServer.publish(Topic::Alert, LONG_FALSE);
+        eventServer.publish(Topic::Alert, false);
         assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No more block (red off)");
-        eventServer.publish(Topic::NoSensorFound, LONG_TRUE);
+        eventServer.publish(Topic::NoSensorFound, true);
         assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No sensor found (red on)");
 
-        eventServer.publish(Topic::Alert, LONG_FALSE); // switching red off again
+        eventServer.publish(Topic::Alert, false); // switching red off again
 
         publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
 

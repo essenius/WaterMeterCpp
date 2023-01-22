@@ -60,7 +60,7 @@ void MagnetoSensorReader::configurePowerPort(const uint8_t port) {
     pinMode(_powerPort, OUTPUT);
 }
 
-float MagnetoSensorReader::getGain() const {
+double MagnetoSensorReader::getGain() const {
     return _sensor->getGain();
 }
 
@@ -97,8 +97,10 @@ IntCoordinate MagnetoSensorReader::read() {
         _alert = true;
         _noSensor = true;
     }
+    const auto returnValue = IntCoordinate{{sample.x, sample.y}};
+
     // check whether the sensor still works
-    if (sample == _previousSample) {
+    if (sample == _previousSample || returnValue.isSaturated()) {
         _streakCount++;
         // if we have too many of the same results in a row, reset the sensor
         if (_streakCount >= FLATLINE_STREAK) {
@@ -113,7 +115,7 @@ IntCoordinate MagnetoSensorReader::read() {
         _alert = false;
     }
     // We use the X/Y plane as that gives the clearest results
-    return {{sample.x, sample.y}};
+    return returnValue;
 }
 
 void MagnetoSensorReader::reset() {

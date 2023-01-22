@@ -181,10 +181,3 @@ const char* toString(LogLevel level) {
 }
 
 LogLevel minLogLevel = LogLevel::Info;
-
-/* char* dtostrf(float value, signed char width, unsigned char precision, char* buffer) {
-        char fmt[20];
-        safeSprintf(fmt, "%%%d.%df", width, precision);
-        sprintf(buffer, fmt, value);
-        return buffer;
-}*/

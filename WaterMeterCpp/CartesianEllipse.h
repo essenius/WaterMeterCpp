@@ -31,6 +31,6 @@ struct CartesianEllipse {
 	double distanceFrom(const Coordinate& referencePoint) const;
 	Coordinate parametricRepresentation(const Angle& referenceAngle) const;
 	Coordinate pointOnEllipseFor(const Coordinate& referencePoint) const;
-	void print() const;
+	void print() const; // to be removed
 };
 #endif

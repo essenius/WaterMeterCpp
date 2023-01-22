@@ -24,9 +24,6 @@
     <ClCompile Include="SampleAggregator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FlowMeter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResultAggregator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -147,9 +144,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SampleAggregator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FlowMeter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ResultAggregator.h">

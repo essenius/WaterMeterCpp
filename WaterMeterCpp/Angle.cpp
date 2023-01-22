@@ -25,12 +25,6 @@ double Angle::operator- (const double& other) const {
 	return  returnValue;
 }
 
-/*
-bool Angle::operator==(const Angle& other) const {
-	printf("Angle== called\n");
-	return aboutEqual(value, other.value);
-} */
-
 int Angle::quadrant() const {
 	if (value < -M_PI / 2.0) return 3;
 	if (value < 0.0) return 4;

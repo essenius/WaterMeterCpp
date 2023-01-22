@@ -17,9 +17,6 @@
 
 #include "IntCoordinate.h"
 
-constexpr long LONG_TRUE = 1L;
-constexpr long LONG_FALSE = 0L;
-
 enum class Topic: int16_t {
     None = 0,
     BatchSize,

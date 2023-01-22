@@ -107,16 +107,41 @@ namespace WaterMeterCppTest {
 	}
 
 	TEST_F(FlowDetectorTest, 60CyclesTest) {
-		// should not trigger on non-typical movement
 		flowTestWithFile("60cycles.txt", 1, 59, 0);
 	}
 
 	TEST_F(FlowDetectorTest, NoiseAtEndTest) {
-		// should not trigger on non-typical movement
 		flowTestWithFile("noiseAtEnd.txt", 1, 5, 0);
 	}
 
 	TEST_F(FlowDetectorTest, NoFitTest) {
 		flowTestWithFile("forceNoFit.txt", 1, 0, 0, 1);
+	}
+
+	TEST_F(FlowDetectorTest, SensorWasResetTest) {
+		FlowDetector flowDetector(&eventServer, &ellipseFit);
+		flowDetector.begin(3);
+		constexpr int RADIUS = 20;
+		for (int pass = 0; pass < 2; pass++) {
+			EXPECT_TRUE(flowDetector.wasReset()) << "Flow detector reset before adding samples pass " << pass;
+			unsigned int skipped = 0;
+
+			for (int i = 0; i < 30; i++) {
+				const double angle = i * M_PI / 16.0;
+				eventServer.publish(Topic::Sample, IntCoordinate{ {static_cast <int16_t>(cos(angle) * RADIUS), static_cast <int16_t>(sin(angle) * RADIUS)} });
+				if (flowDetector.wasSkipped()) skipped++;
+			}
+
+			EXPECT_EQ(8u, skipped) << "8 values skipped pass" << pass;
+			skipped = 0;
+			EXPECT_FALSE(flowDetector.wasReset()) << "Flow detector not reset after adding samples pass " << pass;
+			if (pass == 0) {
+				eventServer.publish(Topic::SensorWasReset, true);
+			}
+		}
+		eventServer.publish(Topic::Sample, IntCoordinate{ {RADIUS, 0} });
+		EXPECT_FALSE(flowDetector.wasReset()) << "Flow detector not reset at end";
+		EXPECT_FALSE(flowDetector.wasSkipped()) << "sample not skipped at end";
+
 	}
 }

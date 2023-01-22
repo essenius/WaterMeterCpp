@@ -18,30 +18,10 @@
 #include "IntCoordinate.h"
 #include "MathUtils.h"
 
-//Coordinate::Coordinate() = default;
-
-//Coordinate::Coordinate(const double& x, const double& y) {
-//	this->x = x;
-//	this->y = y;
-//}
-
-/*Coordinate& Coordinate::operator=(const IntCoordinate& point) {
-	this->x = static_cast<double>(point.x);
-	this->y = static_cast<double>(point.y);
-	return *this;
-}*/
-
 bool Coordinate::operator==(const Coordinate& other) const {
     printf("Coordinate== called\n");
     return aboutEqual(x, other.x) && aboutEqual(y, other.y);
 }
-
-/*Coordinate& Coordinate::operator=(Coordinate&& other) noexcept {
-	if (this == &other) return *this;
-	this->x = other.x;
-	this->y = other.y;
-	return *this;
-}*/
 
 Angle Coordinate::angle() const {
     if (x == 0 && y == 0) return {NAN};

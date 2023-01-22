@@ -40,7 +40,7 @@ void ResultAggregator::addMeasurement(const IntCoordinate& value, const FlowDete
     newMessage();
     _result->sampleCount = _messageCount;
 
-    if (_result->lastSample == value) {
+    if (value.isSaturated() || _result->lastSample == value) {
         _streak++;
         if (_streak > _result->maxStreak) {
             _result->maxStreak = _streak;
@@ -92,7 +92,7 @@ void ResultAggregator::flush() {
 bool ResultAggregator::send() {
     const auto wasSuccessful = Aggregator::send();
     if (wasSuccessful) {
-        _eventServer->publish(this, Topic::ResultWritten, LONG_TRUE);
+        _eventServer->publish(this, Topic::ResultWritten, true);
     }
     return wasSuccessful;
 }

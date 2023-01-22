@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -75,15 +75,10 @@ void Meter::update(const Topic topic, const long payload) {
     // Since we have a tilted ellipse and not a circle, quarters are not reliable. Halves are.
     if (topic == Topic::Pulse && payload % 2 == 1) {
         newPulse();
-    }/*
-    else if (topic == Topic::SetVolume || topic == Topic::Volume) {
-        // this is done to minimize payload sizes for the queues (ints only).
-        // A bit crude as it expects that addresses are 32 bits which is true on ESP32 but not on Win64.
-        const auto volume = reinterpret_cast<char*>(payload);
-        setVolume(volume);
-    } */
+    }
+
     // we initialize after the base services like logger and led driver were initialized
-    else if (topic == Topic::Begin && payload == LONG_TRUE) {
+    else if (topic == Topic::Begin && payload) {
         begin();
     }
 }

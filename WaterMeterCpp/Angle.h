@@ -16,7 +16,6 @@ struct Angle {
 	double value;
     Angle operator-(const Angle& other) const;
 	double operator-(const double& other) const;
-	/* bool operator==(const Angle& other) const; */
 	int quadrant() const;
 	void print() const;
 	double sin() const;

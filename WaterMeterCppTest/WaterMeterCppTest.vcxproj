@@ -131,7 +131,6 @@
     <ClCompile Include="FirmwareManagerTest.cpp" />
     <ClCompile Include="FlowDetectorTest.cpp" />
     <ClCompile Include="FlowDetectorDriver.cpp" />
-    <ClCompile Include="FlowMeterTest.cpp" />
     <ClCompile Include="LedDriverTest.cpp" />
     <ClCompile Include="LogTest.cpp" />
     <ClCompile Include="MagnetoSensorHmcTest.cpp" />

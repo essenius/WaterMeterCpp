@@ -55,7 +55,6 @@ struct DataQueuePayload {
     Timestamp timestamp{};
     Content buffer{};
     size_t size() const;
-    //DataQueuePayload() : topic(), buffer{} {}
 };
 
 #endif

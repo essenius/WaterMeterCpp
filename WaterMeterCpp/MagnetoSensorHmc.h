@@ -75,9 +75,9 @@ public:
     void configureGain(HmcGain gain);
     void configureOverSampling(HmcOverSampling overSampling);
     void configureRate(HmcRate rate);
-    float getGain() const override;
+    double getGain() const override;
     int getNoiseRange() const override;
-    static float getGain(HmcGain gain);
+    static double getGain(HmcGain gain);
     bool read(SensorData* sample) const override;
     void softReset() const override;
     static bool testInRange(const SensorData* sample);
@@ -86,6 +86,7 @@ public:
     static constexpr byte DEFAULT_ADDRESS = 0x1E;
 
 private:
+    static constexpr int16_t SATURATED = -4096;
     void configure(HmcGain gain, HmcBias bias) const;
     void getTestMeasurement(SensorData* reading) const;
     void startMeasurement() const;

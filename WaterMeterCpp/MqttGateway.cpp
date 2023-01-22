@@ -234,7 +234,6 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
         }
     }
     delete[] payloadStr;
-    /* } */
     free(copyTopic);
 }
 

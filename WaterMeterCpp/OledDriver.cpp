@@ -44,7 +44,7 @@ bool OledDriver::begin() {
     _wire->beginTransmission(OLED_128_32);
     // ReSharper disable once CppRedundantParentheses -- done to show intent
     if ((_wire->endTransmission() != 0) || !_display.begin(SSD1306_SWITCHCAPVCC, OLED_128_32, false, false)) {
-        _eventServer->publish(Topic::NoDisplayFound, LONG_TRUE);
+        _eventServer->publish(Topic::NoDisplayFound, true);
         return false;
     }
     _display.clearDisplay();
@@ -160,7 +160,7 @@ void OledDriver::update(const Topic topic, long payload) {
     switch (topic) {
     case Topic::Begin:
         // this one must be done after logging has started, controlled via payload.
-        if (payload == LONG_TRUE) {
+        if (payload) {
             begin();
         }
         break;

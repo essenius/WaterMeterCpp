@@ -23,7 +23,7 @@ public:
     explicit MagnetoSensorReader(EventServer* eventServer);
     bool begin(MagnetoSensor* sensor[], size_t listSize);
     void configurePowerPort(uint8_t port);
-    float getGain() const;
+    double getGain() const;
     int getNoiseRange() const;
     void hardReset();
     void power(uint8_t state) const;

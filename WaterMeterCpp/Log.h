@@ -28,7 +28,7 @@ public:
     void begin();
 
     template <typename... Arguments>
-    void log(const char* format, Arguments ... arguments) const {
+    void log(const char* format, const Arguments ... arguments) const {
         // printf doesn't seem to influence other tasks (unlike Serial.printf)
         xSemaphoreTake(_printMutex, portMAX_DELAY);
         printf("[%s] ", getTimestamp());

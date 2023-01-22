@@ -44,7 +44,7 @@ bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsign
         return false;
     }
 
-    _flowDetector->begin(_sensorReader->getNoiseRange() /*, _sensorReader->getGain() */);
+    _flowDetector->begin(_sensorReader->getNoiseRange());
 
     return true;
 }
@@ -57,6 +57,7 @@ void Sampler::beginLoop() {
 }
 
 void Sampler::loop() {
+    /* TODO: handle invalid sensor value(-4096 for HMC->map to NAN) */
     const IntCoordinate sample = _sensorReader->read();
     // this triggers flowDetector, sampleAggregator and the comms task
     _eventServer->publish(Topic::Sample, sample);

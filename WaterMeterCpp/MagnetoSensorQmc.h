@@ -78,9 +78,9 @@ public:
     // Note: lower rates won't work with the water meter as the code expects 100 Hz.
     void configureRate(QmcRate rate);
 
-    float getGain() const override;
+    double getGain() const override;
 
-    static float getGain(QmcRange range);
+    static double getGain(QmcRange range);
 
     // read a sample from the sensor
     bool read(SensorData* sample) const override;

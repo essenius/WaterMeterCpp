@@ -80,7 +80,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("[] Time overrun: 1234\n", getPrintOutput()) << "Time overrun handled OK";
 
         clearPrintOutput();
-        eventServer.publish(Topic::Blocked, LONG_TRUE);
+        eventServer.publish(Topic::Blocked, true);
         EXPECT_STREQ("[] Blocked: 1\n", getPrintOutput()) << "Blocked handled OK";
 
         clearPrintOutput();
@@ -92,16 +92,20 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("[] Free Spaces Queue #3: 16\n", getPrintOutput()) << "Sensor reset handled OK";
 
         clearPrintOutput();
-        eventServer.publish(Topic::NoSensorFound, LONG_TRUE);
+        eventServer.publish(Topic::NoSensorFound, true);
         EXPECT_STREQ("[] No sensor found: 1\n", getPrintOutput()) << "no sensor found handled OK";
 
         clearPrintOutput();
-        eventServer.publish(Topic::NoDisplayFound, LONG_TRUE);
+        eventServer.publish(Topic::NoDisplayFound, true);
         EXPECT_STREQ("[] No OLED display found\n", getPrintOutput()) << "no display found handled OK";
         clearPrintOutput();
 
         eventServer.publish(Topic::UpdateProgress, 73);
         EXPECT_STREQ("[] Firmware update progress: 73%\n", getPrintOutput()) << "Update progress logged OK";
+        clearPrintOutput();
+
+        eventServer.publish(Topic::NoFit, 55);
+        EXPECT_STREQ("[] No fit: 55 deg\n", getPrintOutput()) << "NoFit logged OK";
         clearPrintOutput();
     }
 }

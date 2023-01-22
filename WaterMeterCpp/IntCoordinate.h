@@ -14,6 +14,7 @@
 
 #include "Coordinate.h"
 #include "ESP.h"
+#include <climits>
 
 union IntCoordinate {
     struct {
@@ -38,6 +39,10 @@ union IntCoordinate {
 
     Coordinate toCoordinate() const {
         return { static_cast<double>(x), static_cast<double>(y) };
+    }
+
+    bool isSaturated() const {
+        return x == SHRT_MIN || x == SHRT_MAX || y == SHRT_MIN || y == SHRT_MAX;
     }
 };
 

@@ -51,6 +51,7 @@ void FlowDetector::update(const Topic topic, const long payload) {
 	if (topic == Topic::SensorWasReset) {
 		// If we needed to reset the sensor, also reset the measurement process when the next sample comes in
 		_firstCall = true;
+		_justStarted = true;
 		_currentIndex = 0;
 	}
 }
@@ -65,6 +66,11 @@ void FlowDetector::update(const Topic topic, const IntCoordinate payload) {
 
 void FlowDetector::addSample(const IntCoordinate& sample) {
 	_currentIndex++;
+	if (sample.isSaturated()) {
+		_wasSkipped = true;
+		_foundAnomaly = true;
+		return;
+	}
 	if (_firstCall) {
 		_movingAverageIndex = 0;
 		_firstRound = true;
@@ -72,7 +78,10 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 	}
 	updateMovingAverageArray(sample);
 	// if index is 0, we made the first round and the buffer is full. Otherwise we wait.
-	if (_firstRound && _movingAverageIndex != 0) return;
+	if (_firstRound && _movingAverageIndex != 0) {
+		_wasSkipped = true;
+		return;
+	}
 
     const auto averageSample = calcMovingAverage();
 
@@ -83,6 +92,7 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 		_referencePoint = _startPoint;
 		_previousPoint = _startPoint;
 		_firstRound = false;
+		_wasSkipped = true;
 		return;
 	}
 
@@ -91,6 +101,7 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 
 	if (!_ellipseFit->addMeasurement(averageSample)) {
 		// this should not happen - bufferIsFull would trigger on time
+		/* TODO: remove print statement */
 		printf("Too many measurements!\n");
 	}
 
@@ -99,6 +110,7 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 	}
 
 	_previousPoint = averageSample;
+	_wasSkipped = false;
 }
 
 Coordinate FlowDetector::calcMovingAverage() {
@@ -136,7 +148,8 @@ CartesianEllipse FlowDetector::executeFit() const {
 void FlowDetector::findPulseByCenter(const Coordinate& point) {
 	const auto angleWithCenter = point.angleFrom(_confirmedGoodFit.center);
 	const int quadrant = angleWithCenter.quadrant();
-	const auto angleDistance = isnan(_previousAngleWithCenter.value) ? 0 : angleWithCenter - _previousAngleWithCenter.value;
+	// previous angle is initialized in the first fit, so always has a valid value when coming here
+	const auto angleDistance = angleWithCenter - _previousAngleWithCenter.value;
 	_angleDistanceTravelled += angleDistance;
 	if (!_searchingForPulse) {
 		_foundPulse = false;
@@ -147,7 +160,7 @@ void FlowDetector::findPulseByCenter(const Coordinate& point) {
 		// reference point is the bottom of the ellipse
 		_foundPulse = quadrant == 3 && _previousQuadrant == 4;
 		if (_foundPulse) {
-			_eventServer->publish(Topic::Pulse, LONG_TRUE);
+			_eventServer->publish(Topic::Pulse, true);
  			_searchingForPulse = false;
 			printf("\n[%4d] Found Pulse. points: %d ", _currentIndex, _pointCount);
 			_pointCount = 0;
@@ -235,6 +248,7 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 			_previousQuadrant = _previousAngleWithCenter.quadrant();
 		} else {
 			// we need another round
+			/* TODO: remove print*/
 			printf("\n[%4d] Bad first Fit - %.1f", _currentIndex, _angleDistanceTravelled * 180);
 			_eventServer->publish(Topic::NoFit, static_cast <int16_t>(round(_tangentDistanceTravelled * 180)));
 		}

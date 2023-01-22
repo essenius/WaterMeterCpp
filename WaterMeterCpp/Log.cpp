@@ -115,8 +115,8 @@ void Log::update(Topic topic, const char* payload) {
 void Log::update(const Topic topic, const long payload) {
     switch (topic) {
     case Topic::Begin:
-        // do this as early as possible, i.e. when called with LONG_FALSE
-        if (payload == LONG_FALSE) {
+        // do this as early as possible, i.e. when called with false
+        if (!payload) {
             begin();
             }
         break;

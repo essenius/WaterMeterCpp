@@ -89,7 +89,7 @@ void LedDriver::update(const Topic topic, long payload) {
     switch (topic) {
     case Topic::Begin:
         // do this as early as possible as sensors might need to signal issues
-        if (payload == LONG_FALSE) {
+        if (payload == false) {
             begin();
         }
         break;
