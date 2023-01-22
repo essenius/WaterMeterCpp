@@ -26,7 +26,6 @@ struct Coordinate {
 	double distance() const;
 	double distanceFrom(const Coordinate& other) const;
 	Coordinate operator-() const;
-	void print() const; /* TODO: remove when removing debug code */
 	Coordinate reciprocal() const;
 	Coordinate rotate(double angle) const;
 	Coordinate translate(const Coordinate& vector) const;

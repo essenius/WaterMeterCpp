@@ -22,9 +22,7 @@ void assertPerfectEllipse(const Coordinate& center, const Coordinate& radius, co
 	const auto resultQuadraticEllipse = ellipseFit.fit();
 	const auto resultEllipse = CartesianEllipse(resultQuadraticEllipse);
 	printf("Input:\n");
-	inputEllipse.print();
 	printf("\nResult:\n");
-	resultEllipse.print();
 	printf("\n");
 
 	assertCoordinatesEqual(center, resultEllipse.center, "Center", EPSILON);
@@ -79,13 +77,6 @@ void assertEllipseWithDistance(const Coordinate& center, const Coordinate& radiu
 
 	const auto resultQuadraticEllipse = ellipseFit.fit();
 	const auto resultEllipse = CartesianEllipse(resultQuadraticEllipse);
-	printf("Inner:\n");
-	innerEllipse.print();
-	printf("\nOuter:\n");
-	outerEllipse.print();
-	printf("\nResult:\n");
-	resultEllipse.print();
-	printf("\n");
 
 	x = -M_PI;
 	assertCoordinatesEqual(center, resultEllipse.center, "Center", EPSILON);
@@ -116,7 +107,6 @@ void assertPartialEllipse(const CartesianEllipse& ellipse, const double& fractio
 	for (unsigned int i = 0; i < points; i++) {
 		Coordinate point = ellipse.parametricRepresentation(Angle{x});
 		ASSERT_TRUE(ellipseFit.addMeasurement(point)) << "Point " << x << " added";
-		point.print();
 		printf(" | ");
 		x += delta;
 	}
@@ -124,11 +114,6 @@ void assertPartialEllipse(const CartesianEllipse& ellipse, const double& fractio
 
 	const auto resultQuadraticEllipse = ellipseFit.fit();
 	const auto resultEllipse = CartesianEllipse(resultQuadraticEllipse);
-	printf("\nOriginal:\n");
-	ellipse.print();
-	printf("\nResult:\n");
-	resultEllipse.print();
-	printf("\n");
 
 	// we need to accept a bit more variation here 
 	constexpr double EPSILON1 = 0.0005;
@@ -140,13 +125,9 @@ void assertPartialEllipse(const CartesianEllipse& ellipse, const double& fractio
 	constexpr int POINTS_ON_ELLIPSE = 32;
 	for (int i = -16; i < POINTS_ON_ELLIPSE; i++) {
 		Coordinate pointOut = resultEllipse.parametricRepresentation(Angle{x});
-		pointOut.print();
-		printf(" | ");
 		assertDoubleEqual(0, ellipse.distanceFrom(pointOut), "Distance", 0.001);
 		x += M_PI / (POINTS_ON_ELLIPSE / 2.0);
 	}
-	// to show the print statements
-	// ASSERT_FALSE(true);
 }
 
 TEST(EllipseFitTest, PartialEllipseTest) {

@@ -26,20 +26,10 @@ void assertEllipse(const Coordinate& center, const Coordinate& radius, const Ang
 	const double b = 2 * (sqr(radius.y) - sqr(radius.x)) * angle.sin() * angle.cos();
 	const double c = sqr(radius.x) * sqr(angle.cos()) + sqr(radius.y) * sqr(angle.sin());
 	const double d = -2 * a * center.x - b * center.y;
-	printf("[%2f,%2f]", -b * center.x, -2 * c * center.y);
 	const double e = -b * center.x - 2 * c * center.y;
 	const double f = a * sqr(center.x) + b * center.x * center.y + c * sqr(center.y) - sqr(radius.x) * sqr(radius.y);
-	printf(" C:");
-	center.print();
-	printf(" R:");
-	radius.print();
-	printf(" A:");
-	angle.print();
-	printf(" param: ");
 
 	QuadraticEllipse coefficient(a, b, c, d, e, f);
-	coefficient.print();
-	printf("\n");
 	const auto center1 = coefficient.center();
 	assertCoordinatesEqual(center, center1, "Center");
 	const auto radius1 = coefficient.radius();

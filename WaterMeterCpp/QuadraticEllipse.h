@@ -26,7 +26,6 @@ struct QuadraticEllipse {
 	QuadraticEllipse() = default;
 	Angle angle();
 	Coordinate center() const;
-	void print() const; /* TODO: remove when removing debug code */
 	Coordinate radius();
 private:
 	double discriminant() const;

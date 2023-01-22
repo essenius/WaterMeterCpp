@@ -32,10 +32,6 @@ int Angle::quadrant() const {
 	return 2;
 }
 
-void Angle::print() const {
-	printf("%.4f", value);
-}
-
 double Angle::sin() const {
 	return std::sin(value);
 }

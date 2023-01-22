@@ -74,7 +74,3 @@ Coordinate QuadraticEllipse::radius() {
 	_radiusCalculated = true;
 	return _radius;
 }
-
-void QuadraticEllipse::print() const {
-	printf("a=%.3f, b=%.3f, c=%.3f, d=%.3f, f=%.3f, g=%.3f", a, b, c, d, f, g);
-}

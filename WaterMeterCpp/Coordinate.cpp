@@ -61,7 +61,3 @@ Coordinate Coordinate::reciprocal() const {
 Coordinate Coordinate::operator-() const {
     return {-x, -y};
 }
-
-void Coordinate::print() const {
-    printf("%.4f, %.4f", x, y);
-}

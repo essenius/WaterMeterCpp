@@ -17,7 +17,6 @@ struct Angle {
     Angle operator-(const Angle& other) const;
 	double operator-(const double& other) const;
 	int quadrant() const;
-	void print() const;
 	double sin() const;
 	double cos() const;
 };

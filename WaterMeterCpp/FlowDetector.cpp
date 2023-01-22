@@ -128,7 +128,6 @@ void FlowDetector::detectPulse(const Coordinate point) {
 CartesianEllipse FlowDetector::executeFit() const {
 	const auto fittedEllipse = _ellipseFit->fit();
 	const CartesianEllipse returnValue(fittedEllipse);
-	returnValue.print();
 	_ellipseFit->begin();
 	return returnValue;
 }

@@ -61,12 +61,3 @@ Coordinate CartesianEllipse::pointOnEllipseFor(const Coordinate& referencePoint)
 double CartesianEllipse::distanceFrom(const Coordinate& referencePoint) const {
 	return pointOnEllipseFor(referencePoint).distanceFrom(referencePoint);
 }
-
-void CartesianEllipse::print() const {
-	printf("Center: (");
-	center.print();
-	printf("), radius: (");
-	radius.print();
-	printf("), angle: ");
-	angle.print();
-}
