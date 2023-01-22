@@ -51,14 +51,12 @@ protected:
 	Coordinate _startPoint;
 	Coordinate _referencePoint;
 
-	unsigned int _currentIndex = 0; /* remove when removing debug code */
 	Coordinate _previousPoint;
 	Angle _startTangent = {NAN};
 	unsigned int _waitCount = 0;
 	bool _searchingForPulse = true;
 	Angle _previousAngleWithCenter = { NAN };
 	double _angleDistanceTravelled = 0;
-	unsigned int _pointCount = 0; /* remove when removing debug code */
 	bool _foundAnomaly = false;
 	double _distanceThreshold = 2.12132; // noise range = 3, distance = sqrt(18), MA(4) reduces noise with factor 2
     bool _firstCall = true;

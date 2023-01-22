@@ -138,7 +138,6 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(98, display->getX()) << "NoFit X=98";
             EXPECT_EQ(0, display->getY()) << "NoFit Y=0";
             EXPECT_STREQ("No fit:   35 deg ", display->getMessage()) << "NoFit message OK";
-
         }
 
     }

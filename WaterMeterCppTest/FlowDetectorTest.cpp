@@ -142,6 +142,18 @@ namespace WaterMeterCppTest {
 		eventServer.publish(Topic::Sample, IntCoordinate{ {RADIUS, 0} });
 		EXPECT_FALSE(flowDetector.wasReset()) << "Flow detector not reset at end";
 		EXPECT_FALSE(flowDetector.wasSkipped()) << "sample not skipped at end";
+	}
 
+	TEST_F(FlowDetectorTest, SaturatedValuesIgnoredTest) {
+		FlowDetector flowDetector(&eventServer, &ellipseFit);
+		flowDetector.begin(3);
+		eventServer.publish(Topic::Sample, IntCoordinate{{-32768, 32767}});
+		ASSERT_TRUE(flowDetector.wasReset());
+		eventServer.publish(Topic::Sample, IntCoordinate{{0, -32768}});
+		ASSERT_TRUE(flowDetector.wasReset());
+		eventServer.publish(Topic::Sample, IntCoordinate{{32767, 0}});
+		ASSERT_TRUE(flowDetector.wasReset());
+		eventServer.publish(Topic::Sample, IntCoordinate{ {-32768, 0} });
+		ASSERT_TRUE(flowDetector.wasReset());
 	}
 }

@@ -52,7 +52,6 @@ void FlowDetector::update(const Topic topic, const long payload) {
 		// If we needed to reset the sensor, also reset the measurement process when the next sample comes in
 		_firstCall = true;
 		_justStarted = true;
-		_currentIndex = 0;
 	}
 }
 
@@ -65,7 +64,6 @@ void FlowDetector::update(const Topic topic, const IntCoordinate payload) {
 // Private methods
 
 void FlowDetector::addSample(const IntCoordinate& sample) {
-	_currentIndex++;
 	if (sample.isSaturated()) {
 		_wasSkipped = true;
 		_foundAnomaly = true;
@@ -99,16 +97,10 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 	if (!isRelevant(averageSample)) return;
 	detectPulse(averageSample);
 
-	if (!_ellipseFit->addMeasurement(averageSample)) {
-		// this should not happen - bufferIsFull would trigger on time
-		/* TODO: remove print statement */
-		printf("Too many measurements!\n");
-	}
-
+	_ellipseFit->addMeasurement(averageSample);
 	if (_ellipseFit->bufferIsFull()) {
 		updateEllipseFit(averageSample);
 	}
-
 	_previousPoint = averageSample;
 	_wasSkipped = false;
 }
@@ -124,7 +116,6 @@ Coordinate FlowDetector::calcMovingAverage() {
 	return _movingAverage;
 }
 
-
 void FlowDetector::detectPulse(const Coordinate point) {
 	if (_confirmedGoodFit.hasData) {
 		findPulseByCenter(point);
@@ -136,11 +127,8 @@ void FlowDetector::detectPulse(const Coordinate point) {
 
 CartesianEllipse FlowDetector::executeFit() const {
 	const auto fittedEllipse = _ellipseFit->fit();
-
 	const CartesianEllipse returnValue(fittedEllipse);
-	printf("\n[%4d] Fit - ", _currentIndex);
 	returnValue.print();
- 	printf(", circumference: %.2f, angle distance travelled: %.3f", returnValue.circumference(), _angleDistanceTravelled);
 	_ellipseFit->begin();
 	return returnValue;
 }
@@ -162,8 +150,6 @@ void FlowDetector::findPulseByCenter(const Coordinate& point) {
 		if (_foundPulse) {
 			_eventServer->publish(Topic::Pulse, true);
  			_searchingForPulse = false;
-			printf("\n[%4d] Found Pulse. points: %d ", _currentIndex, _pointCount);
-			_pointCount = 0;
 		}
 	}
 	_previousQuadrant = quadrant;
@@ -174,7 +160,6 @@ void FlowDetector::findPulseByPrevious(const Coordinate& point) {
 
 	const auto angleWithPreviousFromStart = point.angleFrom(_previousPoint) - _startTangent;
 	_tangentDistanceTravelled += (angleWithPreviousFromStart - _previousAngleWithPreviousFromStart).value;
-	printf(" angle: %.3f, traveled: %.3f, fitPoints=%d\n", angleWithPreviousFromStart.value, _tangentDistanceTravelled, _ellipseFit->pointCount());
 	_previousAngleWithPreviousFromStart = angleWithPreviousFromStart;
 
 	const auto quadrant = point.angleFrom(_previousPoint).quadrant();
@@ -183,10 +168,8 @@ void FlowDetector::findPulseByPrevious(const Coordinate& point) {
 
     _foundPulse = _searchingForPulse && quadrant == 2 && _previousQuadrant == 3;
 	if (_foundPulse) {
-		printf("\n[%4d] Found Pulse (previous) fitpoints=%d.\n", _currentIndex, _ellipseFit->pointCount());
 		_eventServer->publish(Topic::Pulse, false);
 		_searchingForPulse = false;
-		_pointCount = 0;
 	} else if (!_searchingForPulse && (quadrant == 1 || quadrant == 4)) {
 		_searchingForPulse = true;
 	}
@@ -195,10 +178,9 @@ void FlowDetector::findPulseByPrevious(const Coordinate& point) {
 
 bool FlowDetector::isRelevant(const Coordinate& point) {
 
-	const auto distance = point.distanceFrom(_referencePoint);
+    const auto distance = point.distanceFrom(_referencePoint);
 	// if we are too close to the previous point, discard
 	if (distance < _distanceThreshold) {
-		printf(".");
 		_wasSkipped = true;
 		return false;
 	}
@@ -209,7 +191,6 @@ bool FlowDetector::isRelevant(const Coordinate& point) {
 		if (_foundAnomaly) {
 			_eventServer->publish(Topic::Exclude, true);
 			_wasSkipped = true;
-			printf("[%d!%.3f]", _currentIndex, distanceFromEllipse);
 			return false;
 		}
 	}
@@ -218,17 +199,14 @@ bool FlowDetector::isRelevant(const Coordinate& point) {
 	if (_justStarted) {
 		_waitCount++;
 		if (_waitCount <= MOVING_AVERAGE_SIZE) {
-			printf("#");
 			_wasSkipped = true;
 			return false;
 		}
 		_startTangent = point.angleFrom(_referencePoint);
-		printf("\n[%4d] Start move (tangent=%.3f, fitPoints=%d)\n", _currentIndex, _startTangent.value, _ellipseFit->pointCount());
 		_justStarted = false;
 		_waitCount = 0;
 	}
 	_referencePoint = point;
-	_pointCount++;
 	return true;
 }
 
@@ -239,17 +217,13 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		const auto center = fittedEllipse.center;
 		// number of points per ellipse defines whether the fit is reliable.
 		const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
-		printf(", passed cycles: %.3f ", passedCycles);
 		if (abs(passedCycles) >= MIN_CYCLE_FOR_FIT) {
 			_confirmedGoodFit = fittedEllipse;
-			printf("\n[%4d] Good first Fit - %.1f", _currentIndex, _angleDistanceTravelled * 180);
-
 			_previousAngleWithCenter = point.angleFrom(center);
 			_previousQuadrant = _previousAngleWithCenter.quadrant();
 		} else {
 			// we need another round
 			/* TODO: remove print*/
-			printf("\n[%4d] Bad first Fit - %.1f", _currentIndex, _angleDistanceTravelled * 180);
 			_eventServer->publish(Topic::NoFit, static_cast <int16_t>(round(_tangentDistanceTravelled * 180)));
 		}
 		_tangentDistanceTravelled = 0;
@@ -260,11 +234,8 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
 		if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MIN_CYCLE_FOR_FIT) {
 			_confirmedGoodFit = executeFit();
-			printf("\n[%4d] Good Fit - %.1f", _currentIndex, _angleDistanceTravelled * 180);
 		}
 		else {
-			printf("\n[%4d] Bad Fit - %.1f", _currentIndex, _angleDistanceTravelled * 180);
-
 			_eventServer->publish(Topic::NoFit, static_cast <int16_t>(round(_angleDistanceTravelled * 180)));
 			_ellipseFit->begin();
 		}
