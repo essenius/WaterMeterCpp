@@ -223,7 +223,6 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 			_previousQuadrant = _previousAngleWithCenter.quadrant();
 		} else {
 			// we need another round
-			/* TODO: remove print*/
 			_eventServer->publish(Topic::NoFit, static_cast <int16_t>(round(_tangentDistanceTravelled * 180)));
 		}
 		_tangentDistanceTravelled = 0;
