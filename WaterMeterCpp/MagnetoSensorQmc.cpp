@@ -45,13 +45,13 @@ void MagnetoSensorQmc::configureRate(const QmcRate rate) {
 
 // if we ever need DataReady, use (getRegister(QmcStatus) & 0x01) != 0;
 
-float MagnetoSensorQmc::getGain() const {
+double MagnetoSensorQmc::getGain() const {
     return getGain(_range);
 }
 
-float MagnetoSensorQmc::getGain(const QmcRange range) {
-    if (range == QmcRange8G) return 3000.0f;
-    return 12000.0f;
+double MagnetoSensorQmc::getGain(const QmcRange range) {
+    if (range == QmcRange8G) return 3000.0;
+    return 12000.0;
 }
 
 bool MagnetoSensorQmc::read(SensorData* sample) const {
@@ -68,6 +68,7 @@ bool MagnetoSensorQmc::read(SensorData* sample) const {
     sample->x = _wire->read() | _wire->read() << BITS_PER_BYTE;
     sample->y = _wire->read() | _wire->read() << BITS_PER_BYTE;
     sample->z = _wire->read() | _wire->read() << BITS_PER_BYTE;
+    // no need to adjust saturation values as it already uses SHRT_MIN and SHRT_MAX
     return true;
 }
 

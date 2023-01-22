@@ -48,6 +48,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::FreeQueueSpaces);
     _eventServer->subscribe(this, Topic::MessageFormatted);
     _eventServer->subscribe(this, Topic::NoDisplayFound);
+    _eventServer->subscribe(this, Topic::NoFit);
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::SensorWasReset);
@@ -114,8 +115,8 @@ void Log::update(Topic topic, const char* payload) {
 void Log::update(const Topic topic, const long payload) {
     switch (topic) {
     case Topic::Begin:
-        // do this as early as possible, i.e. when called with LONG_FALSE
-        if (payload == LONG_FALSE) {
+        // do this as early as possible, i.e. when called with false
+        if (!payload) {
             begin();
             }
         break;
@@ -133,6 +134,9 @@ void Log::update(const Topic topic, const long payload) {
         return;
     case Topic::FreeStack:
         printIndexedPayload("Stack", payload);
+        return;
+    case Topic::NoFit:
+        log("No fit: %ld deg", payload);
         return;
     default:
         EventClient::update(topic, payload);

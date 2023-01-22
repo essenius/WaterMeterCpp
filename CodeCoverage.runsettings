@@ -19,7 +19,8 @@ Included items must then not match any entries in the exclude list to remain inc
 						<Functions>
 							<Exclude>
 								<Function>.*std::.*</Function>
-							</Exclude>
+                                <Function>.*Eigen::.*</Function>
+                            </Exclude>
 						</Functions>
 
 						<Sources>

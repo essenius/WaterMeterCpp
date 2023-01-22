@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -41,7 +41,7 @@ void MagnetoSensorHmc::configureRate(const HmcRate rate) {
     _rate = rate;
 }
 
-float MagnetoSensorHmc::getGain() const {
+double MagnetoSensorHmc::getGain() const {
     return getGain(_gain);
 }
 
@@ -52,22 +52,22 @@ int MagnetoSensorHmc::getNoiseRange() const {
     case HmcGain1_9: return 5;
     case HmcGain2_5: return 4;
     case HmcGain4_0: return 4;
-    case HmcGain4_7: return 4;
+    case HmcGain4_7: return 3; // was 4
     case HmcGain5_6:
     default: return 2;
     }
 }
 
-float MagnetoSensorHmc::getGain(const HmcGain gain) {
+double MagnetoSensorHmc::getGain(const HmcGain gain) {
     switch (gain) {
-    case HmcGain0_88: return 1370.0f;
-    case HmcGain1_3: return 1090.0f;
-    case HmcGain1_9: return 820.0f;
-    case HmcGain2_5: return 660.0f;
-    case HmcGain4_0: return 440.0f;
-    case HmcGain4_7: return 390.0f;
-    case HmcGain5_6: return 330.0f;
-    default: return 230.0f;
+    case HmcGain0_88: return 1370.0;
+    case HmcGain1_3: return 1090.0;
+    case HmcGain1_9: return 820.0;
+    case HmcGain2_5: return 660.0;
+    case HmcGain4_0: return 440.0;
+    case HmcGain4_7: return 390.0;
+    case HmcGain5_6: return 330.0;
+    default: return 230.0;
     }
 
 }
@@ -96,6 +96,10 @@ bool MagnetoSensorHmc::read(SensorData* sample) const {
     sample->z |= _wire->read();
     sample->y = _wire->read() << 8;
     sample->y |= _wire->read();
+    // harmonize saturation values across sensors
+    if (sample->x == SATURATED) sample->x = SHRT_MIN;
+    if (sample->y == SATURATED) sample->y = SHRT_MIN;
+    if (sample->z == SATURATED) sample->z = SHRT_MIN;
     return true;
 }
 

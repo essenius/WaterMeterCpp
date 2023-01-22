@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -13,9 +13,9 @@
 
 constexpr int MAX_CONSECUTIVE_OVERRUNS = 3;
 
-Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowMeter* flowMeter, Button* button,
+Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowDetector* flowDetector, Button* button,
                  SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
-    _eventServer(eventServer), _sensorReader(sensorReader), _flowMeter(flowMeter), _button(button),
+    _eventServer(eventServer), _sensorReader(sensorReader), _flowDetector(flowDetector), _button(button),
     _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {}
 
 // if it returns false, the setup failed. Don't try any other functions if so.
@@ -29,12 +29,13 @@ bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsign
     _eventServer->subscribe(_queueClient, Topic::Exclude);
     _eventServer->subscribe(_queueClient, Topic::FreeQueueSize);
     _eventServer->subscribe(_queueClient, Topic::FreeQueueSpaces);
+    _eventServer->subscribe(_queueClient, Topic::NoFit);
     _eventServer->subscribe(_queueClient, Topic::Pulse);
     _eventServer->subscribe(_queueClient, Topic::ResultWritten);
     _eventServer->subscribe(_queueClient, Topic::Sample);
     _eventServer->subscribe(_queueClient, Topic::SkipSamples);
-    _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
     _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
+    _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
     // SensorReader.begin can publish these     
     _eventServer->subscribe(_queueClient, Topic::Alert);
     _eventServer->subscribe(_queueClient, Topic::NoSensorFound);
@@ -43,7 +44,7 @@ bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsign
         return false;
     }
 
-    _flowMeter->begin(_sensorReader->getNoiseRange(), _sensorReader->getGain());
+    _flowDetector->begin(_sensorReader->getNoiseRange());
 
     return true;
 }
@@ -56,10 +57,11 @@ void Sampler::beginLoop() {
 }
 
 void Sampler::loop() {
-    const Coordinate measure = _sensorReader->read();
-    // this triggers flowMeter, sampleAggregator and the comms task
-    _eventServer->publish(Topic::Sample, measure);
-    _resultAggregator->addMeasurement(measure, _flowMeter);
+    /* TODO: handle invalid sensor value(-4096 for HMC->map to NAN) */
+    const IntCoordinate sample = _sensorReader->read();
+    // this triggers flowDetector, sampleAggregator and the comms task
+    _eventServer->publish(Topic::Sample, sample);
+    _resultAggregator->addMeasurement(sample, _flowDetector);
     _sampleAggregator->send();
     // Duration gets picked up by resultAggregator, so must be published before sending
     // making sure to use durations to operate on, not timestamps -- to avoid overflow issues

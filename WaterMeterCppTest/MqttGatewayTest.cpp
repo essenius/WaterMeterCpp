@@ -211,7 +211,7 @@ namespace WaterMeterCppTest {
 
         mqttClient.reset();
 
-        eventServer.publish(Topic::Alert, LONG_TRUE);
+        eventServer.publish(Topic::Alert, true);
         EXPECT_STREQ("homie/client1/$state\n", mqttClient.getTopics()) << "Payload OK";
         EXPECT_STREQ("alert\n", mqttClient.getPayloads()) << "Payload OK";
     }

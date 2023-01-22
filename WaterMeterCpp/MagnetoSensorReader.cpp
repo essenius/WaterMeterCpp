@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -60,7 +60,7 @@ void MagnetoSensorReader::configurePowerPort(const uint8_t port) {
     pinMode(_powerPort, OUTPUT);
 }
 
-float MagnetoSensorReader::getGain() const {
+double MagnetoSensorReader::getGain() const {
     return _sensor->getGain();
 }
 
@@ -91,14 +91,16 @@ void MagnetoSensorReader::power(const uint8_t state) const {
     digitalWrite(_powerPort, state);
 }
 
-Coordinate MagnetoSensorReader::read() {
+IntCoordinate MagnetoSensorReader::read() {
     SensorData sample{};
     if (!_sensor->read(&sample)) {
         _alert = true;
         _noSensor = true;
     }
+    const auto returnValue = IntCoordinate{{sample.x, sample.y}};
+
     // check whether the sensor still works
-    if (sample == _previousSample) {
+    if (sample == _previousSample || returnValue.isSaturated()) {
         _streakCount++;
         // if we have too many of the same results in a row, reset the sensor
         if (_streakCount >= FLATLINE_STREAK) {
@@ -113,7 +115,7 @@ Coordinate MagnetoSensorReader::read() {
         _alert = false;
     }
     // We use the X/Y plane as that gives the clearest results
-    return Coordinate{{sample.x, sample.y}};
+    return returnValue;
 }
 
 void MagnetoSensorReader::reset() {
@@ -133,7 +135,7 @@ void MagnetoSensorReader::reset() {
     _eventServer->publish(Topic::SensorWasReset, SOFT_RESET);
 }
 
-void MagnetoSensorReader::update(const Topic topic, long payload) {
+void MagnetoSensorReader::update(const Topic topic, const long payload) {
     if (topic == Topic::ResetSensor && payload != 0) {
         hardReset();
     }

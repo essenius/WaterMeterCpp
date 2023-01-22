@@ -74,14 +74,14 @@ namespace WaterMeterCppTest {
         // send a result
         payload.topic = Topic::Result;
         // clean out buffer to all 0
-        for (Coordinate& i : payload.buffer.samples.value) {
+        for (IntCoordinate i : payload.buffer.samples.value) {
             i.l = 0;
         }
         payload.buffer.samples.count = 0;
 
         payload.buffer.result.sampleCount = 81;
         payload.buffer.result.pulseCount = 12;
-        payload.buffer.result.searchTarget = 2;
+        payload.buffer.result.skipCount = 2;
         dataQueue.send(&payload);
 
         // send an error message
@@ -90,7 +90,7 @@ namespace WaterMeterCppTest {
         dataQueue.send(&payload);
 
         // retrieve the samples
-        Coordinate expected{{499, 499}};
+        IntCoordinate expected{{499, 499}};
         for (int i = 0; i < 5; i++) {
             auto payloadReceive = dataQueue.receive();
             EXPECT_NE(nullptr, payloadReceive) << "PayloadReceive not null 1";
@@ -106,7 +106,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(Topic::Result, payloadReceive2->topic) << "Topic 2 is Result";
         EXPECT_EQ(81, payloadReceive2->buffer.result.sampleCount) << "SampleCount=81";
         EXPECT_EQ(12, payloadReceive2->buffer.result.pulseCount) << "PeakCount=12";
-        EXPECT_EQ(2, payloadReceive2->buffer.result.searchTarget) << "searchTarget=2";
+        EXPECT_EQ(2, payloadReceive2->buffer.result.skipCount) << "SkioCount=2";
 
         // get the error message
         auto payloadReceive3 = dataQueue.receive();

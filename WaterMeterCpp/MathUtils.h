@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -9,16 +9,17 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#include "FlowMeterDriver.h"
+#ifndef DOUBLE_UTILS_H
+#define DOUBLE_UTILS_H
 
-// constructor for ResultAggregatorTest. Uses fields that are used for reporting
+#ifndef ESP32
+// ReSharper disable once CppUnusedIncludeDirective - on purpose, to get PI defined
+#include <corecrt_math_defines.h>
+#endif
 
-namespace WaterMeterCppTest {
+constexpr double EPSILON = 1e-6;
 
-    FlowMeterDriver::FlowMeterDriver(EventServer* eventServer, const FloatCoordinate smoothValue, const bool pulse, const bool outlier, const bool first): FlowMeter(eventServer) {
-        _smooth = smoothValue;
-        _isPulse = pulse;
-        _outlier = outlier;
-        _firstCall = first;
-    }
-}
+bool aboutEqual(const double& a, const double& b, const double& epsilon = EPSILON);
+double sqr(const double& a);
+int modulo(int a, int b);
+#endif

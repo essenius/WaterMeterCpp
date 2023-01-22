@@ -19,7 +19,7 @@ WiFiManager::WiFiManager(EventServer* eventServer, const WifiConfig* wifiConfig,
 
 void WiFiManager::announceReady() {
     setStatusSummary();
-    _eventServer->publish(this, Topic::WifiSummaryReady, LONG_TRUE);
+    _eventServer->publish(this, Topic::WifiSummaryReady, true);
     _eventServer->provides(this, Topic::IpAddress);
     _eventServer->provides(this, Topic::MacFormatted);
     _eventServer->provides(this, Topic::MacRaw);

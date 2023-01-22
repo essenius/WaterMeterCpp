@@ -15,7 +15,7 @@
 #include "../WaterMeterCpp/ResultAggregator.h"
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/Serializer.h"
-#include "FlowMeterDriver.h"
+#include "FlowDetectorDriver.h"
 
 #include "TestEventClient.h"
 
@@ -53,7 +53,7 @@ namespace WaterMeterCppTest {
         }
 
         void assertExceptions(const int outliers, const int overruns, const ResultData* result) const {
-            EXPECT_EQ(outliers, result->outlierCount) << "outlierCount OK";
+            EXPECT_EQ(outliers, result->anomalyCount) << "anomalyCount OK";
             EXPECT_EQ(overruns, result->overrunCount) << "overrunCount OK";
         }
 
@@ -75,9 +75,10 @@ namespace WaterMeterCppTest {
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 5);
         eventServer.publish(Topic::NonIdleRate, 5);
-        constexpr FloatCoordinate LOW_PASS{500, 500};
-        const FlowMeterDriver fmd(&eventServer, LOW_PASS);
-        constexpr Coordinate SAMPLE{{500, 500}};
+        constexpr Coordinate AVERAGE{500, 500};
+        EllipseFit ellipseFit;
+        const FlowDetectorDriver fmd(&eventServer, &ellipseFit, AVERAGE);
+        constexpr IntCoordinate SAMPLE{ {500, 500} };
         for (int i = 0; i < 3; i++) {
             aggregator.addMeasurement(SAMPLE, &fmd);
             eventServer.publish(Topic::ProcessTime, 2500 + 10 * i);
@@ -117,13 +118,15 @@ namespace WaterMeterCppTest {
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 10);
         eventServer.publish(Topic::NonIdleRate, 5);
+        EllipseFit ellipseFit;
+
         for (int i = 0; i < 10; i++) {
             const auto measurement = static_cast<int16_t>(2400 + (i % 2) * 50);
-            const Coordinate sample = {{measurement, measurement}};
-            const float floatMeasurement = measurement;
-            const FloatCoordinate smooth{floatMeasurement, floatMeasurement};
+            const IntCoordinate sample = {{measurement, measurement}};
+            const double doubleMeasurement = measurement;
+            const Coordinate average{doubleMeasurement, doubleMeasurement};
 
-            FlowMeterDriver fmd(&eventServer, smooth, i == 5);
+            FlowDetectorDriver fmd(&eventServer, &ellipseFit, average, i == 5);
 
             aggregator.addMeasurement(sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 8000 + i);
@@ -145,14 +148,14 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::NonIdleRate, "5");
         EXPECT_EQ(2, rateListener.getCallCount()) << "two rate announcements";
         EXPECT_EQ(10L, aggregator.getFlushRate()) << "Flush rate at last set idle rate.";
-        Coordinate sample{{0, 0}};
+        IntCoordinate sample{{0, 0}};
+        EllipseFit ellipseFit;
 
         for (int16_t i = 0; i < 15; i++) {
             sample.x = static_cast<int16_t>(2400 + (i > 7 ? 200 : 0));
             sample.y = sample.x;
-            FloatCoordinate lowPass{};
-            lowPass.set(sample);
-            FlowMeterDriver fmd(&eventServer, lowPass, false, i > 7);
+            Coordinate average{ static_cast<double>(sample.x), static_cast<double>(sample.y) };
+            FlowDetectorDriver fmd(&eventServer, &ellipseFit, average, false, i > 7);
             aggregator.addMeasurement(sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 7993 + i);
             EXPECT_EQ(i == 9 || i == 14, aggregator.shouldSend()) << "Must send - " << i;
@@ -198,12 +201,12 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::NonIdleRate, 5);
         EXPECT_EQ(2, rateListener.getCallCount()) << "no new rate from non-idle";
         EXPECT_EQ(10L, aggregator.getFlushRate()) << "Flush rate not changed from non-idle.";
+        EllipseFit ellipseFit;
 
         for (int16_t i = 0; i < 10; i++) {
-            const Coordinate sampleValue = {{static_cast<int16_t>(2400 + i), static_cast<int16_t>(1200 + i)}};
-            FloatCoordinate lowPass{};
-            lowPass.set(sampleValue);
-            FlowMeterDriver fmd(&eventServer, lowPass);
+            const IntCoordinate sampleValue = {{static_cast<int16_t>(2400 + i), static_cast<int16_t>(1200 + i)}};
+            auto average = sampleValue.toCoordinate();
+            FlowDetectorDriver fmd(&eventServer, &ellipseFit, average);
             aggregator.addMeasurement(sampleValue, &fmd);
             eventServer.publish(Topic::ProcessTime, 1000 + i * 2);
             if (i == 0) {
@@ -227,9 +230,11 @@ namespace WaterMeterCppTest {
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 1);
         eventServer.publish(Topic::NonIdleRate, 1);
-        constexpr FloatCoordinate LOW_PASS{2400, 2400};
-        const FlowMeterDriver fmd(&eventServer, LOW_PASS);
-        aggregator.addMeasurement(Coordinate{{2398, 0}}, &fmd);
+        constexpr Coordinate AVERAGE{2400, 2400};
+        EllipseFit ellipseFit;
+
+        const FlowDetectorDriver fmd(&eventServer, &ellipseFit, AVERAGE);
+        aggregator.addMeasurement(IntCoordinate{{2398, 0}}, &fmd);
         eventServer.publish(Topic::ProcessTime, 10125L);
         EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush";
         const auto result = &payload.buffer.result;
@@ -246,9 +251,11 @@ namespace WaterMeterCppTest {
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 1);
         eventServer.publish(Topic::NonIdleRate, 1);
-        constexpr FloatCoordinate LOW_PASS{ 2400, 2400 };
-        const FlowMeterDriver fmd(&eventServer, LOW_PASS, false, false, true);
-        aggregator.addMeasurement(Coordinate{ {2398, 0} }, &fmd);
+        constexpr Coordinate AVERAGE{ 2400, 2400 };
+        EllipseFit ellipseFit;
+
+        const FlowDetectorDriver fmd(&eventServer, &ellipseFit, AVERAGE, false, false, true);
+        aggregator.addMeasurement(IntCoordinate{ {2398, 0} }, &fmd);
         EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush";
         const auto result = &payload.buffer.result;
         EXPECT_EQ(1, result->resetCount);

@@ -11,7 +11,7 @@
 
 #include "SafeCString.h"
 #include "Configuration.h"
-//#include "secrets.h"
+#include "secrets.h"
 
 Configuration::Configuration(Preferences* preferences) : _preferences(preferences) {}
 

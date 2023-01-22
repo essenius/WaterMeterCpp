@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -16,46 +16,45 @@
 
 #include "Clock.h"
 #include "EventClient.h"
-#include "FloatCoordinate.h"
+#include "IntCoordinate.h"
 
 constexpr uint16_t MAX_SAMPLES = 25;
 
 struct Samples {
     uint16_t count;
-    Coordinate value[MAX_SAMPLES];
+    IntCoordinate value[MAX_SAMPLES];
 };
 
 // ResultData must be smaller than Samples
 
 struct ResultData {
-    Coordinate lastSample;
+    IntCoordinate lastSample;
     uint32_t sampleCount;
     uint32_t resetCount;
     uint32_t pulseCount;
     uint32_t maxStreak;
-    uint32_t outlierCount;
+    uint32_t anomalyCount;
     uint32_t overrunCount;
     uint32_t totalDuration;
     uint32_t averageDuration;
     uint32_t maxDuration;
-    FloatCoordinate smooth;
-    uint32_t searchTarget;
-    FloatCoordinate extreme;
+    Coordinate averaged;
+    uint32_t searchCount;
+    uint32_t skipCount;
 };
 
 union Content {
-    Samples samples;
+    Samples samples{};
     ResultData result;
     char message[sizeof(Samples)];
     uint32_t value;
 };
 
 struct DataQueuePayload {
-    Topic topic;
+    Topic topic{};
     Timestamp timestamp{};
-    Content buffer;
+    Content buffer{};
     size_t size() const;
-    DataQueuePayload() : topic(), buffer() {}
 };
 
 #endif

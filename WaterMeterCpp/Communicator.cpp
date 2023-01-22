@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -42,9 +42,8 @@ void Communicator::begin() const {
     // oledDriver begin can publish a NoDisplayFound, so we need that to happen last. We control that via the payload:
     // false for as quickly as possible, true for starting after base services are up.
 
-    _eventServer->publish(Topic::Begin, LONG_FALSE);
-    _eventServer->publish(Topic::Begin, LONG_TRUE);
-
+    _eventServer->publish(Topic::Begin, false);
+    _eventServer->publish(Topic::Begin, true);
 }
 
 void Communicator::loop() const {
@@ -60,10 +59,6 @@ void Communicator::loop() const {
         delay(5);
     }
     _device->reportHealth();
-    //if (digitalRead(34) == LOW) {
-    //    _eventServer->publish(Topic::ButtonPushed, LONG_TRUE);
-    //}
-
     const auto waitedTime = _oledDriver->display();
     if (waitedTime < 10) {
         delay(10 - static_cast<int>(waitedTime));

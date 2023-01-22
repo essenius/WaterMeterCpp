@@ -26,8 +26,8 @@ public:
         return false;
     }
 
-    float getGain() const override {
-        return 0.0f;
+    double getGain() const override {
+        return 0.0;
     }
 
     int getNoiseRange() const override {

@@ -62,7 +62,7 @@ public:
     // configure the wire address if not default (0x0D). Call before begin()
     void configureAddress(byte address);
 
-    virtual float getGain() const = 0;
+    virtual double getGain() const = 0;
 
     virtual int getNoiseRange() const = 0;
 

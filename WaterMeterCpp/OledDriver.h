@@ -109,6 +109,17 @@ private:
         0b11010100
     };
 
+    static constexpr unsigned char NO_FIT_LOGO[] =
+    {
+        0b00111001,
+        0b01000110,
+        0b10001101,
+        0b10011001,
+        0b10110001,
+        0b01100100,
+        0b10111000
+    };
+
     static constexpr unsigned char NO_SENSOR_LOGO[] =
     {
         0b00010011,

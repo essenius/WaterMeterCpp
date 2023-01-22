@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -18,12 +18,12 @@ class SampleAggregator final : public Aggregator {
 public:
     SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
     using Aggregator::begin;
-    void addSample(Coordinate measure);
+    void addSample(const IntCoordinate& sample);
     void begin();
     void flush() override;
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
-    void update(Topic topic, Coordinate payload) override;
+    void update(Topic topic, IntCoordinate payload) override;
 protected:
     static constexpr unsigned char DEFAULT_FLUSH_RATE = 25;
     static constexpr unsigned char MAX_FLUSH_RATE = 25;

@@ -62,7 +62,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(8, display->getY()) << "Meter Y=8";
             EXPECT_STREQ("23456.7890123 m3 ", display->getMessage()) << "Meter message OK";
 
-            eventServer.publish(Topic::Alert, LONG_TRUE);
+            eventServer.publish(Topic::Alert, true);
             EXPECT_EQ(0b11111100, display->getFirstByte()) << "First byte of alert logo ok";
             EXPECT_EQ(108, display->getX()) << "alert on X=108";
             EXPECT_EQ(0, display->getY()) << "alert on Y=0";
@@ -89,7 +89,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(118, display->getX()) << "mqtt X=118";
             EXPECT_EQ(0, display->getY()) << "mqtt Y=0";
 
-            eventServer.publish(Topic::Alert, LONG_FALSE);
+            eventServer.publish(Topic::Alert, false);
             EXPECT_EQ(108, display->getX()) << "alert off X=108";
             EXPECT_EQ(0, display->getY()) << "alert off Y=0";
             EXPECT_EQ(7, display->getHeight()) << "alert off H=7";
@@ -101,7 +101,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(118, display->getX()) << "Time X=118";
             EXPECT_EQ(0, display->getY()) << "Time Y=0";
 
-            eventServer.publish(Topic::NoSensorFound, LONG_TRUE);
+            eventServer.publish(Topic::NoSensorFound, true);
             EXPECT_EQ(0b00010011, display->getFirstByte()) << "First byte of missing sensor logo ok";
             EXPECT_EQ(98, display->getX()) << "missing sensor X=98";
             EXPECT_EQ(0, display->getY()) << "missing sensor Y=0";
@@ -113,7 +113,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(8, display->getWidth()) << "disconnected W=8";
             EXPECT_EQ(BLACK, display->getForegroundColor()) << "disconnected C=BLACK";
 
-            eventServer.publish(Topic::SensorWasReset, LONG_TRUE);
+            eventServer.publish(Topic::SensorWasReset, true);
             EXPECT_EQ(0b00010000, display->getFirstByte()) << "First byte of reset logo ok";
             EXPECT_EQ(108, display->getX()) << "reset X=108";
             EXPECT_EQ(0, display->getY()) << "reset Y=0";
@@ -123,7 +123,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(0, display->getY()) << "Pulses Y=0";
             EXPECT_STREQ("Pulses:    4321", display->getMessage()) << "Pulses message OK";
 
-            eventServer.publish(Topic::Blocked, LONG_TRUE);
+            eventServer.publish(Topic::Blocked, true);
             EXPECT_EQ(0b00111000, display->getFirstByte()) << "First byte of blocked logo ok";
             EXPECT_EQ(108, display->getX()) << "Blocked X=108";
             EXPECT_EQ(0, display->getY()) << "Blocked Y=0";
@@ -132,6 +132,12 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(0, display->getX()) << "Progress X=0";
             EXPECT_EQ(16, display->getY()) << "Progress Y=16";
             EXPECT_STREQ("FW update: 35% ", display->getMessage()) << "Pulses message OK";
+
+            eventServer.publish(Topic::NoFit, 35);
+            EXPECT_EQ(0b00111001, display->getFirstByte()) << "First byte of NoFit logo ok";
+            EXPECT_EQ(98, display->getX()) << "NoFit X=98";
+            EXPECT_EQ(0, display->getY()) << "NoFit Y=0";
+            EXPECT_STREQ("No fit:   35 deg ", display->getMessage()) << "NoFit message OK";
         }
 
     }

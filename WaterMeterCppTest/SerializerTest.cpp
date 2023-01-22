@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Rik Essenius
+﻿// Copyright 2022-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -31,15 +31,16 @@ namespace WaterMeterCppTest {
         payload.timestamp = 0;
         payload.buffer.result.sampleCount = 81;
         payload.buffer.result.pulseCount = 3;
-        payload.buffer.result.extreme = { 23, 2 };
+        payload.buffer.result.skipCount = 23;
+        payload.buffer.result.averaged = { 28.8, 24.4 };
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once result";
         EXPECT_STREQ(
             R"({"timestamp":1970-01-01T00:00:00.000000,"last.x":0,"last.y":0,)"
-            R"("summaryCount":{"samples":81,"pulses":3,"maxStreak":0},)"
+            R"("summaryCount":{"samples":81,"pulses":3,"maxStreak":0,"skips":23},)"
             R"("exceptionCount":{"outliers":0,"overruns":0,"resets":0},)"
             R"("duration":{"total":0,"average":0,"max":0},)"
-            R"("analysis":{"lp.x":0,"lp.y":0,"target":0,"xt.x":23,"xt.y":2}})",
+            R"("analysis":{"av.x":28.8,"av.y":24.4}})",
             testEventClient.getPayload()) << "Formatted result payload OK";
 
         testEventClient.reset();

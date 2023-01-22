@@ -234,11 +234,10 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
         }
     }
     delete[] payloadStr;
-    /* } */
     free(copyTopic);
 }
 
-bool MqttGateway::isRightTopic(std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty) {
+bool MqttGateway::isRightTopic(const std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty) {
     return strcmp(topicPair.first, expectedNode) == 0 && strcmp(topicPair.second, expectedProperty) == 0;
 }
 
@@ -335,7 +334,7 @@ bool MqttGateway::publishProperty(const char* node, const char* property, const 
     return publishEntity(baseTopic, property, payload, retain);
 }
 
-void MqttGateway::publishToEventServer(Topic topic, const char* payload) {
+void MqttGateway::publishToEventServer(const Topic topic, const char* payload) {
     if (topic != Topic::SetVolume && topic != Topic::Volume) {
         _eventServer->publish(this, topic, payload);
         return;

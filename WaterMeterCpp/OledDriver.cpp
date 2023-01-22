@@ -44,7 +44,7 @@ bool OledDriver::begin() {
     _wire->beginTransmission(OLED_128_32);
     // ReSharper disable once CppRedundantParentheses -- done to show intent
     if ((_wire->endTransmission() != 0) || !_display.begin(SSD1306_SWITCHCAPVCC, OLED_128_32, false, false)) {
-        _eventServer->publish(Topic::NoDisplayFound, LONG_TRUE);
+        _eventServer->publish(Topic::NoDisplayFound, true);
         return false;
     }
     _display.clearDisplay();
@@ -57,6 +57,7 @@ bool OledDriver::begin() {
     _eventServer->subscribe(this, Topic::Alert);
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
+    _eventServer->subscribe(this, Topic::NoFit);
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::TimeOverrun);
@@ -159,7 +160,7 @@ void OledDriver::update(const Topic topic, long payload) {
     switch (topic) {
     case Topic::Begin:
         // this one must be done after logging has started, controlled via payload.
-        if (payload == LONG_TRUE) {
+        if (payload) {
             begin();
         }
         break;
@@ -176,6 +177,11 @@ void OledDriver::update(const Topic topic, long payload) {
         if (payload == 2) showMessageAtLine("Hard reset       ", 3);
         else showMessageAtLine("Soft reset       ", 3);
         switchEventLogo(RESET_LOGO, payload);
+        return;
+    case Topic::NoFit:
+        safeSprintf(buffer, "No fit: %4ld deg ", payload);
+        showMessageAtLine(buffer, 3);
+        switchFlowLogo(NO_FIT_LOGO, payload);
         return;
     case Topic::NoSensorFound:
         showMessageAtLine("No sensor        ", 3);

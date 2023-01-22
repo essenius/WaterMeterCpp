@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -14,7 +14,7 @@
 Serializer::Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder) : EventClient(eventServer),
                                                                                    _payloadBuilder(payloadBuilder) {}
 
-void Serializer::update(Topic topic, const char* payload) {
+void Serializer::update(const Topic topic, const char* payload) {
     const auto sensorPayload = reinterpret_cast<const DataQueuePayload*>(payload);
     Topic newTopic;
     switch (sensorPayload->topic) {
@@ -63,9 +63,10 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeParam("samples", result.sampleCount);
     _payloadBuilder->writeParam("pulses", result.pulseCount);
     _payloadBuilder->writeParam("maxStreak", result.maxStreak);
+    _payloadBuilder->writeParam("skips", result.skipCount);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("exceptionCount");
-    _payloadBuilder->writeParam("outliers", result.outlierCount);
+    _payloadBuilder->writeParam("outliers", result.anomalyCount);
     _payloadBuilder->writeParam("overruns", result.overrunCount);
     _payloadBuilder->writeParam("resets", result.resetCount);
     _payloadBuilder->writeGroupEnd();
@@ -75,11 +76,8 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeParam("max", result.maxDuration);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupStart("analysis");
-    _payloadBuilder->writeParam("lp.x", result.smooth.x);
-    _payloadBuilder->writeParam("lp.y", result.smooth.y);
-    _payloadBuilder->writeParam("target", result.searchTarget);
-    _payloadBuilder->writeParam("xt.x", result.extreme.x);
-    _payloadBuilder->writeParam("xt.y", result.extreme.y);
+    _payloadBuilder->writeParam("av.x", result.averaged.x);
+    _payloadBuilder->writeParam("av.y", result.averaged.y);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupEnd();
 }
