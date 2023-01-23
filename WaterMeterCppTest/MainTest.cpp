@@ -78,9 +78,11 @@ namespace WaterMeterCppTest {
             // For being able to set the firmware 
             constexpr auto BUILD_VERSION = "0.102.0";
 
-			// We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
-			// there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
-			// Processing one cycle usually takes quite a bit less than that.
+            // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
+            // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
+            // Processing one cycle usually takes quite a bit less than that.
+
+            constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 
             constexpr int SDA_OLED = 32;
             constexpr int SCL_OLED = 33;
