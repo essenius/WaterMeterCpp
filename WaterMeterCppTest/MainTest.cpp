@@ -17,31 +17,32 @@
 #include <PubSubClient.h>
 
 #include "../WaterMeterCpp/Button.h"
+#include "../WaterMeterCpp/Communicator.h"
+#include "../WaterMeterCpp/Connector.h"
 #include "../WaterMeterCpp/Device.h"
+#include "../WaterMeterCpp/EventServer.h"
+#include "../WaterMeterCpp/FirmwareManager.h"
 #include "../WaterMeterCpp/DataQueue.h"
+#include "../WaterMeterCpp/Led.h"
 #include "../WaterMeterCpp/LedDriver.h"
+#include "../WaterMeterCpp/MagnetoSensorHmc.h"
+#include "../WaterMeterCpp/MagnetoSensorQmc.h"
+#include "../WaterMeterCpp/MagnetoSensorNull.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 #include "../WaterMeterCpp/MqttGateway.h"
-#include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/Led.h"
 #include "../WaterMeterCpp/ResultAggregator.h"
 #include "../WaterMeterCpp/TimeServer.h"
 #include "../WaterMeterCpp/WiFiManager.h"
-#include "../WaterMeterCpp/Connector.h"
-#include "../WaterMeterCpp/Communicator.h"
-#include "../WaterMeterCpp/FirmwareManager.h"
 #include "../WaterMeterCpp/Log.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
 #include "../WaterMeterCpp/QueueClient.h"
 #include "../WaterMeterCpp/Sampler.h"
-// zReSharper disable CppUnusedIncludeDirective - false positive
+
 #include "HTTPClient.h"
 #include "TestEventClient.h"
 #include "WiFi.h"
 #include "Wire.h"
-#include "../WaterMeterCpp/MagnetoSensorHmc.h"
-#include "../WaterMeterCpp/MagnetoSensorQmc.h"
-#include "../WaterMeterCpp/MagnetoSensorNull.h"
+
 // ReSharper restore CppUnusedIncludeDirective
 
 // crude mechanism to test the main part -- copy/paste. We can't do much better than this because we need the
@@ -75,11 +76,11 @@ namespace WaterMeterCppTest {
             uxRingbufReset();
 
             // For being able to set the firmware 
-            constexpr auto BUILD_VERSION = "0.100.5";
+            constexpr auto BUILD_VERSION = "0.102.0";
 
-            // We measure every 10 ms. That is about the fastest that the sensor can do reliably
-            // Processing one cycle usually takes quite a bit less than that, unless a write happened.
-            constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
+			// We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
+			// there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
+			// Processing one cycle usually takes quite a bit less than that.
 
             constexpr int SDA_OLED = 32;
             constexpr int SCL_OLED = 33;
@@ -206,7 +207,7 @@ namespace WaterMeterCppTest {
 
             EXPECT_STREQ("", getPrintOutput()) << "Print output empty 2";
 
-            // begin can only run when both sampler and connector have finished setup, since it can start publishing right away
+            // beginLoop can only run when both sampler and connector have finished setup, since it can start publishing right away
             sampler.beginLoop();
 
             device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
