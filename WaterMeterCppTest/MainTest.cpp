@@ -76,7 +76,7 @@ namespace WaterMeterCppTest {
             uxRingbufReset();
 
             // For being able to set the firmware 
-            constexpr auto BUILD_VERSION = "0.102.0";
+            constexpr auto BUILD_VERSION = "0.102.1";
 
             // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
             // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
