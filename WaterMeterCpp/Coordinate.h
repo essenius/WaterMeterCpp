@@ -14,8 +14,8 @@
 #include "Angle.h"
 
 struct Coordinate {
-	double x = 0;
-	double y = 0;
+	double x;
+	double y;
 
 	//Coordinate();
 	//Coordinate(const double& x, const double& y);

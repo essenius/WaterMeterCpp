@@ -103,7 +103,7 @@ namespace WaterMeterCppTest {
 
 	TEST_F(FlowDetectorTest, AnomalyTest) {
 		// should not trigger on non-typical movement
-		flowTestWithFile("anomaly.txt", 1, 3, 678);
+		flowTestWithFile("anomaly.txt", 1, 3, 661);
 	}
 
 	TEST_F(FlowDetectorTest, 60CyclesTest) {
@@ -116,6 +116,10 @@ namespace WaterMeterCppTest {
 
 	TEST_F(FlowDetectorTest, NoFitTest) {
 		flowTestWithFile("forceNoFit.txt", 1, 0, 0, 1);
+	}
+
+	TEST_F(FlowDetectorTest, FlushTest) {
+		flowTestWithFile("flush.txt", 2, 37, 326, 0, 11);
 	}
 
 	TEST_F(FlowDetectorTest, SensorWasResetTest) {

@@ -40,7 +40,7 @@ double CartesianEllipse::circumference() const {
 
 Coordinate CartesianEllipse::parametricRepresentation(const Angle& referenceAngle) const {
 	// Note the angle is relative to the center of the ellipse, not the origin 
-	return {
+	return Coordinate {
 		center.x + radius.x * cos(referenceAngle.value) * cos(angle.value) -
 		radius.y * sin(referenceAngle.value) * sin(angle.value),
 		center.y + radius.y * sin(referenceAngle.value) * cos(angle.value) +

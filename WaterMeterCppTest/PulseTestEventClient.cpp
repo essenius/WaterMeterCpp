@@ -14,7 +14,7 @@
 WaterMeterCppTest::PulseTestEventClient::PulseTestEventClient(EventServer* eventServer): TestEventClient(eventServer) {
     eventServer->subscribe(this, Topic::Pulse);
     eventServer->subscribe(this, Topic::Sample);
-    eventServer->subscribe(this, Topic::Exclude);
+    eventServer->subscribe(this, Topic::Anomaly);
     eventServer->subscribe(this, Topic::NoFit);
 }
 
@@ -26,7 +26,7 @@ void WaterMeterCppTest::PulseTestEventClient::update(const Topic topic, const lo
         char numberBuffer[32];
         safeSprintf(numberBuffer, "[%d:%d,%d]\n", _sampleNumber, _currentCoordinate.x, _currentCoordinate.y);
         safeStrcat(_buffer, numberBuffer);
-    } else if (topic == Topic::Exclude) {
+    } else if (topic == Topic::Anomaly) {
         _excludeCount++;
     } else if (topic == Topic::NoFit) {
         _noFitCount++;

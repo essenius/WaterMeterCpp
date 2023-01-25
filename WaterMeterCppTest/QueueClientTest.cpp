@@ -32,18 +32,18 @@ namespace WaterMeterCppTest {
     TEST_F(QueueClientTest, queueClientTest1) {
         uxQueueReset();
         uxRingbufReset();
-        eventServer.subscribe(&testEventClient, Topic::Exclude);
+        eventServer.subscribe(&testEventClient, Topic::Anomaly);
         constexpr uint16_t QUEUE_SIZE = 20;
         QueueClient qClient(&eventServer, &logger, QUEUE_SIZE, 23);
         qClient.begin(qClient.getQueueHandle());
-        eventServer.subscribe(&qClient, Topic::Exclude);
+        eventServer.subscribe(&qClient, Topic::Anomaly);
         for (int i = 0; i < QUEUE_SIZE; i++) {
-            eventServer.publish(Topic::Exclude, i * 11);
+            eventServer.publish(Topic::Anomaly, i * 11);
         }
 
         clearPrintOutput();
         // should not get saved
-        eventServer.publish(Topic::Exclude, 12345);
+        eventServer.publish(Topic::Anomaly, 12345);
         const auto matcher = R"(\[\] \[E\] Instance [0-9a-fA-F]+ \(23\): error sending \d+/12345\n\n)";
         EXPECT_TRUE(std::regex_match(getPrintOutput(), std::regex(matcher))) << "Log sent";
         testEventClient.reset();
@@ -80,7 +80,7 @@ namespace WaterMeterCppTest {
 
         const std::wstring message(L"long: ");
         for (auto iterator = testData.begin(); iterator != testData.end(); ++iterator) {
-            eventServer.publish(Topic::Exclude, iterator->input);
+            eventServer.publish(Topic::Anomaly, iterator->input);
             testEventClient.reset();
             EXPECT_TRUE(qClient.receive()) << "received";
             EXPECT_STREQ(iterator->output, testEventClient.getPayload()) << "Payload ok";

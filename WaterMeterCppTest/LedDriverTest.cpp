@@ -83,7 +83,7 @@ namespace WaterMeterCppTest {
             expectRunningLed(Led::ON, "In first part", i);
         }
         // set a new state. Check whether it kicks in right away
-        eventServer.publish(Topic::Exclude, true);
+        eventServer.publish(Topic::Anomaly, true);
         for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL; i++) {
             eventServer.publish(Topic::Sample, 511);
             expectRunningLed(Led::ON, "Started new cycle high", i);
@@ -97,7 +97,7 @@ namespace WaterMeterCppTest {
         expectRunningLed(Led::ON, "Started second cycle high", 1);
 
         // ending flow. Check whether the cycle adapts
-        eventServer.publish(Topic::Exclude, false);
+        eventServer.publish(Topic::Anomaly, false);
         for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
             eventServer.publish(Topic::Sample, 514);
             expectRunningLed(Led::ON, "Started new idle cycle high", i);
@@ -111,8 +111,8 @@ namespace WaterMeterCppTest {
     TEST_F(LedDriverTest, ledDriverCycleTest) {
         LedDriver ledDriver(&eventServer);
         ledDriver.begin();
-        assertLedCycle(&ledDriver, Topic::Exclude, true, LedDriver::EXCLUDE_INTERVAL, "Exclude");
-        assertLedCycle(&ledDriver, Topic::Exclude, false, LedDriver::IDLE_INTERVAL, "Wait");
+        assertLedCycle(&ledDriver, Topic::Anomaly, true, LedDriver::EXCLUDE_INTERVAL, "Anomaly");
+        assertLedCycle(&ledDriver, Topic::Anomaly, false, LedDriver::IDLE_INTERVAL, "Wait");
     }
 
     TEST_F(LedDriverTest, ledDriverTestEvents) {

@@ -65,11 +65,15 @@ void FlowDetector::update(const Topic topic, const IntCoordinate payload) {
 
 void FlowDetector::addSample(const IntCoordinate& sample) {
 	if (sample.isSaturated()) {
-		_wasSkipped = true;
-		_foundAnomaly = true;
+		reportAnomaly();
 		return;
 	}
 	if (_firstCall) {
+		// skip samples as long as we get a flatline. Happens sometimes just after startup
+		if (sample.x == 0 && sample.y == 0) {
+			reportAnomaly();
+			return;
+		}
 		_movingAverageIndex = 0;
 		_firstRound = true;
 		_firstCall = false;
@@ -186,10 +190,8 @@ bool FlowDetector::isRelevant(const Coordinate& point) {
 	// if we have a confirmed fit and the point is too far away from it, we have an anomaly. Discard.
 	if (_confirmedGoodFit.hasData) {
 		const auto distanceFromEllipse = _confirmedGoodFit.distanceFrom(point);
-		_foundAnomaly = _confirmedGoodFit.hasData && distanceFromEllipse > _distanceThreshold;
-		if (_foundAnomaly) {
-			_eventServer->publish(Topic::Exclude, true);
-			_wasSkipped = true;
+		if (_confirmedGoodFit.hasData && distanceFromEllipse > _distanceThreshold * 2) {
+			reportAnomaly();
 			return false;
 		}
 	}
@@ -207,6 +209,12 @@ bool FlowDetector::isRelevant(const Coordinate& point) {
 	}
 	_referencePoint = point;
 	return true;
+}
+
+void FlowDetector::reportAnomaly() {
+	_foundAnomaly = true;
+	_wasSkipped = true;
+	_eventServer->publish(Topic::Anomaly, true);
 }
 
 void FlowDetector::updateEllipseFit(const Coordinate point) {

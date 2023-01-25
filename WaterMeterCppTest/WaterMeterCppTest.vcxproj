@@ -188,6 +188,7 @@
     <ClCompile Include="WifiClientFactoryTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\..\..\OneDrive - Shell\Arduino\flush.txt" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

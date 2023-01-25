@@ -47,7 +47,7 @@ namespace WaterMeterCppTest {
     }
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcTestInRangeTest) {
-        SensorData sensorData{200, 400, 400, 1000};
+        SensorData sensorData{200, 400, 400};
         EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "Low X";
         sensorData.x = 600;
         EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "High X";

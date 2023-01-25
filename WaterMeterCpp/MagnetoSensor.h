@@ -28,13 +28,11 @@ struct SensorData {
     short x;
     short y;
     short z;
-    int duration;
 
     void reset() {
         x = 0;
         y = 0;
         z = 0;
-        duration = 0;
     }
 
     bool operator==(const SensorData& other) const {

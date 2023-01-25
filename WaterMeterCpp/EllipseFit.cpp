@@ -5,6 +5,8 @@
 // see https://autotrace.sourceforge.net/WSCG98.pdf for an explanation of the algorithm
 // optimized version of https://github.com/mericdurukan/ellipse-fitting
 
+constexpr unsigned int EllipseFit::BUFFER_SIZE;
+
 EllipseFit::EllipseFit() : _c1Inverse(3, 3), _design1(BUFFER_SIZE, 3), _design2(BUFFER_SIZE, 3) {
 	// the inverse constraint matrix C is constant so we calculate it once.
 	Eigen::MatrixXd c1(3, 3);

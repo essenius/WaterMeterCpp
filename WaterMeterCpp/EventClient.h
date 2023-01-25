@@ -46,7 +46,7 @@ enum class Topic: int16_t {
     Alert,
     ProcessTime,
     TimeOverrun,
-    Exclude,
+    Anomaly,
     Pulse,
     Time,
     IpAddress,

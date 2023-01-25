@@ -2,6 +2,8 @@
 #define ELLIPSEFIT_H
 
 #ifdef ESP32
+// shave off some memory from the Eigen library to make the sketch fit in program storage space
+#define EIGEN_NO_DEBUG
 #include <ArduinoEigenDense.h>
 #else
 // ReSharper disable once CppUnusedIncludeDirective - false positive

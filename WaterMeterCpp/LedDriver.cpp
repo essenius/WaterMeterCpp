@@ -30,7 +30,7 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::ConnectionError);
-    _eventServer->subscribe(this, Topic::Exclude);
+    _eventServer->subscribe(this, Topic::Anomaly);
     _eventServer->subscribe(this, Topic::NoSensorFound);
     _eventServer->subscribe(this, Topic::Pulse);
     _eventServer->subscribe(this, Topic::ResultWritten);
@@ -98,14 +98,14 @@ void LedDriver::update(const Topic topic, long payload) {
         Led::set(Led::RED, state);
         Led::set(Led::GREEN, state);
         return;
+    case Topic::Anomaly:
+        _sampleFlasher.setInterval(payload ? EXCLUDE_INTERVAL : IDLE_INTERVAL);
+        return;
     case Topic::Blocked:
         Led::set(Led::RED, state);
         return;
     case Topic::Connection:
         connectionUpdate(static_cast<ConnectionState>(payload));
-        return;
-    case Topic::Exclude:
-        _sampleFlasher.setInterval(payload ? EXCLUDE_INTERVAL : IDLE_INTERVAL);
         return;
     case Topic::NoSensorFound:
         Led::set(Led::RED, Led::ON);

@@ -23,6 +23,7 @@ constexpr unsigned char OledDriver::FIRMWARE_LOGO[];
 constexpr unsigned char OledDriver::BLOCKED_LOGO[];
 constexpr unsigned char OledDriver::MQTT_LOGO[];
 constexpr unsigned char OledDriver::NO_SENSOR_LOGO[];
+constexpr unsigned char OledDriver::NO_FIT_LOGO[];
 constexpr unsigned char OledDriver::OUTLIER_LOGO[];
 constexpr unsigned char OledDriver::RESET_LOGO[];
 constexpr unsigned char OledDriver::SEND_LOGO[];
@@ -32,7 +33,9 @@ constexpr unsigned char OledDriver::WIFI_LOGO[];
 OledDriver::OledDriver(EventServer* eventServer, TwoWire* wire) :
     EventClient(eventServer),
     _wire(wire),
-    _display(SCREEN_WIDTH, SCREEN_HEIGHT, wire) {}
+    _display(SCREEN_WIDTH, SCREEN_HEIGHT, wire) {
+    eventServer->subscribe(this, Topic::Begin);
+}
 
 // for testing only
 Adafruit_SSD1306* OledDriver::getDriver() { return &_display; }

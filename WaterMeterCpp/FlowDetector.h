@@ -37,7 +37,8 @@ protected:
 	void findPulseByCenter(const Coordinate& point);
 	void findPulseByPrevious(const Coordinate& point);
 	bool isRelevant(const Coordinate& point);
-	void updateEllipseFit(Coordinate point);
+    void reportAnomaly();
+    void updateEllipseFit(Coordinate point);
     void updateMovingAverageArray(const IntCoordinate& sample);
 
     static constexpr unsigned int MOVING_AVERAGE_SIZE = 4;
@@ -48,10 +49,10 @@ protected:
 	CartesianEllipse _confirmedGoodFit;
 	EllipseFit* _ellipseFit;
 	unsigned int _previousQuadrant = 0;
-	Coordinate _startPoint;
-	Coordinate _referencePoint;
+	Coordinate _startPoint = {};
+	Coordinate _referencePoint = {};
 
-	Coordinate _previousPoint;
+	Coordinate _previousPoint = {};
 	Angle _startTangent = {NAN};
 	unsigned int _waitCount = 0;
 	bool _searchingForPulse = true;
