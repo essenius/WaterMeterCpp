@@ -72,7 +72,7 @@ void shiftMicros(long long shift) {
     microShift = shift;
 }
 
-void delayMicroseconds(int delay) {
+void delayMicroseconds(unsigned long delay) {
     if (RealTimeOn) {
         microShift += delay;
     }

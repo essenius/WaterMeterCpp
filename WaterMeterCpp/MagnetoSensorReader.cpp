@@ -37,10 +37,10 @@ bool MagnetoSensorReader::setSensor() {
     constexpr int IGNORE_SAMPLE_COUNT = 5;
     // ignore the first measurements, often outliers
     SensorData sample{};
-    _sensor->read(&sample);
+    _sensor->read(sample);
     for (int i = 1; i < IGNORE_SAMPLE_COUNT; i++) {
         delay(DELAY_SENSOR_MILLIS);
-        _sensor->read(&sample);
+        _sensor->read(sample);
     }
     return true;
 }
@@ -71,14 +71,7 @@ int MagnetoSensorReader::getNoiseRange() const {
 // power cycle the sensor
 void MagnetoSensorReader::hardReset() {
     power(LOW);
-    if (!_sensor->isReal()) {
-        delay(DELAY_SENSOR_MILLIS);
-    }
-    else {
-        while (_sensor->isOn()) {}
-    }
     power(HIGH);
-    delay(DELAY_SENSOR_MILLIS);
     _noSensor = false;
     setSensor();
 
@@ -89,11 +82,16 @@ void MagnetoSensorReader::hardReset() {
 
 void MagnetoSensorReader::power(const uint8_t state) const {
     digitalWrite(_powerPort, state);
+    if (state == LOW) {
+        _sensor->waitForPowerOff();
+    } else {
+        MagnetoSensor::waitForPowerOn();
+    }
 }
 
 IntCoordinate MagnetoSensorReader::read() {
     SensorData sample{};
-    if (!_sensor->read(&sample)) {
+    if (!_sensor->read(sample)) {
         _alert = true;
         _noSensor = true;
     }

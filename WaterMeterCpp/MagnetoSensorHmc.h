@@ -10,6 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 // Driver for the HMC5883L sensor.
+// Datasheet: see https://cdn-shop.adafruit.com/datasheets/HMC5883L_3-Axis_Digital_Compass_IC.pdf
 
 // need the underscores as decimal point is not allowed either.
 // ReSharper disable CppInconsistentNaming
@@ -78,17 +79,15 @@ public:
     double getGain() const override;
     int getNoiseRange() const override;
     static double getGain(HmcGain gain);
-    bool read(SensorData* sample) const override;
+    bool read(SensorData& sample) const override;
     void softReset() const override;
-    static bool testInRange(const SensorData* sample);
+    static bool testInRange(const SensorData& sample);
     bool test() const;
-
     static constexpr byte DEFAULT_ADDRESS = 0x1E;
-
 private:
     static constexpr int16_t SATURATED = -4096;
     void configure(HmcGain gain, HmcBias bias) const;
-    void getTestMeasurement(SensorData* reading) const;
+    void getTestMeasurement(SensorData& reading) const;
     void startMeasurement() const;
     // 4.7 is not likely to get an overflow, and reasonably accurate
     HmcGain _gain = HmcGain4_7;

@@ -12,13 +12,12 @@
 #include <cmath>
 #include "MathUtils.h"
 #include "QuadraticEllipse.h"
-#include <cstdio>
 
 // we use the base formula from https://mathworld.wolfram.com/CartesianEllipse.html: ax^2 + 2bxy + cy^2 + 2dx + 2fy + g = 0
 // we expect the constructor to deliver based on ax^2 + bxy + cy^2 + dx + fy + g = 0
 // See also https://scipython.com/blog/direct-linear-least-squares-fitting-of-an-ellipse/
 
-// we use a, b, c, d, f, g as Wolfram does that too - probably to not use e, which can cause confusion with the mathematical number
+// we use a, b, c, d, f, g as Wolfram does that too - probably to not use e, which can cause confusion with the mathematical entity
 
 QuadraticEllipse::QuadraticEllipse(const double& a1, const double& b1, const double& c1, const double& d1, const double& f1, const double& g1) {
 	a = a1;

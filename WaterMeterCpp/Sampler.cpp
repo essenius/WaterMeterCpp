@@ -57,7 +57,6 @@ void Sampler::beginLoop() {
 }
 
 void Sampler::loop() {
-    /* TODO: handle invalid sensor value(-4096 for HMC->map to NAN) */
     const IntCoordinate sample = _sensorReader->read();
     // this triggers flowDetector, sampleAggregator and the comms task
     _eventServer->publish(Topic::Sample, sample);

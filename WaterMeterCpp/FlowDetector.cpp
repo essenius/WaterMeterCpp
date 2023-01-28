@@ -25,7 +25,7 @@
 //
 // Before we have a good fit, we use the (less accurate) mechanism of taking the angle with the previous data point.
 // It should be close to the angle to the center - PI / 2, and since we subtract, the difference of PI / 2 doesn't matter.
-// When that moves from quadrant 3 to 2, we have a pulse. we accept the risk that in the first cycle we get an outlier. 
+// When that moves from quadrant 3 to 2, we have a pulse. we accept the (small) risk that in the first cycle we get an outlier. 
 
 #include <ESP.h>
 #include "FlowDetector.h"
@@ -217,6 +217,10 @@ void FlowDetector::reportAnomaly() {
 	_eventServer->publish(Topic::Anomaly, true);
 }
 
+int16_t  FlowDetector::noFitParameter(double angleDistance, bool fitSucceeded) const {
+	return static_cast<int16_t>(round(abs(angleDistance * 180) * (fitSucceeded ? 1.0 : -1.0)));
+}
+
 void FlowDetector::updateEllipseFit(const Coordinate point) {
 	if (!_confirmedGoodFit.hasData) {
 		// The first time we always run a fit. Re-run if the first time(s) didn't result in a good fit
@@ -224,13 +228,14 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		const auto center = fittedEllipse.center;
 		// number of points per ellipse defines whether the fit is reliable.
 		const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
-		if (abs(passedCycles) >= MIN_CYCLE_FOR_FIT) {
+		const auto fitSucceeded = fittedEllipse.fitSucceeded();
+		if (fitSucceeded && abs(passedCycles) >= MIN_CYCLE_FOR_FIT) {
 			_confirmedGoodFit = fittedEllipse;
 			_previousAngleWithCenter = point.angleFrom(center);
 			_previousQuadrant = _previousAngleWithCenter.quadrant();
 		} else {
 			// we need another round
-			_eventServer->publish(Topic::NoFit, static_cast <int16_t>(round(_tangentDistanceTravelled * 180)));
+			_eventServer->publish(Topic::NoFit, noFitParameter( _tangentDistanceTravelled, fitSucceeded));
 		}
 		_tangentDistanceTravelled = 0;
 	}
@@ -239,10 +244,17 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		// Otherwise we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
 		// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
 		if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MIN_CYCLE_FOR_FIT) {
-			_confirmedGoodFit = executeFit();
+			const auto fittedEllipse = executeFit();
+			const auto fitSucceeded = fittedEllipse.fitSucceeded();
+			if (fitSucceeded) {
+				_confirmedGoodFit = fittedEllipse;
+			} else {
+				_eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, false));
+			}
 		}
 		else {
-			_eventServer->publish(Topic::NoFit, static_cast <int16_t>(round(_angleDistanceTravelled * 180)));
+			// even though we didn't run a fit, we mark it as succeeded to see the difference with one that failed a fit
+			_eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, true));
 			_ellipseFit->begin();
 		}
 		_angleDistanceTravelled = 0;

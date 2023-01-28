@@ -49,7 +49,7 @@ namespace WaterMeterCppTest {
         // reset buffer
         Wire.begin();
         SensorData sample{};
-        sensor.read(&sample);
+        sensor.read(sample);
         // the mock returns values from 0 increasing by 1 for every read
         EXPECT_EQ(0x0100, sample.x) << L"X ok";
         EXPECT_EQ(0x0302, sample.y) << L"Y ok";

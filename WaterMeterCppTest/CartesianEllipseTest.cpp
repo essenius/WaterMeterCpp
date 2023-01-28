@@ -87,5 +87,12 @@ TEST(CartesianEllipseTest, CircleCircumferenceTest) {
 TEST(CartesianEllipseTest, EllipseCircumferenceTest) {
 	const auto quadraticCircle = QuadraticEllipse(100, 0, 121, 0, 0, -12100);
 	const auto cartesianCircle = CartesianEllipse(quadraticCircle);
+	EXPECT_TRUE(cartesianCircle.fitSucceeded()) << "Fit succeeded";
 	assertDoubleEqual(66.01085, cartesianCircle.circumference(), "Circumference");
+}
+
+TEST(CartesianEllipseTest, NoFitTest) {
+	const auto quadraticCircle = QuadraticEllipse(0, 0, 0, 0, 0, 0);
+	const auto cartesianCircle = CartesianEllipse(quadraticCircle);
+	EXPECT_FALSE(cartesianCircle.fitSucceeded()) << "Fit not succeeded";
 }

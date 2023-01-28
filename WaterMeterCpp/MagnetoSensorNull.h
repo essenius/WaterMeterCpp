@@ -42,12 +42,15 @@ public:
         return false;
     }
 
-    bool read(SensorData* sample) const override {
-        sample->reset();
+    bool read(SensorData& sample) const override {
+        sample.reset();
         return false;
     }
 
     void softReset() const override {}
+
+    void waitForPowerOff() const override {}
+
 };
 
 #endif

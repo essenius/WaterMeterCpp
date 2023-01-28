@@ -119,7 +119,7 @@ namespace WaterMeterCppTest {
 	}
 
 	TEST_F(FlowDetectorTest, FlushTest) {
-		flowTestWithFile("flush.txt", 2, 37, 326, 0, 11);
+		flowTestWithFile("flush.txt", 2, 37, 325, 0, 11);
 	}
 
 	TEST_F(FlowDetectorTest, SensorWasResetTest) {

@@ -118,7 +118,7 @@
       <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
       <PreprocessorDefinitions>X64;_DEBUG;_CONSOLE;_UNICODE;UNICODE;</PreprocessorDefinitions>
       <LinkCompiled>true</LinkCompiled>
-      <AdditionalIncludeDirectories>C:\Users\Rik.Essenius\source\repos\essenius\WaterMeterCpp\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.6\build\native\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.6\build\native\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="ConfigurationTest.cpp" />
     <ClCompile Include="ConnectorTest.cpp" />
@@ -156,7 +156,7 @@
     <ClCompile Include="TestHelper.cpp" />
     <ClCompile Include="TimeServerTest.cpp" />
     <ClCompile Include="WiFiMock.cpp" />
-    <ClCompile Include="WifiTest.cpp" />
+    <ClCompile Include="WiFiTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WaterMeterCpp\WaterMeterCpp.vcxproj">
@@ -188,25 +188,23 @@
     <ClCompile Include="WifiClientFactoryTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="..\..\..\..\..\OneDrive - Shell\Arduino\flush.txt" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="testData\fast.txt" />
-    <CopyFileToFolders Include="testData\fastThenNoisy.txt" />
-    <CopyFileToFolders Include="testData\anomaly.txt" />
-    <CopyFileToFolders Include="testData\60cycles.txt" />
-    <CopyFileToFolders Include="testData\noise.txt" />
-    <CopyFileToFolders Include="testData\slow.txt" />
-    <CopyFileToFolders Include="testData\slowest.txt" />
-    <CopyFileToFolders Include="testData\slowFast.txt" />
-    <CopyFileToFolders Include="testData\noiseAtEnd.txt" />
-    <CopyFileToFolders Include="testData\singlecycle.txt" />
-    <CopyFileToFolders Include="testData\forceNoFit.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="testData\10points.txt" />
-    <CopyFileToFolders Include="testData\verySlow.txt" />
+    <CopyFileToFolders Include="testData/10points.txt" />
+    <CopyFileToFolders Include="testData/60cycles.txt" />
+    <CopyFileToFolders Include="testData/anomaly.txt" />
+    <CopyFileToFolders Include="testData/fast.txt" />
+    <CopyFileToFolders Include="testData/fastThenNoisy.txt" />
+    <CopyFileToFolders Include="testData/flush.txt" />
+    <CopyFileToFolders Include="testData/forceNoFit.txt" />
+    <CopyFileToFolders Include="testData/noise.txt" />
+    <CopyFileToFolders Include="testData/noiseAtEnd.txt" />
+    <CopyFileToFolders Include="testData/singleCycle.txt" />
+    <CopyFileToFolders Include="testData/slow.txt" />
+    <CopyFileToFolders Include="testData/slowest.txt" />
+    <CopyFileToFolders Include="testData/slowFast.txt" />
+    <CopyFileToFolders Include="testData/verySlow.txt" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

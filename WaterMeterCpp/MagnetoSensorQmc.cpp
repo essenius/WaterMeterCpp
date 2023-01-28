@@ -54,7 +54,7 @@ double MagnetoSensorQmc::getGain(const QmcRange range) {
     return 12000.0;
 }
 
-bool MagnetoSensorQmc::read(SensorData* sample) const {
+bool MagnetoSensorQmc::read(SensorData& sample) const {
     _wire->beginTransmission(_address);
     _wire->write(QmcData);
     _wire->endTransmission();
@@ -65,9 +65,9 @@ bool MagnetoSensorQmc::read(SensorData* sample) const {
     // order: x LSB, x MSB, y LSB, y MSB, z LSB, z MSB
     _wire->requestFrom(_address, BYTES_TO_READ);
     while (_wire->available() < BYTES_TO_READ) {}
-    sample->x = _wire->read() | _wire->read() << BITS_PER_BYTE;
-    sample->y = _wire->read() | _wire->read() << BITS_PER_BYTE;
-    sample->z = _wire->read() | _wire->read() << BITS_PER_BYTE;
+    sample.x = _wire->read() | _wire->read() << BITS_PER_BYTE;
+    sample.y = _wire->read() | _wire->read() << BITS_PER_BYTE;
+    sample.z = _wire->read() | _wire->read() << BITS_PER_BYTE;
     // no need to adjust saturation values as it already uses SHRT_MIN and SHRT_MAX
     return true;
 }

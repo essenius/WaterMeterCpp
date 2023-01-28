@@ -48,21 +48,21 @@ namespace WaterMeterCppTest {
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcTestInRangeTest) {
         SensorData sensorData{200, 400, 400};
-        EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "Low X";
+        EXPECT_FALSE(MagnetoSensorHmc::testInRange(sensorData)) << "Low X";
         sensorData.x = 600;
-        EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "High X";
+        EXPECT_FALSE(MagnetoSensorHmc::testInRange(sensorData)) << "High X";
         sensorData.x = 400;
-        EXPECT_TRUE(MagnetoSensorHmc::testInRange(&sensorData)) << "Within bounds";
+        EXPECT_TRUE(MagnetoSensorHmc::testInRange(sensorData)) << "Within bounds";
         sensorData.y = 200;
-        EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "Low Y";
+        EXPECT_FALSE(MagnetoSensorHmc::testInRange(sensorData)) << "Low Y";
         sensorData.y = 600;
-        EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "High Y";
+        EXPECT_FALSE(MagnetoSensorHmc::testInRange(sensorData)) << "High Y";
         sensorData.z = 200;
-        EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "Low Z and high Y";
+        EXPECT_FALSE(MagnetoSensorHmc::testInRange(sensorData)) << "Low Z and high Y";
         sensorData.y = 400;
-        EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "Low Z";
+        EXPECT_FALSE(MagnetoSensorHmc::testInRange(sensorData)) << "Low Z";
         sensorData.z = 600;
-        EXPECT_FALSE(MagnetoSensorHmc::testInRange(&sensorData)) << "High Z";
+        EXPECT_FALSE(MagnetoSensorHmc::testInRange(sensorData)) << "High Z";
     }
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcScriptTest) {
@@ -78,7 +78,7 @@ namespace WaterMeterCppTest {
         // reset buffer
         Wire.begin();
         SensorData sample{};
-        sensor.read(&sample);
+        sensor.read(sample);
         // the mock returns values from 0 increasing by 1 for every read
         EXPECT_EQ(0x001, sample.x) << "X ok";
         EXPECT_EQ(0x0405, sample.y) << "Y ok";

@@ -11,7 +11,6 @@
 
 #include <gtest/gtest.h>
 #include <corecrt_math_defines.h>
-#include <cstdio>
 #include "TestHelper.h"
 
 // interesting: https://cookierobotics.com/007/

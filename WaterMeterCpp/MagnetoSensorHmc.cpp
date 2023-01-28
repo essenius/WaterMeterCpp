@@ -72,13 +72,13 @@ double MagnetoSensorHmc::getGain(const HmcGain gain) {
 
 }
 
-void MagnetoSensorHmc::getTestMeasurement(SensorData* reading) const {
+void MagnetoSensorHmc::getTestMeasurement(SensorData& reading) const {
     startMeasurement();
     delay(5);
     read(reading);
 }
 
-bool MagnetoSensorHmc::read(SensorData* sample) const {
+bool MagnetoSensorHmc::read(SensorData& sample) const {
     startMeasurement();
 
     _wire->beginTransmission(_address);
@@ -90,37 +90,37 @@ bool MagnetoSensorHmc::read(SensorData* sample) const {
     constexpr byte BYTES_TO_READ = 6;
     _wire->requestFrom(_address, BYTES_TO_READ);
     while (_wire->available() < BYTES_TO_READ) {}
-    sample->x = _wire->read() << 8;
-    sample->x |= _wire->read();
-    sample->z = _wire->read() << 8;
-    sample->z |= _wire->read();
-    sample->y = _wire->read() << 8;
-    sample->y |= _wire->read();
+    sample.x = _wire->read() << 8;
+    sample.x |= _wire->read();
+    sample.z = _wire->read() << 8;
+    sample.z |= _wire->read();
+    sample.y = _wire->read() << 8;
+    sample.y |= _wire->read();
     // harmonize saturation values across sensors
-    if (sample->x == SATURATED) sample->x = SHRT_MIN;
-    if (sample->y == SATURATED) sample->y = SHRT_MIN;
-    if (sample->z == SATURATED) sample->z = SHRT_MIN;
+    if (sample.x == SATURATED) sample.x = SHRT_MIN;
+    if (sample.y == SATURATED) sample.y = SHRT_MIN;
+    if (sample.z == SATURATED) sample.z = SHRT_MIN;
     return true;
 }
 
 void MagnetoSensorHmc::softReset() const {
     configure(_gain, HmcNone);
     SensorData sample{};
-    getTestMeasurement(&sample);
+    getTestMeasurement(sample);
 }
 
 void MagnetoSensorHmc::startMeasurement() const {
     setRegister(HmcMode, HmcSingle);
 }
 
-bool MagnetoSensorHmc::testInRange(const SensorData* sample) {
+bool MagnetoSensorHmc::testInRange(const SensorData& sample) {
     constexpr short LOW_THRESHOLD = 243;
     constexpr short HIGH_THRESHOLD = 575;
 
     return
-        sample->x >= LOW_THRESHOLD && sample->x <= HIGH_THRESHOLD &&
-        sample->y >= LOW_THRESHOLD && sample->y <= HIGH_THRESHOLD &&
-        sample->z >= LOW_THRESHOLD && sample->z <= HIGH_THRESHOLD;
+        sample.x >= LOW_THRESHOLD && sample.x <= HIGH_THRESHOLD &&
+        sample.y >= LOW_THRESHOLD && sample.y <= HIGH_THRESHOLD &&
+        sample.z >= LOW_THRESHOLD && sample.z <= HIGH_THRESHOLD;
 }
 
 bool MagnetoSensorHmc::test() const {
@@ -128,17 +128,17 @@ bool MagnetoSensorHmc::test() const {
     configure(HmcGain4_7, HmcPositive);
 
     // read old value (still with old settings) 
-    getTestMeasurement(&sample);
+    getTestMeasurement(sample);
 
     // now do the test
-    getTestMeasurement(&sample);
+    getTestMeasurement(sample);
 
-    const bool passed = testInRange(&sample);
+    const bool passed = testInRange(sample);
 
     // end self test mode
     configure(_gain, HmcNone);
 
-    getTestMeasurement(&sample);
+    getTestMeasurement(sample);
 
     return passed;
 }

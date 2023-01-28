@@ -37,3 +37,7 @@ void MagnetoSensor::setRegister(const byte sensorRegister, const byte value) con
     _wire->write(value);
     _wire->endTransmission();
 }
+
+void MagnetoSensor::waitForPowerOff() const {
+    while (isOn()) {}
+}

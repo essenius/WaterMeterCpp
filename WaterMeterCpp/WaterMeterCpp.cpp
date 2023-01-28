@@ -46,7 +46,7 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.102.2";
+constexpr const char* const BUILD_VERSION = "0.102.3";
 
 // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
 // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
@@ -137,10 +137,9 @@ TaskHandle_t connectorTaskHandle;
 void setup() {
     Serial.begin(115200);
     theClock.begin();
+    // this also waits for the sensor to be ready for measurements
     sensorReader.power(HIGH);
 
-    // wait for the sensor to be ready for measurements
-    delay(50);
     Wire.begin(); // standard SDA=21, SCL=22
     Wire1.begin(SDA_OLED, SCL_OLED);
 

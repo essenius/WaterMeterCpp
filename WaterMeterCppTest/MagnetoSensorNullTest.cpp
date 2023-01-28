@@ -21,9 +21,9 @@ namespace WaterMeterCppTest {
         EXPECT_FALSE(nullSensor.configure()) << "Configure returns false";
         EXPECT_EQ(0.0f, nullSensor.getGain()) << "Gain is 0";
         EXPECT_EQ(0, nullSensor.getNoiseRange()) << "Noise range is 0";
-        SensorData sample{1, 1};
+        SensorData sample{1, 1, 0};
         EXPECT_FALSE(nullSensor.isReal()) << "nullSensor is not a real sensor";
-        EXPECT_FALSE(nullSensor.read(&sample)) << "Read returns false";
+        EXPECT_FALSE(nullSensor.read(sample)) << "Read returns false";
         EXPECT_EQ(0, sample.y) << "y was reset";
         // validate that it doesn't break
         nullSensor.softReset();

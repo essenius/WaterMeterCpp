@@ -27,6 +27,7 @@ struct CartesianEllipse {
 	CartesianEllipse(const Coordinate& center, const Coordinate& radius, const Angle& angle);
 	explicit CartesianEllipse(const QuadraticEllipse& quadraticEllipse);
 
+	bool fitSucceeded() const;
 	double circumference() const;
 	double distanceFrom(const Coordinate& referencePoint) const;
 	Coordinate parametricRepresentation(const Angle& referenceAngle) const;

@@ -29,6 +29,10 @@ CartesianEllipse::CartesianEllipse(const QuadraticEllipse& quadraticEllipse) {
 	hasData = true;
 }
 
+bool CartesianEllipse::fitSucceeded() const {
+	return radius.distance() > EPSILON;
+}
+
 double CartesianEllipse::circumference() const {
 
 	// approximation, not so easy to determine precisely.

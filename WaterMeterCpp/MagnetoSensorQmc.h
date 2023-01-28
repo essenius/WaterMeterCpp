@@ -15,6 +15,8 @@
 // Since the sensor sometimes stops responding, we need a way to hard reset it.
 // For that, we simply give it its power from a GPIO port, which we can bring down to reset it.
 
+// Datasheet: https://github.com/e-Gizmo/QMC5883L-GY-271-Compass-module/blob/master/QMC5883L%20Datasheet%201.0%20.pdf
+
 #ifndef HEADER_MAGNETOSENSORQMC
 #define HEADER_MAGNETOSENSORQMC
 
@@ -83,7 +85,7 @@ public:
     static double getGain(QmcRange range);
 
     // read a sample from the sensor
-    bool read(SensorData* sample) const override;
+    bool read(SensorData& sample) const override;
 
     // soft reset the sensor
     void softReset() const override;

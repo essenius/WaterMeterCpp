@@ -15,7 +15,6 @@
 #include "CartesianEllipse.h"
 #include "EllipseFit.h"
 #include "EventServer.h"
-#include "IntCoordinate.h"
 
 class FlowDetector : public EventClient {
 public:
@@ -38,6 +37,7 @@ protected:
 	void findPulseByPrevious(const Coordinate& point);
 	bool isRelevant(const Coordinate& point);
     void reportAnomaly();
+    int16_t noFitParameter(double angleDistance, bool fitSucceeded) const;
     void updateEllipseFit(Coordinate point);
     void updateMovingAverageArray(const IntCoordinate& sample);
 

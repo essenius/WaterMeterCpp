@@ -72,10 +72,17 @@ public:
     }
 
     // read a sample from the sensor
-    virtual bool read(SensorData* sample) const = 0;
+    virtual bool read(SensorData& sample) const = 0;
 
     // soft reset the sensor
     virtual void softReset() const = 0;
+
+    virtual void waitForPowerOff() const;
+
+    static void waitForPowerOn() {
+        // Both HMC and QMC datasheets report 50 ms startup time.
+        delayMicroseconds(50000UL);
+    }
 
 protected:
     byte _address;

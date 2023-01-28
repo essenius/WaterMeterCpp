@@ -29,7 +29,7 @@ struct QuadraticEllipse {
 	Coordinate radius();
 private:
 	double discriminant() const;
-	Coordinate _radius;
+	Coordinate _radius{};
 	bool _radiusCalculated = false;
 	bool _switchedAxes = false;
 };
