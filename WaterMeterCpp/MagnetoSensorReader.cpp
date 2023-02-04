@@ -64,7 +64,6 @@ void MagnetoSensorReader::configurePowerPort(const uint8_t port) {
 }
 
 double MagnetoSensorReader::getGain() const {
-    // TODO: still null after SetSensor in QMC test
     return _sensor->getGain();
 }
 

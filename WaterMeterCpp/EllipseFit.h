@@ -26,7 +26,6 @@
 #endif
 
 #include "CartesianEllipse.h"
-//#include "QuadraticEllipse.h"
 
 class EllipseFit {
 
