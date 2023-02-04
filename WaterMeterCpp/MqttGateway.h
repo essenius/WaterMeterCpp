@@ -9,6 +9,12 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Manages the MQTT interface using Homie protocol.
+// * Creates the connection
+// * Announces the topics
+// * Listens to events and translates those to MQTT messages to be sent to the broker,
+// * Listens to MQTT and translates understood incoming messages to events.
+
 #ifndef HEADER_MQTTGATEWAY
 #define HEADER_MQTTGATEWAY
 

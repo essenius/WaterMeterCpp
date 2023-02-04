@@ -162,7 +162,7 @@ namespace WaterMeterCppTest {
 
         eventServer.publish(Topic::Alert, false);
         assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No more block (red off)");
-        eventServer.publish(Topic::NoSensorFound, true);
+        eventServer.publish(Topic::SensorState, true);
         assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No sensor found (red on)");
 
         eventServer.publish(Topic::Alert, false); // switching red off again

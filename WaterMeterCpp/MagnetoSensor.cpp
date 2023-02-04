@@ -41,3 +41,7 @@ void MagnetoSensor::setRegister(const byte sensorRegister, const byte value) con
 void MagnetoSensor::waitForPowerOff() const {
     while (isOn()) {}
 }
+
+bool MagnetoSensor::handlePowerOn() {
+    return true;
+}

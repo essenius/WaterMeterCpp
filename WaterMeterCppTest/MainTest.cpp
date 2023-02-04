@@ -168,10 +168,9 @@ namespace WaterMeterCppTest {
 
             Serial.begin(115200);
             theClock.begin();
-            sensorReader.power(HIGH);
+            // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
+            sensorReader.begin(sensor, sizeof sensor / sizeof sensor[0]);
 
-            // wait for the sensor to be ready for measurements
-            delay(50);
             Wire.begin(); // standard SDA=21, SCL=22
             Wire1.begin(SDA_OLED, SCL_OLED);
 
@@ -305,8 +304,10 @@ namespace WaterMeterCppTest {
             clearPrintOutput();
             communicator.loop();
 
-            auto expected2 = R"([] No sensor found: 1
+            auto expected2 = R"([] Free Spaces Queue #1: 14
+[] No sensor found: 0
 [] Alert: 1
+[] No sensor found: 3
 [] Sensor was reset: 2
 [] Free Spaces Queue #0: 20
 [] Free Heap: 23000

@@ -34,8 +34,8 @@ namespace WaterMeterCppTest {
         builder.writeArrayStart("array");
         builder.writeArrayEnd();
         builder.writeGroupStart("testdata");
-        builder.writeParam("pi", 3.1415926535f);
-        builder.writeParam("float", 1.00f);
+        builder.writeParam("pi", 3.1415926535);
+        builder.writeParam("float", 1.00);
         builder.writeParam("int", 1);
         builder.writeParam("long", 2L);
         builder.writeParam("unsigned long", 3UL);

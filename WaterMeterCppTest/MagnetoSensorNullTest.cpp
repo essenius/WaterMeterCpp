@@ -17,9 +17,9 @@ namespace WaterMeterCppTest {
 
     TEST(MagnetoSensorNullTest, magnetoSensorReaderNoSensorTest1) {
         EventServer eventServer;
-        const MagnetoSensorNull nullSensor;
-        EXPECT_FALSE(nullSensor.configure()) << "Configure returns false";
-        EXPECT_EQ(0.0f, nullSensor.getGain()) << "Gain is 0";
+        MagnetoSensorNull nullSensor;
+        EXPECT_TRUE(nullSensor.handlePowerOn()) << "handlePowerOn returns true";
+        EXPECT_EQ(0.0, nullSensor.getGain()) << "Gain is 0";
         EXPECT_EQ(0, nullSensor.getNoiseRange()) << "Noise range is 0";
         SensorData sample{1, 1, 0};
         EXPECT_FALSE(nullSensor.isReal()) << "nullSensor is not a real sensor";

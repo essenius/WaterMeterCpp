@@ -49,7 +49,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::MessageFormatted);
     _eventServer->subscribe(this, Topic::NoDisplayFound);
     _eventServer->subscribe(this, Topic::NoFit);
-    _eventServer->subscribe(this, Topic::NoSensorFound);
+    _eventServer->subscribe(this, Topic::SensorState);
     _eventServer->subscribe(this, Topic::ResultFormatted);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::SetVolume);
@@ -83,7 +83,10 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::NoDisplayFound:
         log("No OLED display found");
         break;
-    case Topic::NoSensorFound:
+    case Topic::NoFit:
+        log("No fit: %s deg", payload);
+        break;
+    case Topic::SensorState:
         log("No sensor found: %s", payload);
         break;
     case Topic::ResultFormatted:
@@ -134,9 +137,6 @@ void Log::update(const Topic topic, const long payload) {
         return;
     case Topic::FreeStack:
         printIndexedPayload("Stack", payload);
-        return;
-    case Topic::NoFit:
-        log("No fit: %ld deg", payload);
         return;
     default:
         EventClient::update(topic, payload);

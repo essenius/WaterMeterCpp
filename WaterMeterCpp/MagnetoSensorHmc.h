@@ -20,16 +20,21 @@
 
 #include "MagnetoSensor.h"
 
-enum HmcGain : byte {
-    HmcGain0_88 = 0,
-    HmcGain1_3 = 0b00100000,
-    HmcGain1_9 = 0b01000000,
-    HmcGain2_5 = 0b01100000,
-    HmcGain4_0 = 0b10000000,
-    HmcGain4_7 = 0b10100000,
-    HmcGain5_6 = 0b11000000,
-    HmcGain8_1 = 0b11100000
+
+// this sensor has several ranges that you can configure.
+
+enum HmcRange : byte {
+    HmcRange0_88 = 0,
+    HmcRange1_3 = 0b00100000,
+    HmcRange1_9 = 0b01000000,
+    HmcRange2_5 = 0b01100000,
+    HmcRange4_0 = 0b10000000,
+    HmcRange4_7 = 0b10100000,
+    HmcRange5_6 = 0b11000000,
+    HmcRange8_1 = 0b11100000
 };
+
+// The sensor can be configured to return samples at different rates
 
 enum HmcRate : byte {
     HmcRate0_75 = 0,
@@ -40,6 +45,8 @@ enum HmcRate : byte {
     HmcRate30 = 0b00010100,
     HmcRate75 = 0b00011000
 };
+
+// Each sample can be an average of a number of "raw" samples
 
 enum HmcOverSampling : byte {
     HmcSampling1 = 0,
@@ -72,25 +79,26 @@ enum HmcMode : byte {
 class MagnetoSensorHmc final : public MagnetoSensor {
 public:
     explicit MagnetoSensorHmc(TwoWire* wire = &Wire);
-    bool configure() const override;
-    void configureGain(HmcGain gain);
+    void configureRange(HmcRange range);
     void configureOverSampling(HmcOverSampling overSampling);
     void configureRate(HmcRate rate);
     double getGain() const override;
     int getNoiseRange() const override;
-    static double getGain(HmcGain gain);
+    static double getGain(HmcRange range);
     bool read(SensorData& sample) const override;
     void softReset() const override;
     static bool testInRange(const SensorData& sample);
     bool test() const;
     static constexpr byte DEFAULT_ADDRESS = 0x1E;
+    bool handlePowerOn() override;
 private:
     static constexpr int16_t SATURATED = -4096;
-    void configure(HmcGain gain, HmcBias bias) const;
+    void configure(HmcRange range, HmcBias bias) const;
     void getTestMeasurement(SensorData& reading) const;
     void startMeasurement() const;
+
     // 4.7 is not likely to get an overflow, and reasonably accurate
-    HmcGain _gain = HmcGain4_7;
+    HmcRange _range = HmcRange4_7;
     // not really important as we use single measurements
     HmcRate _rate = HmcRate75;
     // highest possible, to reduce noise

@@ -101,7 +101,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(118, display->getX()) << "Time X=118";
             EXPECT_EQ(0, display->getY()) << "Time Y=0";
 
-            eventServer.publish(Topic::NoSensorFound, true);
+            eventServer.publish(Topic::SensorState, true);
             EXPECT_EQ(0b00010011, display->getFirstByte()) << "First byte of missing sensor logo ok";
             EXPECT_EQ(98, display->getX()) << "missing sensor X=98";
             EXPECT_EQ(0, display->getY()) << "missing sensor Y=0";

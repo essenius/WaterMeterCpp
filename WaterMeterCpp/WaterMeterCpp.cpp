@@ -137,8 +137,9 @@ TaskHandle_t connectorTaskHandle;
 void setup() {
     Serial.begin(115200);
     theClock.begin();
-    // this also waits for the sensor to be ready for measurements
-    sensorReader.power(HIGH);
+
+    // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
+    sensorReader.begin(sensor, sizeof sensor / sizeof sensor[0]);
 
     Wire.begin(); // standard SDA=21, SCL=22
     Wire1.begin(SDA_OLED, SCL_OLED);

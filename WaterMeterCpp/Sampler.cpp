@@ -38,7 +38,7 @@ bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsign
     _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
     // SensorReader.begin can publish these     
     _eventServer->subscribe(_queueClient, Topic::Alert);
-    _eventServer->subscribe(_queueClient, Topic::NoSensorFound);
+    _eventServer->subscribe(_queueClient, Topic::SensorState);
 
     if (!_sensorReader->begin(sensor, listSize)) {
         return false;

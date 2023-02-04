@@ -9,7 +9,7 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Mock implementation for unit testing (not targeting the ESP32)
+// Mock implementation of the ESP library for unit testing (not targeting the ESP32)
 
 // Disabling warnings caused by mimicking existing interfaces
 // ReSharper disable CppInconsistentNaming

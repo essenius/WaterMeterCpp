@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -9,21 +9,13 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Creates a Wifi client. This allows for hiding specifics like using HTTPS or HTTP, and using certificates.
+#pragma once
 
-#ifndef HEADER_WIFICLIENTFACTORY
-#define HEADER_WIFICLIENTFACTORY
+#include "../WaterMeterCpp/MagnetoSensorReader.h"
 
-#include <WiFiClientSecure.h>
-#include "Configuration.h"
-
-class WiFiClientFactory {
+class MagnetoSensorReaderDriver final : public MagnetoSensorReader {
 public:
-    explicit WiFiClientFactory(const TlsConfig* config);
-    WiFiClient* create(bool useTls) const;
-    WiFiClient* create(const char* url) const;
-private:
-    const TlsConfig* _config;
-};
+    explicit MagnetoSensorReaderDriver(EventServer* eventServer) : MagnetoSensorReader(eventServer) {}
 
-#endif
+    using MagnetoSensorReader::_sensor;
+};

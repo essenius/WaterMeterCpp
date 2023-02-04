@@ -9,6 +9,8 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Sets up and maintains the Wifi connection, and provides details that the communicator will need (e.g. IP address, MAC Address).
+
 #ifndef HEADER_WIFIMANAGER
 #define HEADER_WIFIMANAGER
 

@@ -9,6 +9,8 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Gather results until the right number was received, and prepare the results for sending
+
 #ifndef HEADER_RESULTAGGREGATOR
 #define HEADER_RESULTAGGREGATOR
 

@@ -9,6 +9,10 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// The sensors deliver 16 bit int coordinates. So X-Y fits in a 32 bit payload, which we use for events.
+// We also model saturation here, using the extreme values of 16 bit ints.
+// Sensors are responsible to provide their extremes this way.
+
 #ifndef HEADER_INTCOORDINATE
 #define HEADER_INTCOORDINATE
 

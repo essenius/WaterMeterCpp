@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Rik Essenius
+﻿// Copyright 2022-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -17,8 +17,8 @@
 namespace WaterMeterCppTest {
 
     TEST(MagnetoSensorQmcTest, magnetoSensorQmcGetGainTest) {
-        EXPECT_EQ(12000.0f, MagnetoSensorQmc::getGain(QmcRange2G)) << "2G gain ok";
-        EXPECT_EQ(3000.0f, MagnetoSensorQmc::getGain(QmcRange8G)) << "8G gain ok";
+        EXPECT_EQ(12000.0, MagnetoSensorQmc::getGain(QmcRange2G)) << "2G gain ok";
+        EXPECT_EQ(3000.0, MagnetoSensorQmc::getGain(QmcRange8G)) << "8G gain ok";
     }
 
     TEST(MagnetoSensorQmcTest, magnetoSensorQmcAddressTest) {
@@ -27,14 +27,19 @@ namespace WaterMeterCppTest {
         sensor.configureAddress(ADDRESS);
         Wire.begin();
         sensor.begin();
-        EXPECT_EQ(ADDRESS, Wire.getAddress()) << L"Custom Address OK";
+        EXPECT_EQ(ADDRESS, Wire.getAddress()) << "Custom Address OK";
+        // additional tests now we have an instance
+
+        EXPECT_TRUE(sensor.isReal()) << "Sensor is real";
+        EXPECT_EQ(3000.0, sensor.getGain()) << "default gain ok";
+
     }
 
     TEST(MagnetoSensorQmcTest, magnetoSensorQmcDefaultAddressTest) {
         MagnetoSensorQmc sensor;
         Wire.begin();
         sensor.begin();
-        EXPECT_EQ(MagnetoSensorQmc::DEFAULT_ADDRESS, Wire.getAddress()) << L"Default address OK";
+        EXPECT_EQ(MagnetoSensorQmc::DEFAULT_ADDRESS, Wire.getAddress()) << "Default address OK";
     }
 
     TEST(MagnetoSensorQmcTest, magnetoSensorQmcScriptTest) {
@@ -51,9 +56,9 @@ namespace WaterMeterCppTest {
         SensorData sample{};
         sensor.read(sample);
         // the mock returns values from 0 increasing by 1 for every read
-        EXPECT_EQ(0x0100, sample.x) << L"X ok";
-        EXPECT_EQ(0x0302, sample.y) << L"Y ok";
-        EXPECT_EQ(0x0504, sample.z) << L"Z ok";
+        EXPECT_EQ(0x0100, sample.x) << "X ok";
+        EXPECT_EQ(0x0302, sample.y) << "Y ok";
+        EXPECT_EQ(0x0504, sample.z) << "Z ok";
 
         // we configure another address so it reports off
         Wire.setEndTransmissionTogglePeriod(1);
@@ -69,7 +74,7 @@ namespace WaterMeterCppTest {
         Wire.begin();
         sensor.begin();
         constexpr uint8_t BUFFER_RECONFIGURE[] = {10, 0x80, 11, 0x01, 9, 0x8d};
-        EXPECT_EQ(sizeof BUFFER_RECONFIGURE, Wire.writeMismatchIndex(BUFFER_RECONFIGURE, sizeof BUFFER_RECONFIGURE)) << "writes for reconfigure ok";
+        EXPECT_EQ(sizeof BUFFER_RECONFIGURE, Wire.writeMismatchIndex(BUFFER_RECONFIGURE, sizeof BUFFER_RECONFIGURE)) << "Writes for reconfigure ok";
 
     }
 }

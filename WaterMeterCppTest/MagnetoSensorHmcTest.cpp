@@ -21,29 +21,28 @@ namespace WaterMeterCppTest {
         sensor.configureAddress(ADDRESS);
         Wire.begin();
         sensor.begin();
-        //sensor.hardReset();
         EXPECT_EQ(ADDRESS, Wire.getAddress()) << "Custom Address OK";
     }
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcGetGainTest) {
-        EXPECT_EQ(1370.0f, MagnetoSensorHmc::getGain(HmcGain0_88)) << "0.88G gain ok";
-        EXPECT_EQ(1090.0f, MagnetoSensorHmc::getGain(HmcGain1_3)) << "1.3G gain ok";
-        EXPECT_EQ(820.0f, MagnetoSensorHmc::getGain(HmcGain1_9)) << "1.9G gain ok";
-        EXPECT_EQ(660.0f, MagnetoSensorHmc::getGain(HmcGain2_5)) << "2.5G gain ok";
-        EXPECT_EQ(440.0f, MagnetoSensorHmc::getGain(HmcGain4_0)) << "4.0G gain ok";
-        EXPECT_EQ(390.0f, MagnetoSensorHmc::getGain(HmcGain4_7)) << "4.7G gain ok";
-        EXPECT_EQ(330.0f, MagnetoSensorHmc::getGain(HmcGain5_6)) << "5.6G gain ok";
-        EXPECT_EQ(230.0f, MagnetoSensorHmc::getGain(HmcGain8_1)) << "8.1G gain ok";
+        EXPECT_EQ(1370.0, MagnetoSensorHmc::getGain(HmcRange0_88)) << "0.88G gain ok";
+        EXPECT_EQ(1090.0, MagnetoSensorHmc::getGain(HmcRange1_3)) << "1.3G gain ok";
+        EXPECT_EQ(820.0, MagnetoSensorHmc::getGain(HmcRange1_9)) << "1.9G gain ok";
+        EXPECT_EQ(660.0, MagnetoSensorHmc::getGain(HmcRange2_5)) << "2.5G gain ok";
+        EXPECT_EQ(440.0, MagnetoSensorHmc::getGain(HmcRange4_0)) << "4.0G gain ok";
+        EXPECT_EQ(390.0, MagnetoSensorHmc::getGain(HmcRange4_7)) << "4.7G gain ok";
+        EXPECT_EQ(330.0, MagnetoSensorHmc::getGain(HmcRange5_6)) << "5.6G gain ok";
+        EXPECT_EQ(230.0, MagnetoSensorHmc::getGain(HmcRange8_1)) << "8.1G gain ok";
         MagnetoSensorHmc sensor;
-        sensor.configureGain(HmcGain2_5);
+        sensor.configureRange(HmcRange2_5);
         EXPECT_EQ(660.f, sensor.getGain()) << "getGain() returns correct value";
     }
 
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcTestTest) {
-        const MagnetoSensorHmc sensor;
+        MagnetoSensorHmc sensor;
         Wire.begin();
-        EXPECT_FALSE(sensor.configure()) << "Sensor Test failed";
+        EXPECT_FALSE(sensor.handlePowerOn()) << "Sensor Test failed";
     }
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcTestInRangeTest) {
@@ -91,7 +90,7 @@ namespace WaterMeterCppTest {
 
         sensor.configureOverSampling(HmcSampling4); // 0b0100 0000
         sensor.configureRate(HmcRate30); // 0b0001 0100
-        sensor.configureGain(HmcGain5_6); // 0b1100 0000
+        sensor.configureRange(HmcRange5_6); // 0b1100 0000
 
         // ensure all test variables are reset
         Wire.begin();

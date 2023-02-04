@@ -61,7 +61,7 @@ bool OledDriver::begin() {
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::NoFit);
-    _eventServer->subscribe(this, Topic::NoSensorFound);
+    _eventServer->subscribe(this, Topic::SensorState);
     _eventServer->subscribe(this, Topic::SensorWasReset);
     _eventServer->subscribe(this, Topic::TimeOverrun);
     _eventServer->subscribe(this, Topic::UpdateProgress);
@@ -186,7 +186,7 @@ void OledDriver::update(const Topic topic, long payload) {
         showMessageAtLine(buffer, 3);
         switchFlowLogo(NO_FIT_LOGO, payload);
         return;
-    case Topic::NoSensorFound:
+    case Topic::SensorState:
         showMessageAtLine("No sensor        ", 3);
         switchFlowLogo(NO_SENSOR_LOGO, payload);
         return;

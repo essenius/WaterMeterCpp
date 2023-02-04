@@ -9,6 +9,8 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Various calculations for coordinates, which are the basis for more complex calcuations in e.g. ellipses
+
 #ifndef COORDINATE_H
 #define COORDINATE_H
 #include "Angle.h"
@@ -17,8 +19,6 @@ struct Coordinate {
 	double x;
 	double y;
 
-	//Coordinate();
-	//Coordinate(const double& x, const double& y);
     bool operator==(const Coordinate& other) const;
 
 	Angle angle() const;

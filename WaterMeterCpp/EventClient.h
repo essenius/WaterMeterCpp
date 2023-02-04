@@ -9,6 +9,8 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// The parent of every object that needs to use an event server
+
 #ifndef HEADER_EVENTCLIENT
 #define HEADER_EVENTCLIENT
 
@@ -54,7 +56,7 @@ enum class Topic: int16_t {
     MacFormatted,
     ResetSensor,
     SensorWasReset,
-    NoSensorFound,
+    SensorState,
     SetVolume,
     AddVolume,
     Volume,

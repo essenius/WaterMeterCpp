@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// The standard sprintf, strcat and strcpy are not safe, and the *p options aren't much better.
+// The ones defined here are safer as they take buffer sizes into account.
+
 #ifndef HEADER_SAFECSTRING
 #define HEADER_SAFECSTRING
 

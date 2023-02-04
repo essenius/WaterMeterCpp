@@ -13,8 +13,6 @@
 #include <regex>
 #include "../WaterMeterCpp/Clock.h"
 
-//using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace WaterMeterCppTest {
 
     TEST(ClockTest, clockFormatTimestampTest) {

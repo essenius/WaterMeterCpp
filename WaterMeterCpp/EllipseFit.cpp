@@ -69,7 +69,7 @@ QuadraticEllipse EllipseFit::fit() {
 			a1 = eigenvector.col(i);
 			break;
 		}
-		// we didn't found it (should not happen)
+		// we didn't find it (should not happen)
 		if (i == 2) {
 			/* TODO: remove this print statement */
 			printf("No positive eigenvector found");

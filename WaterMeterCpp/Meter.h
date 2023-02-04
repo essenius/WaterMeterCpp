@@ -9,6 +9,7 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Translate the pulses to a meter value. 
 #ifndef HEADER_METER
 #define HEADER_METER
 
@@ -26,8 +27,9 @@ public:
     void update(Topic topic, long payload) override;
 
 private:
-    // 2 pulses per cycle, 16500 cycles per 1000L 
-    static constexpr double PULSES_PER_UNIT = 33000;
+    // 1 pulse per cycle, 16500 cycles per 1000L
+    // This needs to be calibrated.
+    static constexpr double PULSES_PER_UNIT = 16500;
     static constexpr double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;
     double _volume = 0.0;
     unsigned long _pulses = 0;

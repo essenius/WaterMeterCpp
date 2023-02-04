@@ -18,8 +18,9 @@
 MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer) :
     EventClient(eventServer),
     _alert(eventServer, Topic::Alert),
-    _noSensor(eventServer, Topic::NoSensorFound) {}
+    _sensorState(eventServer, Topic::SensorState) {}
 
+// returns false if no (real) sensor could be found
 bool MagnetoSensorReader::setSensor() {
     // The last one (null sensor) always matches so _sensor can't be nullptr
     for (uint8_t i = 0; i < static_cast<uint8_t>(_sensorListSize); i++) {
@@ -29,10 +30,12 @@ bool MagnetoSensorReader::setSensor() {
         }
     }
     if (!_sensor->begin()) {
-        _noSensor = true;
         _alert = true;
         return false;
     }
+
+    // TODO: check the logic here. We mix an alert with display limitations
+    // perhaps make alert just an event? 
 
     constexpr int IGNORE_SAMPLE_COUNT = 5;
     // ignore the first measurements, often outliers
@@ -49,7 +52,7 @@ bool MagnetoSensorReader::begin(MagnetoSensor* sensor[], const size_t listSize) 
     _sensorList = sensor;
     _sensorListSize = listSize;
     pinMode(_powerPort, OUTPUT);
-    const auto sensorFound = setSensor();
+    const auto sensorFound = power(HIGH);
     _eventServer->subscribe(this, Topic::ResetSensor);
     return sensorFound;
 }
@@ -61,6 +64,7 @@ void MagnetoSensorReader::configurePowerPort(const uint8_t port) {
 }
 
 double MagnetoSensorReader::getGain() const {
+    // TODO: still null after SetSensor in QMC test
     return _sensor->getGain();
 }
 
@@ -68,32 +72,45 @@ int MagnetoSensorReader::getNoiseRange() const {
     return _sensor->getNoiseRange();
 }
 
-// power cycle the sensor
 void MagnetoSensorReader::hardReset() {
     power(LOW);
     power(HIGH);
-    _noSensor = false;
-    setSensor();
 
     _streakCount = 0;
     _consecutiveStreakCount = 0;
     _eventServer->publish(Topic::SensorWasReset, HARD_RESET);
 }
 
-void MagnetoSensorReader::power(const uint8_t state) const {
+bool MagnetoSensorReader::power(const uint8_t state) {
+    // do nothing if we are already in the right state
+    const auto currentState = digitalRead(_powerPort);
+    if (currentState == state && _sensorState == (state == LOW ? SensorState::None : SensorState::Ok)) return true;
     digitalWrite(_powerPort, state);
     if (state == LOW) {
         _sensor->waitForPowerOff();
-    } else {
-        MagnetoSensor::waitForPowerOn();
+        _sensorState = SensorState::None;
+        return true;
     }
+    // wait for the sensor to be ready (50 ms for both QMC and HMC)
+    delayMicroseconds(STARTUP_MICROS);
+    auto ok = setSensor();
+    if (!ok) {
+        _sensorState = SensorState::BeginError;
+        return false;
+    }
+    auto retryCount = 0;
+    while (!((ok = _sensor->handlePowerOn())) && retryCount < 1) {
+        retryCount++;
+    }
+    _sensorState = ok ? SensorState::Ok : SensorState::PowerError;
+    return ok;
 }
 
 IntCoordinate MagnetoSensorReader::read() {
     SensorData sample{};
     if (!_sensor->read(sample)) {
         _alert = true;
-        _noSensor = true;
+        _sensorState = SensorState::ReadError;
     }
     const auto returnValue = IntCoordinate{{sample.x, sample.y}};
 

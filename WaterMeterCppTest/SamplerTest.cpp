@@ -21,11 +21,13 @@ namespace WaterMeterCppTest {
         EventServer eventServer;
         TestEventClient noSensorClient(&eventServer);
         TestEventClient alertClient(&eventServer);
-        eventServer.subscribe(&noSensorClient, Topic::NoSensorFound);
+        eventServer.subscribe(&noSensorClient, Topic::SensorState);
         eventServer.subscribe(&alertClient, Topic::Alert);
         MagnetoSensorReader reader(&eventServer);
         MagnetoSensorNull noSensor;
         MagnetoSensor* list[] = {&noSensor};
+        digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+
         ChangePublisher<uint8_t> buttonPublisher(&eventServer, Topic::ResetSensor);
         Button button(&buttonPublisher, 34);
         Sampler sampler(&eventServer, &reader, nullptr, &button, nullptr, nullptr, nullptr);

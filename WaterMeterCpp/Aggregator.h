@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// parent of SampleAggregator and ResultAggregator. Collects payloads until the buffer is full and then sends it out.
+// We do this to limit the amount of traffic (larger less frequent messages).
+
 #ifndef HEADER_AGGREGATOR
 #define HEADER_AGGREGATOR
 

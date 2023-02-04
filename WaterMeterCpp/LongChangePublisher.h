@@ -9,6 +9,10 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Like Change Publisher, it sends an event only when its payload changes.
+// It works with long integers, and it can deal with thresholds and multiples to reduce the number of times it fires.
+// This allows for e.g. not reporting each and every change to the stack size, but only if it differs more than 1kB.
+
 #ifndef HEADER_LONGCHANGEPUBLISHER
 #define HEADER_LONGCHANGEPUBLISHER
 

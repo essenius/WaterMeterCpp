@@ -31,7 +31,7 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::ConnectionError);
     _eventServer->subscribe(this, Topic::Anomaly);
-    _eventServer->subscribe(this, Topic::NoSensorFound);
+    _eventServer->subscribe(this, Topic::SensorState);
     _eventServer->subscribe(this, Topic::Pulse);
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::Sample);
@@ -107,7 +107,7 @@ void LedDriver::update(const Topic topic, long payload) {
     case Topic::Connection:
         connectionUpdate(static_cast<ConnectionState>(payload));
         return;
-    case Topic::NoSensorFound:
+    case Topic::SensorState:
         Led::set(Led::RED, Led::ON);
         break;
     case Topic::Pulse:

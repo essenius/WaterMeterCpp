@@ -15,8 +15,6 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/Button.h"
 
-//using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace WaterMeterCppTest {
 
     TEST(ButtonTest, buttonTest1) {

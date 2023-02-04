@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// we use queues to send events between the different processes. Queues handle inter-process communication effectively
+// Every queue client has its own queue that it receives from, and it can also send to another queue (which it doesn't own).
+
 #ifndef HEADER_QUEUECLIENT
 #define HEADER_QUEUECLIENT
 

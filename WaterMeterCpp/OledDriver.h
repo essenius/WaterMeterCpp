@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// drives an I2S 128x32 OLED display. Shows icons to indicate status/errors, shows the pulses and volumes, and
+// potentially short error messages.
+
 #ifndef HEADER_OLEDDRIVER
 #define HEADER_OLEDDRIVER
 #include <Adafruit_SSD1306.h>

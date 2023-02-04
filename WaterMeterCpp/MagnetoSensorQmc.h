@@ -10,11 +10,6 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 // Driver for the QMC5883L sensor.
-// We don't care a lot about calibration as we're looking for peaks in the signals.
-//
-// Since the sensor sometimes stops responding, we need a way to hard reset it.
-// For that, we simply give it its power from a GPIO port, which we can bring down to reset it.
-
 // Datasheet: https://github.com/e-Gizmo/QMC5883L-GY-271-Compass-module/blob/master/QMC5883L%20Datasheet%201.0%20.pdf
 
 #ifndef HEADER_MAGNETOSENSORQMC
@@ -68,7 +63,7 @@ class MagnetoSensorQmc final : public MagnetoSensor {
 public:
     explicit MagnetoSensorQmc(TwoWire* wire = &Wire);
     // Configure the sensor according to the configuration parameters (called in begin())
-    bool configure() const override;
+    bool configure() const;
 
     // configure oversampling if not default (QmcSampling512). Do before begin()
     void configureOverSampling(QmcOverSampling overSampling);

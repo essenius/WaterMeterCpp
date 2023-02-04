@@ -9,20 +9,18 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// If we don't detect a sensor, we use this null sensor instead. That makes the code a bit cleaner.
+
 #ifndef HEADER_MAGNETOSENSORNULL
 #define HEADER_MAGNETOSENSORNULL
 
 #include "MagnetoSensor.h"
 
-class MagnetoSensorNull final : public MagnetoSensor {
+class MagnetoSensorNull : public MagnetoSensor {
 public:
     MagnetoSensorNull() : MagnetoSensor(0, nullptr) {}
 
     bool begin() override {
-        return false;
-    }
-
-    bool configure() const override {
         return false;
     }
 
@@ -50,7 +48,6 @@ public:
     void softReset() const override {}
 
     void waitForPowerOff() const override {}
-
 };
 
 #endif

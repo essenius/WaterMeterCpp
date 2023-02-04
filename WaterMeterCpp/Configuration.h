@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Grabs configuration data via the Preferences object. Can also initialize Preferences using a secrets.h file
+// For security reasons this file is not checked in to source control, and can be removed once the preferences are stored.
+
 #ifndef HEADER_CONFIGURATION
 #define HEADER_CONFIGURATION
 

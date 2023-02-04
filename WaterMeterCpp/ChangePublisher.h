@@ -9,15 +9,15 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#ifndef HEADER_CHANGEPUBLISHER
-#define HEADER_CHANGEPUBLISHER
-
-#include "EventServer.h"
-
 // ChangePublisher records a value and publishes the value only when it changes.
 // The (8 bit) index is used to be able to share the same topic for multiple entities, e.g. different queues.
 // This works by using the highest significant byte of the (4 byte) long to store the index.
 // That means 3 bytes (max value 8,388,608 for long) are left for the payload if the index is used.
+
+#ifndef HEADER_CHANGEPUBLISHER
+#define HEADER_CHANGEPUBLISHER
+
+#include "EventServer.h"
 
 template <class PayloadType>
 class ChangePublisher {

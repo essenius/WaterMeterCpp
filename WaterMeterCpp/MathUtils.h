@@ -9,11 +9,14 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// Utilities for variables of type double that we need at multiple places
+
 #ifndef DOUBLE_UTILS_H
 #define DOUBLE_UTILS_H
 
 #ifndef ESP32
-// ReSharper disable once CppUnusedIncludeDirective - on purpose, to get PI defined
+// ReSharper disable once CppUnusedIncludeDirective - on purpose, to get M_PI defined.
+// And we don't want this conditional include proliferate.
 #include <corecrt_math_defines.h>
 #endif
 

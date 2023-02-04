@@ -20,17 +20,13 @@
 
 MagnetoSensorHmc::MagnetoSensorHmc(TwoWire* wire) : MagnetoSensor(DEFAULT_ADDRESS, wire) {}
 
-bool MagnetoSensorHmc::configure() const {
-    return test();
-}
-
-void MagnetoSensorHmc::configure(const HmcGain gain, const HmcBias bias) const {
+void MagnetoSensorHmc::configure(const HmcRange range, const HmcBias bias) const {
     setRegister(HmcControlA, _overSampling | _rate | bias);
-    setRegister(HmcControlB, gain);
+    setRegister(HmcControlB, range);
 }
 
-void MagnetoSensorHmc::configureGain(const HmcGain gain) {
-    _gain = gain;
+void MagnetoSensorHmc::configureRange(const HmcRange range) {
+    _range = range;
 }
 
 void MagnetoSensorHmc::configureOverSampling(const HmcOverSampling overSampling) {
@@ -42,31 +38,31 @@ void MagnetoSensorHmc::configureRate(const HmcRate rate) {
 }
 
 double MagnetoSensorHmc::getGain() const {
-    return getGain(_gain);
+    return getGain(_range);
 }
 
 int MagnetoSensorHmc::getNoiseRange() const {
-    switch (_gain) {
-    case HmcGain0_88: return 8;
-    case HmcGain1_3: return 5;
-    case HmcGain1_9: return 5;
-    case HmcGain2_5: return 4;
-    case HmcGain4_0: return 4;
-    case HmcGain4_7: return 3; // was 4
-    case HmcGain5_6:
+    switch (_range) {
+    case HmcRange0_88: return 8;
+    case HmcRange1_3: return 5;
+    case HmcRange1_9: return 5;
+    case HmcRange2_5: return 4;
+    case HmcRange4_0: return 4;
+    case HmcRange4_7: return 3; // was 4
+    case HmcRange5_6:
     default: return 2;
     }
 }
 
-double MagnetoSensorHmc::getGain(const HmcGain gain) {
-    switch (gain) {
-    case HmcGain0_88: return 1370.0;
-    case HmcGain1_3: return 1090.0;
-    case HmcGain1_9: return 820.0;
-    case HmcGain2_5: return 660.0;
-    case HmcGain4_0: return 440.0;
-    case HmcGain4_7: return 390.0;
-    case HmcGain5_6: return 330.0;
+double MagnetoSensorHmc::getGain(const HmcRange range) {
+    switch (range) {
+    case HmcRange0_88: return 1370.0;
+    case HmcRange1_3: return 1090.0;
+    case HmcRange1_9: return 820.0;
+    case HmcRange2_5: return 660.0;
+    case HmcRange4_0: return 440.0;
+    case HmcRange4_7: return 390.0;
+    case HmcRange5_6: return 330.0;
     default: return 230.0;
     }
 
@@ -104,7 +100,7 @@ bool MagnetoSensorHmc::read(SensorData& sample) const {
 }
 
 void MagnetoSensorHmc::softReset() const {
-    configure(_gain, HmcNone);
+    configure(_range, HmcNone);
     SensorData sample{};
     getTestMeasurement(sample);
 }
@@ -125,20 +121,24 @@ bool MagnetoSensorHmc::testInRange(const SensorData& sample) {
 
 bool MagnetoSensorHmc::test() const {
     SensorData sample{};
-    configure(HmcGain4_7, HmcPositive);
+    
+    configure(HmcRange4_7, HmcPositive);
 
     // read old value (still with old settings) 
     getTestMeasurement(sample);
 
     // now do the test
     getTestMeasurement(sample);
-
     const bool passed = testInRange(sample);
 
     // end self test mode
-    configure(_gain, HmcNone);
-
+    configure(_range, HmcNone);
+    // skip the final measurement with the old gain
     getTestMeasurement(sample);
 
     return passed;
+}
+
+bool MagnetoSensorHmc::handlePowerOn() {
+    return test();
 }

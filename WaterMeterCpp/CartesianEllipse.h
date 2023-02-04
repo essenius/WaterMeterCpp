@@ -9,6 +9,14 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// CartesianEllipse supports the following calculations based on a (fitted) QuadraticEllipse
+// * the distance between a point an the ellipse
+// * the coordinates of a point projected on the ellipse
+// * the coordinate of the parametric representation of the ellipse given an angle
+// * an approximation of the circumference of the circle
+//
+// These methods are used to determine whether we have an outlier: too far away from the ellipse => outlier
+
 #ifndef CARTESIAN_ELLIPSE_H
 #define CARTESIAN_ELLIPSE_H
 

@@ -9,6 +9,14 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// When the magnetosensor detects a clockwise elliptical move in the X-Y plane, water is flowing.
+// The parameters of the ellipse are estimated via a fitting mechanism using a series of samples (see EllipseFit).
+// We generate an event every time the cycle moves from the 4th to the 3rd quadrant.
+// The detector also tries to filter out anomalies by ignoring points that are too far away from the latest fitted ellipse.
+
+// The signal is disturbed by the presence of electrical devices nearby. Therefore we sample at 100 Hz (twice the rate of the mains frequency),
+// and use a moving average over 4 samples to clean up the signal.
+
 #ifndef FLOW_DETECTOR_H
 #define FLOW_DETECTOR_H
 

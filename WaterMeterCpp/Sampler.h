@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// This runs the process that handles the sampling. It must ensure that each loop takes less than 10ms,
+// and that there is regularly enough (>2ms) time available to handle input.
+
 #ifndef HEADER_SAMPLER
 #define HEADER_SAMPLER
 

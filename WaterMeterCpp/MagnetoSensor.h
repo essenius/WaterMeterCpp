@@ -9,11 +9,13 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Driver for the QMC5883L sensor.
-// We don't care a lot about calibration as we're looking for peaks in the signals.
+// Driver for a magnetosensor. Parent of the HMC and QMC variants.
+// We don't care a lot about calibration as we're looking for patterns, not for absolute values.
 //
-// Since the sensor sometimes stops responding, we need a way to hard reset it.
+// Since these sensors sometimes stops responding, we need a way to hard reset them.
 // For that, we simply give it its power from a GPIO port, which we can bring down to reset it.
+//
+// We also take into account that the sensor needs time to switch on and off
 
 #ifndef HEADER_MAGNETOSENSOR
 #define HEADER_MAGNETOSENSOR
@@ -54,9 +56,6 @@ public:
     // Configure the sensor
     virtual bool begin();
 
-    // Configure the sensor according to the configuration parameters (called in begin())
-    virtual bool configure() const = 0;
-
     // configure the wire address if not default (0x0D). Call before begin()
     void configureAddress(byte address);
 
@@ -79,12 +78,10 @@ public:
 
     virtual void waitForPowerOff() const;
 
-    static void waitForPowerOn() {
-        // Both HMC and QMC datasheets report 50 ms startup time.
-        delayMicroseconds(50000UL);
-    }
+    virtual bool handlePowerOn();
 
 protected:
+
     byte _address;
     TwoWire* _wire;
     void setRegister(byte sensorRegister, byte value) const;

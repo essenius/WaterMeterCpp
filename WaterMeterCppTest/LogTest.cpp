@@ -92,7 +92,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("[] Free Spaces Queue #3: 16\n", getPrintOutput()) << "Sensor reset handled OK";
 
         clearPrintOutput();
-        eventServer.publish(Topic::NoSensorFound, true);
+        eventServer.publish(Topic::SensorState, true);
         EXPECT_STREQ("[] No sensor found: 1\n", getPrintOutput()) << "no sensor found handled OK";
 
         clearPrintOutput();

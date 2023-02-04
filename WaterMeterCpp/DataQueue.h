@@ -9,6 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+// We use a data queue to transport larger items between two processes - usually from Sampler to Communicator
+// We do this to limit the number of times we need to send data, but also to be able to deal with incidental network glitches.
+
 #ifndef HEADER_DATAQUEUE
 #define HEADER_DATAQUEUE
 
