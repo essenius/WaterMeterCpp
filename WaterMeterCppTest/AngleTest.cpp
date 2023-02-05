@@ -54,3 +54,8 @@ TEST(AngleTest, OperatorTest) {
 	const auto c = A - Angle{ M_PI / 3 };
 	assertAnglesEqual({ 2 * M_PI / 3 }, c, "operator- on angle");
 }
+
+TEST(AngleTest, Times10Test) {
+	constexpr Angle A{ -M_PI };
+	EXPECT_EQ(-1800, A.degreesTimes10()) << "Angle to degrees times 10 is correct";
+}

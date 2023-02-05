@@ -15,12 +15,14 @@
 #define COORDINATE_H
 #include "Angle.h"
 
+union IntCoordinate;
+
 struct Coordinate {
 	double x;
 	double y;
 
     bool operator==(const Coordinate& other) const;
-
+	IntCoordinate times10() const;
 	Angle angle() const;
 	Angle angleFrom(const Coordinate& other) const;
 	double distance() const;

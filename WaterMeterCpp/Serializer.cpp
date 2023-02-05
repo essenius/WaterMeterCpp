@@ -75,9 +75,12 @@ void Serializer::convertResult(const DataQueuePayload* payload) const {
     _payloadBuilder->writeParam("average", result.averageDuration);
     _payloadBuilder->writeParam("max", result.maxDuration);
     _payloadBuilder->writeGroupEnd();
-    _payloadBuilder->writeGroupStart("analysis");
-    _payloadBuilder->writeParam("av.x", result.averaged.x);
-    _payloadBuilder->writeParam("av.y", result.averaged.y);
+    _payloadBuilder->writeGroupStart("ellipse");
+    _payloadBuilder->writeParam("cx", result.ellipseCenterTimes10.x / 10.0);
+    _payloadBuilder->writeParam("cy", result.ellipseCenterTimes10.y / 10.0);
+    _payloadBuilder->writeParam("rx", result.ellipseRadiusTimes10.x / 10.0);
+    _payloadBuilder->writeParam("ry", result.ellipseRadiusTimes10.y / 10.0);
+    _payloadBuilder->writeParam("phi", result.ellipseAngleTimes10 / 10.0);
     _payloadBuilder->writeGroupEnd();
     _payloadBuilder->writeGroupEnd();
 }

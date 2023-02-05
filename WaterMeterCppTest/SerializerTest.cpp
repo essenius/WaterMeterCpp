@@ -32,15 +32,17 @@ namespace WaterMeterCppTest {
         payload.buffer.result.sampleCount = 81;
         payload.buffer.result.pulseCount = 3;
         payload.buffer.result.skipCount = 23;
-        payload.buffer.result.averaged = { 28.8, 24.4 };
+        payload.buffer.result.ellipseCenterTimes10 = {{288, 244}};
+        payload.buffer.result.maxDuration = 12345;
+        payload.buffer.result.ellipseAngleTimes10 = 501;
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once result";
         EXPECT_STREQ(
             R"({"timestamp":1970-01-01T00:00:00.000000,"last.x":0,"last.y":0,)"
             R"("summaryCount":{"samples":81,"pulses":3,"maxStreak":0,"skips":23},)"
             R"("exceptionCount":{"outliers":0,"overruns":0,"resets":0},)"
-            R"("duration":{"total":0,"average":0,"max":0},)"
-            R"("analysis":{"av.x":28.8,"av.y":24.4}})",
+            R"("duration":{"total":0,"average":0,"max":12345},)"
+            R"("ellipse":{"cx":28.8,"cy":24.4,"rx":0,"ry":0,"phi":50.1}})",
             testEventClient.getPayload()) << "Formatted result payload OK";
 
         testEventClient.reset();

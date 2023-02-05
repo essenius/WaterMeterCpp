@@ -13,6 +13,7 @@
 
 #ifndef HEADER_ANGLE
 #define HEADER_ANGLE
+#include <cstdint>
 
 struct Angle {
 	double value;
@@ -21,5 +22,6 @@ struct Angle {
 	int quadrant() const;
 	double sin() const;
 	double cos() const;
+	int16_t degreesTimes10() const;
 };
 #endif

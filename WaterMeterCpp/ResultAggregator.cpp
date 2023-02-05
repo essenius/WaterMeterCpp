@@ -43,7 +43,8 @@ void ResultAggregator::addMeasurement(const IntCoordinate& value, const FlowDete
     if (value.isSaturated() || _result->lastSample == value) {
         _streak++;
         if (_streak > _result->maxStreak) {
-            _result->maxStreak = _streak;
+            // TODO: fix streak type
+            _result->maxStreak = static_cast<uint16_t>(_streak);
         }
     }
     else {
@@ -60,16 +61,15 @@ void ResultAggregator::addMeasurement(const IntCoordinate& value, const FlowDete
     if (result->wasReset()) {
         _result->resetCount++;
     }
-    if (result->isSearching()) {
-        _result->searchCount++;
-    }
 
     if (result->wasSkipped()) {
         _result->skipCount++;
     }
 
     // we only need this at the end but we don't know when that is
-    _result->averaged = result->movingAverage();
+    _result->ellipseCenterTimes10 = result->ellipseCenterTimes10();
+    _result->ellipseRadiusTimes10 = result->ellipseRadiusTimes10();
+    _result->ellipseAngleTimes10 = result->ellipseAngleTimes10();
 }
 
 void ResultAggregator::begin() {

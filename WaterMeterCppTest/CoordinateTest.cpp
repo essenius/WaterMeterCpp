@@ -13,6 +13,7 @@
 #include <corecrt_math_defines.h>
 
 #include "../WaterMeterCpp/Coordinate.h"
+#include "../WaterMeterCpp/IntCoordinate.h"
 
 bool coordinateEqual(const Coordinate& a, const Coordinate& b) {
 	return a == b;
@@ -40,4 +41,8 @@ TEST(CoordinateTest, CoordinateTest1) {
 	ASSERT_TRUE(coordinateEqual(Coordinate{ 2, 0.125 }, reciproke)) << "Reciproke OK";
 
 	ASSERT_TRUE(isnan(Coordinate{ 0, 0 }.angle().value)) << "Angle of 0,0 is not defined";
+
+	constexpr Coordinate COORDINATE4{ 25.5, -386.9 };
+	constexpr IntCoordinate EXPECTED{{255, -3869}};
+	EXPECT_EQ(EXPECTED, COORDINATE4.times10()) << "Times 10 conversion works";
 }

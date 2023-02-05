@@ -27,22 +27,23 @@ struct Samples {
     IntCoordinate value[MAX_SAMPLES];
 };
 
-// ResultData must be smaller than Samples
+// ResultData size must be <= Samples size
 
 struct ResultData {
     IntCoordinate lastSample;
     uint32_t sampleCount;
-    uint32_t resetCount;
-    uint32_t pulseCount;
-    uint32_t maxStreak;
+    uint32_t skipCount;
+    uint16_t resetCount;
+    uint16_t maxStreak;
+    IntCoordinate ellipseCenterTimes10;
+    IntCoordinate ellipseRadiusTimes10;
+    int16_t ellipseAngleTimes10;
+    uint16_t pulseCount;
     uint32_t anomalyCount;
     uint32_t overrunCount;
     uint32_t totalDuration;
     uint32_t averageDuration;
     uint32_t maxDuration;
-    Coordinate averaged;
-    uint32_t searchCount;
-    uint32_t skipCount;
 };
 
 union Content {

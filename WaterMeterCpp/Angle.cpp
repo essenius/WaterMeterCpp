@@ -39,3 +39,7 @@ double Angle::sin() const {
 double Angle::cos() const {
 	return std::cos(value);
 }
+
+int16_t Angle::degreesTimes10() const {
+	return static_cast <int16_t>(value * 1800.0 / M_PI);
+}

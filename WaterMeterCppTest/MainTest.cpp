@@ -262,7 +262,7 @@ namespace WaterMeterCppTest {
             payload1.timestamp = 1000000;
             payload1.buffer.result.sampleCount = 327;
             payload1.buffer.result.skipCount = 34;
-            payload1.buffer.result.averaged = { -1.0, -55.3 };
+            payload1.buffer.result.ellipseCenterTimes10 = {{-10, -553}};
             sensorDataQueue.send(&payload1);
             EXPECT_EQ(ConnectionState::MqttReady, connector.connect()) << "Reading queue";
 
@@ -277,7 +277,7 @@ namespace WaterMeterCppTest {
 [] Free Memory DataQueue #1: 12544
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://localhost/001122334455.version
-[] Result: {"timestamp":1970-01-01T00:00:01.000000,"last.x":0,"last.y":0,"summaryCount":{"samples":327,"pulses":0,"maxStreak":0,"skips":34},"exceptionCount":{"outliers":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"analysis":{"av.x":-1,"av.y":-55.3}}
+[] Result: {"timestamp":1970-01-01T00:00:01.000000,"last.x":0,"last.y":0,"summaryCount":{"samples":327,"pulses":0,"maxStreak":0,"skips":34},"exceptionCount":{"outliers":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"ellipse":{"cx":-1,"cy":-55.3,"rx":0,"ry":0,"phi":0}}
 [] Free Stack #0: 1564
 )";
             EXPECT_STREQ(expected, getPrintOutput()) << "Formatted result came through";

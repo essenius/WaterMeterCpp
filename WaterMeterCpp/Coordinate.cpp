@@ -23,6 +23,11 @@ bool Coordinate::operator==(const Coordinate& other) const {
     return aboutEqual(x, other.x) && aboutEqual(y, other.y);
 }
 
+// we need this to pass coordinates in a memory efficient way but still keep reasonable accuracy
+IntCoordinate Coordinate::times10() const {
+    return { {static_cast<int16_t>(x * 10),static_cast<int16_t>(y * 10)} };
+}
+
 Angle Coordinate::angle() const {
     if (x == 0 && y == 0) return {NAN};
     return {atan2(y, x)};

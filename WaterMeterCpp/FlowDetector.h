@@ -36,6 +36,9 @@ public:
 	void update(Topic topic, IntCoordinate payload) override;
 	bool wasReset() const { return _firstCall; }
 	bool wasSkipped() const { return _wasSkipped; }
+	IntCoordinate ellipseCenterTimes10() const { return _confirmedGoodFit.center.times10(); }
+	IntCoordinate ellipseRadiusTimes10() const { return _confirmedGoodFit.radius.times10(); }
+	int16_t ellipseAngleTimes10() const { return _confirmedGoodFit.angle.degreesTimes10(); }
 protected:
 	void addSample(const IntCoordinate& sample);
 	Coordinate calcMovingAverage();
