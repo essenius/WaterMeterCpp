@@ -1,6 +1,0 @@
-
-# git clone https://github.com/Microsoft/vcpkg.git .
-# .\bootstrap-vcpkg.bat
-
-vcpkg install eigen3:x64-windows
-vcpkg integrate install
