@@ -41,13 +41,14 @@ public:
 	int16_t ellipseAngleTimes10() const { return _confirmedGoodFit.angle.degreesTimes10(); }
 protected:
 	void addSample(const IntCoordinate& sample);
-	Coordinate calcMovingAverage();
+    Coordinate calcMovingAverage();
 	void detectPulse(Coordinate point);
 	CartesianEllipse executeFit() const;
 	void findPulseByCenter(const Coordinate& point);
 	void findPulseByPrevious(const Coordinate& point);
 	bool isRelevant(const Coordinate& point);
-    void reportAnomaly();
+	void processMovingAverageSample(Coordinate averageSample);
+	void reportAnomaly();
     int16_t noFitParameter(double angleDistance, bool fitSucceeded) const;
     void updateEllipseFit(Coordinate point);
     void updateMovingAverageArray(const IntCoordinate& sample);

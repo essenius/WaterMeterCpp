@@ -20,6 +20,7 @@ namespace WaterMeterCppTest {
     public:
         using FlowDetector::addSample;
         using FlowDetector::detectPulse;
+        using FlowDetector::processMovingAverageSample;
         using FlowDetector::_movingAverageArray;
         using FlowDetector::_movingAverage;
         using FlowDetector::_justStarted;

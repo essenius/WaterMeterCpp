@@ -25,7 +25,7 @@ double Angle::operator- (const double& other) const {
 	return  returnValue;
 }
 
-int Angle::quadrant() const {
+unsigned int Angle::quadrant() const {
 	if (value < -M_PI / 2.0) return 3;
 	if (value < 0.0) return 4;
 	if (value < M_PI / 2.0) return 1;

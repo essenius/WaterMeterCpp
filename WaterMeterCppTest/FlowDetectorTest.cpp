@@ -63,15 +63,37 @@ namespace WaterMeterCppTest {
 				eventServer.publish(Topic::Sample, measurement);
 			}
 
-			ASSERT_EQ(firstPulses, pulseClient.pulses(false)) << "First Pulses";
-			ASSERT_EQ(nextPulses, pulseClient.pulses(true)) << "Next Pulses";
-			ASSERT_EQ(anomalies, pulseClient.anomalies()) << "Anomalies";
-			ASSERT_EQ(noFits, pulseClient.noFits()) << "NoFits";
+			EXPECT_EQ(firstPulses, pulseClient.pulses(false)) << "First Pulses";
+			EXPECT_EQ(nextPulses, pulseClient.pulses(true)) << "Next Pulses";
+			EXPECT_EQ(anomalies, pulseClient.anomalies()) << "Anomalies";
+			EXPECT_EQ(noFits, pulseClient.noFits()) << "NoFits";
 		}
 	};
 
 	EventServer FlowDetectorTest::eventServer;
 	EllipseFit FlowDetectorTest::ellipseFit;
+
+	TEST_F(FlowDetectorTest, BiQuadrantTest) {
+		// Tests all cases where a quadrant may be skipped close to detection of a pulse or a search start
+		// First a circle for fitting, then 12 samples that check whether skipping a quadrant is dealt with right
+		// Test is similar to flowTestWithFile, but bypasses the moving average generation for simpler testing.
+		FlowDetectorDriver flowDetector(&eventServer, &ellipseFit);
+		const PulseTestEventClient pulseClient(&eventServer);
+		flowDetector.begin(2);
+		Coordinate measurement{};
+		std::ifstream measurements("BiQuadrant.txt");
+		EXPECT_TRUE(measurements.is_open()) << "File open";
+		measurements.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		while (measurements >> measurement.x) {
+			measurements >> measurement.y;
+			flowDetector.processMovingAverageSample(measurement);
+		}
+
+		EXPECT_EQ(1, pulseClient.pulses(false)) << "One pulse from the circle";
+		EXPECT_EQ(4, pulseClient.pulses(true)) << "4 pulses from the crafted test samples";
+		EXPECT_EQ(0, pulseClient.anomalies()) << "No anomalies";
+		EXPECT_EQ(0, pulseClient.noFits()) << "Fit worked";
+	}
 
 	TEST_F(FlowDetectorTest, VerySlowFlowTest) {
 		flowTestWithFile("verySlow.txt", 1,0, 0);
@@ -121,6 +143,11 @@ namespace WaterMeterCppTest {
 	TEST_F(FlowDetectorTest, FlushTest) {
 		flowTestWithFile("flush.txt", 2, 37, 325, 0, 11);
 	}
+
+	TEST_F(FlowDetectorTest, WrongOutlierTest) {
+		flowTestWithFile("wrong outliers.txt", 1, 61, 10, 0, 3);
+	}
+
 
 	TEST_F(FlowDetectorTest, SensorWasResetTest) {
 		FlowDetector flowDetector(&eventServer, &ellipseFit);

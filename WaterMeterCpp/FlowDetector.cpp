@@ -68,6 +68,7 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 		reportAnomaly();
 		return;
 	}
+	_foundAnomaly = false;
 	if (_firstCall) {
 		// skip samples as long as we get a flatline. Happens sometimes just after startup
 		if (sample.x == 0 && sample.y == 0) {
@@ -86,27 +87,7 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 	}
 
     const auto averageSample = calcMovingAverage();
-
-    if (_firstRound) {
-		// We have the first valid moving average. Start the process.
-		_ellipseFit->begin();
-		_startPoint = averageSample;
-		_referencePoint = _startPoint;
-		_previousPoint = _startPoint;
-		_firstRound = false;
-		_wasSkipped = true;
-		return;
-	}
-
-	if (!isRelevant(averageSample)) return;
-	detectPulse(averageSample);
-
-	_ellipseFit->addMeasurement(averageSample);
-	if (_ellipseFit->bufferIsFull()) {
-		updateEllipseFit(averageSample);
-	}
-	_previousPoint = averageSample;
-	_wasSkipped = false;
+	processMovingAverageSample(averageSample);
 }
 
 Coordinate FlowDetector::calcMovingAverage() {
@@ -138,18 +119,23 @@ CartesianEllipse FlowDetector::executeFit() const {
 
 void FlowDetector::findPulseByCenter(const Coordinate& point) {
 	const auto angleWithCenter = point.angleFrom(_confirmedGoodFit.center);
-	const int quadrant = angleWithCenter.quadrant();
+	const auto quadrant = angleWithCenter.quadrant();
+	const auto quadrantDifference = (_previousQuadrant - quadrant) % 4;
 	// previous angle is initialized in the first fit, so always has a valid value when coming here
 	const auto angleDistance = angleWithCenter - _previousAngleWithCenter.value;
 	_angleDistanceTravelled += angleDistance;
 	if (!_searchingForPulse) {
 		_foundPulse = false;
 		// start searching at the top of the ellipse. This takes care of jitter
-		if (quadrant == 1 && _previousQuadrant == 2) _searchingForPulse = true;
+		// Also consider the risk that a quadrant gets skipped because of an anomaly
+		if ((quadrantDifference == 1 && quadrant == 1) ||
+			(quadrantDifference == 2 && (quadrant == 1 || quadrant == 4))) _searchingForPulse = true;
 	}
 	else {
 		// reference point is the bottom of the ellipse
-		_foundPulse = quadrant == 3 && _previousQuadrant == 4;
+		// Again, also consider the risk that a quadrant gets skipped
+		_foundPulse = (quadrantDifference == 1 && quadrant == 3) ||
+			          (quadrantDifference == 2 && (quadrant == 3 || quadrant == 2));
 		if (_foundPulse) {
 			_eventServer->publish(Topic::Pulse, true);
  			_searchingForPulse = false;
@@ -209,6 +195,29 @@ bool FlowDetector::isRelevant(const Coordinate& point) {
 	}
 	_referencePoint = point;
 	return true;
+}
+
+void FlowDetector::processMovingAverageSample(const Coordinate averageSample) {
+	if (_firstRound) {
+		// We have the first valid moving average. Start the process.
+		_ellipseFit->begin();
+		_startPoint = averageSample;
+		_referencePoint = _startPoint;
+		_previousPoint = _startPoint;
+		_firstRound = false;
+		_wasSkipped = true;
+		return;
+	}
+
+	if (!isRelevant(averageSample)) return;
+	detectPulse(averageSample);
+
+	_ellipseFit->addMeasurement(averageSample);
+	if (_ellipseFit->bufferIsFull()) {
+		updateEllipseFit(averageSample);
+	}
+	_previousPoint = averageSample;
+	_wasSkipped = false;
 }
 
 void FlowDetector::reportAnomaly() {
