@@ -62,6 +62,10 @@ void Configuration::begin(const bool useSecrets) {
     getFirmwareConfig(_next);
 }
 
+int Configuration::freeBufferSpace() const {
+    return BUFFER_SIZE - static_cast<int>(_next - _buffer);
+}
+
 char* Configuration::getFirmwareConfig(char* start) {
     _preferences->begin(FIRMWARE, true);
     firmware.baseUrl = storeToBuffer(URL, &start);
@@ -176,10 +180,6 @@ void Configuration::putWifiConfig(const WifiConfig* wifiConfig) const {
         _preferences->putBytes(BSSID, wifiConfig->bssid, 6);
     }
     _preferences->end();
-}
-
-int Configuration::freeBufferSpace() const {
-    return BUFFER_SIZE - static_cast<int>(_next - _buffer);
 }
 
 char* Configuration::storeToBuffer(const char* key, char** startLocation) {

@@ -27,7 +27,7 @@ public:
     void update(Topic topic, long payload) override;
 
 private:
-    // 1 pulse per cycle, 16500 cycles per 1000L
+    // 1 pulse per cycle, this is cycles per 1000 L
     // This needs to be calibrated.
     static constexpr double PULSES_PER_UNIT = 16500;
     static constexpr double PULSE_DELTA = 1.0 / PULSES_PER_UNIT;

@@ -65,7 +65,8 @@ enum class Topic: int16_t {
     UpdateProgress,
     ButtonPushed,
     Begin,
-    NoFit
+    NoFit,
+    StartDelay
 };
 
 union EventPayload {

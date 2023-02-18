@@ -34,7 +34,7 @@ public:
 	Coordinate movingAverage() const { return _movingAverage; }
 	void update(Topic topic, long payload) override;
 	void update(Topic topic, IntCoordinate payload) override;
-	bool wasReset() const { return _firstCall; }
+	bool wasReset() const { return _wasReset; }
 	bool wasSkipped() const { return _wasSkipped; }
 	IntCoordinate ellipseCenterTimes10() const { return _confirmedGoodFit.center.times10(); }
 	IntCoordinate ellipseRadiusTimes10() const { return _confirmedGoodFit.radius.times10(); }
@@ -79,6 +79,7 @@ protected:
     bool _wasSkipped = false;
 	double _tangentDistanceTravelled = 0;
     Angle _previousAngleWithPreviousFromStart = {};
+	bool _wasReset = true;
 };
 
 

@@ -54,6 +54,8 @@ void Connector::begin(const Configuration* configuration) {
     _eventServer->subscribe(_serializer, Topic::SensorData);
 
     // what can be sent to the communicator
+    _eventServer->subscribe(_communicatorQueueClient, Topic::BatchSizeDesired);
+
     _eventServer->subscribe(_communicatorQueueClient, Topic::Connection);
     _eventServer->subscribe(_communicatorQueueClient, Topic::WifiSummaryReady);
     _eventServer->subscribe(_communicatorQueueClient, Topic::FreeQueueSize);

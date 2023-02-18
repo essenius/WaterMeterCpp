@@ -33,8 +33,9 @@ bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsign
     _eventServer->subscribe(_queueClient, Topic::Pulse);
     _eventServer->subscribe(_queueClient, Topic::ResultWritten);
     _eventServer->subscribe(_queueClient, Topic::Sample);
-    _eventServer->subscribe(_queueClient, Topic::SkipSamples);
     _eventServer->subscribe(_queueClient, Topic::SensorWasReset);
+    _eventServer->subscribe(_queueClient, Topic::SkipSamples);
+    _eventServer->subscribe(_queueClient, Topic::StartDelay);
     _eventServer->subscribe(_queueClient, Topic::TimeOverrun);
     // SensorReader.begin can publish these     
     _eventServer->subscribe(_queueClient, Topic::Alert);
@@ -57,6 +58,10 @@ void Sampler::beginLoop() {
 }
 
 void Sampler::loop() {
+    const unsigned long startDelay = micros() - _scheduledStartTime;
+    if (startDelay > 1000) {
+        _eventServer->publish(Topic::StartDelay, startDelay);
+    }
     const IntCoordinate sample = _sensorReader->read();
     // this triggers flowDetector, sampleAggregator and the comms task
     _eventServer->publish(Topic::Sample, sample);

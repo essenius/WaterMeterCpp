@@ -39,6 +39,7 @@ Log::Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder) :
 void Log::begin() {
     update(Topic::MessageFormatted, "Starting");
     _eventServer->subscribe(this, Topic::Alert);
+    _eventServer->subscribe(this, Topic::BatchSizeDesired);
     _eventServer->subscribe(this, Topic::Blocked);
     _eventServer->subscribe(this, Topic::Connection);
     _eventServer->subscribe(this, Topic::ErrorFormatted);
@@ -69,7 +70,10 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::Alert:
         log("Alert: %s", payload);
         break;
-    case Topic::Blocked:
+    case Topic::BatchSizeDesired:
+        log("Batch size desired: %s", payload);
+        break;
+    break;    case Topic::Blocked:
         log("Blocked: %s", payload);
         break;
     case Topic::Connection: 
@@ -87,7 +91,10 @@ void Log::update(Topic topic, const char* payload) {
         log("No fit: %s deg", payload);
         break;
     case Topic::SensorState:
-        log("No sensor found: %s", payload);
+        log("Sensor state: %s", payload);
+        break;
+    case Topic::StartDelay:
+        log("Start delay: %s", payload);
         break;
     case Topic::ResultFormatted:
         log("Result: %s", payload);

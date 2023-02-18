@@ -118,6 +118,7 @@ IntCoordinate MagnetoSensorReader::read() {
         _streakCount++;
         // if we have too many of the same results in a row, reset the sensor
         if (_streakCount >= FLATLINE_STREAK) {
+            _sensorState = SensorState::FlatLine;
             reset();
         }
     }

@@ -23,5 +23,6 @@ namespace WaterMeterCppTest {
         _foundPulse = pulse;
         _foundAnomaly = outlier;
         _firstCall = first;
+        _wasReset = first;
     }
 }

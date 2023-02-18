@@ -68,6 +68,13 @@ namespace WaterMeterCppTest {
 			EXPECT_EQ(anomalies, pulseClient.anomalies()) << "Anomalies";
 			EXPECT_EQ(noFits, pulseClient.noFits()) << "NoFits";
 		}
+
+        static void expectAnomalyAndSkipped(const FlowDetector& flowDetector, const int16_t x, const int16_t y) {
+			eventServer.publish(Topic::Sample, IntCoordinate{ {x, y} });
+			EXPECT_TRUE(flowDetector.foundAnomaly());
+			EXPECT_TRUE(flowDetector.wasSkipped());
+
+		}
 	};
 
 	EventServer FlowDetectorTest::eventServer;
@@ -154,9 +161,8 @@ namespace WaterMeterCppTest {
 		flowDetector.begin(3);
 		constexpr int RADIUS = 20;
 		for (int pass = 0; pass < 2; pass++) {
-			EXPECT_TRUE(flowDetector.wasReset()) << "Flow detector reset before adding samples pass " << pass;
 			unsigned int skipped = 0;
-
+			EXPECT_TRUE(flowDetector.wasReset()) << "Flow detector reset at pass " << pass;
 			for (int i = 0; i < 30; i++) {
 				const double angle = i * M_PI / 16.0;
 				eventServer.publish(Topic::Sample, IntCoordinate{ {static_cast <int16_t>(cos(angle) * RADIUS), static_cast <int16_t>(sin(angle) * RADIUS)} });
@@ -175,16 +181,14 @@ namespace WaterMeterCppTest {
 		EXPECT_FALSE(flowDetector.wasSkipped()) << "sample not skipped at end";
 	}
 
+
 	TEST_F(FlowDetectorTest, SaturatedValuesIgnoredTest) {
 		FlowDetector flowDetector(&eventServer, &ellipseFit);
 		flowDetector.begin(3);
-		eventServer.publish(Topic::Sample, IntCoordinate{{-32768, 32767}});
-		ASSERT_TRUE(flowDetector.wasReset());
-		eventServer.publish(Topic::Sample, IntCoordinate{{0, -32768}});
-		ASSERT_TRUE(flowDetector.wasReset());
-		eventServer.publish(Topic::Sample, IntCoordinate{{32767, 0}});
-		ASSERT_TRUE(flowDetector.wasReset());
-		eventServer.publish(Topic::Sample, IntCoordinate{ {-32768, 0} });
-		ASSERT_TRUE(flowDetector.wasReset());
+		expectAnomalyAndSkipped(flowDetector ,-32768, 32767);
+		expectAnomalyAndSkipped(flowDetector, 0, -32768);
+		expectAnomalyAndSkipped(flowDetector, 32767, 0);
+		expectAnomalyAndSkipped(flowDetector, -32768, 0);
+		expectAnomalyAndSkipped(flowDetector, -32768, 32767);
 	}
 }

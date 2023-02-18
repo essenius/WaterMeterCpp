@@ -27,7 +27,8 @@ enum class SensorState : int16_t {
     Ok = 1,
     PowerError = 2,
     BeginError = 3,
-    ReadError = 4
+    ReadError = 4,
+    FlatLine = 5
 };
 
 

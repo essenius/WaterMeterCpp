@@ -51,6 +51,7 @@ void FlowDetector::update(const Topic topic, const long payload) {
 	if (topic == Topic::SensorWasReset) {
 		// If we needed to reset the sensor, also reset the measurement process when the next sample comes in
 		_firstCall = true;
+		_wasReset = true;
 		_justStarted = true;
 	}
 }
@@ -69,6 +70,7 @@ void FlowDetector::addSample(const IntCoordinate& sample) {
 		return;
 	}
 	_foundAnomaly = false;
+	_wasReset = _firstCall;
 	if (_firstCall) {
 		// skip samples as long as we get a flatline. Happens sometimes just after startup
 		if (sample.x == 0 && sample.y == 0) {
@@ -209,7 +211,11 @@ void FlowDetector::processMovingAverageSample(const Coordinate averageSample) {
 		return;
 	}
 
-	if (!isRelevant(averageSample)) return;
+	if (!isRelevant(averageSample)) {
+		// not leaving potential loose ends
+		_foundPulse = false;
+		return;
+	}
 	detectPulse(averageSample);
 
 	_ellipseFit->addMeasurement(averageSample);
