@@ -46,7 +46,7 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.102.8";
+constexpr const char* const BUILD_VERSION = "0.103.0";
 
 // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
 // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
@@ -59,6 +59,7 @@ constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
 constexpr int SDA_OLED = 32;
 constexpr int SCL_OLED = 33;
 constexpr int BUTTON_PORT = 34;
+
 
 // This is where you would normally use an injector framework,
 // We define the objects globally to avoid using (and fragmenting) the heap.
@@ -131,6 +132,14 @@ TimeServer timeServer;
 Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &sensorDataQueue,
                     &connectorDataQueue, &serializer, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
 
+
+
+static constexpr BaseType_t CORE1 = 1;
+static constexpr BaseType_t CORE0 = 0;
+static constexpr uint16_t STACK_DEPTH = 10000;
+static constexpr BaseType_t PRIORITY_1 = 1;
+
+TaskHandle_t samplerTaskHandle;
 TaskHandle_t communicatorTaskHandle;
 TaskHandle_t connectorTaskHandle;
 
@@ -162,14 +171,18 @@ void setup() {
     // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
     sampler.begin(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
 
+    // On timer fire, read from the sensor and put sample in a queue. Use core 1 so we are not (or at least much less) influenced by Wifi and printing
+    xTaskCreatePinnedToCore(Sampler::task, "Sampler", STACK_DEPTH, &sampler, PRIORITY_1, &samplerTaskHandle, CORE1);
+
     // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
-    xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
+    xTaskCreatePinnedToCore(Connector::task, "Connector", STACK_DEPTH, &connector, PRIORITY_1, &connectorTaskHandle, CORE0);
 
-    // the communicator loop takes care of logging and leds, as well as passing on data to the connector if there is a connection
-    xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
+    // Take care of logging and leds, as well as passing on data to the connector if there is a connection. Also on core 0, as not time sensitive
+    xTaskCreatePinnedToCore(Communicator::task, "Communicator", STACK_DEPTH, &communicator, PRIORITY_1, &communicatorTaskHandle, CORE0);
 
-    // beginLoop can only run when both sampler and connector have finished settting up, since it can start publishing right away
-    sampler.beginLoop();
+    // beginLoop can only run when both sampler and connector have finished settting up, since they can start publishing right away.
+    // This also starts the hardware timer.
+    sampler.beginLoop(samplerTaskHandle);
 
     device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 }

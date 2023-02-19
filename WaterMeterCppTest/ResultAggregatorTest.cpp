@@ -225,7 +225,7 @@ namespace WaterMeterCppTest {
         }
     }
 
-    TEST_F(ResultAggregatorTest, resultAggregatorOverrunTest) {
+    /*TEST_F(ResultAggregatorTest, resultAggregatorOverrunTest) {
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 1);
@@ -244,7 +244,7 @@ namespace WaterMeterCppTest {
         assertExceptions(0, 1, result);
         assertDuration(10125, 10125, 10125, result);
         // TODO: filtered value analysis
-    }
+    }*/
 
     TEST_F(ResultAggregatorTest, resultAggregatorResetTest) {
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);

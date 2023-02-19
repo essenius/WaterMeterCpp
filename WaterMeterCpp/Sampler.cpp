@@ -11,17 +11,21 @@
 
 #include "Sampler.h"
 
-constexpr int MAX_CONSECUTIVE_OVERRUNS = 3;
+TaskHandle_t Sampler::_taskHandle = nullptr;
 
 Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowDetector* flowDetector, Button* button,
                  SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
     _eventServer(eventServer), _sensorReader(sensorReader), _flowDetector(flowDetector), _button(button),
-    _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {}
+    _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {
+    _sampleQueue = xQueueCreate(SAMPLE_QUEUE_SIZE, sizeof(IntCoordinate));
+    _overrunQueue = xQueueCreate(OVERRUN_QUEUE_SIZE, sizeof(long));
+
+}
 
 // if it returns false, the setup failed. Don't try any other functions if so.
 bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsigned long samplePeriod) {
     _samplePeriod = samplePeriod;
-    _maxDurationForChecks = _samplePeriod - _samplePeriod / 5;
+    _ticksPerSample = samplePeriod / 1000UL;
     _button->begin();
     // what can be sent to the communicator (note: must be numerical payloads)
     _eventServer->subscribe(_queueClient, Topic::BatchSize);
@@ -50,67 +54,77 @@ bool Sampler::begin(MagnetoSensor* sensor[], const size_t listSize, const unsign
     return true;
 }
 
-void Sampler::beginLoop() {
+void Sampler::beginLoop(const TaskHandle_t taskHandle) {
+    _taskHandle = taskHandle;
     // These two publish, so we need to run them when both threads finished setting up the event listeners
     _sampleAggregator->begin();
     _resultAggregator->begin();
+
+    // start the hardware timer. The task should already be listening.
+
+    _timer = timerBegin(TIMER_NUMBER, DIVIDER, COUNT_UP);
+    timerAttachInterrupt(_timer, &Sampler::onTimer, EDGE);
+    timerAlarmWrite(_timer, _samplePeriod, REPEAT);
     _scheduledStartTime = micros();
+    timerAlarmEnable(_timer);
 }
 
+/**
+ * \brief The less time sensitive activities that need to be handled in a sample.
+ * As long as on average the time stays below the sample time we're good.
+ */
 void Sampler::loop() {
-    const unsigned long startDelay = micros() - _scheduledStartTime;
-    if (startDelay > 1000) {
-        _eventServer->publish(Topic::StartDelay, startDelay);
+    IntCoordinate sample{};
+    const auto startTime = micros();
+    if (xQueueReceive(_sampleQueue, &sample, _ticksPerSample) == pdTRUE) {
+        // this triggers flowDetector, sampleAggregator and the comms task
+        _eventServer->publish(Topic::Sample, sample);
+        _resultAggregator->addMeasurement(sample, _flowDetector);
+        _sampleAggregator->send();
+        // Duration gets picked up by resultAggregator, so must be published before sending
+        // making sure to use durations to operate on, not timestamps -- to avoid overflow issues
+        const auto durationSoFar = micros() - startTime;
+        // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
+        _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar + _additionalDuration));
+        _resultAggregator->send();
+        const auto duration = micros() - startTime;
+        _additionalDuration = duration - durationSoFar;
     }
-    const IntCoordinate sample = _sensorReader->read();
-    // this triggers flowDetector, sampleAggregator and the comms task
-    _eventServer->publish(Topic::Sample, sample);
-    _resultAggregator->addMeasurement(sample, _flowDetector);
-    _sampleAggregator->send();
-    // Duration gets picked up by resultAggregator, so must be published before sending
-    // making sure to use durations to operate on, not timestamps -- to avoid overflow issues
-    const unsigned long durationSoFar = micros() - _scheduledStartTime;
-    // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
-    _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar + _additionalDuration));
-    _resultAggregator->send();
-
-    unsigned long duration = micros() - _scheduledStartTime;
-    _additionalDuration = duration - durationSoFar;
-    if (duration > _samplePeriod) {
-        _consecutiveOverrunCount++;
-        // It took too long, see if we need to skip measurements to catch up. 
-        duration = micros() - _scheduledStartTime;
-        // integer mathematics, i.e. no fractions.
-        // If we have too many consecutive overruns, skip an extra period.
-        const auto shiftPeriod =
-            // ReSharper disable once CppRedundantParentheses - intent clearer this way
-            (duration / _samplePeriod) * _samplePeriod +
-            (_consecutiveOverrunCount > MAX_CONSECUTIVE_OVERRUNS ? _samplePeriod : 0);
-        _eventServer->publish(Topic::SkipSamples, shiftPeriod / _samplePeriod);
-        _scheduledStartTime += shiftPeriod;
-        // immediately start the next loop in an attempt to catch up.
+    // this should be quick and not likely to have more than one entry,
+    // so not a lot of risk of running into the watchdog timeout
+    long overrun = 0;
+    while (xQueueReceive(_overrunQueue, &overrun, 0) == pdTRUE) {
+        _eventServer->publish(Topic::TimeOverrun, overrun);
     }
-    else {
-        _consecutiveOverrunCount = 0;
-        // Wait for the next sample time; read the command queue while we're at it.
-        if (duration < _maxDurationForChecks) {
-            _queueClient->receive();
-            _button->check();
-        }
+    _queueClient->receive();
+    _button->check();
+}
 
-        // now we have the next scheduled start time, so that is in the future.
-        duration = micros() - _scheduledStartTime;
-        const long delayTime = static_cast<long>(_samplePeriod - duration);
 
-        // delayMicroseconds() is less accurate: sometimes up to 1000 us too much wait time.
+[[ noreturn ]] void Sampler::task(void* parameter) {
+    const auto me = static_cast<Sampler*>(parameter);
+    for (;;) {
+        me->sensorLoop();
+    }
+}
 
-        if (delayTime > 1000) {
-            delayMicroseconds(delayTime - 1000);
+void ARDUINO_ISR_ATTR Sampler::onTimer() {
+    vTaskNotifyGiveFromISR(_taskHandle, nullptr);
+}
+
+/**
+ * \brief Wait for a timer event, get a sensor reading and put it on a queue. Also check for time overrun.
+ * This runs in a different thread, so we need queues to commnicate
+ */
+void Sampler::sensorLoop() {
+    if (ulTaskNotifyTake(pdTRUE, _ticksPerSample) == 1) {
+        const IntCoordinate sample = _sensorReader->read();
+        xQueueSendToBack(_sampleQueue, &sample, 0);
+        const auto overrun = std::max(static_cast<long>(micros() - _scheduledStartTime - _samplePeriod), 0L);
+        if (overrun != _previousOverrun) {
+            xQueueSendToBack(_overrunQueue, &overrun, 0);
+            _previousOverrun = overrun;
         }
-        do {
-            duration = micros() - _scheduledStartTime;
-        }
-        while (duration < _samplePeriod);
         _scheduledStartTime += _samplePeriod;
     }
 }

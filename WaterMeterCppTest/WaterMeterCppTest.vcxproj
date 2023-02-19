@@ -151,6 +151,7 @@
     <ClCompile Include="ResultAggregatorTest.cpp" />
     <ClCompile Include="SafeCStringTest.cpp" />
     <ClCompile Include="SampleAggregatorTest.cpp" />
+    <ClCompile Include="SamplerDriver.cpp" />
     <ClCompile Include="SamplerTest.cpp" />
     <ClCompile Include="SerializerTest.cpp" />
     <ClCompile Include="TestEventClient.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="MagnetoSensorReaderDriver.h" />
     <ClInclude Include="MqttGatewayMock.h" />
     <ClInclude Include="PulseTestEventClient.h" />
+    <ClInclude Include="SamplerDriver.h" />
     <ClInclude Include="TestEventClient.h" />
     <ClInclude Include="TestHelper.h" />
     <ClInclude Include="TimeServerMock.h" />

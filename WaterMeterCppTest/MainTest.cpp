@@ -36,9 +36,9 @@
 #include "../WaterMeterCpp/Log.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
 #include "../WaterMeterCpp/QueueClient.h"
-#include "../WaterMeterCpp/Sampler.h"
 
 #include "HTTPClient.h"
+#include "SamplerDriver.h"
 #include "TestEventClient.h"
 #include "WiFi.h"
 #include "Wire.h"
@@ -76,7 +76,7 @@ namespace WaterMeterCppTest {
             uxRingbufReset();
 
             // For being able to set the firmware 
-            constexpr auto BUILD_VERSION = "0.102.1";
+            constexpr auto BUILD_VERSION = "0.103.0";
 
             // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
             // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
@@ -150,7 +150,7 @@ namespace WaterMeterCppTest {
             Button button(&buttonPublisher, BUTTON_PORT);
 
             DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
-            Sampler sampler(&samplerEventServer, &sensorReader, &flowDetector, &button, &sampleAggregator, &resultAggregator,
+            SamplerDriver sampler(&samplerEventServer, &sensorReader, &flowDetector, &button, &sampleAggregator, &resultAggregator,
                             &samplerQueueClient);
             Communicator communicator(&communicatorEventServer, &oledDriver, &device,
                                       &connectorDataQueue, &serializer2,
@@ -161,6 +161,12 @@ namespace WaterMeterCppTest {
                                 &connectorDataQueue, &serializer, &connectorSamplerQueueClient,
                                 &connectorCommunicatorQueueClient);
 
+            static constexpr BaseType_t CORE1 = 1;
+            static constexpr BaseType_t CORE0 = 0;
+            static constexpr uint16_t STACK_DEPTH = 10000;
+            static constexpr BaseType_t PRIORITY_1 = 1;
+
+            TaskHandle_t samplerTaskHandle;
             TaskHandle_t communicatorTaskHandle;
             TaskHandle_t connectorTaskHandle;
 
@@ -200,16 +206,18 @@ namespace WaterMeterCppTest {
             EXPECT_STREQ("[] Starting\n", getPrintOutput()) << "Print output started";
             clearPrintOutput();
 
+            // On timer fire, read from the sensor and put sample in a queue. Use core 1 so we are not (or at least much less) influenced by Wifi and printing
+            xTaskCreatePinnedToCore(Sampler::task, "Sampler", STACK_DEPTH, &sampler, PRIORITY_1, &samplerTaskHandle, CORE1);
+
             // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
-            xTaskCreatePinnedToCore(Connector::task, "Connector", 10000, &connector, 1, &connectorTaskHandle, 0);
+            xTaskCreatePinnedToCore(Connector::task, "Connector", STACK_DEPTH, &connector, PRIORITY_1, &connectorTaskHandle, CORE0);
 
-            // the communicator loop takes care of logging and leds, as well as passing on data to the connector if there is a connection
-            xTaskCreatePinnedToCore(Communicator::task, "Communicator", 10000, &communicator, 1, &communicatorTaskHandle, 0);
+            // Take care of logging and leds, as well as passing on data to the connector if there is a connection. Also on core 0, as not time sensitive
+            xTaskCreatePinnedToCore(Communicator::task, "Communicator", STACK_DEPTH, &communicator, PRIORITY_1, &communicatorTaskHandle, CORE0);
 
-            EXPECT_STREQ("", getPrintOutput()) << "Print output empty 2";
-
-            // beginLoop can only run when both sampler and connector have finished setup, since it can start publishing right away
-            sampler.beginLoop();
+            // beginLoop can only run when both sampler and connector have finished settting up, since they can start publishing right away.
+            // This also starts the hardware timer.
+            sampler.beginLoop(samplerTaskHandle);
 
             device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
 
@@ -217,6 +225,9 @@ namespace WaterMeterCppTest {
             samplerEventServer.subscribe(&logger, Topic::Sample);
             wifi.announceReady();
 
+            // emulate a timer trigger
+            SamplerDriver::onTimer();
+            sampler.sensorLoop();
             sampler.loop();
             communicator.loop();
             connector.loop();
@@ -285,6 +296,8 @@ namespace WaterMeterCppTest {
 
             // expect an overrun due to delays in the loop tasks
 
+            SamplerDriver::onTimer();
+            sampler.sensorLoop();
             sampler.loop();
 
             // switch off delay() so we don't get an overrun next time
@@ -293,7 +306,7 @@ namespace WaterMeterCppTest {
 
             EXPECT_EQ(ConnectionState::MqttReady, connector.loop()) << "Connector loop";
             communicator.loop();
-            EXPECT_STREQ("[] Time overrun: 1115550\n[] Skipped 112 samples\n[] Free Stack #0: 1628\n", getPrintOutput()) << "Time overrun";
+            EXPECT_STREQ("[] Time overrun: 1105700\n[] Free Stack #0: 1628\n", getPrintOutput()) << "Time overrun";
 
             connectorEventServer.publish(Topic::ResetSensor, 2);
             TestEventClient client(&samplerEventServer);
@@ -304,8 +317,7 @@ namespace WaterMeterCppTest {
             clearPrintOutput();
             communicator.loop();
 
-            auto expected2 = R"([] Free Spaces Queue #1: 13
-[] Sensor state: 0
+            auto expected2 = R"([] Sensor state: 0
 [] Alert: 1
 [] Sensor state: 3
 [] Sensor was reset: 2

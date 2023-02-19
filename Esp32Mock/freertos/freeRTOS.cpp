@@ -35,7 +35,7 @@ public:
     QueueEntry element[MAX_ELEMENTS];
 };
 
-constexpr short MAX_QUEUES = 5;
+
 Queue queue[MAX_QUEUES];
 QueueHandle_t queueHandle[MAX_QUEUES] = {nullptr};
 short queueIndex = 0;
@@ -137,3 +137,15 @@ BaseType_t xTaskCreatePinnedToCore(
 TaskHandle_t testHandle = reinterpret_cast<TaskHandle_t>(42);
 
 TaskHandle_t xTaskGetCurrentTaskHandle() { return testHandle; }
+
+bool taskNotifyLocked = true;
+
+void vTaskNotifyGiveFromISR(TaskHandle_t xTaskToNotify, BaseType_t* pxHigherPriorityTaskWoken) {
+    taskNotifyLocked = false;
+}
+
+uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t xTicksToWait) {
+    if (taskNotifyLocked) return 0;
+    taskNotifyLocked = true;
+    return 1;
+}

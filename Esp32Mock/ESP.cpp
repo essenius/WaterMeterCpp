@@ -180,4 +180,24 @@ const char* toString(LogLevel level) {
     return nullptr;
 }
 
+int timerAlarmEnabled = false;
+hw_timer_t dummy{ 1, 1 };
+
+hw_timer_t* timerBegin(uint8_t num, uint16_t divider, bool countUp) {
+    dummy.num = num;
+    dummy.group = static_cast<uint8_t>(divider);
+    return &dummy;
+}
+
+void timerAlarmEnable(hw_timer_t* timer) {
+    timerAlarmEnabled = true;
+}
+
+void timerEnd(hw_timer_t* timer) {
+    dummy.num = 255;
+    dummy.group = 255;
+}
+
 LogLevel minLogLevel = LogLevel::Info;
+
+

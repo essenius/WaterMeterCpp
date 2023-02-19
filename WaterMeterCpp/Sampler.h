@@ -28,10 +28,19 @@ public:
     Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowDetector* flowDetector, Button* button, 
             SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient);
     bool begin(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
-    void beginLoop();
+    void beginLoop(TaskHandle_t taskHandle);
     void loop();
+    static void task(void* parameter);
 
-private:
+protected:
+    static constexpr byte TIMER_NUMBER = 0;
+    static constexpr unsigned short DIVIDER = 80; // 80 MHz -> 1 MHz
+    static constexpr UBaseType_t SAMPLE_QUEUE_SIZE = 100;
+    static constexpr UBaseType_t OVERRUN_QUEUE_SIZE = 20;
+    static constexpr bool REPEAT = true;
+    static constexpr bool COUNT_UP = true;
+    static constexpr bool EDGE = true;
+
     EventServer* _eventServer;
     MagnetoSensorReader* _sensorReader;
     FlowDetector* _flowDetector;
@@ -40,10 +49,20 @@ private:
     ResultAggregator* _resultAggregator;
     QueueClient* _queueClient;
     unsigned long _additionalDuration = 0;
-    unsigned long _maxDurationForChecks = 8000;
     unsigned long _samplePeriod = 10000;
+    unsigned long _ticksPerSample = 10;
     unsigned long _scheduledStartTime = 0;
-    unsigned long _consecutiveOverrunCount = 0;
+    long _previousOverrun = 0;
+
+    hw_timer_t* _timer = nullptr;
+    QueueHandle_t _sampleQueue = nullptr;
+    QueueHandle_t _overrunQueue = nullptr;
+    static TaskHandle_t _taskHandle;
+    unsigned long _lastLoopStart = 0;
+
+    static void ARDUINO_ISR_ATTR onTimer();
+    void sensorLoop();
+
 };
 
 #endif

@@ -21,7 +21,7 @@ class ResultAggregator final : public Aggregator {
 public:
     ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
                      uint32_t measureIntervalMicros);
-    void addDuration(unsigned long duration);
+    void addDuration(unsigned long duration) const;
     void addMeasurement(const IntCoordinate& value, const FlowDetector* result);
     using Aggregator::begin;
     void begin();
@@ -37,7 +37,6 @@ protected:
     static constexpr long FLUSH_RATE_INTERESTING = 100L;
 
     ResultData* _result;
-    ChangePublisher<long> _timeOverrun;
     long _idleFlushRate = FLUSH_RATE_IDLE;
     uint32_t _measureIntervalMicros = 0;
     long _nonIdleFlushRate = FLUSH_RATE_INTERESTING;

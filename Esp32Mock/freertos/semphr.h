@@ -21,7 +21,7 @@
 using SemaphoreHandle_t = void*;
 
 inline SemaphoreHandle_t xSemaphoreCreateMutex() { return nullptr; }
-inline void xSemaphoreTake(SemaphoreHandle_t handle, unsigned long delay) {}
+inline BaseType_t xSemaphoreTake(SemaphoreHandle_t handle, unsigned long delay) { return pdTRUE; }
 inline void xSemaphoreGive(SemaphoreHandle_t handle) {}
-
+inline void xSemaphoreGiveFromISR(QueueHandle_t xQueue, BaseType_t* pxHigherPriorityTaskWoken) {}
 #endif

@@ -18,6 +18,7 @@
 #ifndef HEADER_ESP
 #define HEADER_ESP
 #define WIN32_LEAN_AND_MEAN
+#define ARDUINO_ISR_ATTR
 #include <cstdint>
 #include <string>
 #include "../WaterMeterCpp/SafeCString.h"
@@ -167,4 +168,14 @@ void log_v(const char* format, Arguments ... arguments) {
     log_printf(LogLevel::Verbose, format, arguments...);
 }
 
+struct hw_timer_t {
+    uint8_t group;
+    uint8_t num;
+};
+
+hw_timer_t* timerBegin(uint8_t num, uint16_t divider, bool countUp);
+inline void timerAttachInterrupt(hw_timer_t* timer, void (*fn)(void), bool edge) {}
+inline void timerAlarmWrite(hw_timer_t* timer, uint64_t alarm_value, bool autoreload) {}
+void timerAlarmEnable(hw_timer_t* timer);
+void timerEnd(hw_timer_t* timer);
 #endif

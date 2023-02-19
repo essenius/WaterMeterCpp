@@ -266,6 +266,8 @@ void Connector::handleWifiReady() {
     _state = ConnectionState::Disconnected;
 }
 
+// TODO: create new TaskExecutor class that contains task and virtual loop. Saves 14 coverage blocks
+
 [[ noreturn]] void Connector::task(void* parameter) {
     const auto me = static_cast<Connector*>(parameter);
 
