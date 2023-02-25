@@ -17,7 +17,6 @@
 #define HEADER_INTCOORDINATE
 
 #include "Coordinate.h"
-#include "ESP.h"
 #include <climits>
 
 union IntCoordinate {
@@ -45,8 +44,19 @@ union IntCoordinate {
         return { static_cast<double>(x), static_cast<double>(y) };
     }
 
+    // We reserve SHRT_MIN to indicate saturated values
+    // We can't use another field for quality, because we need to transport the coordinate in 32 bits.
     bool isSaturated() const {
-        return x == SHRT_MIN || x == SHRT_MAX || y == SHRT_MIN || y == SHRT_MAX;
+        return x == SHRT_MIN || y == SHRT_MIN;
+    }
+
+    // SHRT_MAX indicates a read error (neither QMC nor HMC delivers this as a valid value)
+    bool hasError() const {
+        return x == SHRT_MAX || y == SHRT_MAX;
+    }
+
+    static IntCoordinate error() {
+        return IntCoordinate { SHRT_MAX, SHRT_MAX };
     }
 };
 

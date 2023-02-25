@@ -83,9 +83,13 @@ bool MagnetoSensorHmc::read(SensorData& sample) const {
 
     //Read data from each axis, 2 registers per axis
     // order: x MSB, x LSB, z MSB, z LSB, y MSB, y LSB
-    constexpr byte BYTES_TO_READ = 6;
-    _wire->requestFrom(_address, BYTES_TO_READ);
-    while (_wire->available() < BYTES_TO_READ) {}
+    constexpr size_t BYTES_TO_READ = 6;
+    _wire->requestFrom(_address, BYTES_TO_READ, STOP_AFTER_SEND);
+    const auto timestamp = micros();
+    while (_wire->available() < BYTES_TO_READ) {
+        if (micros() - timestamp > 10) return false;
+    }
+
     sample.x = _wire->read() << 8;
     sample.x |= _wire->read();
     sample.z = _wire->read() << 8;

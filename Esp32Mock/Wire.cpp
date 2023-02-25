@@ -59,7 +59,7 @@ int TwoWire::read() {
     return _nextResult++;
 }
 
-uint8_t TwoWire::requestFrom(uint8_t address, uint8_t size) {
+uint8_t TwoWire::requestFrom(uint8_t address, uint8_t size, bool stop) {
     return 0;
 }
 

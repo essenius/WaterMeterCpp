@@ -60,7 +60,6 @@ constexpr int SDA_OLED = 32;
 constexpr int SCL_OLED = 33;
 constexpr int BUTTON_PORT = 34;
 
-
 // This is where you would normally use an injector framework,
 // We define the objects globally to avoid using (and fragmenting) the heap.
 // we do use dependency injection to hide this design decision as much as possible

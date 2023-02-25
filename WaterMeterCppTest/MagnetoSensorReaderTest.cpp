@@ -13,7 +13,6 @@
 #include "gtest/gtest.h"
 
 #include "TestEventClient.h"
-#include "Wire.h"
 #include "MagnetoSensorReaderDriver.h"
 #include "../WaterMeterCpp/MagnetoSensorNull.h"
 #include "../WaterMeterCpp/MagnetoSensorQmc.h"
@@ -32,8 +31,7 @@ namespace WaterMeterCppTest {
         MagnetoSensorReader sensorReader(&eventServer);
         EXPECT_FALSE(sensorReader.begin(list, 1)) << "Begin failed";
         const auto result = sensorReader.read();
-        EXPECT_EQ(0, result.x) << "Read without sensor returns x=0";
-        EXPECT_EQ(0, result.y) << "Read without sensor returns y=0";
+        EXPECT_TRUE(result.hasError()) << "Read has error";
     }
 
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderCustomPowerPinTest) {
@@ -87,8 +85,6 @@ namespace WaterMeterCppTest {
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderRecoverTest) {
         digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
         EventServer eventServer;
-        TestEventClient alertClient(&eventServer);
-        eventServer.subscribe(&alertClient, Topic::Alert);
         TestEventClient stateClient(&eventServer);
         eventServer.subscribe(&stateClient, Topic::SensorState);
         MagnetoSensorMock mockSensor;
@@ -96,11 +92,9 @@ namespace WaterMeterCppTest {
         MagnetoSensor* list[] = {&mockSensor};
         MagnetoSensorReaderDriver sensorReader(&eventServer);
         EXPECT_FALSE(sensorReader.begin(list, 1)) << "Reader failed to start sensor";
-        EXPECT_EQ(1, alertClient.getCallCount()) << "Alert started (sensor not started)";
         EXPECT_EQ(1, stateClient.getCallCount()) << "State sent once";
         EXPECT_STREQ("3", stateClient.getPayload()) << "Begin error";
         EXPECT_TRUE(sensorReader.begin(list, 1)) << "Reader started sensor";
-        EXPECT_EQ(1, alertClient.getCallCount()) << "Alert not stopped (even though sensor started)";
         EXPECT_EQ(2, stateClient.getCallCount()) << "State sent twice";
         EXPECT_STREQ("1", stateClient.getPayload()) << "now OK";
     }
@@ -108,8 +102,6 @@ namespace WaterMeterCppTest {
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderResetTest) {
         digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
         EventServer eventServer;
-        TestEventClient alertClient(&eventServer);
-        eventServer.subscribe(&alertClient, Topic::Alert);
         TestEventClient stateClient(&eventServer);
         eventServer.subscribe(&stateClient, Topic::SensorState);
         TestEventClient resetSensorClient(&eventServer);
@@ -123,30 +115,31 @@ namespace WaterMeterCppTest {
         EXPECT_DOUBLE_EQ(3000.0, sensorReader.getGain()) << "Gain OK";
         EXPECT_EQ(12, sensorReader.getNoiseRange()) << "Noise range OK";
 
+        constexpr IntCoordinate BASE_SAMPLE{ {0,0} };
         for (int streaks = 0; streaks < 10; streaks++) {
+            auto expectedCalls = streaks == 0 ? 0 : 1;
+            stateClient.reset();
             for (int sample = 0; sample < 249; sample++) {
-                sensorReader.read();
-                EXPECT_EQ(streaks, resetSensorClient.getCallCount()) << "right number of reset events fired for streak " << streaks << " sample " << sample;
-                EXPECT_EQ(0, alertClient.getCallCount()) << "Alert event not fired for streak " << streaks << " sample " << sample;
+                EXPECT_EQ(SensorState::Ok, sensorReader.validate(BASE_SAMPLE)) << "Validated OK for streak " << streaks << " sample " << sample;
+                EXPECT_EQ(expectedCalls, stateClient.getCallCount()) << "right number of reset events fired for streak " << streaks << " sample " << sample;
             }
-            sensorReader.read();
-            EXPECT_EQ(streaks + 1, resetSensorClient.getCallCount()) << "ResetSensor event fired for streak " << streaks;
+            EXPECT_EQ(streaks < 9 ? SensorState ::NeedsSoftReset : SensorState::NeedsHardReset, sensorReader.validate(BASE_SAMPLE)) << "Validated OK for  streak " << streaks;
+            EXPECT_EQ(expectedCalls + 1, stateClient.getCallCount()) << "ResetSensor request fired for streak " << streaks;
+            EXPECT_STREQ(streaks < 9 ? "7" : "6", stateClient.getPayload()) << "Right reset request fired for streak " << streaks << " (7=soft, 6=hard)";
+            if (streaks < 10) sensorReader.softReset(); else sensorReader.hardReset();
         }
-        EXPECT_EQ(1, alertClient.getCallCount()) << "Alert event fired";
-        EXPECT_STREQ("1", alertClient.getPayload()) << "Payload is on";
 
-        sensorReader.read();
-        EXPECT_EQ(10, resetSensorClient.getCallCount()) << "ResetSensor event still fired 10 times";
-        EXPECT_EQ(1, alertClient.getCallCount()) << "Alert event not fired again";
+        sensorReader.validate(BASE_SAMPLE);
+        EXPECT_EQ(3, stateClient.getCallCount()) << "ResetSensor request fired again after hard reset (to move to OK)";
+        EXPECT_STREQ("1", stateClient.getPayload()) << "state is OK afterwards";
 
         // start getting a signal
-        mockSensor.setFlat(false);
-        sensorReader.read();
-        EXPECT_EQ(2, alertClient.getCallCount()) << "Alert event fired";
-        EXPECT_STREQ("0", alertClient.getPayload()) << "Payload is off";
+
+        EXPECT_EQ(SensorState::Ok, sensorReader.validate(IntCoordinate{ {1,1} })) << "state OK after changed sensor value";
 
         stateClient.reset();
         eventServer.publish(Topic::ResetSensor, true);
         EXPECT_EQ(2, stateClient.getCallCount()) << "State changed twice after reset";
+        EXPECT_STREQ("1", stateClient.getPayload()) << "state is OK afterwards";
     }
 }

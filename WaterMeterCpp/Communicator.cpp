@@ -51,7 +51,7 @@ void Communicator::loop() const {
     while (_samplerQueueClient->receive() || _connectorQueueClient->receive()) {
         i++;
         // make sure to wait occasionally to allow other task to run
-        if (i % 5 == 0) delay(5);
+        if (i % 4 == 0) delay(5);
     }
     DataQueuePayload* payload;
     while ((payload = _dataQueue->receive()) != nullptr) {

@@ -78,11 +78,12 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(0, display->getY()) << "Flow Y=0";
             EXPECT_STREQ("Overrun:  1234567", display->getMessage()) << "Overrun message OK"; 
 
+            // Should not do anything
             eventServer.publish(Topic::TimeOverrun, 0);
-            EXPECT_EQ(BLACK, display->getForegroundColor()) << "TimeOverrun off C=BLACK";
+            EXPECT_EQ(0b00110000, display->getFirstByte()) << "First byte of time logo ok";
             EXPECT_EQ(108, display->getX()) << "Flow X=108";
             EXPECT_EQ(0, display->getY()) << "Flow Y=0";
-            EXPECT_STREQ("Overrun:        0", display->getMessage()) << "Overrun off message OK"; 
+            EXPECT_STREQ("Overrun:  1234567", display->getMessage()) << "Overrun message OK";
 
             publishConnectionState(ConnectionState::MqttReady);
             EXPECT_EQ(0b00000000, display->getFirstByte()) << "First byte of mqtt logo ok";
@@ -101,7 +102,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(118, display->getX()) << "Time X=118";
             EXPECT_EQ(0, display->getY()) << "Time Y=0";
 
-            eventServer.publish(Topic::SensorState, true);
+            eventServer.publish(Topic::SensorState, 0);
             EXPECT_EQ(0b00010011, display->getFirstByte()) << "First byte of missing sensor logo ok";
             EXPECT_EQ(98, display->getX()) << "missing sensor X=98";
             EXPECT_EQ(0, display->getY()) << "missing sensor Y=0";

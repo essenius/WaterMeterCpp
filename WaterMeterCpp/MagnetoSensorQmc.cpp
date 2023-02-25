@@ -63,12 +63,17 @@ bool MagnetoSensorQmc::read(SensorData& sample) const {
     constexpr byte BITS_PER_BYTE = 8;
     // Read data from each axis, 2 registers per axis
     // order: x LSB, x MSB, y LSB, y MSB, z LSB, z MSB
-    _wire->requestFrom(_address, BYTES_TO_READ);
+    _wire->requestFrom(_address, BYTES_TO_READ, STOP_AFTER_SEND);
     while (_wire->available() < BYTES_TO_READ) {}
     sample.x = _wire->read() | _wire->read() << BITS_PER_BYTE;
     sample.y = _wire->read() | _wire->read() << BITS_PER_BYTE;
     sample.z = _wire->read() | _wire->read() << BITS_PER_BYTE;
-    // no need to adjust saturation values as it already uses SHRT_MIN and SHRT_MAX
+
+    // if we got a positive saturation, shift it to SHRT_MIN as SHRT_MAX means an error
+    if (sample.x == SHRT_MAX) sample.x = SHRT_MIN;
+    if (sample.y == SHRT_MAX) sample.y = SHRT_MIN;
+    if (sample.z == SHRT_MAX) sample.z = SHRT_MIN;
+
     return true;
 }
 

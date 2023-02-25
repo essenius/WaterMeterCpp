@@ -23,9 +23,9 @@ namespace WaterMeterCppTest {
 
     TEST_F(FreeRtosTest, freeRtosTest1) {
         uxQueueReset();
-        for (int i = 0; i < MAX_QUEUES; i++) {
-            queue[i] = xQueueCreate(MAX_QUEUES, 2);
-            EXPECT_NE(nullptr, queue[i]) << "Not null";
+        for (auto& i : queue) {
+            i = xQueueCreate(MAX_QUEUES, 2);
+            EXPECT_NE(nullptr, i) << "Not null";
         }
         EXPECT_EQ(nullptr, xQueueCreate(MAX_QUEUES, 2)) << "Next returns 0";
         EXPECT_EQ(20ul, uxQueueSpacesAvailable(queue[0])) << "queue 0 has 20 spaces left at start";

@@ -25,7 +25,7 @@
 
 class DataQueue final : public EventClient {
 public:
-    DataQueue(EventServer* eventServer, DataQueuePayload* payload, int8_t index = 0, long queueSize = 40960,
+    DataQueue(EventServer* eventServer, DataQueuePayload* payload, int8_t index = 0, long queueSize = 35840,
               long epsilon = 1024, long lowThreshold = 2048);
 
     bool canSend(const DataQueuePayload* payload);

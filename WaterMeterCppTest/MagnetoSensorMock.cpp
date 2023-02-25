@@ -11,7 +11,7 @@
 
 #include "MagnetoSensorMock.h"
 
-void MagnetoSensorMock::setPowerOnFailures(int failures) {
+void MagnetoSensorMock::setPowerOnFailures(const int failures) {
     _powerFailuresLeft = failures;
 }
 
@@ -25,7 +25,7 @@ bool MagnetoSensorMock::read(SensorData& sample) const {
     return true;
 }
 
-void MagnetoSensorMock::setBeginFailures(int failures) {
+void MagnetoSensorMock::setBeginFailures(const int failures) {
     _beginFailuresLeft = failures;
 }
 

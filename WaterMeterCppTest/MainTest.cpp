@@ -294,32 +294,36 @@ namespace WaterMeterCppTest {
             EXPECT_STREQ(expected, getPrintOutput()) << "Formatted result came through";
             clearPrintOutput();
 
-            // expect an overrun due to delays in the loop tasks
+            // force an overrun 
 
             SamplerDriver::onTimer();
+            delay(25);
             sampler.sensorLoop();
             sampler.loop();
 
             // switch off delay() so we don't get an overrun next time
 
-            disableDelay(true);
+            //disableDelay(true);
 
             EXPECT_EQ(ConnectionState::MqttReady, connector.loop()) << "Connector loop";
             communicator.loop();
-            EXPECT_STREQ("[] Time overrun: 1105700\n[] Free Stack #0: 1628\n", getPrintOutput()) << "Time overrun";
+            EXPECT_STREQ("[] Time overrun: 1140650\n[] Free Stack #0: 1628\n", getPrintOutput()) << "Time overrun";
 
             connectorEventServer.publish(Topic::ResetSensor, 2);
             TestEventClient client(&samplerEventServer);
             samplerEventServer.subscribe(&client, Topic::SensorWasReset);
+            SamplerDriver::onTimer();
+            sampler.sensorLoop();
             sampler.loop();
             EXPECT_EQ(1, client.getCallCount()) << "SensorWasReset was called";
 
             clearPrintOutput();
             communicator.loop();
 
-            auto expected2 = R"([] Sensor state: 0
-[] Alert: 1
-[] Sensor state: 3
+            auto expected2 = R"([] Time overrun: 65250
+[] Free Spaces Queue #1: 14
+[] Sensor state: 0 (0 = none, 1 = ok)
+[] Sensor state: 3 (0 = none, 1 = ok)
 [] Sensor was reset: 2
 [] Free Spaces Queue #0: 20
 [] Free Heap: 23000

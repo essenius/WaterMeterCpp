@@ -14,9 +14,6 @@
 #ifndef HEADER_EVENTCLIENT
 #define HEADER_EVENTCLIENT
 
-#include <cstdarg>
-#include <map>
-
 #include "IntCoordinate.h"
 
 enum class Topic: int16_t {
@@ -65,8 +62,7 @@ enum class Topic: int16_t {
     UpdateProgress,
     ButtonPushed,
     Begin,
-    NoFit,
-    StartDelay
+    NoFit
 };
 
 union EventPayload {

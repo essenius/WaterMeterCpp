@@ -35,8 +35,9 @@ public:
 protected:
     static constexpr byte TIMER_NUMBER = 0;
     static constexpr unsigned short DIVIDER = 80; // 80 MHz -> 1 MHz
-    static constexpr UBaseType_t SAMPLE_QUEUE_SIZE = 100;
+    static constexpr UBaseType_t SAMPLE_QUEUE_SIZE = 50;
     static constexpr UBaseType_t OVERRUN_QUEUE_SIZE = 20;
+    static constexpr unsigned long MAX_OFFSET_MICROS = 100;
     static constexpr bool REPEAT = true;
     static constexpr bool COUNT_UP = true;
     static constexpr bool EDGE = true;
@@ -51,16 +52,22 @@ protected:
     unsigned long _additionalDuration = 0;
     unsigned long _samplePeriod = 10000;
     unsigned long _ticksPerSample = 10;
-    unsigned long _scheduledStartTime = 0;
+    unsigned long _previousReadTime = 0;
     long _previousOverrun = 0;
 
     hw_timer_t* _timer = nullptr;
     QueueHandle_t _sampleQueue = nullptr;
     QueueHandle_t _overrunQueue = nullptr;
     static TaskHandle_t _taskHandle;
-    unsigned long _lastLoopStart = 0;
-
+    static volatile unsigned long _interruptCounter;
+    volatile unsigned long _notifyCounter = 0;
+    volatile unsigned long _queueFullCounter = 0;
+    unsigned long _sampleCount = 0;
+    unsigned long _overruns = 0;
+  
     static void ARDUINO_ISR_ATTR onTimer();
+    void handleSample(const IntCoordinate& sample, unsigned long startTime);
+
     void sensorLoop();
 
 };

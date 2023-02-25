@@ -19,7 +19,7 @@ namespace WaterMeterCppTest {
         explicit PulseTestEventClient(EventServer* eventServer);
         void update(Topic topic, long payload) override;
         void update(Topic topic, IntCoordinate payload) override;
-        const char* pulseHistory() { return _buffer; }
+        const char* pulseHistory() const { return _buffer; }
         unsigned int pulses(const bool stage) const { return _pulseCount[stage]; }
         unsigned int anomalies() const { return _excludeCount; }
         unsigned int noFits() const { return _noFitCount; }

@@ -65,7 +65,7 @@ void FlowDetector::update(const Topic topic, const IntCoordinate payload) {
 // Private methods
 
 void FlowDetector::addSample(const IntCoordinate& sample) {
-	if (sample.isSaturated()) {
+	if (sample.isSaturated() || sample.hasError()) {
 		reportAnomaly();
 		return;
 	}
@@ -232,7 +232,7 @@ void FlowDetector::reportAnomaly() {
 	_eventServer->publish(Topic::Anomaly, true);
 }
 
-int16_t  FlowDetector::noFitParameter(double angleDistance, bool fitSucceeded) const {
+int16_t  FlowDetector::noFitParameter(const double angleDistance, const bool fitSucceeded) const {
 	return static_cast<int16_t>(round(abs(angleDistance * 180) * (fitSucceeded ? 1.0 : -1.0)));
 }
 

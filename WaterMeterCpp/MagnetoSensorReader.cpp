@@ -13,11 +13,9 @@
 #include <ESP.h>
 
 #include "MagnetoSensorReader.h"
-#include "MagnetoSensorQmc.h"
 
-MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer) :
-    EventClient(eventServer),
-    _alert(eventServer, Topic::Alert),
+MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer) : 
+	EventClient(eventServer),
     _sensorState(eventServer, Topic::SensorState) {}
 
 // returns false if no (real) sensor could be found
@@ -29,13 +27,7 @@ bool MagnetoSensorReader::setSensor() {
             break;
         }
     }
-    if (!_sensor->begin()) {
-        _alert = true;
-        return false;
-    }
-
-    // TODO: check the logic here. We mix an alert with display limitations
-    // perhaps make alert just an event? 
+    if (!_sensor->begin()) return false; 
 
     constexpr int IGNORE_SAMPLE_COUNT = 5;
     // ignore the first measurements, often outliers
@@ -52,7 +44,7 @@ bool MagnetoSensorReader::begin(MagnetoSensor* sensor[], const size_t listSize) 
     _sensorList = sensor;
     _sensorListSize = listSize;
     pinMode(_powerPort, OUTPUT);
-    const auto sensorFound = power(HIGH);
+    const auto sensorFound = power(HIGH) == SensorState::Ok;
     _eventServer->subscribe(this, Topic::ResetSensor);
     return sensorFound;
 }
@@ -80,46 +72,52 @@ void MagnetoSensorReader::hardReset() {
     _eventServer->publish(Topic::SensorWasReset, HARD_RESET);
 }
 
-bool MagnetoSensorReader::power(const uint8_t state) {
+SensorState MagnetoSensorReader::power(const uint8_t state) {
     // do nothing if we are already in the right state
     const auto currentState = digitalRead(_powerPort);
-    if (currentState == state && _sensorState == (state == LOW ? SensorState::None : SensorState::Ok)) return true;
+    if (currentState == state && _sensorState == (state == LOW ? SensorState::None : SensorState::Ok)) return _sensorState;
     digitalWrite(_powerPort, state);
     if (state == LOW) {
         _sensor->waitForPowerOff();
         _sensorState = SensorState::None;
-        return true;
+        return _sensorState;
     }
     // wait for the sensor to be ready (50 ms for both QMC and HMC)
     delayMicroseconds(STARTUP_MICROS);
     auto ok = setSensor();
     if (!ok) {
         _sensorState = SensorState::BeginError;
-        return false;
+        return _sensorState;
     }
     auto retryCount = 0;
     while (!((ok = _sensor->handlePowerOn())) && retryCount < 1) {
         retryCount++;
     }
     _sensorState = ok ? SensorState::Ok : SensorState::PowerError;
-    return ok;
+    return _sensorState;
 }
 
-IntCoordinate MagnetoSensorReader::read() {
+// Run from within timed task, so do not use events and keep short
+IntCoordinate MagnetoSensorReader::read() const {
     SensorData sample{};
     if (!_sensor->read(sample)) {
-        _alert = true;
-        _sensorState = SensorState::ReadError;
+        return IntCoordinate::error();
     }
-    const auto returnValue = IntCoordinate{{sample.x, sample.y}};
+    return {{ sample.x, sample.y }};
+}
+ 
+SensorState MagnetoSensorReader::validate(const IntCoordinate& sample) {
 
-    // check whether the sensor still works
-    if (sample == _previousSample || returnValue.isSaturated()) {
+    _sensorState = sample.isSaturated() ? SensorState::Saturated : sample.hasError() ? SensorState::ReadError : SensorState::Ok;
+
+    if (sample == _previousSample || _sensorState != SensorState::Ok ) {
         _streakCount++;
-        // if we have too many of the same results in a row, reset the sensor
+        // if we have too many of the same results in a row, signal to reset the sensor
         if (_streakCount >= FLATLINE_STREAK) {
-            _sensorState = SensorState::FlatLine;
-            reset();
+            // check whether we need a hard or a soft reset
+            _consecutiveStreakCount++;
+            _sensorState = _consecutiveStreakCount >= MAX_STREAKS_TO_ALERT || !_sensor->isReal() ? SensorState::NeedsHardReset : SensorState::NeedsSoftReset;
+            return _sensorState;
         }
     }
     else {
@@ -127,24 +125,11 @@ IntCoordinate MagnetoSensorReader::read() {
         _streakCount = 0;
         _consecutiveStreakCount = 0;
         _previousSample = sample;
-        _alert = false;
     }
-    // We use the X/Y plane as that gives the clearest results
-    return returnValue;
+    return _sensorState;
 }
 
-void MagnetoSensorReader::reset() {
-    _consecutiveStreakCount++;
-    // If we have done the soft reset a number of times in a row, we do a hard reset and post an alert
-    if (_consecutiveStreakCount >= MAX_STREAKS_TO_ALERT || !_sensor->isReal()) {
-        _alert = true;
-        hardReset();
-        return;
-    }
-    if (_consecutiveStreakCount == MAX_STREAKS_TO_ALERT / 2) {
-        // stop the alert halfway through
-        _alert = false;
-    }
+void MagnetoSensorReader::softReset() {
     _sensor->softReset();
     _streakCount = 0;
     _eventServer->publish(Topic::SensorWasReset, SOFT_RESET);

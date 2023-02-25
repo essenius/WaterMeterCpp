@@ -18,17 +18,21 @@
 
 #include "MagnetoSensor.h"
 #include "ChangePublisher.h"
+#include "EventServer.h"
+#include "IntCoordinate.h"
 
 constexpr int SOFT_RESET = 1;
 constexpr int HARD_RESET = 2;
 
 enum class SensorState : int16_t {
     None = 0,
-    Ok = 1,
-    PowerError = 2,
-    BeginError = 3,
-    ReadError = 4,
-    FlatLine = 5
+    Ok,
+    PowerError,
+    BeginError,
+    ReadError,
+    Saturated,
+    NeedsHardReset,
+    NeedsSoftReset
 };
 
 
@@ -40,9 +44,12 @@ public:
     double getGain() const;
     int getNoiseRange() const;
     void hardReset();
-    bool power(uint8_t state);
-    IntCoordinate read();
-    void reset();
+    SensorState power(uint8_t state);
+    IntCoordinate read() const;
+    void softReset();
+    SensorState state() { return _sensorState; }
+    SensorState validate(const IntCoordinate& sample);
+
     void update(Topic topic, long payload) override;
     static constexpr byte DEFAULT_POWER_PORT = 15;
 
@@ -56,10 +63,9 @@ protected:
     bool setSensor();
 
     MagnetoSensor* _sensor = nullptr;
-    ChangePublisher<bool> _alert;
     ChangePublisher<SensorState> _sensorState;
     int _consecutiveStreakCount = 0;
-    SensorData _previousSample = {0, 0, 0};
+    IntCoordinate _previousSample = {0, 0};
     int _streakCount = 0;
     uint8_t _powerPort = DEFAULT_POWER_PORT;
     MagnetoSensor** _sensorList = nullptr;

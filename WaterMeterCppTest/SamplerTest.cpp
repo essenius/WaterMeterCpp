@@ -23,9 +23,7 @@ namespace WaterMeterCppTest {
     TEST(SamplerTest, samplerSensorNotFoundTest) {
         EventServer eventServer;
         TestEventClient noSensorClient(&eventServer);
-        TestEventClient alertClient(&eventServer);
         eventServer.subscribe(&noSensorClient, Topic::SensorState);
-        eventServer.subscribe(&alertClient, Topic::Alert);
         MagnetoSensorReader reader(&eventServer);
         MagnetoSensorNull noSensor;
         MagnetoSensor* list[] = {&noSensor};
@@ -36,7 +34,6 @@ namespace WaterMeterCppTest {
         Sampler sampler(&eventServer, &reader, nullptr, &button, nullptr, nullptr, nullptr);
         EXPECT_FALSE(sampler.begin(list, 1)) << L"Setup without a sensor fails";
         EXPECT_EQ(1, noSensorClient.getCallCount()) << "No-sensor event was fired";
-        EXPECT_EQ(1, alertClient.getCallCount()) << "Alert fired";
     }
 
     TEST(SamplerTest, SamplerOverrunTest) {
@@ -67,12 +64,12 @@ namespace WaterMeterCppTest {
         sampler.sensorLoop();
         sampler.loop();
         EXPECT_EQ(0, overrunClient.getCallCount()) << "No overrun in first round";
-        delay(25);
         SamplerDriver::onTimer();
+        delay(15);
         sampler.sensorLoop();
         sampler.loop();
         EXPECT_EQ(1, overrunClient.getCallCount()) << "Overrun in second round";
-        EXPECT_STREQ("5300", overrunClient.getPayload()) << "Overrun OK: 10ms normal, 10ms max, 5ms too much at start, 300ns added";
+        EXPECT_STREQ("5250", overrunClient.getPayload()) << "Overrun OK: 10ms normal, 10ms max, 5ms too much at start, 50ns added";
 
         SamplerDriver::onTimer();
         sampler.sensorLoop();

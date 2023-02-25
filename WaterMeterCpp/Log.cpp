@@ -73,7 +73,7 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::BatchSizeDesired:
         log("Batch size desired: %s", payload);
         break;
-    break;    case Topic::Blocked:
+    case Topic::Blocked:
         log("Blocked: %s", payload);
         break;
     case Topic::Connection: 
@@ -91,10 +91,7 @@ void Log::update(Topic topic, const char* payload) {
         log("No fit: %s deg", payload);
         break;
     case Topic::SensorState:
-        log("Sensor state: %s", payload);
-        break;
-    case Topic::StartDelay:
-        log("Start delay: %s", payload);
+        log("Sensor state: %s (0 = none, 1 = ok)", payload);
         break;
     case Topic::ResultFormatted:
         log("Result: %s", payload);

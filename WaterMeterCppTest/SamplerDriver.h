@@ -1,5 +1,5 @@
 #pragma once
-#include "..\WaterMeterCpp\Sampler.h"
+#include "../WaterMeterCpp/Sampler.h"
 
 class SamplerDriver :     public Sampler {
 public:

@@ -72,7 +72,7 @@ bool OledDriver::begin() {
 }
 
 void OledDriver::clearConnectionLogo() {
-    clearLogo(118, 0);
+    clearLogo(CONNECTION_X, CONNECTION_Y);
 }
 
 void OledDriver::clearLogo(const int16_t xLocation, const int16_t yLocation) {
@@ -187,10 +187,25 @@ void OledDriver::update(const Topic topic, long payload) {
         switchFlowLogo(NO_FIT_LOGO, payload);
         return;
     case Topic::SensorState:
-        showMessageAtLine("No sensor        ", 3);
-        switchFlowLogo(NO_SENSOR_LOGO, payload);
+        switch(payload) {
+        case 0:
+            showMessageAtLine("No sensor        ", 3);
+            break;
+        case 1:
+            showMessageAtLine("Sensor OK        ", 3);
+            break;
+        case 2: 
+            showMessageAtLine("Power error      ", 3);
+            break;
+        case 3:
+            showMessageAtLine("Begin error      ", 3);
+            break;
+        default: ; // should not occur
+        }
+        switchFlowLogo(NO_SENSOR_LOGO, payload != 1);
         return;
     case Topic::TimeOverrun:
+        if (payload == 0) return;
         safeSprintf(buffer, "Overrun: %8ld", payload);
         showMessageAtLine(buffer, 3);
         switchEventLogo(TIME_LOGO, payload);

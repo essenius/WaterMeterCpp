@@ -79,9 +79,8 @@ public:
     virtual void waitForPowerOff() const;
 
     virtual bool handlePowerOn();
-
 protected:
-
+    static constexpr bool STOP_AFTER_SEND = true;
     byte _address;
     TwoWire* _wire;
     void setRegister(byte sensorRegister, byte value) const;

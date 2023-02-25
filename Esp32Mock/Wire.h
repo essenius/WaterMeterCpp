@@ -28,7 +28,7 @@ public:
     int read();
     size_t write(uint8_t value);
     uint8_t endTransmission();
-    uint8_t requestFrom(uint8_t address, uint8_t size);
+    uint8_t requestFrom(uint8_t address, uint8_t size, bool stop);
 
     // testing - get the configured address
     uint8_t getAddress();

@@ -15,6 +15,7 @@
 #define HEADER_EVENTSERVER
 
 #include "EventClient.h"
+#include <map>
 #include <set>
 
 class EventServer {
