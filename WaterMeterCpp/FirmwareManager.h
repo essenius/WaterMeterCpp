@@ -34,11 +34,11 @@ public:
     void tryUpdate();
 protected:
     void loadUpdate() const;
-    bool updateAvailable() const;
+    bool isUpdateAvailable() const;
 private:
-    static constexpr int BASE_URL_SIZE = 100;
-    static constexpr const char* IMAGE_EXTENSION = ".bin";
-    static constexpr const char* VERSION_EXTENSION = ".version";
+    static constexpr int BaseUrlSize = 100;
+    static constexpr const char* ImageExtension = ".bin";
+    static constexpr const char* VersionExtension = ".version";
     const WiFiClientFactory* _wifiClientFactory;
     const char* _buildVersion;
     bool _justRebooted = true;

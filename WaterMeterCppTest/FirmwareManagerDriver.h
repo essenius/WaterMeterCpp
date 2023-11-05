@@ -18,5 +18,5 @@ class FirmwareManagerDriver final : public FirmwareManager {
 public:
 	using FirmwareManager::FirmwareManager;
 	using FirmwareManager::loadUpdate;
-	using FirmwareManager::updateAvailable;
+	using FirmwareManager::isUpdateAvailable;
 };

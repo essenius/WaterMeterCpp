@@ -35,12 +35,12 @@ namespace WaterMeterCppTest {
 
     TEST(SafeCStringTest, safeCStringSafeSprintfTest) {
         char target[10] = {0};
-        constexpr char TEST_UPPER[5] = {0};
+        constexpr char TestUpper[5] = {0};
         EXPECT_EQ(2, safeSprintf(target, "x%d", 7)) << "Right number of characters written";
         EXPECT_STREQ("x7", target) << "right string written";
         EXPECT_EQ(12, safeSprintf(target, "'%s'", "1234567890")) << "Returns written bytes if we had enough space";
         EXPECT_STREQ("'12345678", target) << "right string written (not enough space)";
-        EXPECT_STREQ("", TEST_UPPER) << "TestUpper not changed";
+        EXPECT_STREQ("", TestUpper) << "TestUpper not changed";
         EXPECT_EQ(3, safeSprintf(target, "%d%%", 10)) << "Percent sign shows";
         EXPECT_STREQ("10%", target) << "Percent sign shows";
     }

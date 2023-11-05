@@ -32,21 +32,21 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::BatchSizeDesired, 2);
         EXPECT_EQ(2L, aggregator.getFlushRate()) << "Flush rate changed";
         aggregator.flush();
-        constexpr IntCoordinate SAMPLE1{{1000, 1000}};
-        aggregator.addSample(SAMPLE1);
+        constexpr IntCoordinate Sample1{{1000, 1000}};
+        aggregator.addSample(Sample1);
         EXPECT_FALSE(aggregator.shouldSend()) << "Should send";
         EXPECT_EQ(1U, static_cast<unsigned>(payload.buffer.samples.count)) << "One sample added";
-        EXPECT_EQ(SAMPLE1, payload.buffer.samples.value[0]) << "First sample value correct";
+        EXPECT_EQ(Sample1, payload.buffer.samples.value[0]) << "First sample value correct";
 
-        constexpr IntCoordinate SAMPLE2{{-1000, -1000}};
+        constexpr IntCoordinate Sample2{{-1000, -1000}};
 
-        aggregator.addSample(SAMPLE2);
+        aggregator.addSample(Sample2);
         EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush after two measurements";
 
         // specialization for uint16_t does not work for some reason
         EXPECT_EQ(2U, static_cast<unsigned>(payload.buffer.samples.count)) << "Second sample added";
-        EXPECT_EQ(SAMPLE1, payload.buffer.samples.value[0]) << "First sample value still correct";
-        EXPECT_EQ(SAMPLE2, payload.buffer.samples.value[1]) << "Second sample value correct";
+        EXPECT_EQ(Sample1, payload.buffer.samples.value[0]) << "First sample value still correct";
+        EXPECT_EQ(Sample2, payload.buffer.samples.value[1]) << "Second sample value correct";
 
         aggregator.flush();
         EXPECT_EQ(0U, static_cast<unsigned>(payload.buffer.samples.count)) << "Buffer empty after flush";
@@ -153,8 +153,8 @@ namespace WaterMeterCppTest {
             sample1.y = static_cast <int16_t>(-190 - i % 5);
             aggregator.addSample(sample1);
         }
-        constexpr IntCoordinate LASTSAMPLE{ {-131, -194} };
-        EXPECT_EQ(LASTSAMPLE, payload.buffer.samples.value[24]) << "Last sample value correct";
+        constexpr IntCoordinate Lastsample{ {-131, -194} };
+        EXPECT_EQ(Lastsample, payload.buffer.samples.value[24]) << "Last sample value correct";
         EXPECT_TRUE(aggregator.send()) << "sends after 25 samples";
     }
 }

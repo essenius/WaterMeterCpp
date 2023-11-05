@@ -21,14 +21,14 @@
 #include "PayloadBuilder.h"
 #include "Configuration.h"
 
-const IPAddress NO_IP(0, 0, 0, 0);
+const IPAddress NoIp(0, 0, 0, 0);
 
 class WiFiManager : public EventClient {
 public:
     WiFiManager(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder);
     virtual void announceReady();
     virtual void begin();
-    void configure(const IpConfig* ipConfig = &IP_AUTO_CONFIG);
+    void configure(const IpConfig* ipConfig = &IpAutoConfig);
     virtual void disconnect();
     const char* get(Topic topic, const char* defaultValue) override;
     const char* getHostName() const;
@@ -38,22 +38,22 @@ public:
     void setStatusSummary() const;
 
 private:
-    static constexpr int HOSTNAME_LENGTH = 64;
-    static constexpr int MAC_ADDRESS_SIZE = 20;
-    static constexpr int IP_ADDRESS_SIZE = 16;
+    static constexpr int HostnameLength = 64;
+    static constexpr int MacAddressSize = 20;
+    static constexpr int IpAddressSize = 16;
 
     PayloadBuilder* _payloadBuilder;
     const WifiConfig* _wifiConfig;
     WiFiClientSecure _wifiClient;
-    IPAddress _localIp = NO_IP;
-    IPAddress _gatewayIp = NO_IP;
-    IPAddress _subnetMaskIp = NO_IP;
-    IPAddress _dns1Ip = NO_IP;
-    IPAddress _dns2Ip = NO_IP;
-    char _hostNameBuffer[HOSTNAME_LENGTH] = {0};
+    IPAddress _localIp = NoIp;
+    IPAddress _gatewayIp = NoIp;
+    IPAddress _subnetMaskIp = NoIp;
+    IPAddress _dns1Ip = NoIp;
+    IPAddress _dns2Ip = NoIp;
+    char _hostNameBuffer[HostnameLength] = {0};
     char* _hostName = _hostNameBuffer;
-    char _ipAddress[IP_ADDRESS_SIZE] = "";
-    char _macAddress[MAC_ADDRESS_SIZE] = "";
+    char _ipAddress[IpAddressSize] = "";
+    char _macAddress[MacAddressSize] = "";
     bool _needsReconnect = true;
 };
 #endif

@@ -13,36 +13,35 @@
 #include <corecrt_math_defines.h>
 
 #include "../WaterMeterCpp/Coordinate.h"
-#include "../WaterMeterCpp/IntCoordinate.h"
 
-bool coordinateEqual(const Coordinate& a, const Coordinate& b) {
-	return a == b;
-}
+namespace WaterMeterCppTest {
 
-TEST(CoordinateTest, CoordinateTest1) {
-	constexpr Coordinate COORDINATE1{ 4, 4 };
-	ASSERT_DOUBLE_EQ(M_PI / 4, COORDINATE1.angle().value) << "Angle OK";
-	ASSERT_DOUBLE_EQ(sqrt(32), COORDINATE1.distance()) << "Distance OK";
-	ASSERT_TRUE(coordinateEqual(COORDINATE1, COORDINATE1)) << "Equal to itself";
-	ASSERT_TRUE(coordinateEqual(Coordinate{ 4,4 }, COORDINATE1)) << "Equal to a coordinate with the same values";
-	constexpr Coordinate COORDINATE2{ 0, 7 };
-	ASSERT_FALSE(coordinateEqual(COORDINATE2,  COORDINATE1)) << "Coordinates 1 and 2 not equal";
-	ASSERT_FALSE(coordinateEqual(Coordinate{ 4, -4 }, COORDINATE1)) << "Not equal to a coordinate with a different Y value";
-	ASSERT_DOUBLE_EQ(5, COORDINATE1.distanceFrom(COORDINATE2)) << "DistanceFrom OK";
-	constexpr Coordinate COORDINATE3{ -4, 12 };
-	ASSERT_DOUBLE_EQ(-M_PI / 4, COORDINATE1.angleFrom(COORDINATE3).value) << "AngleFrom OK";
-    const auto rotated = COORDINATE1.rotate(-M_PI / 2);
-	ASSERT_TRUE(coordinateEqual(Coordinate{ 4, -4 }, rotated)) << "Rotated OK";
-	const auto translated = COORDINATE1.translate(COORDINATE3);
-	ASSERT_TRUE(coordinateEqual(Coordinate{ 0, 16 }, translated)) << "Translate OK";
-	const auto scaled = COORDINATE1.scale({ 0.125, 2 });
-	ASSERT_TRUE(coordinateEqual(Coordinate{ 0.5, 8 }, scaled)) << "Scaled OK";
-	const auto reciproke = scaled.reciprocal();
-	ASSERT_TRUE(coordinateEqual(Coordinate{ 2, 0.125 }, reciproke)) << "Reciproke OK";
+	bool coordinateEqual(const Coordinate& a, const Coordinate& b) {
+		return a == b;
+	}
 
-	ASSERT_TRUE(isnan(Coordinate{ 0, 0 }.angle().value)) << "Angle of 0,0 is not defined";
+	TEST(CoordinateTest, CoordinateTest1) {
+		constexpr Coordinate Coordinate1{ 4, 4 };
+		ASSERT_DOUBLE_EQ(M_PI / 4, Coordinate1.getAngle().value) << "Angle OK";
+		ASSERT_DOUBLE_EQ(sqrt(32), Coordinate1.getDistance()) << "Distance OK";
+		ASSERT_TRUE(coordinateEqual(Coordinate1, Coordinate1)) << "Equal to itself";
+		ASSERT_TRUE(coordinateEqual(Coordinate{ 4,4 }, Coordinate1)) << "Equal to a coordinate with the same values";
+		constexpr Coordinate Coordinate2{ 0, 7 };
+		ASSERT_FALSE(coordinateEqual(Coordinate2, Coordinate1)) << "Coordinates 1 and 2 not equal";
+		ASSERT_FALSE(coordinateEqual(Coordinate{ 4, -4 }, Coordinate1)) << "Not equal to a coordinate with a different Y value";
+		ASSERT_DOUBLE_EQ(5, Coordinate1.getDistanceFrom(Coordinate2)) << "DistanceFrom OK";
+		constexpr Coordinate Coordinate3{ -4, 12 };
+		ASSERT_DOUBLE_EQ(-M_PI / 4, Coordinate1.getAngleFrom(Coordinate3).value) << "AngleFrom OK";
+		const auto rotated = Coordinate1.rotate(-M_PI / 2);
+		ASSERT_TRUE(coordinateEqual(Coordinate{ 4, -4 }, rotated)) << "Rotated OK";
+		const auto translated = Coordinate1.translate(Coordinate3);
+		ASSERT_TRUE(coordinateEqual(Coordinate{ 0, 16 }, translated)) << "Translate OK";
+		const auto scaled = Coordinate1.scale({ 0.125, 2 });
+		ASSERT_TRUE(coordinateEqual(Coordinate{ 0.5, 8 }, scaled)) << "Scaled OK";
+		const auto reciproke = scaled.reciprocal();
+		ASSERT_TRUE(coordinateEqual(Coordinate{ 2, 0.125 }, reciproke)) << "Reciproke OK";
 
-	constexpr Coordinate COORDINATE4{ 25.5, -386.9 };
-	constexpr IntCoordinate EXPECTED{{255, -3869}};
-	EXPECT_EQ(EXPECTED, COORDINATE4.times10()) << "Times 10 conversion works";
+		ASSERT_TRUE(isnan(Coordinate{ 0, 0 }.getAngle().value)) << "Angle of 0,0 is not defined";
+
+	}
 }

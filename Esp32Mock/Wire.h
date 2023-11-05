@@ -37,17 +37,17 @@ public:
     void setEndTransmissionTogglePeriod(int period);
 
     // testing - force reads to return the same value
-    void setFlatline(bool flatline);
+    void setFlatline(bool flatline, uint8_t value = 0);
 
     // testing - return -1 if length wrong, index of wrong item if content wrong, or length if all OK.
     short writeMismatchIndex(const uint8_t* expected, short length) const;
 
 private:
-    static constexpr short WRITE_BUFFER_SIZE = 2048;
+    static constexpr short WriteBufferSize = 2048;
     uint8_t _address = 0;
     int _available = 0;
     uint8_t _nextResult = 0;
-    uint8_t _written[WRITE_BUFFER_SIZE]{};
+    uint8_t _written[WriteBufferSize]{};
     short _writeIndex = 0;
     bool _flatline = false;
     int _endTransmissionCounter = 10;

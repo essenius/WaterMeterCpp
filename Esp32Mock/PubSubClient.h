@@ -60,20 +60,20 @@ public:
     const char* user() const { return _user; }
 
 private:
-    constexpr static int FIELD_SIZE = 64;
-    constexpr static int PAYLOAD_SIZE = 1024;
-    constexpr static int TOPIC_SIZE = 2500;
+    constexpr static int FieldSize = 64;
+    constexpr static int PayloadSize = 1024;
+    constexpr static int TopicSize = 2500;
     std::function<void(char*, unsigned char*, unsigned)> _callback;
     int _callCount = 0;
     bool _canConnect = true;
     bool _canPublish = true;
     bool _canSubscribe = true;
-    char _id[FIELD_SIZE] = {};
+    char _id[FieldSize] = {};
     int _loopCount = 0;
-    char _pass[FIELD_SIZE] = {};
-    char _payload[PAYLOAD_SIZE] = {};
-    char _topic[TOPIC_SIZE] = {};
-    char _user[FIELD_SIZE] = {};
+    char _pass[FieldSize] = {};
+    char _payload[PayloadSize] = {};
+    char _topic[TopicSize] = {};
+    char _user[FieldSize] = {};
     char _loopTopic[100] = "\0";
     uint8_t _loopPayload[10] = {};
     int _loopPayloadSize = 0;

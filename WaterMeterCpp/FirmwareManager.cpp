@@ -33,10 +33,10 @@ void FirmwareManager::begin(const char* machineId) {
 }
 
 void FirmwareManager::loadUpdate() const {
-    char buffer[BASE_URL_SIZE];
+    char buffer[BaseUrlSize];
     safeStrcpy(buffer, _firmwareConfig->baseUrl);
     safeStrcat(buffer, _machineId);
-    safeStrcat(buffer, IMAGE_EXTENSION);
+    safeStrcat(buffer, ImageExtension);
 
     WiFiClient* updateClient = _wifiClientFactory->create(_firmwareConfig->baseUrl);
 
@@ -67,18 +67,18 @@ void FirmwareManager::loadUpdate() const {
 
 void FirmwareManager::tryUpdate() {
     // Make sure this is only done just after rebooting. We don't want reboots in the middle of a flow.
-    if (_justRebooted && updateAvailable()) {
+    if (_justRebooted && isUpdateAvailable()) {
         loadUpdate();
     }
     _justRebooted = false;
 }
 
-bool FirmwareManager::updateAvailable() const {
+bool FirmwareManager::isUpdateAvailable() const {
     if (!_justRebooted) return false;
-    char versionUrl[BASE_URL_SIZE];
+    char versionUrl[BaseUrlSize];
     safeStrcpy(versionUrl, _firmwareConfig->baseUrl);
     safeStrcat(versionUrl, _machineId);
-    safeStrcat(versionUrl, VERSION_EXTENSION);
+    safeStrcat(versionUrl, VersionExtension);
 
     const auto client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
     HTTPClient httpClient;

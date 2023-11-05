@@ -23,7 +23,7 @@ int gettimeofday(timeval* timeVal, void* ignore) {
         FILETIME filetime; // 0.1 microsecond intervals since January 1, 1601 00:00 UTC 
         ULARGE_INTEGER x;
         ULONGLONG usec;
-        static constexpr ULONGLONG EPOCH_OFFSET_MICROS = 11644473600000000ULL;
+        static constexpr ULONGLONG EpochOffsetMicros = 11644473600000000ULL;
         // microseconds betweeen Jan 1,1601 and Jan 1,1970 
 
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN8
@@ -33,7 +33,7 @@ int gettimeofday(timeval* timeVal, void* ignore) {
 #endif
         x.LowPart = filetime.dwLowDateTime;
         x.HighPart = filetime.dwHighDateTime;
-        usec = x.QuadPart / 10 - EPOCH_OFFSET_MICROS;
+        usec = x.QuadPart / 10 - EpochOffsetMicros;
         timeVal->tv_sec = static_cast<time_t>(usec / 1000000ULL);
         timeVal->tv_usec = static_cast<long>(usec % 1000000ULL);
     }

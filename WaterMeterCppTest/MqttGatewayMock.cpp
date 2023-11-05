@@ -14,7 +14,7 @@
 namespace WaterMeterCppTest {
 
     MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory) :
-        MqttGateway(eventServer, mqttClient, wifiClientFactory, &MQTT_CONFIG, nullptr, "1.0.0") {}
+        MqttGateway(eventServer, mqttClient, wifiClientFactory, &MqttConfig, nullptr, "1.0.0") {}
 
     bool MqttGatewayMock::hasAnnouncement() {
         _announceCounter++;

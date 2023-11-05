@@ -15,43 +15,43 @@
 
 Configuration::Configuration(Preferences* preferences) : _preferences(preferences) {}
 
-constexpr const char* IP = "ip";
+constexpr const char* Ip = "ip";
 
-constexpr const char* LOCAL = "local";
-constexpr const char* GATEWAY = "gateway";
-constexpr const char* SUBNET_MASK = "subNetMask";
-constexpr const char* DNS1 = "dns1";
-constexpr const char* DNS2 = "dns2";
+constexpr const char* Local = "local";
+constexpr const char* Gateway = "gateway";
+constexpr const char* SubnetMask = "subNetMask";
+constexpr const char* Dns1 = "dns1";
+constexpr const char* Dns2 = "dns2";
 
-constexpr const char* MQTT = "mqtt";
-constexpr const char* BROKER = "broker";
-constexpr const char* PORT = "port";
-constexpr const char* USER = "user";
-constexpr const char* PASSWORD = "password";
-constexpr const char* USE_TLS = "useTls";
+constexpr const char* Mqtt = "mqtt";
+constexpr const char* Broker = "broker";
+constexpr const char* Port = "port";
+constexpr const char* User = "user";
+constexpr const char* Password = "password";
+constexpr const char* UseTls = "useTls";
 
-constexpr const char* WIFI = "wifi";
-constexpr const char* DEVICE_NAME = "deviceName";
-constexpr const char* SSID = "ssid";
-constexpr const char* BSSID = "bssid";
+constexpr const char* Wifi = "wifi";
+constexpr const char* DeviceName = "deviceName";
+constexpr const char* Ssid = "ssid";
+constexpr const char* Bssid = "bssid";
 
-constexpr const char* TLS = "tls";
-constexpr const char* ROOT_CA_CERT = "rootCaCert";
-constexpr const char* DEVICE_CERT = "deviceCert";
-constexpr const char* DEVICE_KEY = "deviceKey";
+constexpr const char* Tls = "tls";
+constexpr const char* RootCaCert = "rootCaCert";
+constexpr const char* DeviceCert = "deviceCert";
+constexpr const char* DeviceKey = "deviceKey";
 
-constexpr const char* FIRMWARE = "firmware";
-constexpr const char* URL = "url";
+constexpr const char* Firmware = "firmware";
+constexpr const char* Url = "url";
 
 void Configuration::begin(const bool useSecrets) {
     // we use both an ifdef and an if to enable testing without having to recompile
 #ifdef HEADER_SECRETS
     if (useSecrets) {
-        putIpConfig(&CONFIG_IP);
-        putMqttConfig(&CONFIG_MQTT);
-        putTlsConfig(&CONFIG_TLS);
-        putWifiConfig(&CONFIG_WIFI);
-        putFirmwareConfig(&CONFIG_FIRMWARE);
+        putIpConfig(&configIp);
+        putMqttConfig(&ConfigMqtt);
+        putTlsConfig(&ConfigTls);
+        putWifiConfig(&ConfigWifi);
+        putFirmwareConfig(&ConfigFirmware);
     }
 #endif
 
@@ -63,53 +63,53 @@ void Configuration::begin(const bool useSecrets) {
 }
 
 int Configuration::freeBufferSpace() const {
-    return BUFFER_SIZE - static_cast<int>(_next - _buffer);
+    return BufferSize - static_cast<int>(_next - _buffer);
 }
 
 char* Configuration::getFirmwareConfig(char* start) {
-    _preferences->begin(FIRMWARE, true);
-    firmware.baseUrl = storeToBuffer(URL, &start);
+    _preferences->begin(Firmware, true);
+    firmware.baseUrl = storeToBuffer(Url, &start);
     _preferences->end();
     return start;
 }
 
 void Configuration::getIpConfig() {
-    _preferences->begin(IP, true);
-    ip.localIp = _preferences->getUInt(LOCAL, 0);
-    ip.gateway = _preferences->getUInt(GATEWAY, 0);
-    ip.subnetMask = _preferences->getUInt(SUBNET_MASK, 0);
-    ip.primaryDns = _preferences->getUInt(DNS1, 0);
-    ip.secondaryDns = _preferences->getUInt(DNS2, 0);
+    _preferences->begin(Ip, true);
+    ip.localIp = _preferences->getUInt(Local, 0);
+    ip.gateway = _preferences->getUInt(Gateway, 0);
+    ip.subnetMask = _preferences->getUInt(SubnetMask, 0);
+    ip.primaryDns = _preferences->getUInt(Dns1, 0);
+    ip.secondaryDns = _preferences->getUInt(Dns2, 0);
     _preferences->end();
 }
 
 char* Configuration::getMqttConfig(char* start) {
-    _preferences->begin(MQTT, true);
-    mqtt.broker = storeToBuffer(BROKER, &start);
-    mqtt.port = _preferences->getUInt(PORT, 1883);
-    mqtt.user = storeToBuffer(USER, &start);
-    mqtt.password = storeToBuffer(PASSWORD, &start);
-    mqtt.useTls = _preferences->getBool(USE_TLS, mqtt.port != 1883);
+    _preferences->begin(Mqtt, true);
+    mqtt.broker = storeToBuffer(Broker, &start);
+    mqtt.port = _preferences->getUInt(Port, 1883);
+    mqtt.user = storeToBuffer(User, &start);
+    mqtt.password = storeToBuffer(Password, &start);
+    mqtt.useTls = _preferences->getBool(UseTls, mqtt.port != 1883);
     _preferences->end();
     return start;
 }
 
 char* Configuration::getTlsConfig(char* start) {
-    _preferences->begin(TLS, true);
-    tls.rootCaCertificate = storeToBuffer(ROOT_CA_CERT, &start);
-    tls.deviceCertificate = storeToBuffer(DEVICE_CERT, &start);
-    tls.devicePrivateKey = storeToBuffer(DEVICE_KEY, &start);
+    _preferences->begin(Tls, true);
+    tls.rootCaCertificate = storeToBuffer(RootCaCert, &start);
+    tls.deviceCertificate = storeToBuffer(DeviceCert, &start);
+    tls.devicePrivateKey = storeToBuffer(DeviceKey, &start);
     _preferences->end();
     return start;
 }
 
 char* Configuration::getWifiConfig(char* start) {
-    _preferences->begin(WIFI, true);
-    wifi.deviceName = storeToBuffer(DEVICE_NAME, &start);
-    wifi.ssid = storeToBuffer(SSID, &start);
-    wifi.password = storeToBuffer(PASSWORD, &start);
-    if (_preferences->isKey(BSSID)) {
-        _preferences->getBytes(BSSID, start, 6);
+    _preferences->begin(Wifi, true);
+    wifi.deviceName = storeToBuffer(DeviceName, &start);
+    wifi.ssid = storeToBuffer(Ssid, &start);
+    wifi.password = storeToBuffer(Password, &start);
+    if (_preferences->isKey(Bssid)) {
+        _preferences->getBytes(Bssid, start, 6);
         wifi.bssid = reinterpret_cast<uint8_t*>(start);
         start += 6;
     }
@@ -122,34 +122,34 @@ char* Configuration::getWifiConfig(char* start) {
 
 void Configuration::putFirmwareConfig(const FirmwareConfig* firnwareConfig) const {
     if (firnwareConfig == nullptr) return;
-    _preferences->begin(FIRMWARE, false);
-    _preferences->putString(URL, firnwareConfig->baseUrl);
+    _preferences->begin(Firmware, false);
+    _preferences->putString(Url, firnwareConfig->baseUrl);
     _preferences->end();
 }
 
 void Configuration::putIpConfig(const IpConfig* ipConfig) const {
     if (ipConfig == nullptr) return;
-    _preferences->begin(IP, false);
+    _preferences->begin(Ip, false);
     _preferences->clear();
-    _preferences->putUInt(LOCAL, ipConfig->localIp);
-    _preferences->putUInt(GATEWAY, ipConfig->gateway);
-    _preferences->putUInt(SUBNET_MASK, ipConfig->subnetMask);
-    _preferences->putUInt(DNS1, ipConfig->primaryDns);
-    _preferences->putUInt(DNS2, ipConfig->secondaryDns);
+    _preferences->putUInt(Local, ipConfig->localIp);
+    _preferences->putUInt(Gateway, ipConfig->gateway);
+    _preferences->putUInt(SubnetMask, ipConfig->subnetMask);
+    _preferences->putUInt(Dns1, ipConfig->primaryDns);
+    _preferences->putUInt(Dns2, ipConfig->secondaryDns);
     _preferences->end();
 }
 
 void Configuration::putMqttConfig(const MqttConfig* mqttConfig) const {
     if (mqttConfig == nullptr) return;
-    _preferences->begin(MQTT, false);
+    _preferences->begin(Mqtt, false);
     _preferences->clear();
-    putStringIfNotNull(BROKER, mqttConfig->broker);
+    putStringIfNotNull(Broker, mqttConfig->broker);
     if (mqttConfig->port != 0) {
-        _preferences->putUInt(PORT, mqttConfig->port);
+        _preferences->putUInt(Port, mqttConfig->port);
     }
-    putStringIfNotNull(USER, mqttConfig->user);
-    putStringIfNotNull(PASSWORD, mqttConfig->password);
-    _preferences->putBool(USE_TLS, mqttConfig->useTls);
+    putStringIfNotNull(User, mqttConfig->user);
+    putStringIfNotNull(Password, mqttConfig->password);
+    _preferences->putBool(UseTls, mqttConfig->useTls);
     _preferences->end();
 }
 
@@ -161,23 +161,23 @@ void Configuration::putStringIfNotNull(const char* key, const char* value) const
 
 void Configuration::putTlsConfig(const TlsConfig* tlsConfig) const {
     if (tlsConfig == nullptr) return;
-    _preferences->begin(TLS, false);
+    _preferences->begin(Tls, false);
     _preferences->clear();
-    putStringIfNotNull(ROOT_CA_CERT, tlsConfig->rootCaCertificate);
-    putStringIfNotNull(DEVICE_CERT, tlsConfig->deviceCertificate);
-    putStringIfNotNull(DEVICE_KEY, tlsConfig->devicePrivateKey);
+    putStringIfNotNull(RootCaCert, tlsConfig->rootCaCertificate);
+    putStringIfNotNull(DeviceCert, tlsConfig->deviceCertificate);
+    putStringIfNotNull(DeviceKey, tlsConfig->devicePrivateKey);
     _preferences->end();
 }
 
 void Configuration::putWifiConfig(const WifiConfig* wifiConfig) const {
     if (wifiConfig == nullptr) return;
-    _preferences->begin(WIFI, false);
+    _preferences->begin(Wifi, false);
     _preferences->clear();
-    putStringIfNotNull(DEVICE_NAME, wifiConfig->deviceName);
-    putStringIfNotNull(SSID, wifiConfig->ssid);
-    putStringIfNotNull(PASSWORD, wifiConfig->password);
+    putStringIfNotNull(DeviceName, wifiConfig->deviceName);
+    putStringIfNotNull(Ssid, wifiConfig->ssid);
+    putStringIfNotNull(Password, wifiConfig->password);
     if (wifiConfig->bssid != nullptr) {
-        _preferences->putBytes(BSSID, wifiConfig->bssid, 6);
+        _preferences->putBytes(Bssid, wifiConfig->bssid, 6);
     }
     _preferences->end();
 }

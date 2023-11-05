@@ -21,10 +21,10 @@
 
 namespace WaterMeterCppTest {
 
-    constexpr MqttConfig MQTT_CONFIG_WITH_USER{"broker", 1883, "user", "password", false};
-    constexpr MqttConfig MQTT_CONFIG_NO_USER{"broker", 1883, nullptr, "", false};
+    constexpr MqttConfig MqttConfigWithUser{"broker", 1883, "user", "password", false};
+    constexpr MqttConfig MqttConfigNoUser{"broker", 1883, nullptr, "", false};
 
-    constexpr const char* const BUILD = "1";
+    constexpr const char* const Build = "1";
 
     class MqttGatewayTest : public testing::Test {
     public:
@@ -72,14 +72,14 @@ namespace WaterMeterCppTest {
     TEST_F(MqttGatewayTest, mqttGatewayCannotSubscribeTest) {
         mqttClient.setCanSubscribe(false);
         WiFiClientFactory wifiClientFactory(nullptr);
-        MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);
+        MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MqttConfigWithUser, &dataQueue, Build);
         gateway.begin("client1");
         EXPECT_STREQ("MQTT: Could not subscribe to result meter [state = 3]", errorListener.getPayload()) << "Error happened";
     }
 
     TEST_F(MqttGatewayTest, mqttGatewayNoUserTest) {
         WiFiClientFactory wifiClientFactory(nullptr);
-        MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_NO_USER, &dataQueue, BUILD);
+        MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MqttConfigNoUser, &dataQueue, Build);
         gateway.begin("client1");
         EXPECT_STREQ("", mqttClient.user()) << "User not set";
     }
@@ -90,16 +90,16 @@ namespace WaterMeterCppTest {
         WiFiClientFactory wifiClientFactory(nullptr);
 
         // Init part
-        MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MQTT_CONFIG_WITH_USER, &dataQueue, BUILD);
+        MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MqttConfigWithUser, &dataQueue, Build);
 
         gateway.begin("client1");
 
         TestEventClient volumeListener(&eventServer);
         eventServer.subscribe(&volumeListener, Topic::AddVolume);
 
-        constexpr int LOOP_PAYLOAD_SIZE = 7;
-        uint8_t loopPayload[LOOP_PAYLOAD_SIZE] = { '1','2','3','.','4','5','6' };
-        mqttClient.setLoopCallback("homie/client1/result/meter", loopPayload, LOOP_PAYLOAD_SIZE);
+        constexpr int LoopPayloadSize = 7;
+        uint8_t loopPayload[LoopPayloadSize] = { '1','2','3','.','4','5','6' };
+        mqttClient.setLoopCallback("homie/client1/result/meter", loopPayload, LoopPayloadSize);
 
         EXPECT_TRUE(gateway.getPreviousVolume()) << "Found previous volume";
         ASSERT_EQ(1, volumeListener.getCallCount()) << "Volume published";
@@ -117,11 +117,11 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(0, errorListener.getCallCount()) << "Error not called";
         EXPECT_EQ(0, infoListener.getCallCount()) << "Info not called";
 
-        EXPECT_STREQ(MQTT_CONFIG_WITH_USER.user, mqttClient.user()) << "User OK";
+        EXPECT_STREQ(MqttConfigWithUser.user, mqttClient.user()) << "User OK";
         EXPECT_STREQ("client1", mqttClient.id()) << "Client ID OK";
         // check if the homie init events were sent 
         EXPECT_EQ(static_cast<size_t>(2193), strlen(mqttClient.getTopics())) << "Topic lenght OK";
-        EXPECT_EQ(static_cast<size_t>(627), strlen(mqttClient.getPayloads())) << "Payload lenght OK";
+        EXPECT_EQ(static_cast<size_t>(632), strlen(mqttClient.getPayloads())) << "Payload lenght OK";
         EXPECT_EQ(58, mqttClient.getCallCount()) << "Call count";
 
         gateway.announceReady();
@@ -148,10 +148,10 @@ namespace WaterMeterCppTest {
         eventServer.subscribe(&callBackListener, Topic::BatchSizeDesired);
 
         char topic[100];
-        constexpr int PAYLOAD_SIZE = 2;
-        uint8_t payload1[PAYLOAD_SIZE] = {'2', '0'};
+        constexpr int PayloadSize = 2;
+        uint8_t payload1[PayloadSize] = {'2', '0'};
         safeStrcpy(topic, "homie/device_id/measurement/batch-size-desired/set");
-        mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
+        mqttClient.callBack(topic, payload1, PayloadSize);
         EXPECT_EQ(1, callBackListener.getCallCount()) << "callBackListener called";
         EXPECT_STREQ("20", callBackListener.getPayload()) << "callBackListener got right payload";
         callBackListener.reset();
@@ -160,7 +160,7 @@ namespace WaterMeterCppTest {
         eventServer.subscribe(&callBackListener, Topic::SetVolume);
 
         safeStrcpy(topic, "homie/device_id/result/meter/set");
-        mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
+        mqttClient.callBack(topic, payload1, PayloadSize);
         EXPECT_EQ(1, callBackListener.getCallCount()) << "callBackListener called";
         EXPECT_STREQ("20", callBackListener.getPayload()) << "callBackListener got right payload";
         callBackListener.reset();
@@ -174,33 +174,33 @@ namespace WaterMeterCppTest {
 
         callBackListener.reset();
         safeStrcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
-        mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
+        mqttClient.callBack(topic, payload1, PayloadSize);
         EXPECT_EQ(0, callBackListener.getCallCount()) << "callBackListener not called";
         callBackListener.reset();
 
         // Empty topic should get ignored, just checking nothing breaks
 
         topic[0] = 0;
-        mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
+        mqttClient.callBack(topic, payload1, PayloadSize);
 
         // null pointer as topic should get ignored 
 
-        mqttClient.callBack(nullptr, payload1, PAYLOAD_SIZE);
+        mqttClient.callBack(nullptr, payload1, PayloadSize);
 
         // same with a payload not having a device id
 
         safeStrcpy(topic, "bogus");
-        mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
+        mqttClient.callBack(topic, payload1, PayloadSize);
 
         // same with a payload not having a node or a property
 
         safeStrcpy(topic, "homie/device");
-        mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
+        mqttClient.callBack(topic, payload1, PayloadSize);
 
         // a topic we don't know should be ignored
 
         safeStrcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
-        mqttClient.callBack(topic, payload1, PAYLOAD_SIZE);
+        mqttClient.callBack(topic, payload1, PayloadSize);
         EXPECT_EQ(0, callBackListener.getCallCount()) << "callBackListener not called";
 
         gateway.handleQueue();

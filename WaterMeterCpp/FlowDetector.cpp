@@ -12,10 +12,10 @@
 // It was empirically established that relative measurements are less reliable (losing slow moves in the noise),
 // so now using absolutes measurements. Since absolute values are not entirely predictable, the tactic is to
 // follow the clockwise elliptic move that the signal makes. We do this by regularly feeding relevant data points
-// to an ellipse fitting algorithm. We then use the angle between the center of the ellipse and the data point
-// to detect a cycle: if it is at the lowest Y point (move from quadrant 4 to 3) we count a pulse.
+// to an ellipse fitting algorithm. We then use the getAngle between the getCenter of the ellipse and the data point
+// to detect a cycle: if it is at the lowest Y point (move from getQuadrant 4 to 3) we count a pulse.
 //
-// We only include points that are at least the noise distance away from the previously included point.
+// We only include points that are at least the noise getDistance away from the previously included point.
 // By doing that, the impact of noise (and the risk of outliers in angles) is greatly reduced. Further, the algorithm
 // can deal much better with slow flow.
 //
@@ -23,15 +23,15 @@
 //
 // We also use the fitted ellipse to determine outliers: if a point is too far away from the ellipse it is an outlier.
 //
-// Before we have a good fit, we use the (less accurate) mechanism of taking the angle with the previous data point.
-// It should be close to the angle to the center - PI / 2, and since we subtract, the difference of PI / 2 doesn't matter.
-// When that moves from quadrant 3 to 2, we have a pulse. we accept the (small) risk that in the first cycle we get an outlier. 
+// Before we have a good fit, we use the (less accurate) mechanism of taking the getAngle with the previous data point.
+// It should be close to the getAngle to the getCenter - PI / 2, and since we subtract, the difference of PI / 2 doesn't matter.
+// When that moves from getQuadrant 3 to 2, we have a pulse. we accept the (small) risk that in the first cycle we get an outlier. 
 
 #include <ESP.h>
 #include "FlowDetector.h"
 #include "MathUtils.h"
 
-constexpr double MIN_CYCLE_FOR_FIT = 0.6;
+constexpr double MinCycleForFit = 0.6;
 
 FlowDetector::FlowDetector(EventServer* eventServer, EllipseFit* ellipseFit): EventClient(eventServer), _ellipseFit(ellipseFit) {
 	_eventServer = eventServer;
@@ -41,8 +41,8 @@ FlowDetector::FlowDetector(EventServer* eventServer, EllipseFit* ellipseFit): Ev
 
 void FlowDetector::begin(const unsigned int noiseRange = 3) {
 	// we assume that the noise range for X and Y is the same.
-	// If the distance between two points is beyond this, it is beyond noise
-	_distanceThreshold = sqrt(2.0 * noiseRange * noiseRange) / MOVING_AVERAGE_NOISE_REDUCTION;
+	// If the getDistance between two points is beyond this, it is beyond noise
+	_distanceThreshold = sqrt(2.0 * noiseRange * noiseRange) / MovingAverageNoiseReduction;
 	_eventServer->subscribe(this, Topic::Sample);
 	_eventServer->subscribe(this, Topic::SensorWasReset);
 }
@@ -98,8 +98,8 @@ Coordinate FlowDetector::calcMovingAverage() {
 		_movingAverage.x += static_cast<double>(i.x);
 		_movingAverage.y += static_cast<double>(i.y);
 	}
-	_movingAverage.x /= MOVING_AVERAGE_SIZE;
-	_movingAverage.y /= MOVING_AVERAGE_SIZE;
+	_movingAverage.x /= MovingAverageSize;
+	_movingAverage.y /= MovingAverageSize;
 	return _movingAverage;
 }
 
@@ -120,22 +120,22 @@ CartesianEllipse FlowDetector::executeFit() const {
 }
 
 void FlowDetector::findPulseByCenter(const Coordinate& point) {
-	const auto angleWithCenter = point.angleFrom(_confirmedGoodFit.center);
-	const auto quadrant = angleWithCenter.quadrant();
+	const auto angleWithCenter = point.getAngleFrom(_confirmedGoodFit.center);
+	const auto quadrant = angleWithCenter.getQuadrant();
 	const auto quadrantDifference = (_previousQuadrant - quadrant) % 4;
-	// previous angle is initialized in the first fit, so always has a valid value when coming here
+	// previous getAngle is initialized in the first fit, so always has a valid value when coming here
 	const auto angleDistance = angleWithCenter - _previousAngleWithCenter.value;
 	_angleDistanceTravelled += angleDistance;
 	if (!_searchingForPulse) {
 		_foundPulse = false;
 		// start searching at the top of the ellipse. This takes care of jitter
-		// Also consider the risk that a quadrant gets skipped because of an anomaly
+		// Also consider the risk that a getQuadrant gets skipped because of an anomaly
 		if ((quadrantDifference == 1 && quadrant == 1) ||
 			(quadrantDifference == 2 && (quadrant == 1 || quadrant == 4))) _searchingForPulse = true;
 	}
 	else {
 		// reference point is the bottom of the ellipse
-		// Again, also consider the risk that a quadrant gets skipped
+		// Again, also consider the risk that a getQuadrant gets skipped
 		_foundPulse = (quadrantDifference == 1 && quadrant == 3) ||
 			          (quadrantDifference == 2 && (quadrant == 3 || quadrant == 2));
 		if (_foundPulse) {
@@ -149,11 +149,11 @@ void FlowDetector::findPulseByCenter(const Coordinate& point) {
 
 void FlowDetector::findPulseByPrevious(const Coordinate& point) {
 
-	const auto angleWithPreviousFromStart = point.angleFrom(_previousPoint) - _startTangent;
+	const auto angleWithPreviousFromStart = point.getAngleFrom(_previousPoint) - _startTangent;
 	_tangentDistanceTravelled += (angleWithPreviousFromStart - _previousAngleWithPreviousFromStart).value;
 	_previousAngleWithPreviousFromStart = angleWithPreviousFromStart;
 
-	const auto quadrant = point.angleFrom(_previousPoint).quadrant();
+	const auto quadrant = point.getAngleFrom(_previousPoint).getQuadrant();
 
 	// this can be jittery, so use a flag to check whether we counted, and reset the counter at the other side of the ellipse
 
@@ -169,7 +169,7 @@ void FlowDetector::findPulseByPrevious(const Coordinate& point) {
 
 bool FlowDetector::isRelevant(const Coordinate& point) {
 
-    const auto distance = point.distanceFrom(_referencePoint);
+    const auto distance = point.getDistanceFrom(_referencePoint);
 	// if we are too close to the previous point, discard
 	if (distance < _distanceThreshold) {
 		_wasSkipped = true;
@@ -177,7 +177,7 @@ bool FlowDetector::isRelevant(const Coordinate& point) {
 	}
 	// if we have a confirmed fit and the point is too far away from it, we have an anomaly. Discard.
 	if (_confirmedGoodFit.hasData) {
-		const auto distanceFromEllipse = _confirmedGoodFit.distanceFrom(point);
+		const auto distanceFromEllipse = _confirmedGoodFit.getDistanceFrom(point);
 		if (_confirmedGoodFit.hasData && distanceFromEllipse > _distanceThreshold * 2) {
 			reportAnomaly();
 			return false;
@@ -187,11 +187,11 @@ bool FlowDetector::isRelevant(const Coordinate& point) {
 	// if we have just started, we might have impact from the AC current due to the moving average. Wait until stable.
 	if (_justStarted) {
 		_waitCount++;
-		if (_waitCount <= MOVING_AVERAGE_SIZE) {
+		if (_waitCount <= MovingAverageSize) {
 			_wasSkipped = true;
 			return false;
 		}
-		_startTangent = point.angleFrom(_referencePoint);
+		_startTangent = point.getAngleFrom(_referencePoint);
 		_justStarted = false;
 		_waitCount = 0;
 	}
@@ -244,10 +244,10 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		// number of points per ellipse defines whether the fit is reliable.
 		const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
 		const auto fitSucceeded = fittedEllipse.fitSucceeded();
-		if (fitSucceeded && abs(passedCycles) >= MIN_CYCLE_FOR_FIT) {
+		if (fitSucceeded && abs(passedCycles) >= MinCycleForFit) {
 			_confirmedGoodFit = fittedEllipse;
-			_previousAngleWithCenter = point.angleFrom(center);
-			_previousQuadrant = _previousAngleWithCenter.quadrant();
+			_previousAngleWithCenter = point.getAngleFrom(center);
+			_previousQuadrant = _previousAngleWithCenter.getQuadrant();
 		} else {
 			// we need another round
 			_eventServer->publish(Topic::NoFit, noFitParameter( _tangentDistanceTravelled, fitSucceeded));
@@ -258,7 +258,7 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		// If we already had a reliable fit, check whether the new data is good enough to warrant a new fit.
 		// Otherwise we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
 		// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
-		if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MIN_CYCLE_FOR_FIT) {
+		if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MinCycleForFit) {
 			const auto fittedEllipse = executeFit();
 			const auto fitSucceeded = fittedEllipse.fitSucceeded();
 			if (fitSucceeded) {

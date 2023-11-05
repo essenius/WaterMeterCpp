@@ -17,17 +17,17 @@ namespace WaterMeterCppTest {
     
     class FreeRtosTest : public testing::Test {
     public:
-        QueueHandle_t queue[MAX_QUEUES] = {nullptr};
+        QueueHandle_t queue[MaxQueues] = {nullptr};
         char buffer[10] = "x";
     };
 
     TEST_F(FreeRtosTest, freeRtosTest1) {
         uxQueueReset();
         for (auto& i : queue) {
-            i = xQueueCreate(MAX_QUEUES, 2);
+            i = xQueueCreate(MaxQueues, 2);
             EXPECT_NE(nullptr, i) << "Not null";
         }
-        EXPECT_EQ(nullptr, xQueueCreate(MAX_QUEUES, 2)) << "Next returns 0";
+        EXPECT_EQ(nullptr, xQueueCreate(MaxQueues, 2)) << "Next returns 0";
         EXPECT_EQ(20ul, uxQueueSpacesAvailable(queue[0])) << "queue 0 has 20 spaces left at start";
         EXPECT_EQ(0ul, uxQueueMessagesWaiting(queue[0])) << "queue 0 has 0 waiting message at start";
         EXPECT_EQ(pdFALSE, xQueueReceive(queue[0], buffer, 0)) << "Nothing in the queue";

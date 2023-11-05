@@ -343,6 +343,9 @@ healthchecksdb
 # Backups
 *.bak
 
+# VCPKG 
+vcpkg_installed/
+
 #secrets
 # secrets and certificates
 *.crt

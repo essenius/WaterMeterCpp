@@ -27,7 +27,7 @@ namespace WaterMeterCppTest {
         MagnetoSensorReader reader(&eventServer);
         MagnetoSensorNull noSensor;
         MagnetoSensor* list[] = {&noSensor};
-        digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+        digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
 
         ChangePublisher<uint8_t> buttonPublisher(&eventServer, Topic::ResetSensor);
         Button button(&buttonPublisher, 34);

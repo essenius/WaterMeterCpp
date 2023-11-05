@@ -9,7 +9,7 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Creates a payload in JSON format to be sent over MQTT. Not using JSON libraries as we want to limit the size a bit.
+// Creates a payload in JSON format to be sent over MQTT. Not using JSON libraries as we want to limit the getSize a bit.
 
 #ifndef HEADER_PAYLOADBUILDER
 #define HEADER_PAYLOADBUILDER
@@ -23,7 +23,7 @@ public:
     void begin();
     void initialize(char prefix = '{');
     bool isAlmostFull() const;
-    int remainingSize() const;
+    int getRemainingSize() const;
     const char* toString() const;
     void updatePosition();
     void writeArrayEnd();
@@ -57,9 +57,9 @@ public:
     void writeText(const char* text);
 
 private:
-    static constexpr int NUMBER_BUFFER_SIZE = 16;
-    static constexpr int RESULT_BUFFER_MARGIN = 20;
-    static constexpr int RESULT_BUFFER_SIZE = 512;
+    static constexpr int NumberBufferSize = 16;
+    static constexpr int ResultBufferMargin = 20;
+    static constexpr int ResultBufferSize = 512;
 
     void writeString(const char* input);
     void writeString(double input);
@@ -72,8 +72,8 @@ private:
     Clock* _clock;
     char* _currentPosition = _resultBuffer;
     bool _needsDelimiter = false;
-    char _numberBuffer[NUMBER_BUFFER_SIZE] = {0};
-    char _resultBuffer[RESULT_BUFFER_SIZE] = {0};
+    char _numberBuffer[NumberBufferSize] = {0};
+    char _resultBuffer[ResultBufferSize] = {0};
 };
 
 #endif

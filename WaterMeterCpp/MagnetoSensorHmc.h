@@ -89,10 +89,10 @@ public:
     void softReset() const override;
     static bool testInRange(const SensorData& sample);
     bool test() const;
-    static constexpr byte DEFAULT_ADDRESS = 0x1E;
+    static constexpr byte DefaultAddress = 0x1E;
     bool handlePowerOn() override;
 private:
-    static constexpr int16_t SATURATED = -4096;
+    static constexpr int16_t Saturated = -4096;
     void configure(HmcRange range, HmcBias bias) const;
     void getTestMeasurement(SensorData& reading) const;
     void startMeasurement() const;

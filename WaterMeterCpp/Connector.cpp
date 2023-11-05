@@ -13,7 +13,8 @@
 #include "LedDriver.h"
 #include "QueueClient.h"
 
-constexpr unsigned long ONE_HOUR_IN_MILLIS = 3600UL * 1000UL;
+constexpr unsigned long OneHourInMillis = 3600UL * 1000UL;
+constexpr long LoopDelayMilliSeconds = 50;
 
 // TODO reduce number of parameters
 Connector::Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGateway, TimeServer* timeServer,
@@ -33,13 +34,13 @@ Connector::Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* m
 
 ConnectionState Connector::loop() {
     connect();
-    delay(50);
+    delay(LoopDelayMilliSeconds);
     return _state;
 }
 
 void Connector::begin(const Configuration* configuration) {
     _state = ConnectionState::Init;
-    _waitDuration = WIFI_INITIAL_WAIT_DURATION;
+    _waitDuration = WifiInitialWaitDuration;
     _wifiConnectionFailureCount = 0;
 
     // what can be sent to the sampler (numerical payload)
@@ -119,7 +120,7 @@ void Connector::handleCheckFirmware() {
 
 void Connector::handleDisconnected() {
     _state = ConnectionState::WifiConnecting;
-    _waitDuration = WIFI_RECONNECT_WAIT_DURATION;
+    _waitDuration = WifiReconnectWaitDuration;
     _wifi->reconnect();
 }
 
@@ -127,7 +128,7 @@ void Connector::handleInit() {
     _wifi->disconnect();
     _wifi->begin();
     _state = ConnectionState::WifiConnecting;
-    _waitDuration = WIFI_INITIAL_WAIT_DURATION;
+    _waitDuration = WifiInitialWaitDuration;
     _wifiConnectTimestamp = micros();
 }
 
@@ -138,7 +139,7 @@ void Connector::handleMqttConnected() {
     }
     // don't announce if we already did it recently. 
     // using millis since micros works only a bit over 70 minutes.
-    if (_lastAnnouncementTimestampMillis == 0 || millis() - _lastAnnouncementTimestampMillis > ONE_HOUR_IN_MILLIS) {
+    if (_lastAnnouncementTimestampMillis == 0 || millis() - _lastAnnouncementTimestampMillis > OneHourInMillis) {
         while (_mqttGateway->hasAnnouncement()) {
             _mqttGateway->publishNextAnnouncement();
         }
@@ -209,7 +210,7 @@ void Connector::handleSettingTime() {
         return;
     }
     const unsigned long timesetWaitDuration = micros() - _requestTimeTimestamp;
-    if (timesetWaitDuration > TIMESERVER_WAIT_DURATION) {
+    if (timesetWaitDuration > TimeserverWaitDuration) {
         // setting time failed. Retry.
         _state = ConnectionState::WifiConnected;
     }
@@ -217,7 +218,7 @@ void Connector::handleSettingTime() {
 
 void Connector::handleWaitingForMqttReconnect() {
     const unsigned long mqttWaitDuration = micros() - _mqttConnectTimestamp;
-    if (mqttWaitDuration >= MQTT_RECONNECT_WAIT_DURATION) {
+    if (mqttWaitDuration >= MqttReconnectWaitDuration) {
         _state = ConnectionState::WifiReady;
     }
 }
@@ -245,7 +246,7 @@ void Connector::handleWifiConnecting() {
     const unsigned long wifiWaitDuration = micros() - _wifiConnectTimestamp;
     if (wifiWaitDuration > _waitDuration) {
         _wifiConnectionFailureCount++;
-        if (_wifiConnectionFailureCount > MAX_RECONNECT_FAILURES) {
+        if (_wifiConnectionFailureCount > MaxReconnectFailures) {
             _state = ConnectionState::Init;
             _wifiConnectionFailureCount = 0;
             return;

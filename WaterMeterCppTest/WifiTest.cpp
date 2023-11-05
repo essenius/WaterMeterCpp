@@ -48,11 +48,11 @@ namespace WaterMeterCppTest {
         const IPAddress gateway(10, 0, 0, 1);
         const IPAddress dns1(8, 8, 8, 8);
         const IPAddress dns2(8, 8, 4, 4);
-        constexpr WifiConfig WIFI_CONFIG{"ssid", "password", "hostname", nullptr};
+        constexpr WifiConfig WifiConfig{"ssid", "password", "hostname", nullptr};
         PayloadBuilder payloadBuilder;
         TestEventClient client1(&eventServer);
         eventServer.subscribe(&client1, Topic::WifiSummaryReady);
-        WiFiManager wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
+        WiFiManager wifi(&eventServer, &WifiConfig, &payloadBuilder);
         wifi.begin();
         EXPECT_FALSE(wifi.needsReinit()) << "Does not need reinit as disconnected";
 
@@ -77,9 +77,9 @@ namespace WaterMeterCppTest {
     }
 
     TEST_F(WiFiTest, wifiFailSetNameTest) {
-        constexpr WifiConfig CONFIG{"ssid", "password", "", nullptr};
+        constexpr WifiConfig Config{"ssid", "password", "", nullptr};
         PayloadBuilder payloadBuilder;
-        WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
+        WiFiManager wifi(&eventServer, &Config, &payloadBuilder);
         wifi.begin();
         // just showing intended usage
         EXPECT_EQ(1, errorListener.getCallCount()) << "Error called";
@@ -87,18 +87,18 @@ namespace WaterMeterCppTest {
     }
 
     TEST_F(WiFiTest, wifiGetUnknownTopicTestTest) {
-        constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr};
+        constexpr WifiConfig Config{"ssid", "password", "hostname", nullptr};
         PayloadBuilder payloadBuilder;
-        WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
+        WiFiManager wifi(&eventServer, &Config, &payloadBuilder);
         EXPECT_STREQ("x", wifi.get(Topic::Pulse, "x")) << "Unexpected topic returns default";
     }
 
     TEST_F(WiFiTest, wifiNullNameTest) {
         WiFi.setHostname("esp32_001122334455");
-        constexpr WifiConfig CONFIG{"ssid", "password", nullptr, nullptr};
+        constexpr WifiConfig Config{"ssid", "password", nullptr, nullptr};
         PayloadBuilder payloadBuilder;
 
-        WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
+        WiFiManager wifi(&eventServer, &Config, &payloadBuilder);
         wifi.begin();
 
         EXPECT_EQ(0, errorListener.getCallCount()) << "Error not called";
@@ -114,10 +114,10 @@ namespace WaterMeterCppTest {
     TEST_F(WiFiTest, wifiPredefinedLocalIpTest) {
         const IPAddress local(192, 168, 1, 2);
         const IPAddress gateway(192, 168, 1, 1);
-        constexpr WifiConfig WIFI_CONFIG{"ssid", "password", "hostname", nullptr};
+        constexpr WifiConfig WifiConfig{"ssid", "password", "hostname", nullptr};
         PayloadBuilder payloadBuilder;
-        WiFiManager wifi(&eventServer, &WIFI_CONFIG, &payloadBuilder);
-        const IpConfig ipConfig{local, NO_IP, NO_IP, NO_IP, NO_IP};
+        WiFiManager wifi(&eventServer, &WifiConfig, &payloadBuilder);
+        const IpConfig ipConfig{local, NoIp, NoIp, NoIp, NoIp};
         wifi.configure(&ipConfig);
         wifi.begin();
         EXPECT_FALSE(wifi.needsReinit()) << "Does not need reinit";
@@ -142,11 +142,11 @@ namespace WaterMeterCppTest {
         const IPAddress local(192, 168, 1, 2);
         const IPAddress gateway(192, 168, 1, 253);
         const IPAddress dns(9, 9, 9, 9);
-        constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr};
+        constexpr WifiConfig Config{"ssid", "password", "hostname", nullptr};
         PayloadBuilder payloadBuilder;
 
-        WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
-        const IpConfig ipConfig{local, gateway, NO_IP, dns, NO_IP};
+        WiFiManager wifi(&eventServer, &Config, &payloadBuilder);
+        const IpConfig ipConfig{local, gateway, NoIp, dns, NoIp};
         wifi.configure(&ipConfig);
         wifi.begin();
         EXPECT_FALSE(wifi.needsReinit()) << "Does not need reinit";
@@ -169,11 +169,11 @@ namespace WaterMeterCppTest {
         const IPAddress dns1(9, 9, 9, 9);
         const IPAddress dns2(1, 1, 1, 1);
 
-        constexpr WifiConfig CONFIG{"ssid", "password", "hostname", nullptr};
+        constexpr WifiConfig Config{"ssid", "password", "hostname", nullptr};
         PayloadBuilder payloadBuilder;
 
-        WiFiManager wifi(&eventServer, &CONFIG, &payloadBuilder);
-        const IpConfig ipConfig{local, NO_IP, NO_IP, dns1, dns2};
+        WiFiManager wifi(&eventServer, &Config, &payloadBuilder);
+        const IpConfig ipConfig{local, NoIp, NoIp, dns1, dns2};
         wifi.configure(&ipConfig);
         wifi.begin();
         EXPECT_FALSE(wifi.needsReinit()) << "does not need reinit";

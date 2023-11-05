@@ -29,12 +29,12 @@ bool MagnetoSensorReader::setSensor() {
     }
     if (!_sensor->begin()) return false; 
 
-    constexpr int IGNORE_SAMPLE_COUNT = 5;
+    constexpr int IgnoreSampleCount = 5;
     // ignore the first measurements, often outliers
     SensorData sample{};
     _sensor->read(sample);
-    for (int i = 1; i < IGNORE_SAMPLE_COUNT; i++) {
-        delay(DELAY_SENSOR_MILLIS);
+    for (int i = 1; i < IgnoreSampleCount; i++) {
+        delay(DelaySensorMillis);
         _sensor->read(sample);
     }
     return true;
@@ -44,12 +44,12 @@ bool MagnetoSensorReader::begin(MagnetoSensor* sensor[], const size_t listSize) 
     _sensorList = sensor;
     _sensorListSize = listSize;
     pinMode(_powerPort, OUTPUT);
-    const auto sensorFound = power(HIGH) == SensorState::Ok;
+    const auto sensorFound = setPower(HIGH) == SensorState::Ok;
     _eventServer->subscribe(this, Topic::ResetSensor);
     return sensorFound;
 }
 
-// Configure the GPIO port used for the sensor power if not default (15). 
+// Configure the GPIO port used for the sensor setPower if not default (15). 
 void MagnetoSensorReader::configurePowerPort(const uint8_t port) {
     _powerPort = port;
     pinMode(_powerPort, OUTPUT);
@@ -64,16 +64,16 @@ int MagnetoSensorReader::getNoiseRange() const {
 }
 
 void MagnetoSensorReader::hardReset() {
-    power(LOW);
-    power(HIGH);
+    setPower(LOW);
+    setPower(HIGH);
 
-    _streakCount = 0;
+    _flatlineCount = 0;
     _consecutiveStreakCount = 0;
-    _eventServer->publish(Topic::SensorWasReset, HARD_RESET);
+    _eventServer->publish(Topic::SensorWasReset, HardReset);
 }
 
-SensorState MagnetoSensorReader::power(const uint8_t state) {
-    // do nothing if we are already in the right state
+SensorState MagnetoSensorReader::setPower(const uint8_t state) {
+    // do nothing if we are already in the right getState
     const auto currentState = digitalRead(_powerPort);
     if (currentState == state && _sensorState == (state == LOW ? SensorState::None : SensorState::Ok)) return _sensorState;
     digitalWrite(_powerPort, state);
@@ -83,7 +83,7 @@ SensorState MagnetoSensorReader::power(const uint8_t state) {
         return _sensorState;
     }
     // wait for the sensor to be ready (50 ms for both QMC and HMC)
-    delayMicroseconds(STARTUP_MICROS);
+    delayMicroseconds(StartupMicros);
     auto ok = setSensor();
     if (!ok) {
         _sensorState = SensorState::BeginError;
@@ -111,18 +111,18 @@ SensorState MagnetoSensorReader::validate(const IntCoordinate& sample) {
     _sensorState = sample.isSaturated() ? SensorState::Saturated : sample.hasError() ? SensorState::ReadError : SensorState::Ok;
 
     if (sample == _previousSample || _sensorState != SensorState::Ok ) {
-        _streakCount++;
+        _flatlineCount++;
         // if we have too many of the same results in a row, signal to reset the sensor
-        if (_streakCount >= FLATLINE_STREAK) {
+        if (_flatlineCount >= FlatlineStreak) {
             // check whether we need a hard or a soft reset
             _consecutiveStreakCount++;
-            _sensorState = _consecutiveStreakCount >= MAX_STREAKS_TO_ALERT || !_sensor->isReal() ? SensorState::NeedsHardReset : SensorState::NeedsSoftReset;
+            _sensorState = _consecutiveStreakCount >= MaxStreaksToAlert || !_sensor->isReal() ? SensorState::NeedsHardReset : SensorState::NeedsSoftReset;
             return _sensorState;
         }
     }
     else {
         // all good, reset the statistics
-        _streakCount = 0;
+        _flatlineCount = 0;
         _consecutiveStreakCount = 0;
         _previousSample = sample;
     }
@@ -131,8 +131,8 @@ SensorState MagnetoSensorReader::validate(const IntCoordinate& sample) {
 
 void MagnetoSensorReader::softReset() {
     _sensor->softReset();
-    _streakCount = 0;
-    _eventServer->publish(Topic::SensorWasReset, SOFT_RESET);
+    _flatlineCount = 0;
+    _eventServer->publish(Topic::SensorWasReset, SoftReset);
 }
 
 void MagnetoSensorReader::update(const Topic topic, const long payload) {

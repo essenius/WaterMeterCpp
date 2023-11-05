@@ -17,11 +17,11 @@ namespace WaterMeterCppTest {
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcCustomAddressTest) {
         MagnetoSensorHmc sensor;
-        constexpr uint8_t ADDRESS = 0x23;
-        sensor.configureAddress(ADDRESS);
+        constexpr uint8_t Address = 0x23;
+        sensor.configureAddress(Address);
         Wire.begin();
         sensor.begin();
-        EXPECT_EQ(ADDRESS, Wire.getAddress()) << "Custom Address OK";
+        EXPECT_EQ(Address, Wire.getAddress()) << "Custom Address OK";
     }
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcGetGainTest) {
@@ -66,11 +66,12 @@ namespace WaterMeterCppTest {
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcScriptTest) {
         MagnetoSensorHmc sensor;
+        setRealTime(true);
         Wire.begin();
         sensor.begin();
-        EXPECT_EQ(MagnetoSensorHmc::DEFAULT_ADDRESS, Wire.getAddress()) << "Default address OK";
-        constexpr uint8_t BUFFER_BEGIN[] = {0, 0x78, 1, 0xa0, 2, 0x01, 2, 0x01, 3};
-        EXPECT_EQ(sizeof BUFFER_BEGIN, Wire.writeMismatchIndex(BUFFER_BEGIN, sizeof BUFFER_BEGIN)) << "writes for begin ok";
+        EXPECT_EQ(MagnetoSensorHmc::DefaultAddress, Wire.getAddress()) << "Default address OK";
+        constexpr uint8_t BufferBegin[] = {0, 0x78, 1, 0xa0, 2, 0x01, 2, 0x01, 3};
+        EXPECT_EQ(sizeof BufferBegin, Wire.writeMismatchIndex(BufferBegin, sizeof BufferBegin)) << "writes for begin ok";
         // we are at the default address so the sensor should report it's on
         Wire.setEndTransmissionTogglePeriod(1);
         EXPECT_TRUE(sensor.isOn()) << "Sensor is on";
@@ -82,6 +83,15 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(0x001, sample.x) << "X ok";
         EXPECT_EQ(0x0405, sample.y) << "Y ok";
         EXPECT_EQ(0x0203, sample.z) << "Z ok";
+
+        // force a lower value than the saturation. This will be 0xeeee, which is -4370, i.e. less than -4096
+        constexpr int Saturated = 0xee;
+        Wire.setFlatline(true, Saturated);
+        sensor.read(sample);
+        EXPECT_EQ(SHRT_MIN, sample.x) << "X saturated";
+        EXPECT_EQ(SHRT_MIN, sample.y) << "Y saturated";
+        EXPECT_EQ(SHRT_MIN, sample.z) << "Z saturated";
+        Wire.setFlatline(false, 0);
 
         Wire.setEndTransmissionTogglePeriod(1);
         EXPECT_TRUE(sensor.isOn()) << "Sensor is on";
@@ -95,8 +105,8 @@ namespace WaterMeterCppTest {
         // ensure all test variables are reset
         Wire.begin();
         sensor.begin();
-        constexpr uint8_t BUFFER_RECONFIGURE[] = {0, 0x54, 1, 0xc0, 2, 0x01, 2, 0x01, 3};
-        EXPECT_EQ(sizeof BUFFER_RECONFIGURE, Wire.writeMismatchIndex(BUFFER_RECONFIGURE, sizeof BUFFER_RECONFIGURE)) << "writes for reconfigure ok";
+        constexpr uint8_t BufferReconfigure[] = {0, 0x54, 1, 0xc0, 2, 0x01, 2, 0x01, 3};
+        EXPECT_EQ(sizeof BufferReconfigure, Wire.writeMismatchIndex(BufferReconfigure, sizeof BufferReconfigure)) << "writes for reconfigure ok";
     }
 }
 

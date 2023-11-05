@@ -14,37 +14,30 @@
 #include <cstdio>
 #include <cmath>
 #include "Coordinate.h"
-
-#include "IntCoordinate.h"
 #include "MathUtils.h"
 
 bool Coordinate::operator==(const Coordinate& other) const {
     printf("Coordinate== called\n");
-    return aboutEqual(x, other.x) && aboutEqual(y, other.y);
+    return isAboutEqual(x, other.x) && isAboutEqual(y, other.y);
 }
 
-// we need this to pass coordinates in a memory efficient way but still keep reasonable accuracy
-IntCoordinate Coordinate::times10() const {
-    return { {static_cast<int16_t>(x * 10),static_cast<int16_t>(y * 10)} };
-}
-
-Angle Coordinate::angle() const {
+Angle Coordinate::getAngle() const {
     if (x == 0 && y == 0) return {NAN};
     return {atan2(y, x)};
 }
 
-Angle Coordinate::angleFrom(const Coordinate& other) const {
+Angle Coordinate::getAngleFrom(const Coordinate& other) const {
     const Coordinate difference = translate(-other);
-    return difference.angle();
+    return difference.getAngle();
 }
 
-double Coordinate::distance() const {
+double Coordinate::getDistance() const {
     return sqrt(x * x + y * y);
 }
 
-double Coordinate::distanceFrom(const Coordinate& other) const {
+double Coordinate::getDistanceFrom(const Coordinate& other) const {
     const Coordinate difference = translate(-other);
-    return difference.distance();
+    return difference.getDistance();
 }
 
 Coordinate Coordinate::rotate(const double angle) const {

@@ -33,7 +33,7 @@ void SampleAggregator::addSample(const IntCoordinate& sample) {
 void SampleAggregator::begin() {
     _eventServer->subscribe(this, Topic::BatchSizeDesired);
     _eventServer->subscribe(this, Topic::Sample);
-    Aggregator::begin(DEFAULT_FLUSH_RATE);
+    Aggregator::begin(DefaultFlushRate);
     // This is the only time the desired rate gets published from here.
     _eventServer->publish(this, Topic::BatchSizeDesired, _desiredFlushRate);
 }
@@ -46,14 +46,14 @@ void SampleAggregator::flush() {
 
 void SampleAggregator::update(const Topic topic, const char* payload) {
     if (topic == Topic::BatchSizeDesired) {
-        const auto desiredRate = convertToLong(payload, DEFAULT_FLUSH_RATE);
+        const auto desiredRate = convertToLong(payload, DefaultFlushRate);
         update(topic, desiredRate);
     }
 }
 
 void SampleAggregator::update(const Topic topic, const long payload) {
     if (topic == Topic::BatchSizeDesired) {
-        const auto desiredRate = static_cast<unsigned char>(limit(payload, 0L, MAX_FLUSH_RATE));
+        const auto desiredRate = static_cast<unsigned char>(limit(payload, 0L, MaxFlushRate));
         setDesiredFlushRate(desiredRate);
     }
 }

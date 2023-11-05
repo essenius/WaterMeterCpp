@@ -27,7 +27,7 @@ void Led::init(const uint8_t port, const uint8_t value) {
 
 inline bool Led::needsInvert(const uint8_t port) {
     // the RGB led is common anode, so off HIGH
-    return port == RED || port == GREEN || port == BLUE;
+    return port == Red || port == Green || port == Blue;
 }
 
 void Led::set(const uint8_t port, const uint8_t value) {

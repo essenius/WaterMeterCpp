@@ -47,7 +47,7 @@ namespace WaterMeterCppTest {
 
         testEventClient.reset();
         payload.topic = Topic::Samples;
-        payload.buffer.samples.count = MAX_SAMPLES;
+        payload.buffer.samples.count = MaxSamples;
         short baseNumber = 475;
         for (short i = 0; i < static_cast<short>(payload.buffer.samples.count); i++) {
             const auto value = static_cast<short>(i + baseNumber);

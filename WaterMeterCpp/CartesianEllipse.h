@@ -10,9 +10,9 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 // CartesianEllipse supports the following calculations based on a (fitted) QuadraticEllipse
-// * the distance between a point an the ellipse
+// * the getDistance between a point an the ellipse
 // * the coordinates of a point projected on the ellipse
-// * the coordinate of the parametric representation of the ellipse given an angle
+// * the coordinate of the parametric representation of the ellipse given an getAngle
 // * an approximation of the circumference of the circle
 //
 // These methods are used to determine whether we have an outlier: too far away from the ellipse => outlier
@@ -37,7 +37,7 @@ struct CartesianEllipse {
 
 	bool fitSucceeded() const;
 	double circumference() const;
-	double distanceFrom(const Coordinate& referencePoint) const;
+	double getDistanceFrom(const Coordinate& referencePoint) const;
 	Coordinate parametricRepresentation(const Angle& referenceAngle) const;
 	Coordinate pointOnEllipseFor(const Coordinate& referencePoint) const;
 };

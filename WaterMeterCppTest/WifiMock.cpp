@@ -14,5 +14,5 @@
 namespace WaterMeterCppTest {
 
     WiFiMock::WiFiMock(EventServer* eventServer, PayloadBuilder* payloadBuilder):
-        WiFiManager(eventServer, &CONFIG, payloadBuilder) {}
+        WiFiManager(eventServer, &Config, payloadBuilder) {}
 }

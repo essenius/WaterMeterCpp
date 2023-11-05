@@ -21,36 +21,36 @@ using namespace std::placeholders;
 
 // mapping between topics and whether it can be set, the node, and the property
 // implementing triplet via two pairs
-static const std::map<Topic, std::pair<bool, std::pair<const char*, const char*>>> TOPIC_MAP{
-    {Topic::BatchSize, {false, {MEASUREMENT, MEASUREMENT_BATCH_SIZE}}},
-    {Topic::BatchSizeDesired, {true, {MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED}}},
-    {Topic::SamplesFormatted, {false, {MEASUREMENT, MEASUREMENT_VALUES}}},
-    {Topic::Rate, {false, {RESULT, RESULT_RATE}}},
-    {Topic::ResultFormatted, {false, {RESULT, RESULT_VALUES}}},
-    {Topic::IdleRate, {true, {RESULT, RESULT_IDLE_RATE}}},
-    {Topic::NonIdleRate, {true, {RESULT, RESULT_NON_IDLE_RATE}}},
-    {Topic::Volume, {false, {RESULT, RESULT_METER}}},
-    {Topic::SetVolume, {true, {RESULT, RESULT_METER}}},
-    {Topic::FreeHeap, {false, {DEVICE, DEVICE_FREE_HEAP}}},
-    {Topic::FreeStack, {false, {DEVICE, DEVICE_FREE_STACK}}},
-    {Topic::FreeQueueSize, {false, {DEVICE, DEVICE_FREE_QUEUE_SIZE}}},
-    {Topic::FreeQueueSpaces, {false, {DEVICE, DEVICE_FREE_QUEUE_SPACES}}},
-    {Topic::SensorWasReset, {false, {DEVICE, DEVICE_RESET_SENSOR}}},
-    {Topic::ResetSensor, {true, {DEVICE, DEVICE_RESET_SENSOR}}}
+static const std::map<Topic, std::pair<bool, std::pair<const char*, const char*>>> TopicMap{
+    {Topic::BatchSize, {false, {Measurement, MeasurementBatchSize}}},
+    {Topic::BatchSizeDesired, {true, {Measurement, MeasurementBatchSizeDesired}}},
+    {Topic::SamplesFormatted, {false, {Measurement, MeasurementValues}}},
+    {Topic::Rate, {false, {Result, ResultRate}}},
+    {Topic::ResultFormatted, {false, {Result, ResultValues}}},
+    {Topic::IdleRate, {true, {Result, ResultIdleRate}}},
+    {Topic::NonIdleRate, {true, {Result, ResultNonIdleRate}}},
+    {Topic::Volume, {false, {Result, ResultMeter}}},
+    {Topic::SetVolume, {true, {Result, ResultMeter}}},
+    {Topic::FreeHeap, {false, {DeviceLabel, DeviceFreeHeap}}},
+    {Topic::FreeStack, {false, {DeviceLabel, DeviceFreeStack}}},
+    {Topic::FreeQueueSize, {false, {DeviceLabel, DeviceFreeQueueSize}}},
+    {Topic::FreeQueueSpaces, {false, {DeviceLabel, DeviceFreeQueueSpaces}}},
+    {Topic::SensorWasReset, {false, {DeviceLabel, DeviceResetSensor}}},
+    {Topic::ResetSensor, {true, {DeviceLabel, DeviceResetSensor}}}
 };
 
 // SetVolume is not retained yet as we are not pushing it back at this stage
-static const std::set<Topic> NON_RETAINED_TOPICS{Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume};
+static const std::set<Topic> NonRetainedTopics{Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume};
 
-constexpr const char* const RATE_RANGE = "0:8640000";
-constexpr const char* const TYPE_INTEGER = "integer";
-constexpr const char* const TYPE_STRING = "string";
-constexpr const char* const TYPE_FLOAT = "float";
-constexpr const char* const LAST_WILL_MESSAGE = "lost";
-constexpr bool SETTABLE = true;
-constexpr const char* const NAME = "$name";
+constexpr const char* const RateRange = "0:8640000";
+constexpr const char* const TypeInteger = "integer";
+constexpr const char* const TypeString = "string";
+constexpr const char* const TypeFloat = "float";
+constexpr const char* const LastWillMessage = "lost";
+constexpr bool Settable = true;
+constexpr const char* const Name = "$name";
 
-constexpr const char* const BASE_TOPIC_TEMPLATE = "homie/%s/%s";
+constexpr const char* const BaseTopicTemplate = "homie/%s/%s";
 
 // thread safe alternative for strtok
 char* nextToken(char** start, const int delimiter) {
@@ -126,15 +126,15 @@ void MqttGateway::begin(const char* clientName) {
 
 void MqttGateway::connect() {
     _announcementPointer = _announcementBuffer;
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, STATE);
+    safeSprintf(_topicBuffer, BaseTopicTemplate, _clientName, State);
     _mqttClient->setKeepAlive(90);
     bool success;
     if (_mqttConfig->user == nullptr || strlen(_mqttConfig->user) == 0) {
-        success = _mqttClient->connect(_clientName, _topicBuffer, 0, true, LAST_WILL_MESSAGE);
+        success = _mqttClient->connect(_clientName, _topicBuffer, 0, true, LastWillMessage);
     }
     else {
         success = _mqttClient->connect(_clientName, _mqttConfig->user, _mqttConfig->password, _topicBuffer, 0, true,
-            LAST_WILL_MESSAGE);
+            LastWillMessage);
     }
 
     // should get picked up by isConnected later
@@ -143,7 +143,7 @@ void MqttGateway::connect() {
     }
 
     // if this doesn't work but the connection is still up, we may still be able to run.
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, "+/+/set");
+    safeSprintf(_topicBuffer, BaseTopicTemplate, _clientName, "+/+/set");
     if (!_mqttClient->subscribe(_topicBuffer)) {
         publishError("Could not subscribe to setters");
     }
@@ -152,9 +152,9 @@ void MqttGateway::connect() {
 
     // just after a boot, see if we have a previous meter value
 
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, RESULT);
+    safeSprintf(_topicBuffer, BaseTopicTemplate, _clientName, Result);
     safeStrcat(_topicBuffer, "/");
-    safeStrcat(_topicBuffer, RESULT_METER);
+    safeStrcat(_topicBuffer, ResultMeter);
 
     if (!_mqttClient->subscribe(_topicBuffer)) {
         publishError("Could not subscribe to result meter");
@@ -191,7 +191,7 @@ bool MqttGateway::publishNextAnnouncement() {
     if (strlen(topic) == 0) return false;
     const char* payload = _announcementPointer;
     _announcementPointer += strlen(payload) + 1;
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, _clientName, topic);
+    safeSprintf(_topicBuffer, BaseTopicTemplate, _clientName, topic);
     return _mqttClient->publish(_topicBuffer, payload, true);
 }
 
@@ -208,13 +208,13 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
     if (length == 0) return;
 
     char* copyTopic = strdup(topic);
-    constexpr int DELIMITER = '/';
+    constexpr int Delimiter = '/';
     // if the topic is invalid, ignore the message
-    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // homie, ignore
-    if (nextToken(&copyTopic, DELIMITER) == nullptr) return; // device ID, ignore
-    const char* node = nextToken(&copyTopic, DELIMITER);
-    const char* property = nextToken(&copyTopic, DELIMITER);
-    const char* set = nextToken(&copyTopic, DELIMITER);
+    if (nextToken(&copyTopic, Delimiter) == nullptr) return; // homie, ignore
+    if (nextToken(&copyTopic, Delimiter) == nullptr) return; // device ID, ignore
+    const char* node = nextToken(&copyTopic, Delimiter);
+    const char* property = nextToken(&copyTopic, Delimiter);
+    const char* set = nextToken(&copyTopic, Delimiter);
     if (node == nullptr || property == nullptr) return;
     const auto isSetter = set != nullptr && strcmp(set, "set") == 0;
     const auto payloadStr = new char[length + 1];
@@ -222,7 +222,7 @@ void MqttGateway::callback(const char* topic, const byte* payload, const unsigne
         payloadStr[i] = static_cast<char>(payload[i]);
     }
     payloadStr[length] = 0;
-    for (const auto& entry : TOPIC_MAP) {
+    for (const auto& entry : TopicMap) {
         const auto topicTriplet = entry.second;
         const auto isSetProperty = topicTriplet.first;
         if (isSetter == isSetProperty) {
@@ -242,44 +242,44 @@ bool MqttGateway::isRightTopic(const std::pair<const char*, const char*> topicPa
 }
 
 void MqttGateway::prepareAnnouncementBuffer() {
-    char payload[TOPIC_BUFFER_SIZE];
+    char payload[TopicBufferSize];
 
     prepareEntity("$homie", "4.0.0");
-    prepareEntity(STATE, "init");
-    prepareEntity(NAME, _clientName);
-    safeSprintf(payload, "%s,%s,%s", MEASUREMENT, RESULT, DEVICE);
+    prepareEntity(State, "init");
+    prepareEntity(Name, _clientName);
+    safeSprintf(payload, "%s,%s,%s", Measurement, Result, DeviceLabel);
     prepareEntity("$nodes", payload);
     prepareEntity("$implementation", "esp32");
-    prepareEntity("$extensions", EMPTY);
+    prepareEntity("$extensions", Empty);
 
-    safeSprintf(payload, "%s,%s,%s", MEASUREMENT_BATCH_SIZE, MEASUREMENT_BATCH_SIZE_DESIRED, MEASUREMENT_VALUES);
-    prepareNode(MEASUREMENT, "Measurement", "1", payload);
-    prepareProperty(MEASUREMENT, MEASUREMENT_BATCH_SIZE, "Batch Size", TYPE_INTEGER);
-    prepareProperty(MEASUREMENT, MEASUREMENT_BATCH_SIZE_DESIRED, "Desired Batch Size", TYPE_INTEGER, "0-20", SETTABLE);
-    prepareProperty(MEASUREMENT, MEASUREMENT_VALUES, "Values", TYPE_STRING);
+    safeSprintf(payload, "%s,%s,%s", MeasurementBatchSize, MeasurementBatchSizeDesired, MeasurementValues);
+    prepareNode(Measurement, "Measurement", "1", payload);
+    prepareProperty(Measurement, MeasurementBatchSize, "Batch Size", TypeInteger);
+    prepareProperty(Measurement, MeasurementBatchSizeDesired, "Desired Batch Size", TypeInteger, "0-20", Settable);
+    prepareProperty(Measurement, MeasurementValues, "Values", TypeString);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s", RESULT_RATE, RESULT_IDLE_RATE, RESULT_NON_IDLE_RATE, RESULT_METER, RESULT_VALUES);
-    prepareNode(RESULT, "Result", "1", payload);
-    prepareProperty(RESULT, RESULT_RATE, "Rate", TYPE_INTEGER);
-    prepareProperty(RESULT, RESULT_IDLE_RATE, "Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
-    prepareProperty(RESULT, RESULT_NON_IDLE_RATE, "Non-Idle Rate", TYPE_INTEGER, RATE_RANGE, SETTABLE);
-    prepareProperty(RESULT, RESULT_METER, "Meter value", TYPE_FLOAT, "0-99999.9999999", SETTABLE);
-    prepareProperty(RESULT, RESULT_VALUES, "Values", TYPE_STRING);
+    safeSprintf(payload, "%s,%s,%s,%s,%s", ResultRate, ResultIdleRate, ResultNonIdleRate, ResultMeter, ResultValues);
+    prepareNode(Result, "Result", "1", payload);
+    prepareProperty(Result, ResultRate, "Rate", TypeInteger);
+    prepareProperty(Result, ResultIdleRate, "Idle Rate", TypeInteger, RateRange, Settable);
+    prepareProperty(Result, ResultNonIdleRate, "Non-Idle Rate", TypeInteger, RateRange, Settable);
+    prepareProperty(Result, ResultMeter, "Meter value", TypeFloat, "0-99999.9999999", Settable);
+    prepareProperty(Result, ResultValues, "Values", TypeString);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DEVICE_FREE_HEAP, DEVICE_FREE_STACK, DEVICE_FREE_QUEUE_SIZE,
-                DEVICE_FREE_QUEUE_SPACES, DEVICE_BUILD, DEVICE_MAC);
-    prepareNode(DEVICE, "Device", "1", payload);
-    prepareProperty(DEVICE, DEVICE_FREE_HEAP, "Free Heap", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_FREE_STACK, "Free Stack", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_FREE_QUEUE_SIZE, "Free Queue Size", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_FREE_QUEUE_SPACES, "Free Queue Spaces", TYPE_INTEGER);
-    prepareProperty(DEVICE, DEVICE_BUILD, "Firmware version", TYPE_STRING);
-    prepareProperty(DEVICE, DEVICE_MAC, "Mac address", TYPE_STRING);
-    prepareProperty(DEVICE, DEVICE_RESET_SENSOR, "Reset Sensor", TYPE_INTEGER, "1", SETTABLE);
+    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DeviceFreeHeap, DeviceFreeStack, DeviceFreeQueueSize,
+                DeviceFreeQueueSpaces, DeviceBuild, DeviceMac);
+    prepareNode(DeviceLabel, "DeviceLabel", "1", payload);
+    prepareProperty(DeviceLabel, DeviceFreeHeap, "Free Heap", TypeInteger);
+    prepareProperty(DeviceLabel, DeviceFreeStack, "Free Stack", TypeInteger);
+    prepareProperty(DeviceLabel, DeviceFreeQueueSize, "Free Queue Size", TypeInteger);
+    prepareProperty(DeviceLabel, DeviceFreeQueueSpaces, "Free Queue Spaces", TypeInteger);
+    prepareProperty(DeviceLabel, DeviceBuild, "Firmware version", TypeString);
+    prepareProperty(DeviceLabel, DeviceMac, "Mac address", TypeString);
+    prepareProperty(DeviceLabel, DeviceResetSensor, "Reset Sensor", TypeInteger, "1", Settable);
 
-    prepareEntity(DEVICE, DEVICE_BUILD, _buildVersion);
-    prepareEntity(DEVICE, DEVICE_MAC, _eventServer->request(Topic::MacFormatted, "unknown"));
-    prepareEntity(STATE, "ready");
+    prepareEntity(DeviceLabel, DeviceBuild, _buildVersion);
+    prepareEntity(DeviceLabel, DeviceMac, _eventServer->request(Topic::MacFormatted, "unknown"));
+    prepareEntity(State, "ready");
 }
 
 void MqttGateway::prepareEntity(const char* entity, const char* payload) {
@@ -299,7 +299,7 @@ void MqttGateway::prepareItem(const char* item) {
 }
 
 void MqttGateway::prepareNode(const char* node, const char* name, const char* type, const char* properties) {
-    prepareEntity(node, NAME, name);
+    prepareEntity(node, Name, name);
     prepareEntity(node, "$type", type);
     prepareEntity(node, "$properties", properties);
 }
@@ -308,7 +308,7 @@ void MqttGateway::prepareProperty(
     const char* node, const char* property, const char* attribute, const char* dataType, const char* format,
     const bool settable) {
     safeSprintf(_topicBuffer, "%s/%s", node, property);
-    prepareEntity(_topicBuffer, NAME, attribute);
+    prepareEntity(_topicBuffer, Name, attribute);
     prepareEntity(_topicBuffer, "$dataType", dataType);
     if (strlen(format) > 0) {
         prepareEntity(_topicBuffer, "$format", format);
@@ -319,7 +319,7 @@ void MqttGateway::prepareProperty(
 }
 
 bool MqttGateway::publishEntity(const char* baseTopic, const char* entity, const char* payload, const bool retain) {
-    safeSprintf(_topicBuffer, BASE_TOPIC_TEMPLATE, baseTopic, entity);
+    safeSprintf(_topicBuffer, BaseTopicTemplate, baseTopic, entity);
     return _mqttClient->publish(_topicBuffer, payload, retain);
 }
 
@@ -349,11 +349,11 @@ void MqttGateway::publishToEventServer(const Topic topic, const char* payload) {
 
 void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
     if (topic == Topic::Alert) {
-        publishEntity(_clientName, STATE, "alert");
+        publishEntity(_clientName, State, "alert");
         return;
     }
-    const auto entry = TOPIC_MAP.find(topic);
-    if (entry != TOPIC_MAP.end()) {
+    const auto entry = TopicMap.find(topic);
+    if (entry != TopicMap.end()) {
         const auto topicTriplet = entry->second;
         const auto isSetTopic = topicTriplet.first;
         if (!isSetTopic) {
@@ -362,7 +362,7 @@ void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
                 topicPair.first,
                 topicPair.second,
                 payload,
-                NON_RETAINED_TOPICS.find(topic) == NON_RETAINED_TOPICS.end());
+                NonRetainedTopics.find(topic) == NonRetainedTopics.end());
         }
     }
 }

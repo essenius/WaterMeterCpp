@@ -9,7 +9,7 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Connector runs a process that connects with the outside world. The connect method uses a state machine
+// Connector runs a process that connects with the outside world. The connect method uses a getState machine
 // to make the connection with Wifi, get the time, check for a firmware upgrade and connect to the MQTT server
 
 #ifndef HEADER_CONNECTION
@@ -24,12 +24,12 @@
 #include "QueueClient.h"
 #include "Serializer.h"
 
-constexpr unsigned int MAX_RECONNECT_FAILURES = 5;
-constexpr unsigned long SECONDS = 1000UL * 1000UL;
-constexpr unsigned long MQTT_RECONNECT_WAIT_DURATION = 2UL * SECONDS;
-constexpr unsigned long TIMESERVER_WAIT_DURATION = 10UL * SECONDS;
-constexpr unsigned long WIFI_INITIAL_WAIT_DURATION = 20UL * SECONDS;
-constexpr unsigned long WIFI_RECONNECT_WAIT_DURATION = 10UL * SECONDS;
+constexpr unsigned int MaxReconnectFailures = 5;
+constexpr unsigned long Seconds = 1000UL * 1000UL;
+constexpr unsigned long MqttReconnectWaitDuration = 2UL * Seconds;
+constexpr unsigned long TimeserverWaitDuration = 10UL * Seconds;
+constexpr unsigned long WifiInitialWaitDuration = 20UL * Seconds;
+constexpr unsigned long WifiReconnectWaitDuration = 10UL * Seconds;
 
 class Connector final : public EventClient {
 public:
@@ -57,7 +57,7 @@ private:
     QueueClient* _samplerQueueClient;
     QueueClient* _communicatorQueueClient;
     ChangePublisher<ConnectionState> _state;
-    unsigned long _waitDuration = WIFI_INITIAL_WAIT_DURATION;
+    unsigned long _waitDuration = WifiInitialWaitDuration;
     unsigned int _wifiConnectionFailureCount = 0;
 
     void handleCheckFirmware();

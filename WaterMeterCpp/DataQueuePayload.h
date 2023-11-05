@@ -20,14 +20,14 @@
 #include "EventClient.h"
 #include "IntCoordinate.h"
 
-constexpr uint16_t MAX_SAMPLES = 25;
+constexpr uint16_t MaxSamples = 25;
 
 struct Samples {
     uint16_t count;
-    IntCoordinate value[MAX_SAMPLES];
+    IntCoordinate value[MaxSamples];
 };
 
-// ResultData size must be <= Samples size
+// ResultData getSize must be <= Samples getSize
 
 struct ResultData {
     IntCoordinate lastSample;

@@ -36,6 +36,6 @@ WiFiClient* WiFiClientFactory::create(const bool useTls) const {
 }
 
 WiFiClient* WiFiClientFactory::create(const char* url) const {
-    constexpr auto HTTPS = "https";
-    return create(url != nullptr && strncmp(url, HTTPS, strlen(HTTPS)) == 0);
+    constexpr auto Https = "https";
+    return create(url != nullptr && strncmp(url, Https, strlen(Https)) == 0);
 }

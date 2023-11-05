@@ -74,13 +74,13 @@ public:
         return length;
     }
 
-    static constexpr size_t PRINTBUFFER_SIZE = 4096;
+    static constexpr size_t PrintbufferSize = 4096;
 
 private:
-    char _printBuffer[PRINTBUFFER_SIZE] = {};
+    char _printBuffer[PrintbufferSize] = {};
     char* _printBufferPointer = _printBuffer;
-    static constexpr size_t INPUTBUFFER_SIZE = 100;
-    char _inputBuffer[INPUTBUFFER_SIZE] = {};
+    static constexpr size_t InputBufferSize = 100;
+    char _inputBuffer[InputBufferSize] = {};
     char* _inputBufferPointer = nullptr;
 };
 

@@ -19,7 +19,7 @@ namespace WaterMeterCppTest {
         Configuration configuration(&preferences);
         configuration.begin();
 
-        EXPECT_EQ(3741, configuration.freeBufferSpace()) << "Free buffer space OK";
+        EXPECT_EQ(3728, configuration.freeBufferSpace()) << "Free buffer space OK";
         EXPECT_NE(nullptr, configuration.mqtt.broker) << "Broker filled";
         EXPECT_NE(nullptr, configuration.tls.rootCaCertificate) << "Root CA certificate filled";
         EXPECT_NE(nullptr, configuration.wifi.ssid) << "SSID filled";
@@ -28,13 +28,13 @@ namespace WaterMeterCppTest {
 
     TEST(ConfigurationTest, configurationTestMqttAndTls) {
         Preferences preferences;
-        constexpr MqttConfig MQTT_CONFIG{"broker", 2048, "user", "password", false};
-        constexpr TlsConfig TLS_CONFIG{"abc", "defg", "hijkl"};
+        constexpr MqttConfig MqttConfig{"broker", 2048, "user", "password", false};
+        constexpr TlsConfig TlsConfig{"abc", "defg", "hijkl"};
         Configuration configuration(&preferences);
-        configuration.putMqttConfig(&MQTT_CONFIG);
-        configuration.putTlsConfig(&TLS_CONFIG);
-        constexpr FirmwareConfig FIRMWARE_CONFIG{"http://localhost/firmware"};
-        configuration.putFirmwareConfig(&FIRMWARE_CONFIG);
+        configuration.putMqttConfig(&MqttConfig);
+        configuration.putTlsConfig(&TlsConfig);
+        constexpr FirmwareConfig FirmwareConfig{"http://localhost/firmware"};
+        configuration.putFirmwareConfig(&FirmwareConfig);
 
         configuration.begin(false);
         EXPECT_STREQ("broker", configuration.mqtt.broker) << "Broker OK";

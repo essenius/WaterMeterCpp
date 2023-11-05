@@ -27,7 +27,7 @@ struct IpConfig {
 };
 
 // INADDR_NONE means auto-configure
-const IpConfig IP_AUTO_CONFIG{INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE};
+const IpConfig IpAutoConfig{INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE};
 
 struct FirmwareConfig {
     const char* baseUrl;
@@ -70,9 +70,9 @@ public:
     void putWifiConfig(const WifiConfig* wifiConfig) const;
     int freeBufferSpace() const;
 private:
-    static constexpr int BUFFER_SIZE = 8192;
+    static constexpr int BufferSize = 8192;
     Preferences* _preferences;
-    char _buffer[8192] = {0};
+    char _buffer[BufferSize] = {0};
     char* _next = _buffer;
     char* storeToBuffer(const char* key, char** startLocation);
     char* getFirmwareConfig(char* start);

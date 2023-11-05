@@ -27,7 +27,7 @@ namespace WaterMeterCppTest {
         eventServer.subscribe(&client, Topic::SensorState);
         MagnetoSensorNull nullSensor;
         MagnetoSensor* list[] = {&nullSensor};
-        digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+        digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         MagnetoSensorReader sensorReader(&eventServer);
         EXPECT_FALSE(sensorReader.begin(list, 1)) << "Begin failed";
         const auto result = sensorReader.read();
@@ -35,20 +35,20 @@ namespace WaterMeterCppTest {
     }
 
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderCustomPowerPinTest) {
-        constexpr int PIN = 23;
-        digitalWrite(PIN, LOW);
+        constexpr int Pin = 23;
+        digitalWrite(Pin, LOW);
         EventServer eventServer;
         MagnetoSensorNull nullSensor;
         MagnetoSensor* list[] = {&nullSensor};
         MagnetoSensorReader sensorReader(&eventServer);
-        sensorReader.configurePowerPort(PIN);
+        sensorReader.configurePowerPort(Pin);
         sensorReader.begin(list, 1);
-        sensorReader.power(HIGH);
-        EXPECT_EQ(HIGH, digitalRead(PIN)) << "Custom pin was toggled";
+        sensorReader.setPower(HIGH);
+        EXPECT_EQ(HIGH, digitalRead(Pin)) << "Custom pin was toggled";
     }
 
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderHardResetTest) {
-        digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+        digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         EventServer eventServer;
         TestEventClient client(&eventServer);
         eventServer.subscribe(&client, Topic::SensorState);
@@ -57,18 +57,18 @@ namespace WaterMeterCppTest {
         MagnetoSensorReader sensorReader(&eventServer);
         sensorReader.begin(list, 1);
         EXPECT_EQ(1, client.getCallCount()) << "SensorState triggered";
-        // simulate a power failure. The "off" should be triggered in reset as the state is now not right 
-        digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+        // simulate a setPower failure. The "off" should be triggered in reset as the getState is now not right 
+        digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         sensorReader.hardReset();
         EXPECT_EQ(3, client.getCallCount()) << "SensorState triggered again (off and then on)";
         EXPECT_STREQ("3", client.getPayload()) << "State is BeginError";
-        EXPECT_EQ(HIGH, digitalRead(MagnetoSensorReader::DEFAULT_POWER_PORT)) << "Default Pin was toggled";
-        sensorReader.power(HIGH);
-        EXPECT_EQ(3, client.getCallCount()) << "SensorState not triggered again (not bypassed in power() but still error)";
+        EXPECT_EQ(HIGH, digitalRead(MagnetoSensorReader::DefaultPowerPort)) << "Default Pin was toggled";
+        sensorReader.setPower(HIGH);
+        EXPECT_EQ(3, client.getCallCount()) << "SensorState not triggered again (not bypassed in setPower() but still error)";
     }
 
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderFailedOnTest) {
-        digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+        digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         EventServer eventServer;
         TestEventClient client(&eventServer);
         eventServer.subscribe(&client, Topic::Alert);
@@ -83,7 +83,7 @@ namespace WaterMeterCppTest {
     }
 
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderRecoverTest) {
-        digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+        digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         EventServer eventServer;
         TestEventClient stateClient(&eventServer);
         eventServer.subscribe(&stateClient, Topic::SensorState);
@@ -100,7 +100,7 @@ namespace WaterMeterCppTest {
     }
 
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderResetTest) {
-        digitalWrite(MagnetoSensorReader::DEFAULT_POWER_PORT, LOW);
+        digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         EventServer eventServer;
         TestEventClient stateClient(&eventServer);
         eventServer.subscribe(&stateClient, Topic::SensorState);
@@ -115,31 +115,31 @@ namespace WaterMeterCppTest {
         EXPECT_DOUBLE_EQ(3000.0, sensorReader.getGain()) << "Gain OK";
         EXPECT_EQ(12, sensorReader.getNoiseRange()) << "Noise range OK";
 
-        constexpr IntCoordinate BASE_SAMPLE{ {0,0} };
+        constexpr IntCoordinate BaseSample{ {0,0} };
         for (int streaks = 0; streaks < 10; streaks++) {
             auto expectedCalls = streaks == 0 ? 0 : 1;
             stateClient.reset();
             for (int sample = 0; sample < 249; sample++) {
-                EXPECT_EQ(SensorState::Ok, sensorReader.validate(BASE_SAMPLE)) << "Validated OK for streak " << streaks << " sample " << sample;
+                EXPECT_EQ(SensorState::Ok, sensorReader.validate(BaseSample)) << "Validated OK for streak " << streaks << " sample " << sample;
                 EXPECT_EQ(expectedCalls, stateClient.getCallCount()) << "right number of reset events fired for streak " << streaks << " sample " << sample;
             }
-            EXPECT_EQ(streaks < 9 ? SensorState ::NeedsSoftReset : SensorState::NeedsHardReset, sensorReader.validate(BASE_SAMPLE)) << "Validated OK for  streak " << streaks;
+            EXPECT_EQ(streaks < 9 ? SensorState ::NeedsSoftReset : SensorState::NeedsHardReset, sensorReader.validate(BaseSample)) << "Validated OK for  streak " << streaks;
             EXPECT_EQ(expectedCalls + 1, stateClient.getCallCount()) << "ResetSensor request fired for streak " << streaks;
             EXPECT_STREQ(streaks < 9 ? "7" : "6", stateClient.getPayload()) << "Right reset request fired for streak " << streaks << " (7=soft, 6=hard)";
             if (streaks < 10) sensorReader.softReset(); else sensorReader.hardReset();
         }
 
-        sensorReader.validate(BASE_SAMPLE);
+        sensorReader.validate(BaseSample);
         EXPECT_EQ(3, stateClient.getCallCount()) << "ResetSensor request fired again after hard reset (to move to OK)";
-        EXPECT_STREQ("1", stateClient.getPayload()) << "state is OK afterwards";
+        EXPECT_STREQ("1", stateClient.getPayload()) << "getState is OK afterwards";
 
         // start getting a signal
 
-        EXPECT_EQ(SensorState::Ok, sensorReader.validate(IntCoordinate{ {1,1} })) << "state OK after changed sensor value";
+        EXPECT_EQ(SensorState::Ok, sensorReader.validate(IntCoordinate{ {1,1} })) << "getState OK after changed sensor value";
 
         stateClient.reset();
         eventServer.publish(Topic::ResetSensor, true);
         EXPECT_EQ(2, stateClient.getCallCount()) << "State changed twice after reset";
-        EXPECT_STREQ("1", stateClient.getPayload()) << "state is OK afterwards";
+        EXPECT_STREQ("1", stateClient.getPayload()) << "getState is OK afterwards";
     }
 }

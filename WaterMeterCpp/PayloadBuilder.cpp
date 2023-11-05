@@ -68,7 +68,7 @@ void PayloadBuilder::writeLabel(const char* label) {
 }
 
 void PayloadBuilder::writeTimestamp(const Timestamp timestampIn) {
-    Clock::formatTimestamp(timestampIn, _currentPosition, RESULT_BUFFER_SIZE - strlen(_resultBuffer));
+    Clock::formatTimestamp(timestampIn, _currentPosition, ResultBufferSize - strlen(_resultBuffer));
     updatePosition();
 }
 
@@ -86,11 +86,11 @@ void PayloadBuilder::writeText(const char* text) {
 // low level functions 
 
 bool PayloadBuilder::isAlmostFull() const {
-    return remainingSize() < RESULT_BUFFER_MARGIN;
+    return getRemainingSize() < ResultBufferMargin;
 }
 
-int PayloadBuilder::remainingSize() const {
-    return RESULT_BUFFER_SIZE - static_cast<int>(strlen(_resultBuffer)) - 1;
+int PayloadBuilder::getRemainingSize() const {
+    return ResultBufferSize - static_cast<int>(strlen(_resultBuffer)) - 1;
 }
 
 void PayloadBuilder::updatePosition() {

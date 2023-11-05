@@ -27,8 +27,8 @@ public:
     void update(Topic topic, long payload) override;
     void update(Topic topic, IntCoordinate payload) override;
 protected:
-    static constexpr unsigned char DEFAULT_FLUSH_RATE = 25;
-    static constexpr unsigned char MAX_FLUSH_RATE = 25;
+    static constexpr unsigned char DefaultFlushRate = 25;
+    static constexpr unsigned char MaxFlushRate = 25;
     uint16_t _currentSample = 0;
 };
 

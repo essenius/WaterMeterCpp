@@ -33,14 +33,14 @@ public:
     static void task(void* parameter);
 
 protected:
-    static constexpr byte TIMER_NUMBER = 0;
-    static constexpr unsigned short DIVIDER = 80; // 80 MHz -> 1 MHz
-    static constexpr UBaseType_t SAMPLE_QUEUE_SIZE = 50;
-    static constexpr UBaseType_t OVERRUN_QUEUE_SIZE = 20;
-    static constexpr unsigned long MAX_OFFSET_MICROS = 100;
-    static constexpr bool REPEAT = true;
-    static constexpr bool COUNT_UP = true;
-    static constexpr bool EDGE = true;
+    static constexpr byte TimerNumber = 0;
+    static constexpr unsigned short Divider = 80; // 80 MHz -> 1 MHz
+    static constexpr UBaseType_t SampleQueueSize = 50;
+    static constexpr UBaseType_t OverrunQueueSize = 20;
+    static constexpr unsigned long MaxOffsetMicros = 100;
+    static constexpr bool Repeat = true;
+    static constexpr bool CountUp = true;
+    static constexpr bool Edge = true;
 
     EventServer* _eventServer;
     MagnetoSensorReader* _sensorReader;

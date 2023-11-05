@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 
-// The states that the connection state machine can have
+// The states that the connection getState machine can have
 
 #ifndef HEADER_CONNECTIONSTATE
 #define HEADER_CONNECTIONSTATE

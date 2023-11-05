@@ -9,7 +9,7 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// The fitting process delivers coefficients. This class translates those to coordinates (center, radius, and angle of main radius).
+// The fitting process delivers coefficients. This class translates those to coordinates (getCenter, getRadius, and getAngle of main getRadius).
 
 #ifndef QUADRATIC_ELLIPSE_H
 #define QUADRATIC_ELLIPSE_H
@@ -26,11 +26,11 @@ struct QuadraticEllipse {
 
 	QuadraticEllipse(const double& a1, const double& b1, const double& c1, const double& d1, const double& f1, const double& g1);
 	QuadraticEllipse() = default;
-	Angle angle();
-	Coordinate center() const;
-	Coordinate radius();
+	Angle getAngle();
+	Coordinate getCenter() const;
+	Coordinate getRadius();
 private:
-	double discriminant() const;
+	double getDiscriminant() const;
 	Coordinate _radius{};
 	bool _radiusCalculated = false;
 	bool _switchedAxes = false;

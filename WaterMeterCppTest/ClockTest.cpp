@@ -16,11 +16,11 @@
 namespace WaterMeterCppTest {
 
     TEST(ClockTest, clockFormatTimestampTest) {
-        constexpr Timestamp TIMESTAMP = 1;
+        constexpr Timestamp Timestamp = 1;
         EventServer eventServer;
         // the mock only mocks the time setting and detection, but keeps the rest
         char destination[5] = "abcd";
-        EXPECT_FALSE(Clock::formatTimestamp(TIMESTAMP, destination, sizeof destination)) << "Timestamp does not fit";
+        EXPECT_FALSE(Clock::formatTimestamp(Timestamp, destination, sizeof destination)) << "Timestamp does not fit";
         EXPECT_STREQ("abcd", destination) << "Destination not changed";
     }
 

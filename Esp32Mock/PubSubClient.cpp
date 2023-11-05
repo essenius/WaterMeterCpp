@@ -48,10 +48,10 @@ bool PubSubClient::loop() {
 }
 
 bool PubSubClient::publish(const char* topic, const char* payload, bool retain) {
-    if (strlen(topic) + strlen(_topic) > TOPIC_SIZE - 1) return false;
+    if (strlen(topic) + strlen(_topic) > TopicSize - 1) return false;
     safeStrcat(_topic, topic);
     safeStrcat(_topic, "\n");
-    if (strlen(payload) + strlen(_payload) > PAYLOAD_SIZE - 1) return false;
+    if (strlen(payload) + strlen(_payload) > PayloadSize - 1) return false;
     safeStrcat(_payload, payload);
     if (!retain) safeStrcat(_payload, "[x]");
     safeStrcat(_payload, "\n");

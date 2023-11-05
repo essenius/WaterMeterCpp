@@ -36,9 +36,9 @@ int Esp::getFreeHeap() {
 
 // GPIO functions
 
-constexpr uint8_t PIN_COUNT = 36;
-uint8_t pinValue[PIN_COUNT];
-uint8_t pinModeValue[PIN_COUNT];
+constexpr uint8_t PinCount = 36;
+uint8_t pinValue[PinCount];
+uint8_t pinModeValue[PinCount];
 
 uint8_t digitalRead(uint8_t pin) {
     return pinValue[pin];

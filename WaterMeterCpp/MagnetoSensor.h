@@ -13,7 +13,7 @@
 // We don't care a lot about calibration as we're looking for patterns, not for absolute values.
 //
 // Since these sensors sometimes stops responding, we need a way to hard reset them.
-// For that, we simply give it its power from a GPIO port, which we can bring down to reset it.
+// For that, we simply give it its setPower from a GPIO port, which we can bring down to reset it.
 //
 // We also take into account that the sensor needs time to switch on and off
 
@@ -80,7 +80,7 @@ public:
 
     virtual bool handlePowerOn();
 protected:
-    static constexpr bool STOP_AFTER_SEND = true;
+    static constexpr bool StopAfterSend = true;
     byte _address;
     TwoWire* _wire;
     void setRegister(byte sensorRegister, byte value) const;

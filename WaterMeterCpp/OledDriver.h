@@ -44,20 +44,20 @@ private:
     TwoWire* _wire;
     Adafruit_SSD1306 _display;
     bool _needsDisplay = false;
-    static constexpr unsigned int MIN_DELAY_FOR_DISPLAY = 25;
-    static constexpr int16_t SCREEN_WIDTH = 128;
-    static constexpr int16_t SCREEN_HEIGHT = 32;
-    static constexpr int16_t LINE_HEIGHT = 8;
-    static constexpr int16_t LOGO_HEIGHT = 7;
-    static constexpr int16_t LOGO_WIDTH = 8;
-    static constexpr int16_t FLOW_X = 98;
-    static constexpr int16_t FLOW_Y = 0;
-    static constexpr int16_t EVENT_X = 108;
-    static constexpr int16_t EVENT_Y = 0;
-    static constexpr int16_t CONNECTION_X = 118;
-    static constexpr int16_t CONNECTION_Y = 0;
+    static constexpr unsigned int MinDelayForDisplay = 25;
+    static constexpr int16_t ScreenWidth = 128;
+    static constexpr int16_t ScreenHeight = 32;
+    static constexpr int16_t LineHeight = 8;
+    static constexpr int16_t LogoHeight = 7;
+    static constexpr int16_t LogoWidth = 8;
+    static constexpr int16_t FlowX = 98;
+    static constexpr int16_t FlowY = 0;
+    static constexpr int16_t EventX = 108;
+    static constexpr int16_t EventY = 0;
+    static constexpr int16_t ConnectionX = 118;
+    static constexpr int16_t ConnectionY = 0;
 
-    static constexpr unsigned char ALERT_LOGO[] =
+    static constexpr unsigned char AlertLogo[] =
     {
         0b11111100,
         0b01111000,
@@ -68,7 +68,7 @@ private:
         0b00110000
     };
 
-    static constexpr unsigned char BLOCKED_LOGO[] =
+    static constexpr unsigned char BlockedLogo[] =
     {
         0b00111000,
         0b01111100,
@@ -79,7 +79,7 @@ private:
         0b00111000
     };
 
-    static constexpr unsigned char DOWNLOAD_LOGO[] =
+    static constexpr unsigned char DownloadLogo[] =
     {
         0b00110000,
         0b00110000,
@@ -90,7 +90,7 @@ private:
         0b00110000
     };
 
-    static constexpr unsigned char FIRMWARE_LOGO[] =
+    static constexpr unsigned char FirmwareLogo[] =
     {
         0b11110001,
         0b10000001,
@@ -101,7 +101,7 @@ private:
         0b10010100
     };
 
-    static constexpr unsigned char MQTT_LOGO[] =
+    static constexpr unsigned char MqttLogo[] =
     {
         0b00000000,
         0b11100000,
@@ -112,7 +112,7 @@ private:
         0b11010100
     };
 
-    static constexpr unsigned char NO_FIT_LOGO[] =
+    static constexpr unsigned char NoFitLogo[] =
     {
         0b00111001,
         0b01000110,
@@ -123,7 +123,7 @@ private:
         0b10111000
     };
 
-    static constexpr unsigned char NO_SENSOR_LOGO[] =
+    static constexpr unsigned char NoSensorLogo[] =
     {
         0b00010011,
         0b00010110,
@@ -134,7 +134,7 @@ private:
         0b11010000
     };
 
-    static constexpr unsigned char OUTLIER_LOGO[] =
+    static constexpr unsigned char OutlierLogo[] =
     {
         0b00011000,
         0b00011000,
@@ -145,7 +145,7 @@ private:
         0b11111111
     };
 
-    static constexpr unsigned char RESET_LOGO[] =
+    static constexpr unsigned char ResetLogo[] =
     {
         0b00010000,
         0b01010100,
@@ -156,7 +156,7 @@ private:
         0b00111000
     };
 
-    static constexpr unsigned char SEND_LOGO[] =
+    static constexpr unsigned char SendLogo[] =
     {
         0b11111100,
         0b10000100,
@@ -167,7 +167,7 @@ private:
         0b11111100
     };
 
-    static constexpr unsigned char TIME_LOGO[] =
+    static constexpr unsigned char TimeLogo[] =
     {
         0b00110000,
         0b01101000,
@@ -178,7 +178,7 @@ private:
         0b00110000
     };
 
-    static constexpr unsigned char WIFI_LOGO[] =
+    static constexpr unsigned char WifiLogo[] =
     {
         0b01111000,
         0b10000100,

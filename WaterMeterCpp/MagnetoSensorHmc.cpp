@@ -18,7 +18,7 @@
 #include "MagnetoSensorHmc.h"
 #include "Wire.h"
 
-MagnetoSensorHmc::MagnetoSensorHmc(TwoWire* wire) : MagnetoSensor(DEFAULT_ADDRESS, wire) {}
+MagnetoSensorHmc::MagnetoSensorHmc(TwoWire* wire) : MagnetoSensor(DefaultAddress, wire) {}
 
 void MagnetoSensorHmc::configure(const HmcRange range, const HmcBias bias) const {
     setRegister(HmcControlA, _overSampling | _rate | bias);
@@ -83,10 +83,10 @@ bool MagnetoSensorHmc::read(SensorData& sample) const {
 
     //Read data from each axis, 2 registers per axis
     // order: x MSB, x LSB, z MSB, z LSB, y MSB, y LSB
-    constexpr size_t BYTES_TO_READ = 6;
-    _wire->requestFrom(_address, BYTES_TO_READ, STOP_AFTER_SEND);
+    constexpr size_t BytesToRead = 6;
+    _wire->requestFrom(_address, BytesToRead, StopAfterSend);
     const auto timestamp = micros();
-    while (_wire->available() < BYTES_TO_READ) {
+    while (_wire->available() < BytesToRead) {
         if (micros() - timestamp > 10) return false;
     }
 
@@ -97,9 +97,9 @@ bool MagnetoSensorHmc::read(SensorData& sample) const {
     sample.y = _wire->read() << 8;
     sample.y |= _wire->read();
     // harmonize saturation values across sensors
-    if (sample.x == SATURATED) sample.x = SHRT_MIN;
-    if (sample.y == SATURATED) sample.y = SHRT_MIN;
-    if (sample.z == SATURATED) sample.z = SHRT_MIN;
+    if (sample.x <= Saturated) sample.x = SHRT_MIN;
+    if (sample.y <= Saturated) sample.y = SHRT_MIN;
+    if (sample.z <= Saturated) sample.z = SHRT_MIN;
     return true;
 }
 
@@ -114,13 +114,13 @@ void MagnetoSensorHmc::startMeasurement() const {
 }
 
 bool MagnetoSensorHmc::testInRange(const SensorData& sample) {
-    constexpr short LOW_THRESHOLD = 243;
-    constexpr short HIGH_THRESHOLD = 575;
+    constexpr short LowThreshold = 243;
+    constexpr short HighThreshold = 575;
 
     return
-        sample.x >= LOW_THRESHOLD && sample.x <= HIGH_THRESHOLD &&
-        sample.y >= LOW_THRESHOLD && sample.y <= HIGH_THRESHOLD &&
-        sample.z >= LOW_THRESHOLD && sample.z <= HIGH_THRESHOLD;
+        sample.x >= LowThreshold && sample.x <= HighThreshold &&
+        sample.y >= LowThreshold && sample.y <= HighThreshold &&
+        sample.z >= LowThreshold && sample.z <= HighThreshold;
 }
 
 bool MagnetoSensorHmc::test() const {

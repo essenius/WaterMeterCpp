@@ -70,6 +70,6 @@ uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t xTicksToWait)
 
 // testing only, does not exist in FreeRTOS
 void uxQueueReset();
-constexpr short MAX_QUEUES = 7;
+constexpr short MaxQueues = 7;
 
 #endif

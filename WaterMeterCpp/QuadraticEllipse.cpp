@@ -30,13 +30,13 @@ QuadraticEllipse::QuadraticEllipse(const double& a1, const double& b1, const dou
 	_radiusCalculated = false;
 }
 
-Angle QuadraticEllipse::angle() {
+Angle QuadraticEllipse::getAngle() {
 	if (b == 0) {  // NOLINT(clang-diagnostic-float-equal) -- avoiding division by 0
 		return { (a < c ? 0 : M_PI / 2) };
 	}
 
-	// we need the radius calculated, since that can cause 
-	if (!_radiusCalculated) radius();
+	// we need the radius calculated, since that can cause axes to switch
+	if (!_radiusCalculated) getRadius();
 
 	auto baseAngle = 0.5 * atan2(2 * b, a - c) + M_PI / 2;
 	if (_switchedAxes) {
@@ -46,21 +46,21 @@ Angle QuadraticEllipse::angle() {
 	return { baseAngle };
 }
 
-Coordinate QuadraticEllipse::center() const {
-	return { (c * d - b * f) / discriminant(), (a * f - b * d) / discriminant() };
+Coordinate QuadraticEllipse::getCenter() const {
+	return { (c * d - b * f) / getDiscriminant(), (a * f - b * d) / getDiscriminant() };
 }
 
-double QuadraticEllipse::discriminant() const {
+double QuadraticEllipse::getDiscriminant() const {
 	return sqr(b) - a * c;
 }
 
-Coordinate QuadraticEllipse::radius() {
+Coordinate QuadraticEllipse::getRadius() {
 	if (_radiusCalculated) return _radius;
 
 	const double numerator = 2 * (a * sqr(f) + c * sqr(d) + g * sqr(b) - 2 * b * d * f - a * c * g);
 	const double partialDenominator = sqrt(sqr(a - c) + 4 * sqr(b));
-	const double widthDenominator = discriminant() * (partialDenominator - (a + c));
-	const double heightDenominator = discriminant() * (-partialDenominator - (a + c));
+	const double widthDenominator = getDiscriminant() * (partialDenominator - (a + c));
+	const double heightDenominator = getDiscriminant() * (-partialDenominator - (a + c));
 
 	_radius.x = sqrt(numerator / widthDenominator);
 	_radius.y = sqrt(numerator / heightDenominator);

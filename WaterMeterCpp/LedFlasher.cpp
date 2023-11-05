@@ -18,7 +18,7 @@ LedFlasher::LedFlasher(const uint8_t led, const unsigned int interval) : _interv
 
 void LedFlasher::reset() {
     _ledCounter = 0;
-    Led::set(_led, Led::OFF);
+    Led::set(_led, Led::Off);
 }
 
 void LedFlasher::setInterval(const unsigned int interval) {

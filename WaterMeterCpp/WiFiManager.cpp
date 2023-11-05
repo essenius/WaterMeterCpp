@@ -47,21 +47,21 @@ void WiFiManager::begin() {
 
 void WiFiManager::configure(const IpConfig* ipConfig) {
     _localIp = ipConfig->localIp;
-    if (ipConfig->gateway == NO_IP && ipConfig->localIp != NO_IP) {
+    if (ipConfig->gateway == NoIp && ipConfig->localIp != NoIp) {
         _gatewayIp = ipConfig->localIp;
         _gatewayIp[3] = 1;
     }
     else {
         _gatewayIp = ipConfig->gateway;
     }
-    _subnetMaskIp = ipConfig->subnetMask == NO_IP ? IPAddress(255, 255, 255, 0) : ipConfig->subnetMask;
+    _subnetMaskIp = ipConfig->subnetMask == NoIp ? IPAddress(255, 255, 255, 0) : ipConfig->subnetMask;
 
     bool result;
-    if (ipConfig->primaryDns == NO_IP) {
+    if (ipConfig->primaryDns == NoIp) {
         result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp);
     }
     else {
-        if (ipConfig->secondaryDns == NO_IP) {
+        if (ipConfig->secondaryDns == NoIp) {
             result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, ipConfig->primaryDns);
         }
         else {
@@ -104,12 +104,12 @@ const char* WiFiManager::getHostName() const { return _hostName; }
 // get valid addresses, and then we disconnect, and reconnect using the just obtained addresses, fixed.
 bool WiFiManager::needsReinit() {
     if (!isConnected()) return false;
-    _needsReconnect = _localIp == NO_IP;
+    _needsReconnect = _localIp == NoIp;
     if (_needsReconnect) _localIp = WiFi.localIP();
-    if (_gatewayIp == NO_IP) _gatewayIp = WiFi.gatewayIP();
-    if (_subnetMaskIp == NO_IP) _subnetMaskIp = WiFi.subnetMask();
-    if (_dns1Ip == NO_IP) _dns1Ip = WiFi.dnsIP(0);
-    if (_dns2Ip == NO_IP) _dns2Ip = WiFi.dnsIP(1);
+    if (_gatewayIp == NoIp) _gatewayIp = WiFi.gatewayIP();
+    if (_subnetMaskIp == NoIp) _subnetMaskIp = WiFi.subnetMask();
+    if (_dns1Ip == NoIp) _dns1Ip = WiFi.dnsIP(0);
+    if (_dns2Ip == NoIp) _dns2Ip = WiFi.dnsIP(1);
     return _needsReconnect;
 }
 

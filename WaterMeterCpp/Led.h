@@ -25,18 +25,18 @@
 
 class Led {
 public:
-    static constexpr unsigned char AUX = 19; // now red
-    static constexpr unsigned char BLUE = 16;
-    static constexpr unsigned char ERROR = 4; /// unused
-    static constexpr unsigned char GREEN = 17;
-    static constexpr unsigned char RED = 18;
-    static constexpr unsigned char RUNNING = LED_BUILTIN; // Was 23
-    static constexpr unsigned char YELLOW = 2; // unused
-    static constexpr uint8_t ON = HIGH;
-    static constexpr uint8_t OFF = LOW;
+    static constexpr unsigned char Aux = 19; // now red
+    static constexpr unsigned char Blue = 16;
+    static constexpr unsigned char Error = 4; /// unused
+    static constexpr unsigned char Green = 17;
+    static constexpr unsigned char Red = 18;
+    static constexpr unsigned char Running = LED_BUILTIN; // Was 23
+    static constexpr unsigned char Yellow = 2; // unused
+    static constexpr uint8_t On = HIGH;
+    static constexpr uint8_t Off = LOW;
 
     static uint8_t get(uint8_t port);
-    static void init(uint8_t port, uint8_t value = OFF);
+    static void init(uint8_t port, uint8_t value = Off);
     static void set(uint8_t port, uint8_t value);
     static void toggle(uint8_t port);
 private:

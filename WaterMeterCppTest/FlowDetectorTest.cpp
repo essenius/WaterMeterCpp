@@ -24,14 +24,14 @@ namespace WaterMeterCppTest {
 
 		IntCoordinate getSample(const double sampleNumber, const double samplesPerCycle = 32,
 			const double angleOffsetSamples = 0) const {
-			constexpr double RADIUS = 10.0L;
-			constexpr int16_t X_OFFSET = -100;
-			constexpr int16_t Y_OFFSET = 100;
+			constexpr double Radius = 10.0L;
+			constexpr int16_t XOffset = -100;
+			constexpr int16_t YOffset = 100;
 			const double angle = (sampleNumber - angleOffsetSamples) * M_PI / samplesPerCycle * 2.0;
 			return IntCoordinate{
 				{
-					static_cast<int16_t>(X_OFFSET + round(sin(angle) * RADIUS)),
-					static_cast<int16_t>(Y_OFFSET + round(cos(angle) * RADIUS))
+					static_cast<int16_t>(XOffset + round(sin(angle) * Radius)),
+					static_cast<int16_t>(YOffset + round(cos(angle) * Radius))
 				}
 			};
 		}
@@ -81,8 +81,8 @@ namespace WaterMeterCppTest {
 	EllipseFit FlowDetectorTest::ellipseFit;
 
 	TEST_F(FlowDetectorTest, BiQuadrantTest) {
-		// Tests all cases where a quadrant may be skipped close to detection of a pulse or a search start
-		// First a circle for fitting, then 12 samples that check whether skipping a quadrant is dealt with right
+		// Tests all cases where a getQuadrant may be skipped close to detection of a pulse or a search start
+		// First a circle for fitting, then 12 samples that check whether skipping a getQuadrant is dealt with right
 		// Test is similar to flowTestWithFile, but bypasses the moving average generation for simpler testing.
 		FlowDetectorDriver flowDetector(&eventServer, &ellipseFit);
 		const PulseTestEventClient pulseClient(&eventServer);
@@ -159,13 +159,13 @@ namespace WaterMeterCppTest {
 	TEST_F(FlowDetectorTest, SensorWasResetTest) {
 		FlowDetector flowDetector(&eventServer, &ellipseFit);
 		flowDetector.begin(3);
-		constexpr int RADIUS = 20;
+		constexpr int Radius = 20;
 		for (int pass = 0; pass < 2; pass++) {
 			unsigned int skipped = 0;
 			EXPECT_TRUE(flowDetector.wasReset()) << "Flow detector reset at pass " << pass;
 			for (int i = 0; i < 30; i++) {
 				const double angle = i * M_PI / 16.0;
-				eventServer.publish(Topic::Sample, IntCoordinate{ {static_cast <int16_t>(cos(angle) * RADIUS), static_cast <int16_t>(sin(angle) * RADIUS)} });
+				eventServer.publish(Topic::Sample, IntCoordinate{ {static_cast <int16_t>(cos(angle) * Radius), static_cast <int16_t>(sin(angle) * Radius)} });
 				if (flowDetector.wasSkipped()) skipped++;
 			}
 
@@ -176,7 +176,7 @@ namespace WaterMeterCppTest {
 				eventServer.publish(Topic::SensorWasReset, true);
 			}
 		}
-		eventServer.publish(Topic::Sample, IntCoordinate{ {RADIUS, 0} });
+		eventServer.publish(Topic::Sample, IntCoordinate{ {Radius, 0} });
 		EXPECT_FALSE(flowDetector.wasReset()) << "Flow detector not reset at end";
 		EXPECT_FALSE(flowDetector.wasSkipped()) << "sample not skipped at end";
 	}

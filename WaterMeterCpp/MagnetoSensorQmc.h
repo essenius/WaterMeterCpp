@@ -86,7 +86,7 @@ public:
     void softReset() const override;
     int getNoiseRange() const override;
 
-    static constexpr byte DEFAULT_ADDRESS = 0x0D;
+    static constexpr byte DefaultAddress = 0x0D;
 
 private:
     QmcOverSampling _overSampling = QmcSampling512;

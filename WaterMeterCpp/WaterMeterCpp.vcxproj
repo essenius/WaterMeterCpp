@@ -84,6 +84,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifest>..\vcpkg.json</VcpkgManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -119,7 +123,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\Mock;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard_C>Default</LanguageStandard_C>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -165,6 +169,7 @@
     <ClCompile Include="LedFlasher.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MagnetoSensor.cpp" />
+    <ClCompile Include="MagnetoSensorFile.cpp" />
     <ClCompile Include="MagnetoSensorHmc.cpp" />
     <ClCompile Include="MagnetoSensorQmc.cpp" />
     <ClCompile Include="MagnetoSensorReader.cpp" />
@@ -212,6 +217,7 @@
     <ClInclude Include="LedFlasher.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MagnetoSensor.h" />
+    <ClInclude Include="MagnetoSensorFile.h" />
     <ClInclude Include="MagnetoSensorHmc.h" />
     <ClInclude Include="MagnetoSensorQmc.h" />
     <ClInclude Include="MagnetoSensorReader.h" />

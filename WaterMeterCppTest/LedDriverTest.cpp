@@ -31,17 +31,17 @@ namespace WaterMeterCppTest {
 
         void assertLeds(const uint8_t red, const uint8_t green, const uint8_t blue, const uint8_t aux, const uint8_t yellow,
                         const char* message) const {
-            assertLed("Red", red, Led::RED, message);
-            assertLed("Green", green, Led::GREEN, message);
-            assertLed("Blue", blue, Led::BLUE, message);
-            assertLed("Aux", aux, Led::AUX, message);
-            assertLed("Yellow", yellow, Led::YELLOW, message);
+            assertLed("Red", red, Led::Red, message);
+            assertLed("Green", green, Led::Green, message);
+            assertLed("Blue", blue, Led::Blue, message);
+            assertLed("Aux", aux, Led::Aux, message);
+            assertLed("Yellow", yellow, Led::Yellow, message);
         }
 
         void expectRunningLed(const uint8_t expected, const char* description, const unsigned int index) const {
             std::string message(description);
             message += std::string(" # ") + std::to_string(index);
-            EXPECT_EQ(expected, Led::get(Led::RUNNING)) << message;
+            EXPECT_EQ(expected, Led::get(Led::Running)) << message;
         }
 
         void assertLedCycle(LedDriver* ledDriver, const Topic topic, const long payload, const int interval,
@@ -52,18 +52,18 @@ namespace WaterMeterCppTest {
             ledDriver->update(topic, payload);
 
             // force a known state
-            Led::set(Led::RUNNING, Led::OFF);
+            Led::set(Led::Running, Led::Off);
             for (int i = 0; i < interval; i++) {
                 ledDriver->update(Topic::Sample, 508);
-                expectRunningLed(Led::ON, messageOn.c_str(), i);
+                expectRunningLed(Led::On, messageOn.c_str(), i);
             }
             const std::string messageOff = messageBase + "OFF";
             for (int i = 0; i < interval; i++) {
                 ledDriver->update(Topic::Sample, 507);
-                expectRunningLed(Led::OFF, messageOff.c_str(), i);
+                expectRunningLed(Led::Off, messageOff.c_str(), i);
             }
             ledDriver->update(Topic::Sample, 515);
-            expectRunningLed(Led::ON, messageOn.c_str(), 255);
+            expectRunningLed(Led::On, messageOn.c_str(), 255);
         }
 
         static void publishConnectionState(const Topic topic, ConnectionState connectionState) {
@@ -76,107 +76,107 @@ namespace WaterMeterCppTest {
     TEST_F(LedDriverTest, ledDriverCycleInterruptTest) {
         LedDriver ledDriver(&eventServer);
         ledDriver.begin();
-        Led::set(Led::RUNNING, Led::OFF);
+        Led::set(Led::Running, Led::Off);
         // go partway into a cycle
-        for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL / 5; i++) {
+        for (unsigned int i = 0; i < LedDriver::ExcludeInterval / 5; i++) {
             eventServer.publish(Topic::Sample, 512);
-            expectRunningLed(Led::ON, "In first part", i);
+            expectRunningLed(Led::On, "In first part", i);
         }
         // set a new state. Check whether it kicks in right away
         eventServer.publish(Topic::Anomaly, true);
-        for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL; i++) {
+        for (unsigned int i = 0; i < LedDriver::ExcludeInterval; i++) {
             eventServer.publish(Topic::Sample, 511);
-            expectRunningLed(Led::ON, "Started new cycle high", i);
+            expectRunningLed(Led::On, "Started new cycle high", i);
         }
-        for (unsigned int i = 0; i < LedDriver::EXCLUDE_INTERVAL; i++) {
+        for (unsigned int i = 0; i < LedDriver::ExcludeInterval; i++) {
             eventServer.publish(Topic::Sample, 510);
-            expectRunningLed(Led::OFF, "Started new cycle low", i);
+            expectRunningLed(Led::Off, "Started new cycle low", i);
         }
         // just into new cycle
         eventServer.publish(Topic::Sample, 513);
-        expectRunningLed(Led::ON, "Started second cycle high", 1);
+        expectRunningLed(Led::On, "Started second cycle high", 1);
 
         // ending flow. Check whether the cycle adapts
         eventServer.publish(Topic::Anomaly, false);
-        for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
+        for (unsigned int i = 0; i < LedDriver::IdleInterval; i++) {
             eventServer.publish(Topic::Sample, 514);
-            expectRunningLed(Led::ON, "Started new idle cycle high", i);
+            expectRunningLed(Led::On, "Started new idle cycle high", i);
         }
-        for (unsigned int i = 0; i < LedDriver::IDLE_INTERVAL; i++) {
+        for (unsigned int i = 0; i < LedDriver::IdleInterval; i++) {
             eventServer.publish(Topic::Sample, 509);
-            expectRunningLed(Led::OFF, "Started new idle cycle high", i);
+            expectRunningLed(Led::Off, "Started new idle cycle high", i);
         }
     }
 
     TEST_F(LedDriverTest, ledDriverCycleTest) {
         LedDriver ledDriver(&eventServer);
         ledDriver.begin();
-        assertLedCycle(&ledDriver, Topic::Anomaly, true, LedDriver::EXCLUDE_INTERVAL, "Anomaly");
-        assertLedCycle(&ledDriver, Topic::Anomaly, false, LedDriver::IDLE_INTERVAL, "Wait");
+        assertLedCycle(&ledDriver, Topic::Anomaly, true, LedDriver::ExcludeInterval, "Anomaly");
+        assertLedCycle(&ledDriver, Topic::Anomaly, false, LedDriver::IdleInterval, "Wait");
     }
 
     TEST_F(LedDriverTest, ledDriverTestEvents) {
         LedDriver ledDriver(&eventServer);
         ledDriver.begin();
-        EXPECT_EQ(OUTPUT, getPinMode(Led::RUNNING)) << "Built-in led on output";
-        EXPECT_EQ(OUTPUT, getPinMode(Led::RED)) << "Red led on output";
-        EXPECT_EQ(OUTPUT, getPinMode(Led::GREEN)) << "Green led on output";
-        EXPECT_EQ(OUTPUT, getPinMode(Led::BLUE)) << "Blue led on output";
-        EXPECT_EQ(OUTPUT, getPinMode(Led::AUX)) << "Aux led on output";
+        EXPECT_EQ(OUTPUT, getPinMode(Led::Running)) << "Built-in led on output";
+        EXPECT_EQ(OUTPUT, getPinMode(Led::Red)) << "Red led on output";
+        EXPECT_EQ(OUTPUT, getPinMode(Led::Green)) << "Green led on output";
+        EXPECT_EQ(OUTPUT, getPinMode(Led::Blue)) << "Blue led on output";
+        EXPECT_EQ(OUTPUT, getPinMode(Led::Aux)) << "Aux led on output";
 
-        EXPECT_EQ(Led::OFF, Led::get(Led::RUNNING)) << "Built-in led off";
+        EXPECT_EQ(Led::Off, Led::get(Led::Running)) << "Built-in led off";
 
-        assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "Initial values");
+        assertLeds(Led::Off, Led::Off, Led::Off, Led::Off, Led::Off, "Initial values");
 
         publishConnectionState(Topic::Connection, ConnectionState::CheckFirmware);
-        assertLeds(Led::OFF, Led::OFF, Led::ON, Led::ON, Led::OFF, "Firmware check (blue on, aux blinking)");
+        assertLeds(Led::Off, Led::Off, Led::On, Led::On, Led::Off, "Firmware check (blue on, aux blinking)");
 
         publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
-        assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::ON, Led::OFF, "Connected (blue off, aux on) ");
+        assertLeds(Led::Off, Led::Off, Led::Off, Led::On, Led::Off, "Connected (blue off, aux on) ");
 
         eventServer.publish(Topic::Pulse, true);
-        assertLeds(Led::OFF, Led::OFF, Led::ON, Led::ON, Led::OFF, "Pulse (blue on)");
+        assertLeds(Led::Off, Led::Off, Led::On, Led::On, Led::Off, "Pulse (blue on)");
 
         eventServer.publish(Topic::ResultWritten, true);
-        assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::ON, Led::OFF, "Result written (aux on, RGB off)");
+        assertLeds(Led::Off, Led::Off, Led::Off, Led::On, Led::Off, "Result written (aux on, RGB off)");
 
         eventServer.publish(Topic::TimeOverrun, true);
-        assertLeds(Led::ON, Led::OFF, Led::ON, Led::ON, Led::OFF, "Overrun (red/blue on)");
+        assertLeds(Led::On, Led::Off, Led::On, Led::On, Led::Off, "Overrun (red/blue on)");
 
         publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
-        assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "Disconnected (aux off, blue off)");
+        assertLeds(Led::On, Led::Off, Led::Off, Led::Off, Led::Off, "Disconnected (aux off, blue off)");
 
         eventServer.publish(Topic::Pulse, false);
-        assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No peak (blue stays off)");
+        assertLeds(Led::On, Led::Off, Led::Off, Led::Off, Led::Off, "No peak (blue stays off)");
 
         eventServer.publish(Topic::Blocked, false);
-        assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No more block (red off)");
+        assertLeds(Led::Off, Led::Off, Led::Off, Led::Off, Led::Off, "No more block (red off)");
         eventServer.publish(Topic::ConnectionError, "Problem");
-        assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "Error (red on)");
+        assertLeds(Led::On, Led::Off, Led::Off, Led::Off, Led::Off, "Error (red on)");
 
         eventServer.publish(Topic::Blocked, false);
-        assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No more block (red off)");
+        assertLeds(Led::Off, Led::Off, Led::Off, Led::Off, Led::Off, "No more block (red off)");
 
         eventServer.publish(Topic::Alert, true);
-        assertLeds(Led::ON, Led::ON, Led::OFF, Led::OFF, Led::OFF, "Alert (red and green on)");
+        assertLeds(Led::On, Led::On, Led::Off, Led::Off, Led::Off, "Alert (red and green on)");
 
         eventServer.publish(Topic::Alert, false);
-        assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No more block (red off)");
+        assertLeds(Led::Off, Led::Off, Led::Off, Led::Off, Led::Off, "No more block (red off)");
         eventServer.publish(Topic::SensorState, true);
-        assertLeds(Led::ON, Led::OFF, Led::OFF, Led::OFF, Led::OFF, "No sensor found (red on)");
+        assertLeds(Led::On, Led::Off, Led::Off, Led::Off, Led::Off, "No sensor found (red on)");
 
         eventServer.publish(Topic::Alert, false); // switching red off again
 
         publishConnectionState(Topic::Connection, ConnectionState::Disconnected);
 
-        for (unsigned int i = 0; i < LedDriver::CONNECTING_INTERVAL; i++) {
+        for (unsigned int i = 0; i < LedDriver::ConnectingInterval; i++) {
             publishConnectionState(Topic::Connection, ConnectionState::WifiConnecting);
-            assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::ON, Led::OFF,
+            assertLeds(Led::Off, Led::Off, Led::Off, Led::On, Led::Off,
                        ("looping ConnectingWifi ON - " + std::to_string(i)).c_str());
         }
-        for (unsigned int i = 0; i < LedDriver::CONNECTING_INTERVAL; i++) {
+        for (unsigned int i = 0; i < LedDriver::ConnectingInterval; i++) {
             publishConnectionState(Topic::Connection, ConnectionState::WifiConnecting);
-            assertLeds(Led::OFF, Led::OFF, Led::OFF, Led::OFF, Led::OFF,
+            assertLeds(Led::Off, Led::Off, Led::Off, Led::Off, Led::Off,
                        ("looping ConnectingWifi OFF - " + std::to_string(i)).c_str());
         }
     }
