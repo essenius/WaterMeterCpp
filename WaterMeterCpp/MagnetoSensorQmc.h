@@ -80,10 +80,10 @@ public:
     static double getGain(QmcRange range);
 
     // read a sample from the sensor
-    bool read(SensorData& sample) const override;
+    bool read(SensorData& sample) override;
 
     // soft reset the sensor
-    void softReset() const override;
+    void softReset() override;
     int getNoiseRange() const override;
 
     static constexpr byte DefaultAddress = 0x0D;

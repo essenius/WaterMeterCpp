@@ -65,12 +65,12 @@ namespace WaterMeterCppTest {
 		const auto cartesianEllipse = CartesianEllipse(quadraticEllipse);
 		assertAnglesEqual(Angle{ -M_PI / 6 }, cartesianEllipse.angle, "Angle");
 		constexpr auto Origin = Coordinate{ 0, 0 };
-		const auto originMap = cartesianEllipse.pointOnEllipseFor(Origin);
+		const auto originMap = cartesianEllipse.getPointOnEllipseFor(Origin);
 		assertCoordinatesEqual(Coordinate{ -16.9761709, -36.377509 }, originMap, "Origin mapped on ellipse");
 
 		assertDoubleEqual(40.143662, cartesianEllipse.getDistanceFrom(Origin), "Distance from origin");
 		constexpr auto PointInEllipse = Coordinate{ -25, -40 };
-		const auto pointInEllpseMap = cartesianEllipse.pointOnEllipseFor(PointInEllipse);
+		const auto pointInEllpseMap = cartesianEllipse.getPointOnEllipseFor(PointInEllipse);
 		assertCoordinatesEqual(Coordinate{ -28.455996, -35.680005 }, pointInEllpseMap, "Point inside ellipse mapped on ellipse");
 		assertDoubleEqual(5.532293, cartesianEllipse.getDistanceFrom(PointInEllipse), "Distance from point inside ellipse");
 	}
@@ -79,8 +79,8 @@ namespace WaterMeterCppTest {
 		// circle with a diameter of 100 - we can calculate the exact circumference
 		const auto quadraticCircle = QuadraticEllipse(100, 0, 100, 0, 0, -10000);
 		const auto cartesianCircle = CartesianEllipse(quadraticCircle);
-		assertDoubleEqual(2 * M_PI * cartesianCircle.radius.x, cartesianCircle.circumference(), "Circumference");
-		// now we're at it, see if getAngle doesn't crash and burn
+		assertDoubleEqual(2 * M_PI * cartesianCircle.radius.x, cartesianCircle.getCircumference(), "Circumference");
+		// now we're at it, see if angle doesn't crash and burn
 		const auto angle = cartesianCircle.angle;
 		assertAnglesEqual(Angle{ M_PI / 2 }, angle, "Circle getAngle");
 	}
@@ -89,7 +89,7 @@ namespace WaterMeterCppTest {
 		const auto quadraticCircle = QuadraticEllipse(100, 0, 121, 0, 0, -12100);
 		const auto cartesianCircle = CartesianEllipse(quadraticCircle);
 		EXPECT_TRUE(cartesianCircle.fitSucceeded()) << "Fit succeeded";
-		assertDoubleEqual(66.01085, cartesianCircle.circumference(), "Circumference");
+		assertDoubleEqual(66.01085, cartesianCircle.getCircumference(), "Circumference");
 	}
 
 	TEST(CartesianEllipseTest, NoFitTest) {

@@ -26,7 +26,7 @@ void assertAnglesEqual(const Angle& a, const Angle& b, const std::string& label,
 		assertDoubleEqual(a.value, b.value, label + "(asymptote)", epsilon);
 	}
 	else {
-		// cater for differences of M_PI in the result which is OK for the tilt getAngle of an ellipse
+		// cater for differences of M_PI in the result which is OK for the tilt angle of an ellipse
 		assertDoubleEqual(tan(a.value), tan(b.value), label + "(tan)", epsilon);
 	}
 }

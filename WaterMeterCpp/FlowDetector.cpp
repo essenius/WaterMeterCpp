@@ -12,10 +12,10 @@
 // It was empirically established that relative measurements are less reliable (losing slow moves in the noise),
 // so now using absolutes measurements. Since absolute values are not entirely predictable, the tactic is to
 // follow the clockwise elliptic move that the signal makes. We do this by regularly feeding relevant data points
-// to an ellipse fitting algorithm. We then use the getAngle between the getCenter of the ellipse and the data point
-// to detect a cycle: if it is at the lowest Y point (move from getQuadrant 4 to 3) we count a pulse.
+// to an ellipse fitting algorithm. We then use the angle between the center of the ellipse and the data point
+// to detect a cycle: if it is at the lowest Y point (move from quadrant 4 to 3) we count a pulse.
 //
-// We only include points that are at least the noise getDistance away from the previously included point.
+// We only include points that are at least the noise distance away from the previously included point.
 // By doing that, the impact of noise (and the risk of outliers in angles) is greatly reduced. Further, the algorithm
 // can deal much better with slow flow.
 //
@@ -23,9 +23,9 @@
 //
 // We also use the fitted ellipse to determine outliers: if a point is too far away from the ellipse it is an outlier.
 //
-// Before we have a good fit, we use the (less accurate) mechanism of taking the getAngle with the previous data point.
-// It should be close to the getAngle to the getCenter - PI / 2, and since we subtract, the difference of PI / 2 doesn't matter.
-// When that moves from getQuadrant 3 to 2, we have a pulse. we accept the (small) risk that in the first cycle we get an outlier. 
+// Before we have a good fit, we use the (less accurate) mechanism of taking the angle with the previous data point.
+// It should be close to the angle to the center - PI / 2, and since we subtract, the difference of PI / 2 doesn't matter.
+// When that moves from quadrant 3 to 2, we have a pulse. we accept the (small) risk that in the first cycle we get an outlier. 
 
 #include <ESP.h>
 #include "FlowDetector.h"
@@ -41,7 +41,7 @@ FlowDetector::FlowDetector(EventServer* eventServer, EllipseFit* ellipseFit): Ev
 
 void FlowDetector::begin(const unsigned int noiseRange = 3) {
 	// we assume that the noise range for X and Y is the same.
-	// If the getDistance between two points is beyond this, it is beyond noise
+	// If the distance between two points is beyond this, it is beyond noise
 	_distanceThreshold = sqrt(2.0 * noiseRange * noiseRange) / MovingAverageNoiseReduction;
 	_eventServer->subscribe(this, Topic::Sample);
 	_eventServer->subscribe(this, Topic::SensorWasReset);
@@ -123,19 +123,19 @@ void FlowDetector::findPulseByCenter(const Coordinate& point) {
 	const auto angleWithCenter = point.getAngleFrom(_confirmedGoodFit.center);
 	const auto quadrant = angleWithCenter.getQuadrant();
 	const auto quadrantDifference = (_previousQuadrant - quadrant) % 4;
-	// previous getAngle is initialized in the first fit, so always has a valid value when coming here
+	// previous angle is initialized in the first fit, so always has a valid value when coming here
 	const auto angleDistance = angleWithCenter - _previousAngleWithCenter.value;
 	_angleDistanceTravelled += angleDistance;
 	if (!_searchingForPulse) {
 		_foundPulse = false;
 		// start searching at the top of the ellipse. This takes care of jitter
-		// Also consider the risk that a getQuadrant gets skipped because of an anomaly
+		// Also consider the risk that a quadrant gets skipped because of an anomaly
 		if ((quadrantDifference == 1 && quadrant == 1) ||
 			(quadrantDifference == 2 && (quadrant == 1 || quadrant == 4))) _searchingForPulse = true;
 	}
 	else {
 		// reference point is the bottom of the ellipse
-		// Again, also consider the risk that a getQuadrant gets skipped
+		// Again, also consider the risk that a quadrant gets skipped
 		_foundPulse = (quadrantDifference == 1 && quadrant == 3) ||
 			          (quadrantDifference == 2 && (quadrant == 3 || quadrant == 2));
 		if (_foundPulse) {

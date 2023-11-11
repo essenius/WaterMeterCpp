@@ -49,7 +49,7 @@ bool MagnetoSensorReader::begin(MagnetoSensor* sensor[], const size_t listSize) 
     return sensorFound;
 }
 
-// Configure the GPIO port used for the sensor setPower if not default (15). 
+// Configure the GPIO port used for the sensor power if not default (15). 
 void MagnetoSensorReader::configurePowerPort(const uint8_t port) {
     _powerPort = port;
     pinMode(_powerPort, OUTPUT);
@@ -73,7 +73,7 @@ void MagnetoSensorReader::hardReset() {
 }
 
 SensorState MagnetoSensorReader::setPower(const uint8_t state) {
-    // do nothing if we are already in the right getState
+    // do nothing if we are already in the right state
     const auto currentState = digitalRead(_powerPort);
     if (currentState == state && _sensorState == (state == LOW ? SensorState::None : SensorState::Ok)) return _sensorState;
     digitalWrite(_powerPort, state);

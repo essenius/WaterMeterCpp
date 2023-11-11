@@ -138,7 +138,7 @@
     <ClCompile Include="QuadraticEllipse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MagnetoSensorFile.cpp">
+    <ClCompile Include="MagnetoSensorSimulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -281,7 +281,7 @@
     <ClInclude Include="IntCoordinate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MagnetoSensorFile.h">
+    <ClInclude Include="MagnetoSensorSimulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -131,8 +131,6 @@ TimeServer timeServer;
 Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &sensorDataQueue,
                     &connectorDataQueue, &serializer, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
 
-
-
 static constexpr BaseType_t Core1 = 1;
 static constexpr BaseType_t Core0 = 0;
 static constexpr uint16_t StackDepth = 10000;
@@ -143,14 +141,17 @@ TaskHandle_t communicatorTaskHandle;
 TaskHandle_t connectorTaskHandle;
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(230400);
+    // switch off buffering so we see things before a newline is entered
+    (void)setvbuf(stdout, nullptr, _IONBF, 0);
+
     theClock.begin();
 
     // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
     sensorReader.begin(sensor, sizeof sensor / sizeof sensor[0]);
 
-    Wire.begin(); // standard SDA=21, SCL=22
-    Wire1.begin(SdaOled, SclOled);
+    Wire.begin(); // standard SDA=21, SCL=22, for sensor
+    Wire1.begin(SdaOled, SclOled); // for display
 
     configuration.begin();
     // queue for the sampler process

@@ -85,16 +85,16 @@ public:
     double getGain() const override;
     int getNoiseRange() const override;
     static double getGain(HmcRange range);
-    bool read(SensorData& sample) const override;
-    void softReset() const override;
+    bool read(SensorData& sample) override;
+    void softReset() override;
     static bool testInRange(const SensorData& sample);
-    bool test() const;
+    bool test();
     static constexpr byte DefaultAddress = 0x1E;
     bool handlePowerOn() override;
 private:
     static constexpr int16_t Saturated = -4096;
     void configure(HmcRange range, HmcBias bias) const;
-    void getTestMeasurement(SensorData& reading) const;
+    void getTestMeasurement(SensorData& reading);
     void startMeasurement() const;
 
     // 4.7 is not likely to get an overflow, and reasonably accurate

@@ -13,7 +13,7 @@
 // We don't care a lot about calibration as we're looking for patterns, not for absolute values.
 //
 // Since these sensors sometimes stops responding, we need a way to hard reset them.
-// For that, we simply give it its setPower from a GPIO port, which we can bring down to reset it.
+// For that, we simply give it its power from a GPIO port, which we can bring down to reset it.
 //
 // We also take into account that the sensor needs time to switch on and off
 
@@ -71,10 +71,10 @@ public:
     }
 
     // read a sample from the sensor
-    virtual bool read(SensorData& sample) const = 0;
+    virtual bool read(SensorData& sample) = 0;
 
     // soft reset the sensor
-    virtual void softReset() const = 0;
+    virtual void softReset() = 0;
 
     virtual void waitForPowerOff() const;
 

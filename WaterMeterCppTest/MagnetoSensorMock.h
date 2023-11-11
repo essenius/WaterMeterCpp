@@ -26,7 +26,7 @@ public:
     bool handlePowerOn() override;
     bool isReal() const override { return true; }
     int powerFailuresLeft() const { return _powerFailuresLeft; }
-    bool read(SensorData& sample) const override;
+    bool read(SensorData& sample) override;
     void setBeginFailures(int failures);
     void setPowerOnFailures(int failures);
 

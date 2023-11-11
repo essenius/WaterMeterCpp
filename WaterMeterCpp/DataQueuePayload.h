@@ -27,7 +27,7 @@ struct Samples {
     IntCoordinate value[MaxSamples];
 };
 
-// ResultData getSize must be <= Samples getSize
+// ResultData size must be <= Samples size
 
 struct ResultData {
     IntCoordinate lastSample;

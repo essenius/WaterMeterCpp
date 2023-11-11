@@ -169,7 +169,7 @@
     <ClCompile Include="LedFlasher.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MagnetoSensor.cpp" />
-    <ClCompile Include="MagnetoSensorFile.cpp" />
+    <ClCompile Include="MagnetoSensorSimulation.cpp" />
     <ClCompile Include="MagnetoSensorHmc.cpp" />
     <ClCompile Include="MagnetoSensorQmc.cpp" />
     <ClCompile Include="MagnetoSensorReader.cpp" />
@@ -217,7 +217,7 @@
     <ClInclude Include="LedFlasher.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MagnetoSensor.h" />
-    <ClInclude Include="MagnetoSensorFile.h" />
+    <ClInclude Include="MagnetoSensorSimulation.h" />
     <ClInclude Include="MagnetoSensorHmc.h" />
     <ClInclude Include="MagnetoSensorQmc.h" />
     <ClInclude Include="MagnetoSensorReader.h" />

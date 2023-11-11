@@ -9,7 +9,7 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Connector runs a process that connects with the outside world. The connect method uses a getState machine
+// Connector runs a process that connects with the outside world. The connect method uses a state machine
 // to make the connection with Wifi, get the time, check for a firmware upgrade and connect to the MQTT server
 
 #ifndef HEADER_CONNECTION

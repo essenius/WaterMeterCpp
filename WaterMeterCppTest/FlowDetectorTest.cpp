@@ -81,8 +81,8 @@ namespace WaterMeterCppTest {
 	EllipseFit FlowDetectorTest::ellipseFit;
 
 	TEST_F(FlowDetectorTest, BiQuadrantTest) {
-		// Tests all cases where a getQuadrant may be skipped close to detection of a pulse or a search start
-		// First a circle for fitting, then 12 samples that check whether skipping a getQuadrant is dealt with right
+		// Tests all cases where a quadrant may be skipped close to detection of a pulse or a search start
+		// First a circle for fitting, then 12 samples that check whether skipping a quadrant is dealt with right
 		// Test is similar to flowTestWithFile, but bypasses the moving average generation for simpler testing.
 		FlowDetectorDriver flowDetector(&eventServer, &ellipseFit);
 		const PulseTestEventClient pulseClient(&eventServer);
@@ -155,6 +155,9 @@ namespace WaterMeterCppTest {
 		flowTestWithFile("wrong outliers.txt", 1, 61, 10, 0, 3);
 	}
 
+	TEST_F(FlowDetectorTest, CrashTest) {
+		flowTestWithFile("crash.txt", 1, 11, 0, 0, 3);
+	}
 
 	TEST_F(FlowDetectorTest, SensorWasResetTest) {
 		FlowDetector flowDetector(&eventServer, &ellipseFit);

@@ -54,7 +54,7 @@ double MagnetoSensorQmc::getGain(const QmcRange range) {
     return 12000.0;
 }
 
-bool MagnetoSensorQmc::read(SensorData& sample) const {
+bool MagnetoSensorQmc::read(SensorData& sample) {
     _wire->beginTransmission(_address);
     _wire->write(QmcData);
     _wire->endTransmission();
@@ -77,7 +77,7 @@ bool MagnetoSensorQmc::read(SensorData& sample) const {
     return true;
 }
 
-void MagnetoSensorQmc::softReset() const {
+void MagnetoSensorQmc::softReset() {
     setRegister(QmcControl2, SoftReset);
     static_cast<void>(configure());
 }

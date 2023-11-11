@@ -57,7 +57,7 @@ namespace WaterMeterCppTest {
         MagnetoSensorReader sensorReader(&eventServer);
         sensorReader.begin(list, 1);
         EXPECT_EQ(1, client.getCallCount()) << "SensorState triggered";
-        // simulate a setPower failure. The "off" should be triggered in reset as the getState is now not right 
+        // simulate a power failure. The "off" should be triggered in reset as the state is now not right 
         digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         sensorReader.hardReset();
         EXPECT_EQ(3, client.getCallCount()) << "SensorState triggered again (off and then on)";

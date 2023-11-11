@@ -16,7 +16,7 @@
 // see https://autotrace.sourceforge.net/WSCG98.pdf for an explanation of the algorithm
 // optimized version of https://github.com/mericdurukan/ellipse-fitting
 
-// fixed buffer getSize as we don't want to fragment the heap
+// fixed buffer size as we don't want to fragment the heap
 constexpr unsigned int EllipseFit::BufferSize;  // NOLINT(readability-redundant-declaration) -- using C++ 11 on device
 
 EllipseFit::EllipseFit() : _c1Inverse(3, 3), _design1(BufferSize, 3), _design2(BufferSize, 3) {
@@ -28,6 +28,7 @@ EllipseFit::EllipseFit() : _c1Inverse(3, 3), _design1(BufferSize, 3), _design2(B
 }
 
 bool EllipseFit::addMeasurement(const Coordinate& p) {
+	std::cout << "Adding measurement " << _size << ":" <<p.x << ", " << p.y << std::endl;
 	if (_size >= BufferSize) return false;
 	// Design matrix (D in the article). Building up incrementally to minimize compute at fit
 	_design1( _size, 0) = p.x * p.x;

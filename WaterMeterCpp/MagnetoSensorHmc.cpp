@@ -68,13 +68,13 @@ double MagnetoSensorHmc::getGain(const HmcRange range) {
 
 }
 
-void MagnetoSensorHmc::getTestMeasurement(SensorData& reading) const {
+void MagnetoSensorHmc::getTestMeasurement(SensorData& reading) {
     startMeasurement();
     delay(5);
     read(reading);
 }
 
-bool MagnetoSensorHmc::read(SensorData& sample) const {
+bool MagnetoSensorHmc::read(SensorData& sample) {
     startMeasurement();
 
     _wire->beginTransmission(_address);
@@ -103,7 +103,7 @@ bool MagnetoSensorHmc::read(SensorData& sample) const {
     return true;
 }
 
-void MagnetoSensorHmc::softReset() const {
+void MagnetoSensorHmc::softReset() {
     configure(_range, HmcNone);
     SensorData sample{};
     getTestMeasurement(sample);
@@ -123,7 +123,7 @@ bool MagnetoSensorHmc::testInRange(const SensorData& sample) {
         sample.z >= LowThreshold && sample.z <= HighThreshold;
 }
 
-bool MagnetoSensorHmc::test() const {
+bool MagnetoSensorHmc::test() {
     SensorData sample{};
     
     configure(HmcRange4_7, HmcPositive);
