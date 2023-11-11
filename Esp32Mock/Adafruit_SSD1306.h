@@ -21,7 +21,7 @@
 #define HEADER_ADAFRUIT_SSD1306_H
 
 #include <Wire.h>
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 constexpr uint16_t WHITE = 1;
 constexpr uint16_t BLACK = 0;
@@ -69,7 +69,7 @@ public:
         _bg = bg;
     }
 
-    void print(const char* message) { safeStrcpy(_message, message); }
+    void print(const char* message) { SafeCString::strcpy(_message, message); }
 
     // testing only
     void sensorPresent(const bool isPresent) { _isPresent = isPresent; }

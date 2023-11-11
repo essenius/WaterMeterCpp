@@ -24,7 +24,6 @@
 #include "ESP.h"
 #include "IPAddress.h"
 #include "StringArduino.h"
-#include "../WaterMeterCpp/SafeCString.h"
 
 class WiFiClass {
 public:
@@ -33,7 +32,7 @@ public:
     void mode(int i) { }
 
     void begin(const char* ssid, const char* password, int ignore = 0, const uint8_t* _bssid = nullptr) {
-        safeStrcpy(_ssid, ssid);
+        SafeCString::strcpy(_ssid, ssid);
     }
 
     bool config(IPAddress local, IPAddress gateway, IPAddress subnet,

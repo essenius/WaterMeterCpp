@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "WiFiManager.h"
-#include "SafeCString.h"
+#include <SafeCString.h>
 #include "EventServer.h"
 #include "WiFi.h"
 
@@ -31,14 +31,14 @@ void WiFiManager::begin() {
         _hostName = nullptr;
     }
     else {
-        safeStrcpy(_hostNameBuffer, _wifiConfig->deviceName);
+        SafeCString::strcpy(_hostNameBuffer, _wifiConfig->deviceName);
         _hostName = _hostNameBuffer;
     }
     _macAddress[0] = 0;
     if (_hostName != nullptr && !WiFi.setHostname(_hostName)) {
         _eventServer->publish(Topic::ConnectionError, "Could not set host name");
     }
-    safeStrcpy(_hostNameBuffer, WiFi.getHostname());
+    SafeCString::strcpy(_hostNameBuffer, WiFi.getHostname());
     _hostName = _hostNameBuffer;
 
     WiFi.mode(WIFI_STA);
@@ -80,7 +80,7 @@ void WiFiManager::disconnect() {
 const char* WiFiManager::get(const Topic topic, const char* defaultValue) {
     switch (topic) {
     case Topic::IpAddress: {
-        safeStrcpy(_ipAddress, WiFi.localIP().toString().c_str());
+        SafeCString::strcpy(_ipAddress, WiFi.localIP().toString().c_str());
         return _ipAddress;
     }
     case Topic::MacRaw:
@@ -88,9 +88,9 @@ const char* WiFiManager::get(const Topic topic, const char* defaultValue) {
         uint8_t mac[6];
         WiFi.macAddress(mac);
         if (topic == Topic::MacRaw)
-            safeSprintf(_macAddress, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            SafeCString::sprintf(_macAddress, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         else
-            safeSprintf(_macAddress, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            SafeCString::sprintf(_macAddress, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         return _macAddress;
     default:
         return defaultValue;

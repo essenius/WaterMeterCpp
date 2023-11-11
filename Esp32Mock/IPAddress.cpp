@@ -15,7 +15,7 @@
 // ReSharper disable CppParameterMayBeConst
 
 #include "IPAddress.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 IPAddress::IPAddress(uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4) {
     _address.bytes[0] = oct1;
@@ -40,6 +40,6 @@ IPAddress& IPAddress::operator=(const uint8_t* address) {
 
 String IPAddress::toString() const {
     char buffer[16];
-    safeSprintf(buffer, "%u.%u.%u.%u", _address.bytes[0], _address.bytes[1], _address.bytes[2], _address.bytes[3]);
+    SafeCString::sprintf(buffer, "%u.%u.%u.%u", _address.bytes[0], _address.bytes[1], _address.bytes[2], _address.bytes[3]);
     return {buffer};
 }

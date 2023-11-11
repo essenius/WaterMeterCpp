@@ -22,7 +22,7 @@
 #define ARDUINO_ISR_ATTR
 #include <cstdint>
 #include <string>
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 // ReSharper disable once CppUnusedIncludeDirective -- added on purpose
 #include <freertos/freeRTOS.h>
@@ -69,7 +69,7 @@ public:
 
     template <typename... Arguments>
     int printf(const char* format, Arguments ... arguments) {
-        const int length = safePointerSprintf(_printBufferPointer, _printBuffer, format, arguments...);
+        const int length = SafeCString::pointerSprintf(_printBufferPointer, _printBuffer, format, arguments...);
         _printBufferPointer += length;
         return length;
     }

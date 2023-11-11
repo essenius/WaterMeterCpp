@@ -14,7 +14,7 @@
 #include <ESP.h>
 #include <PubSubClient.h>
 
-#include "SafeCString.h"
+#include <SafeCString.h>
 #include "MqttGateway.h"
 
 using namespace std::placeholders;
@@ -126,7 +126,7 @@ void MqttGateway::begin(const char* clientName) {
 
 void MqttGateway::connect() {
     _announcementPointer = _announcementBuffer;
-    safeSprintf(_topicBuffer, BaseTopicTemplate, _clientName, State);
+    SafeCString::sprintf(_topicBuffer, BaseTopicTemplate, _clientName, State);
     _mqttClient->setKeepAlive(90);
     bool success;
     if (_mqttConfig->user == nullptr || strlen(_mqttConfig->user) == 0) {
@@ -143,7 +143,7 @@ void MqttGateway::connect() {
     }
 
     // if this doesn't work but the connection is still up, we may still be able to run.
-    safeSprintf(_topicBuffer, BaseTopicTemplate, _clientName, "+/+/set");
+    SafeCString::sprintf(_topicBuffer, BaseTopicTemplate, _clientName, "+/+/set");
     if (!_mqttClient->subscribe(_topicBuffer)) {
         publishError("Could not subscribe to setters");
     }
@@ -152,9 +152,9 @@ void MqttGateway::connect() {
 
     // just after a boot, see if we have a previous meter value
 
-    safeSprintf(_topicBuffer, BaseTopicTemplate, _clientName, Result);
-    safeStrcat(_topicBuffer, "/");
-    safeStrcat(_topicBuffer, ResultMeter);
+    SafeCString::sprintf(_topicBuffer, BaseTopicTemplate, _clientName, Result);
+    SafeCString::strcat(_topicBuffer, "/");
+    SafeCString::strcat(_topicBuffer, ResultMeter);
 
     if (!_mqttClient->subscribe(_topicBuffer)) {
         publishError("Could not subscribe to result meter");
@@ -191,7 +191,7 @@ bool MqttGateway::publishNextAnnouncement() {
     if (strlen(topic) == 0) return false;
     const char* payload = _announcementPointer;
     _announcementPointer += strlen(payload) + 1;
-    safeSprintf(_topicBuffer, BaseTopicTemplate, _clientName, topic);
+    SafeCString::sprintf(_topicBuffer, BaseTopicTemplate, _clientName, topic);
     return _mqttClient->publish(_topicBuffer, payload, true);
 }
 
@@ -247,18 +247,18 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareEntity("$homie", "4.0.0");
     prepareEntity(State, "init");
     prepareEntity(Name, _clientName);
-    safeSprintf(payload, "%s,%s,%s", Measurement, Result, DeviceLabel);
+    SafeCString::sprintf(payload, "%s,%s,%s", Measurement, Result, DeviceLabel);
     prepareEntity("$nodes", payload);
     prepareEntity("$implementation", "esp32");
     prepareEntity("$extensions", Empty);
 
-    safeSprintf(payload, "%s,%s,%s", MeasurementBatchSize, MeasurementBatchSizeDesired, MeasurementValues);
+    SafeCString::sprintf(payload, "%s,%s,%s", MeasurementBatchSize, MeasurementBatchSizeDesired, MeasurementValues);
     prepareNode(Measurement, "Measurement", "1", payload);
     prepareProperty(Measurement, MeasurementBatchSize, "Batch Size", TypeInteger);
     prepareProperty(Measurement, MeasurementBatchSizeDesired, "Desired Batch Size", TypeInteger, "0-20", Settable);
     prepareProperty(Measurement, MeasurementValues, "Values", TypeString);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s", ResultRate, ResultIdleRate, ResultNonIdleRate, ResultMeter, ResultValues);
+    SafeCString::sprintf(payload, "%s,%s,%s,%s,%s", ResultRate, ResultIdleRate, ResultNonIdleRate, ResultMeter, ResultValues);
     prepareNode(Result, "Result", "1", payload);
     prepareProperty(Result, ResultRate, "Rate", TypeInteger);
     prepareProperty(Result, ResultIdleRate, "Idle Rate", TypeInteger, RateRange, Settable);
@@ -266,7 +266,7 @@ void MqttGateway::prepareAnnouncementBuffer() {
     prepareProperty(Result, ResultMeter, "Meter value", TypeFloat, "0-99999.9999999", Settable);
     prepareProperty(Result, ResultValues, "Values", TypeString);
 
-    safeSprintf(payload, "%s,%s,%s,%s,%s,%s", DeviceFreeHeap, DeviceFreeStack, DeviceFreeQueueSize,
+    SafeCString::sprintf(payload, "%s,%s,%s,%s,%s,%s", DeviceFreeHeap, DeviceFreeStack, DeviceFreeQueueSize,
                 DeviceFreeQueueSpaces, DeviceBuild, DeviceMac);
     prepareNode(DeviceLabel, "DeviceLabel", "1", payload);
     prepareProperty(DeviceLabel, DeviceFreeHeap, "Free Heap", TypeInteger);
@@ -288,13 +288,13 @@ void MqttGateway::prepareEntity(const char* entity, const char* payload) {
 }
 
 void MqttGateway::prepareEntity(const char* baseTopic, const char* entity, const char* payload) {
-    safePointerSprintf(_announcementPointer, _announcementBuffer, "%s/%s", baseTopic, entity);
+    SafeCString::pointerSprintf(_announcementPointer, _announcementBuffer, "%s/%s", baseTopic, entity);
     _announcementPointer += strlen(_announcementPointer) + 1;
     prepareItem(payload);
 }
 
 void MqttGateway::prepareItem(const char* item) {
-    safePointerStrcpy(_announcementPointer, _announcementBuffer, item);
+    SafeCString::pointerStrcpy(_announcementPointer, _announcementBuffer, item);
     _announcementPointer += strlen(_announcementPointer) + 1;
 }
 
@@ -307,7 +307,7 @@ void MqttGateway::prepareNode(const char* node, const char* name, const char* ty
 void MqttGateway::prepareProperty(
     const char* node, const char* property, const char* attribute, const char* dataType, const char* format,
     const bool settable) {
-    safeSprintf(_topicBuffer, "%s/%s", node, property);
+    SafeCString::sprintf(_topicBuffer, "%s/%s", node, property);
     prepareEntity(_topicBuffer, Name, attribute);
     prepareEntity(_topicBuffer, "$dataType", dataType);
     if (strlen(format) > 0) {
@@ -319,18 +319,18 @@ void MqttGateway::prepareProperty(
 }
 
 bool MqttGateway::publishEntity(const char* baseTopic, const char* entity, const char* payload, const bool retain) {
-    safeSprintf(_topicBuffer, BaseTopicTemplate, baseTopic, entity);
+    SafeCString::sprintf(_topicBuffer, BaseTopicTemplate, baseTopic, entity);
     return _mqttClient->publish(_topicBuffer, payload, retain);
 }
 
 void MqttGateway::publishError(const char* message) {
-    safeSprintf(_topicBuffer, "MQTT: %s [state = %d]", message, _mqttClient->state());
+    SafeCString::sprintf(_topicBuffer, "MQTT: %s [state = %d]", message, _mqttClient->state());
     _eventServer->publish<const char*>(Topic::ConnectionError, _topicBuffer);
 }
 
 bool MqttGateway::publishProperty(const char* node, const char* property, const char* payload, const bool retain) {
     char baseTopic[50];
-    safeSprintf(baseTopic, "%s/%s", _clientName, node);
+    SafeCString::sprintf(baseTopic, "%s/%s", _clientName, node);
     return publishEntity(baseTopic, property, payload, retain);
 }
 
@@ -342,7 +342,7 @@ void MqttGateway::publishToEventServer(const Topic topic, const char* payload) {
     _volumeReceived = true;
     // There is one set-value that requires a string, and that needs to be persistent across tasks
     // This also happens to be the only value that can be set from the getter (just once, right after reboot)
-    safeStrcpy(_volume, payload);
+    SafeCString::strcpy(_volume, payload);
     const auto topicToSend = topic == Topic::SetVolume ? Topic::SetVolume : Topic::AddVolume;
     _eventServer->publish(this, topicToSend, _volume);
 }

@@ -16,7 +16,7 @@
 #include "../WaterMeterCpp/EventServer.h"
 #include "../WaterMeterCpp/PayloadBuilder.h"
 #include "../WaterMeterCpp/DataQueue.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 #include "../WaterMeterCpp/Serializer.h"
 
 namespace WaterMeterCppTest {
@@ -150,7 +150,7 @@ namespace WaterMeterCppTest {
         char topic[100];
         constexpr int PayloadSize = 2;
         uint8_t payload1[PayloadSize] = {'2', '0'};
-        safeStrcpy(topic, "homie/device_id/measurement/batch-size-desired/set");
+        SafeCString::strcpy(topic, "homie/device_id/measurement/batch-size-desired/set");
         mqttClient.callBack(topic, payload1, PayloadSize);
         EXPECT_EQ(1, callBackListener.getCallCount()) << "callBackListener called";
         EXPECT_STREQ("20", callBackListener.getPayload()) << "callBackListener got right payload";
@@ -159,7 +159,7 @@ namespace WaterMeterCppTest {
         // Meter setup
         eventServer.subscribe(&callBackListener, Topic::SetVolume);
 
-        safeStrcpy(topic, "homie/device_id/result/meter/set");
+        SafeCString::strcpy(topic, "homie/device_id/result/meter/set");
         mqttClient.callBack(topic, payload1, PayloadSize);
         EXPECT_EQ(1, callBackListener.getCallCount()) << "callBackListener called";
         EXPECT_STREQ("20", callBackListener.getPayload()) << "callBackListener got right payload";
@@ -173,7 +173,7 @@ namespace WaterMeterCppTest {
         // Invalid callback should get ignored
 
         callBackListener.reset();
-        safeStrcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
+        SafeCString::strcpy(topic, "homie/device_id/measurement/batch-size-desired/get");
         mqttClient.callBack(topic, payload1, PayloadSize);
         EXPECT_EQ(0, callBackListener.getCallCount()) << "callBackListener not called";
         callBackListener.reset();
@@ -189,17 +189,17 @@ namespace WaterMeterCppTest {
 
         // same with a payload not having a device id
 
-        safeStrcpy(topic, "bogus");
+        SafeCString::strcpy(topic, "bogus");
         mqttClient.callBack(topic, payload1, PayloadSize);
 
         // same with a payload not having a node or a property
 
-        safeStrcpy(topic, "homie/device");
+        SafeCString::strcpy(topic, "homie/device");
         mqttClient.callBack(topic, payload1, PayloadSize);
 
         // a topic we don't know should be ignored
 
-        safeStrcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
+        SafeCString::strcpy(topic, "homie/device_id/bogus/batch-size-desired/set");
         mqttClient.callBack(topic, payload1, PayloadSize);
         EXPECT_EQ(0, callBackListener.getCallCount()) << "callBackListener not called";
 

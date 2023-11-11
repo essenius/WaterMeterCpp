@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WaterMeterCpp", "WaterMeterCpp\WaterMeterCpp.vcxproj", "{260F3BE9-4567-4ACC-8F1E-01B48E9FBDC9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2223BA3D-67D8-4C3F-9AC0-3268E7624B0B}"
 	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
 		CodeCoverage.runsettings = CodeCoverage.runsettings
+		README.md = README.md
+		vcpkg-configuration.json = vcpkg-configuration.json
+		vcpkg.json = vcpkg.json
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Esp32Mock", "Esp32Mock\Esp32Mock.vcxitems", "{BB523B57-D28B-4C96-840A-E3B3386C014C}"
@@ -15,10 +20,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WaterMeterCppTest", "WaterMeterCppTest\WaterMeterCppTest.vcxproj", "{75B05BBB-0176-4611-90FC-B1214547EE12}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Esp32Mock\Esp32Mock.vcxitems*{260f3be9-4567-4acc-8f1e-01b48e9fbdc9}*SharedItemsImports = 4
-		Esp32Mock\Esp32Mock.vcxitems*{bb523b57-d28b-4c96-840a-e3b3386c014c}*SharedItemsImports = 9
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
@@ -48,5 +49,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CAE8C191-D445-4146-9125-E3F9E9A6A6EE}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Esp32Mock\Esp32Mock.vcxitems*{260f3be9-4567-4acc-8f1e-01b48e9fbdc9}*SharedItemsImports = 4
+		Esp32Mock\Esp32Mock.vcxitems*{bb523b57-d28b-4c96-840a-e3b3386c014c}*SharedItemsImports = 9
 	EndGlobalSection
 EndGlobal

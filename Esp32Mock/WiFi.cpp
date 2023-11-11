@@ -30,7 +30,7 @@ WiFiClass::WiFiClass() : _name("esp32_001122334455") {
 
 String WiFiClass::macAddress() {
     char buffer[20];
-    safeSprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", _mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
+    SafeCString::sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", _mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
     return {buffer};
 }
 
@@ -64,6 +64,6 @@ bool WiFiClass::isConnected() {
 }
 
 bool WiFiClass::setHostname(const char* name) {
-    safeStrcpy(_name, name);
+    SafeCString::strcpy(_name, name);
     return strlen(name) > 0;
 }

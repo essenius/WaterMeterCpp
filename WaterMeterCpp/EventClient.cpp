@@ -11,7 +11,7 @@
 
 #include "EventClient.h"
 #include "EventServer.h"
-#include "SafeCString.h"
+#include <SafeCString.h>
 
 EventClient::EventClient(EventServer* eventServer) : _eventServer(eventServer) {}
 
@@ -22,7 +22,7 @@ EventClient::~EventClient() {
 
 void EventClient::update(const Topic topic, const long payload) {
     char numberBuffer[20];
-    safeSprintf(numberBuffer, "%ld", payload);
+    SafeCString::sprintf(numberBuffer, "%ld", payload);
     update(topic, numberBuffer);
 }
 

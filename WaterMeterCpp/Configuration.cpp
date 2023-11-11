@@ -9,7 +9,7 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-#include "SafeCString.h"
+#include <SafeCString.h>
 #include "Configuration.h"
 #include "secrets.h"
 
@@ -184,7 +184,7 @@ void Configuration::putWifiConfig(const WifiConfig* wifiConfig) const {
 
 char* Configuration::storeToBuffer(const char* key, char** startLocation) {
     if (_preferences->isKey(key)) {
-        safePointerStrcpy(*startLocation, _buffer, _preferences->getString(key).c_str());
+        SafeCString::pointerStrcpy(*startLocation, _buffer, _preferences->getString(key).c_str());
         const auto returnValue = *startLocation;
         *startLocation += strlen(*startLocation) + 1;
         return returnValue;

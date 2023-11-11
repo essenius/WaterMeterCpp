@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "PulseTestEventClient.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 WaterMeterCppTest::PulseTestEventClient::PulseTestEventClient(EventServer* eventServer): TestEventClient(eventServer) {
     eventServer->subscribe(this, Topic::Pulse);
@@ -25,8 +25,8 @@ void WaterMeterCppTest::PulseTestEventClient::update(const Topic topic, const lo
     if (topic == Topic::Pulse) {
         _pulseCount[payload]++;
         char numberBuffer[32];
-        safeSprintf(numberBuffer, "[%d:%d,%d]\n", _sampleNumber, _currentCoordinate.x, _currentCoordinate.y);
-        safeStrcat(_buffer, numberBuffer);
+        SafeCString::sprintf(numberBuffer, "[%d:%d,%d]\n", _sampleNumber, _currentCoordinate.x, _currentCoordinate.y);
+        SafeCString::strcat(_buffer, numberBuffer);
     } else if (topic == Topic::Anomaly) {
         _excludeCount++;
     } else if (topic == Topic::NoFit) {

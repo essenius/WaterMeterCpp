@@ -224,9 +224,6 @@
     <ClInclude Include="Sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SafeCString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>

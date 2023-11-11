@@ -14,7 +14,7 @@
 #include <cmath>
 
 #include "EventServer.h"
-#include "SafeCString.h"
+#include <SafeCString.h>
 
 
 Meter::Meter(EventServer* eventServer) : EventClient(eventServer) {
@@ -30,7 +30,7 @@ void Meter::begin() {
 const char* Meter::getVolume() {
     // trick to avoid rounding errors of .00049999999: take the next higher value
     const double volume = nextafter(_volume + _pulses * PulseDelta, 1e7);
-    safeSprintf(_buffer, "%013.7f", volume);
+    SafeCString::sprintf(_buffer, "%013.7f", volume);
     return _buffer;
 }
 

@@ -13,7 +13,7 @@
 #include <Wire.h>
 #include "OledDriver.h"
 #include "ConnectionState.h"
-#include "SafeCString.h"
+#include <SafeCString.h>
 
 // ReSharper disable CppClangTidyReadabilityRedundantDeclaration - needed for compilation on device (C++ 11)
 
@@ -153,7 +153,7 @@ void OledDriver::updateConnectionState(const ConnectionState payload) {
 void OledDriver::update(const Topic topic, const char* payload) {
     if (topic == Topic::Volume) {
         char buffer[20];
-        safeSprintf(buffer, "%s m3 ", payload);
+        SafeCString::sprintf(buffer, "%s m3 ", payload);
         showMessageAtLine(buffer, 1);
     }
 }
@@ -182,7 +182,7 @@ void OledDriver::update(const Topic topic, long payload) {
         switchEventLogo(ResetLogo, payload);
         return;
     case Topic::NoFit:
-        safeSprintf(buffer, "No fit: %4ld deg ", payload);
+        SafeCString::sprintf(buffer, "No fit: %4ld deg ", payload);
         showMessageAtLine(buffer, 3);
         switchFlowLogo(NoFitLogo, payload);
         return;
@@ -206,16 +206,16 @@ void OledDriver::update(const Topic topic, long payload) {
         return;
     case Topic::TimeOverrun:
         if (payload == 0) return;
-        safeSprintf(buffer, "Overrun: %8ld", payload);
+        SafeCString::sprintf(buffer, "Overrun: %8ld", payload);
         showMessageAtLine(buffer, 3);
         switchEventLogo(TimeLogo, payload);
         return;
     case Topic::UpdateProgress:
-        safeSprintf(buffer, "FW update: %d%% ", payload);
+        SafeCString::sprintf(buffer, "FW update: %d%% ", payload);
         showMessageAtLine(buffer, 2);
         return;
     case Topic::Pulses:
-        safeSprintf(buffer, "Pulses: %7ld", payload);
+        SafeCString::sprintf(buffer, "Pulses: %7ld", payload);
         showMessageAtLine(buffer, 0);
         // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
         return;

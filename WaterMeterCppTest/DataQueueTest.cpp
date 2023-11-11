@@ -16,7 +16,7 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 #include "../WaterMeterCpp/Serializer.h"
 
@@ -86,7 +86,7 @@ namespace WaterMeterCppTest {
 
         // send an error message
         payload.topic = Topic::ConnectionError;
-        safeStrcpy(payload.buffer.message, "Not sure what went wrong here...");
+        SafeCString::strcpy(payload.buffer.message, "Not sure what went wrong here...");
         dataQueue.send(&payload);
 
         // retrieve the samples

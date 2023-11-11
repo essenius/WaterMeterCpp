@@ -155,7 +155,6 @@
     <ClCompile Include="QuadraticEllipseTest.cpp" />
     <ClCompile Include="QueueClientTest.cpp" />
     <ClCompile Include="ResultAggregatorTest.cpp" />
-    <ClCompile Include="SafeCStringTest.cpp" />
     <ClCompile Include="SampleAggregatorTest.cpp" />
     <ClCompile Include="SamplerDriver.cpp" />
     <ClCompile Include="SamplerTest.cpp" />

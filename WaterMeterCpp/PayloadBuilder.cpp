@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "PayloadBuilder.h"
-#include "SafeCString.h"
+#include <SafeCString.h>
 
 // higher level functions. See also the template function writeParam in .h
 
@@ -79,7 +79,7 @@ void PayloadBuilder::writeTimestampParam(const char* label, const Timestamp time
 }
 
 void PayloadBuilder::writeText(const char* text) {
-    safeStrcat(_resultBuffer, text);
+    SafeCString::strcat(_resultBuffer, text);
     updatePosition();
 }
 
@@ -103,14 +103,14 @@ void PayloadBuilder::writeDelimiter(const char delimiter) {
 }
 
 void PayloadBuilder::writeString(const char* input) {
-    safeStrcat(_resultBuffer, "\"");
-    safeStrcat(_resultBuffer, input);
-    safeStrcat(_resultBuffer, "\"");
+    SafeCString::strcat(_resultBuffer, "\"");
+    SafeCString::strcat(_resultBuffer, input);
+    SafeCString::strcat(_resultBuffer, "\"");
     updatePosition();
 }
 
 void PayloadBuilder::writeString(const double input) {
-    safePointerSprintf(_currentPosition, _resultBuffer, "%.2f", input);
+    SafeCString::pointerSprintf(_currentPosition, _resultBuffer, "%.2f", input);
     updatePosition();
     // clean up any overprecision
     while (*--_currentPosition == '0') {}
@@ -121,22 +121,22 @@ void PayloadBuilder::writeString(const double input) {
 }
 
 void PayloadBuilder::writeString(const int input) {
-    safePointerSprintf(_currentPosition, _resultBuffer, "%i", input);
+    SafeCString::pointerSprintf(_currentPosition, _resultBuffer, "%i", input);
     updatePosition();
 }
 
 void PayloadBuilder::writeString(const long input) {
-    safePointerSprintf(_currentPosition, _resultBuffer, "%ld", input);
+    SafeCString::pointerSprintf(_currentPosition, _resultBuffer, "%ld", input);
     updatePosition();
 }
 
 void PayloadBuilder::writeString(const uint32_t input) {
-    safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
+    SafeCString::pointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
     updatePosition();
 }
 
 void PayloadBuilder::writeString(const unsigned long input) {
-    safePointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
+    SafeCString::pointerSprintf(_currentPosition, _resultBuffer, "%lu", input);
     updatePosition();
 }
 

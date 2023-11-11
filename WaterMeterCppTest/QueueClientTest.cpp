@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include <regex>
 #include "../WaterMeterCpp/QueueClient.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 #include "TestEventClient.h"
 #include "freertos/ringbuf.h"
 
@@ -51,7 +51,7 @@ namespace WaterMeterCppTest {
             char numbuf[10];
             EXPECT_TRUE(qClient.receive()) << "receive true";
             EXPECT_EQ(i + 1, testEventClient.getCallCount()) << "Call count";
-            safeSprintf(numbuf, "%d", 11 * i);
+            SafeCString::sprintf(numbuf, "%d", 11 * i);
             EXPECT_STREQ(numbuf, testEventClient.getPayload()) << "Payload";
         }
         EXPECT_FALSE(qClient.receive()) << "Receive false";
