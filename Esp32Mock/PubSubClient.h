@@ -9,8 +9,6 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License..
 
-// Mock implementation of the PubSubClient library for unit testing (not targeting the ESP32)
-
 // Disabling warnings caused by mimicking existing interfaces
 // ReSharper disable CppMemberFunctionMayBeStatic 
 // ReSharper disable CppMemberFunctionMayBeConst
@@ -26,6 +24,9 @@
 
 #define MQTT_CALLBACK_SIGNATURE std::function<void(char*, uint8_t*, unsigned int)> callback
 
+/**
+ * \brief Mock implementation of the PubSubClient library for unit testing (not targeting the ESP32)
+ */
 class PubSubClient {
 public:
     bool connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage);

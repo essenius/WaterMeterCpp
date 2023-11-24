@@ -9,8 +9,6 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Mock implementation of the Preferences driver for unit testing (not targeting the ESP32)
-
 // Disabling warnings caused by mimicking existing interfaces
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppMemberFunctionMayBeStatic
@@ -21,6 +19,9 @@
 
 #include "StringArduino.h"
 
+/**
+ * \brief Mock implementation of the Preferences driver for unit testing (not targeting the ESP32)
+ */
 class Preferences {
 public:
     bool begin(const char* name, bool readOnly = false);

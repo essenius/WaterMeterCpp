@@ -9,8 +9,6 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Mock implementation of HTTPClient for unit testing (not targeting the ESP32)
-
 // Disabling warnings caused by mimicking existing interface
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppMemberFunctionMayBeStatic
@@ -22,6 +20,9 @@
 #include "StringArduino.h"
 #include "WiFiClient.h"
 
+/**
+ * \brief Mock implementation of HTTPClient for unit testing (not targeting the ESP32)
+*/
 class HTTPClient {
 public:
     HTTPClient() = default;

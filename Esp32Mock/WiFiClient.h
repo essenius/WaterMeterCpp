@@ -9,8 +9,6 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Mock implementation of WiFiClient for unit testing (not targeting the ESP32)
-
 // Disabling warnings caused by mimicking existing interfaces
 // ReSharper disable CppMemberFunctionMayBeStatic
 
@@ -19,6 +17,9 @@
 
 #include "Client.h"
 
+/**
+ * \brief Mock implementation of WiFiClient for unit testing (not targeting the ESP32)
+ */
 class WiFiClient : public Client {
 public:
     WiFiClient() = default;

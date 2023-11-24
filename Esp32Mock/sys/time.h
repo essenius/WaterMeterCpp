@@ -19,11 +19,20 @@
 #define HEADER_TIME
 #include <ctime>
 
+/**
+ * \brief Mock implementation of the timeval struct for unit testing (not targeting the ESP32)
+ */
 struct timeval {
     time_t tv_sec; // seconds 
     long tv_usec; // microseconds
 };
 
+/**
+ * \brief Mock implementation of the gettimeofday function for unit testing (not targeting the ESP32)
+ * \param timeVal the time value returned
+ * \param ignore an ignored value
+ * \return 0 on success, -1 on error
+ */
 int gettimeofday(timeval* timeVal, void* ignore);
 
 #endif
