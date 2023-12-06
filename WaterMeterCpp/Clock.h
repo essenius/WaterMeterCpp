@@ -36,8 +36,8 @@ public:
     static bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
 
 private:
-    static constexpr int BUFFER_SIZE = 27;
-    char _buffer[BUFFER_SIZE] = {0};
+    static constexpr int BufferSize = 27;
+    char _buffer[BufferSize] = {0};
     static SemaphoreHandle_t _timeMutex;
     static SemaphoreHandle_t _formatTimeMutex;
 };

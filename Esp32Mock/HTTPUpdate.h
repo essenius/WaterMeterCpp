@@ -9,14 +9,13 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Mock implementation of HTTPUpdate for unit testing (not targeting the ESP32)
-
 // Disabling warnings caused by mimicking existing interface
 // ReSharper disable CppMemberFunctionMayBeStatic
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppParameterNeverUsed
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppClangTidyPerformanceUnnecessaryValueParam
+// ReSharper disable CppPassValueParameterByConstReference
 
 #ifndef HEADER_HTTPUPDATE
 #define HEADER_HTTPUPDATE
@@ -36,6 +35,9 @@ using HTTPUpdateEndCB = std::function<void()>;
 using HTTPUpdateErrorCB = std::function<void(int)>;
 using HTTPUpdateProgressCB = std::function<void(int, int)>;
 
+/**
+ * \brief Mock implementation of HTTPUpdate for unit testing (not targeting the ESP32)
+ */
 class HTTPUpdate {
 public:
     t_httpUpdate_return update(WiFiClient& client, const char* url);

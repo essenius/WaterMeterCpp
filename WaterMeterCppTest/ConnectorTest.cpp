@@ -83,12 +83,12 @@ namespace WaterMeterCppTest {
         wifiMock.setIsConnected(false);
 
         EXPECT_EQ(ConnectionState::WifiConnecting, connector.loop()) << "Connecting";
-        delay(WIFI_INITIAL_WAIT_DURATION / 1000);
+        delay(WifiInitialWaitDuration / 1000);
 
-        for (unsigned int i = 0; i < MAX_RECONNECT_FAILURES; i++) {
+        for (unsigned int i = 0; i < MaxReconnectFailures; i++) {
             EXPECT_EQ(ConnectionState::Disconnected, connector.loop()) << "Disconnected";
             EXPECT_EQ(ConnectionState::WifiConnecting, connector.loop()) << "Connecting 2";
-            delay(WIFI_RECONNECT_WAIT_DURATION / 1000);
+            delay(WifiReconnectWaitDuration / 1000);
         }
         EXPECT_EQ(ConnectionState::Init, connector.loop()) << "Failed too many times) << re-init";
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
@@ -225,12 +225,12 @@ namespace WaterMeterCppTest {
     TEST_F(ConnectorTest, connectorQueueStringPayloadTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
         connector.begin(&configuration);
-        constexpr char BUFFER[] = "12345.6789012";
+        constexpr char Buffer[] = "12345.6789012";
         EventServer receivingEventServer;
         QueueClient receivingQueueClient(&receivingEventServer, &logger, 20);
         communicatorQueueClient.begin(receivingQueueClient.getQueueHandle());
         receivingQueueClient.begin();
-        eventServer.publish(Topic::SetVolume, BUFFER);
+        eventServer.publish(Topic::SetVolume, Buffer);
         // now the entry is in the queue. Pick it up at the other end.
         TestEventClient client(&receivingEventServer);
         receivingEventServer.subscribe(&client, Topic::SetVolume);

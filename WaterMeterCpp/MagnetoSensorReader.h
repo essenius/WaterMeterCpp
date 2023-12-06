@@ -21,8 +21,8 @@
 #include "EventServer.h"
 #include "IntCoordinate.h"
 
-constexpr int SOFT_RESET = 1;
-constexpr int HARD_RESET = 2;
+constexpr int SoftReset = 1;
+constexpr int HardReset = 2;
 
 enum class SensorState : int16_t {
     None = 0,
@@ -35,7 +35,6 @@ enum class SensorState : int16_t {
     NeedsSoftReset
 };
 
-
 class MagnetoSensorReader : public EventClient {
 public:
     explicit MagnetoSensorReader(EventServer* eventServer);
@@ -44,30 +43,30 @@ public:
     double getGain() const;
     int getNoiseRange() const;
     void hardReset();
-    SensorState power(uint8_t state);
+    SensorState setPower(uint8_t state);
     IntCoordinate read() const;
     void softReset();
-    SensorState state() { return _sensorState; }
+    SensorState getState() { return _sensorState; }
     SensorState validate(const IntCoordinate& sample);
 
     void update(Topic topic, long payload) override;
-    static constexpr byte DEFAULT_POWER_PORT = 15;
+    static constexpr byte DefaultPowerPort = 15;
 
 protected:
     // Both HMC and QMC datasheets report 50 ms startup time.
-    static constexpr unsigned long STARTUP_MICROS = 50000;
-    static constexpr int FLATLINE_STREAK = 250;
-    static constexpr int MAX_STREAKS_TO_ALERT = 10;
-    static constexpr int DELAY_SENSOR_MILLIS = 5;
+    static constexpr unsigned long StartupMicros = 50000;
+    static constexpr int FlatlineStreak = 250;
+    static constexpr int MaxStreaksToAlert = 10;
+    static constexpr int DelaySensorMillis = 5;
 
     bool setSensor();
 
     MagnetoSensor* _sensor = nullptr;
     ChangePublisher<SensorState> _sensorState;
     int _consecutiveStreakCount = 0;
-    IntCoordinate _previousSample = {0, 0};
-    int _streakCount = 0;
-    uint8_t _powerPort = DEFAULT_POWER_PORT;
+    IntCoordinate _previousSample = {{0, 0}};
+    int _flatlineCount = 0;
+    uint8_t _powerPort = DefaultPowerPort;
     MagnetoSensor** _sensorList = nullptr;
     size_t _sensorListSize = 0;
 };

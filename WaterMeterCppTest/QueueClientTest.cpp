@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include <regex>
 #include "../WaterMeterCpp/QueueClient.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 #include "TestEventClient.h"
 #include "freertos/ringbuf.h"
 
@@ -33,11 +33,11 @@ namespace WaterMeterCppTest {
         uxQueueReset();
         uxRingbufReset();
         eventServer.subscribe(&testEventClient, Topic::Anomaly);
-        constexpr uint16_t QUEUE_SIZE = 20;
-        QueueClient qClient(&eventServer, &logger, QUEUE_SIZE, 23);
+        constexpr uint16_t QueueSize = 20;
+        QueueClient qClient(&eventServer, &logger, QueueSize, 23);
         qClient.begin(qClient.getQueueHandle());
         eventServer.subscribe(&qClient, Topic::Anomaly);
-        for (int i = 0; i < QUEUE_SIZE; i++) {
+        for (int i = 0; i < QueueSize; i++) {
             eventServer.publish(Topic::Anomaly, i * 11);
         }
 
@@ -47,15 +47,15 @@ namespace WaterMeterCppTest {
         const auto matcher = R"(\[\] \[E\] Instance [0-9a-fA-F]+ \(23\): error sending \d+/12345\n\n)";
         EXPECT_TRUE(std::regex_match(getPrintOutput(), std::regex(matcher))) << "Log sent";
         testEventClient.reset();
-        for (int i = 0; i < QUEUE_SIZE; i++) {
+        for (int i = 0; i < QueueSize; i++) {
             char numbuf[10];
             EXPECT_TRUE(qClient.receive()) << "receive true";
             EXPECT_EQ(i + 1, testEventClient.getCallCount()) << "Call count";
-            safeSprintf(numbuf, "%d", 11 * i);
+            SafeCString::sprintf(numbuf, "%d", 11 * i);
             EXPECT_STREQ(numbuf, testEventClient.getPayload()) << "Payload";
         }
         EXPECT_FALSE(qClient.receive()) << "Receive false";
-        EXPECT_EQ(QUEUE_SIZE, testEventClient.getCallCount()) << "Call count last";
+        EXPECT_EQ(QueueSize, testEventClient.getCallCount()) << "Call count last";
 
         struct TestData {
             const char* input;

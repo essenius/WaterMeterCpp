@@ -9,8 +9,6 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// Mock implementation of the WiFi class/object for unit testing (not targeting the ESP32)
-
 // Disabling warnings caused by mimicking existing interface
 // ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppMemberFunctionMayBeStatic
@@ -24,8 +22,10 @@
 #include "ESP.h"
 #include "IPAddress.h"
 #include "StringArduino.h"
-#include "../WaterMeterCpp/SafeCString.h"
 
+/**
+ * \brief Mock implementation of the WiFi class/object for unit testing (not targeting the ESP32)
+ */
 class WiFiClass {
 public:
     WiFiClass();
@@ -33,7 +33,7 @@ public:
     void mode(int i) { }
 
     void begin(const char* ssid, const char* password, int ignore = 0, const uint8_t* _bssid = nullptr) {
-        safeStrcpy(_ssid, ssid);
+        SafeCString::strcpy(_ssid, ssid);
     }
 
     bool config(IPAddress local, IPAddress gateway, IPAddress subnet,

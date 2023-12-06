@@ -19,7 +19,7 @@
 
 #include "TestEventClient.h"
 
-constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
+constexpr unsigned long MeasureIntervalMicros = 10UL * 1000UL;
 
 namespace WaterMeterCppTest {
 
@@ -71,23 +71,23 @@ namespace WaterMeterCppTest {
     DataQueue ResultAggregatorTest::dataQueue(&eventServer, &payload);
 
     TEST_F(ResultAggregatorTest, resultAggregatorDisconnectTest) {
-        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 5);
         eventServer.publish(Topic::NonIdleRate, 5);
-        constexpr Coordinate AVERAGE{500, 500};
+        constexpr Coordinate Average{500, 500};
         EllipseFit ellipseFit;
-        const FlowDetectorDriver fmd(&eventServer, &ellipseFit, AVERAGE);
-        constexpr IntCoordinate SAMPLE{ {500, 500} };
+        const FlowDetectorDriver fmd(&eventServer, &ellipseFit, Average);
+        constexpr IntCoordinate Sample{ {500, 500} };
         for (int i = 0; i < 3; i++) {
-            aggregator.addMeasurement(SAMPLE, &fmd);
+            aggregator.addMeasurement(Sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 2500 + 10 * i);
             EXPECT_FALSE(aggregator.send()) << "First 3 measurements don't send";
         }
         setRingBufferBufferFull(dataQueue.handle(), true);
 
         for (int i = 0; i < 4; i++) {
-            aggregator.addMeasurement(SAMPLE, &fmd);
+            aggregator.addMeasurement(Sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 2500 - 10 * i);
             EXPECT_FALSE(aggregator.send()) << "Next 4 measurements still don't send (can't after 5th)";
         }
@@ -95,11 +95,11 @@ namespace WaterMeterCppTest {
         setRingBufferBufferFull(dataQueue.handle(), false);
 
         for (int i = 0; i < 2; i++) {
-            aggregator.addMeasurement(SAMPLE, &fmd);
+            aggregator.addMeasurement(Sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 2510 - 10 * i);
             EXPECT_FALSE(aggregator.send()) << "Next 2 measurements still don't send (as waiting for next round";
         }
-        aggregator.addMeasurement(SAMPLE, &fmd);
+        aggregator.addMeasurement(Sample, &fmd);
         eventServer.publish(Topic::ProcessTime, 2500);
         EXPECT_TRUE(aggregator.shouldSend()) << "next round complete, so must send";
 
@@ -114,7 +114,7 @@ namespace WaterMeterCppTest {
 
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
     TEST_F(ResultAggregatorTest, resultAggregatorFlowTest) {
-        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 10);
         eventServer.publish(Topic::NonIdleRate, 5);
@@ -142,7 +142,7 @@ namespace WaterMeterCppTest {
     }
 
     TEST_F(ResultAggregatorTest, resultAggregatorIdleOutlierTest) {
-        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, "10");
         eventServer.publish(Topic::NonIdleRate, "5");
@@ -186,7 +186,7 @@ namespace WaterMeterCppTest {
     }
 
     TEST_F(ResultAggregatorTest, resultAggregatorIdleTest) {
-        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
 
         EXPECT_EQ(1, rateListener.getCallCount()) << "rate set";
@@ -247,14 +247,14 @@ namespace WaterMeterCppTest {
     }*/
 
     TEST_F(ResultAggregatorTest, resultAggregatorResetTest) {
-        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 1);
         eventServer.publish(Topic::NonIdleRate, 1);
-        constexpr Coordinate AVERAGE{ 2400, 2400 };
+        constexpr Coordinate Average{ 2400, 2400 };
         EllipseFit ellipseFit;
 
-        const FlowDetectorDriver fmd(&eventServer, &ellipseFit, AVERAGE, false, false, true);
+        const FlowDetectorDriver fmd(&eventServer, &ellipseFit, Average, false, false, true);
         aggregator.addMeasurement(IntCoordinate{ {2398, 0} }, &fmd);
         EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush";
         const auto result = &payload.buffer.result;
@@ -263,7 +263,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(ResultAggregatorTest, resultAggregatorUpdateWrongTopicTest) {
         // check that wrong topics don't change the flush rate (which the valid topics do)
-        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MEASURE_INTERVAL_MICROS);
+        ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         const auto rate = aggregator.getFlushRate();
         aggregator.update(Topic::FreeHeap, 1);

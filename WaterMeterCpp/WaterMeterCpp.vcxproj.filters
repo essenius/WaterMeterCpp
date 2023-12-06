@@ -138,6 +138,9 @@
     <ClCompile Include="QuadraticEllipse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MagnetoSensorSimulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aggregator.h">
@@ -221,9 +224,6 @@
     <ClInclude Include="Sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SafeCString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -276,6 +276,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IntCoordinate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MagnetoSensorSimulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

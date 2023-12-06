@@ -14,6 +14,7 @@
 
 #ifndef HEADER_COMMUNICATOR
 #define HEADER_COMMUNICATOR
+
 #include "DataQueue.h"
 #include "Device.h"
 #include "Meter.h"

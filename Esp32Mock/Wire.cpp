@@ -33,6 +33,7 @@ void TwoWire::begin(int sda, int scl) {
     _writeIndex = 0;
     _endTransmissionValue = 0;
     _endTransmissionCounter = _endTransmissionTogglePeriod;
+    _flatline = false;
 }
 
 void TwoWire::beginTransmission(uint8_t address) {
@@ -68,7 +69,7 @@ uint8_t TwoWire::getAddress() {
 }
 
 size_t TwoWire::write(uint8_t value) {
-    if (_writeIndex < WRITE_BUFFER_SIZE) {
+    if (_writeIndex < WriteBufferSize) {
         _written[_writeIndex++] = value;
         return true;
     }
@@ -84,8 +85,9 @@ short TwoWire::writeMismatchIndex(const uint8_t* expected, const short length) c
     return length;
 }
 
-void TwoWire::setFlatline(bool flatline) {
+void TwoWire::setFlatline(bool flatline, uint8_t value) {
     _flatline = flatline;
+    _nextResult = value;
 }
 
 void TwoWire::setEndTransmissionTogglePeriod(int period) {

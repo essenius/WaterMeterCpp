@@ -46,19 +46,19 @@
 #include "Wire.h"
 
 // For being able to set the firmware 
-constexpr const char* const BUILD_VERSION = "0.103.0";
+constexpr const char* const BuildVersion = "0.103.0";
 
 // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
 // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
 // Processing one cycle usually takes quite a bit less than that.
 
-constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
+constexpr unsigned long MeasureIntervalMicros = 10UL * 1000UL;
 
 // We have separate I2C networks for the OLED and the sensor to prevent the sensor having to wait.
 
-constexpr int SDA_OLED = 32;
-constexpr int SCL_OLED = 33;
-constexpr int BUTTON_PORT = 34;
+constexpr int SdaOled = 32;
+constexpr int SclOled = 33;
+constexpr int ButtonPort = 34;
 
 // This is where you would normally use an injector framework,
 // We define the objects globally to avoid using (and fragmenting) the heap.
@@ -89,7 +89,7 @@ DataQueue sensorDataQueue(&connectorEventServer, &connectorPayload);
 DataQueuePayload measurementPayload;
 DataQueuePayload resultPayload;
 SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &measurementPayload);
-ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &resultPayload, MEASURE_INTERVAL_MICROS);
+ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &resultPayload, MeasureIntervalMicros);
 
 Device device(&communicatorEventServer);
 Meter meter(&communicatorEventServer);
@@ -101,8 +101,8 @@ Log logger(&communicatorEventServer, &wifiPayloadBuilder);
 WiFiManager wifi(&connectorEventServer, &configuration.wifi, &wifiPayloadBuilder);
 PubSubClient mqttClient;
 MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt, &sensorDataQueue,
-                        BUILD_VERSION);
-FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);
+                                 BuildVersion);
+FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BuildVersion);
 
 QueueClient samplerQueueClient(&samplerEventServer, &logger, 50, 0);
 // will fill fast if we have flow during startup
@@ -119,7 +119,7 @@ Serializer serializer2(&communicatorEventServer, &serialize2PayloadBuilder);
 
 // we need the button in the sampler loop and digitalRead() is fast enough, so we don't use the detour via Communicator here
 ChangePublisher<uint8_t> buttonPublisher(&samplerEventServer, Topic::ResetSensor);
-Button button(&buttonPublisher, BUTTON_PORT);
+Button button(&buttonPublisher, ButtonPort);
 
 DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
 Sampler sampler(&samplerEventServer, &sensorReader, &flowDetector, &button, &sampleAggregator, &resultAggregator, &samplerQueueClient);
@@ -131,26 +131,27 @@ TimeServer timeServer;
 Connector connector(&connectorEventServer, &wifi, &mqttGateway, &timeServer, &firmwareManager, &sensorDataQueue,
                     &connectorDataQueue, &serializer, &connectorSamplerQueueClient, &connectorCommunicatorQueueClient);
 
-
-
-static constexpr BaseType_t CORE1 = 1;
-static constexpr BaseType_t CORE0 = 0;
-static constexpr uint16_t STACK_DEPTH = 10000;
-static constexpr BaseType_t PRIORITY_1 = 1;
+static constexpr BaseType_t Core1 = 1;
+static constexpr BaseType_t Core0 = 0;
+static constexpr uint16_t StackDepth = 10000;
+static constexpr BaseType_t Priority1 = 1;
 
 TaskHandle_t samplerTaskHandle;
 TaskHandle_t communicatorTaskHandle;
 TaskHandle_t connectorTaskHandle;
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(230400);
+    // switch off buffering so we see things before a newline is entered
+    (void)setvbuf(stdout, nullptr, _IONBF, 0);
+
     theClock.begin();
 
     // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
     sensorReader.begin(sensor, sizeof sensor / sizeof sensor[0]);
 
-    Wire.begin(); // standard SDA=21, SCL=22
-    Wire1.begin(SDA_OLED, SCL_OLED);
+    Wire.begin(); // standard SDA=21, SCL=22, for sensor
+    Wire1.begin(SdaOled, SclOled); // for display
 
     configuration.begin();
     // queue for the sampler process
@@ -168,16 +169,16 @@ void setup() {
     connector.begin(&configuration);
 
     // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
-    sampler.begin(sensor, sizeof sensor / sizeof sensor[0], MEASURE_INTERVAL_MICROS);
+    sampler.begin(sensor, sizeof sensor / sizeof sensor[0], MeasureIntervalMicros);
 
     // On timer fire, read from the sensor and put sample in a queue. Use core 1 so we are not (or at least much less) influenced by Wifi and printing
-    xTaskCreatePinnedToCore(Sampler::task, "Sampler", STACK_DEPTH, &sampler, PRIORITY_1, &samplerTaskHandle, CORE1);
+    xTaskCreatePinnedToCore(Sampler::task, "Sampler", StackDepth, &sampler, Priority1, &samplerTaskHandle, Core1);
 
     // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
-    xTaskCreatePinnedToCore(Connector::task, "Connector", STACK_DEPTH, &connector, PRIORITY_1, &connectorTaskHandle, CORE0);
+    xTaskCreatePinnedToCore(Connector::task, "Connector", StackDepth, &connector, Priority1, &connectorTaskHandle, Core0);
 
     // Take care of logging and leds, as well as passing on data to the connector if there is a connection. Also on core 0, as not time sensitive
-    xTaskCreatePinnedToCore(Communicator::task, "Communicator", STACK_DEPTH, &communicator, PRIORITY_1, &communicatorTaskHandle, CORE0);
+    xTaskCreatePinnedToCore(Communicator::task, "Communicator", StackDepth, &communicator, Priority1, &communicatorTaskHandle, Core0);
 
     // beginLoop can only run when both sampler and connector have finished settting up, since they can start publishing right away.
     // This also starts the hardware timer.

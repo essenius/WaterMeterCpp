@@ -71,7 +71,7 @@ void ResultAggregator::begin() {
     _eventServer->subscribe(this, Topic::IdleRate);
     _eventServer->subscribe(this, Topic::NonIdleRate);
     _eventServer->subscribe(this, Topic::ProcessTime);
-    Aggregator::begin(FLUSH_RATE_IDLE);
+    Aggregator::begin(FlushRateIdle);
 }
 
 void ResultAggregator::flush() {
@@ -115,10 +115,10 @@ void ResultAggregator::update(const Topic topic, const char* payload) {
     // we only listen to topics with numerical values, so conversion should work
     switch (topic) {
     case Topic::IdleRate:
-        update(topic, convertToLong(payload, FLUSH_RATE_IDLE));
+        update(topic, convertToLong(payload, FlushRateIdle));
         return;
     case Topic::NonIdleRate:
-        update(topic, convertToLong(payload, FLUSH_RATE_INTERESTING));
+        update(topic, convertToLong(payload, FlushRateInteresting));
         break;
     default:
         break;

@@ -18,8 +18,8 @@
 namespace WaterMeterCppTest {
 
     TEST(ButtonTest, buttonTest1) {
-        constexpr uint8_t PORT = 34;
-        digitalWrite(PORT, HIGH);
+        constexpr uint8_t Port = 34;
+        digitalWrite(Port, HIGH);
         EventServer eventServer;
         TestEventClient buttonListener(&eventServer);
         eventServer.subscribe(&buttonListener, Topic::ButtonPushed);
@@ -31,15 +31,15 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(HIGH, publisher.get()) << "Initial value is HIGH";
         button.check();
         EXPECT_EQ(HIGH, publisher.get()) << "Initial value remains after first check";
-        digitalWrite(PORT, LOW);
+        digitalWrite(Port, LOW);
         delay(1);
         button.check();
         EXPECT_EQ(1, buttonListener.getCallCount()) << "Initial value still not changed - awaiting end of bouncing after LOW";
-        digitalWrite(PORT, HIGH);
+        digitalWrite(Port, HIGH);
         delay(1);
         button.check();
         EXPECT_EQ(1, buttonListener.getCallCount()) << "Initial value still not changed - awaiting end of bouncing after HIGH";
-        digitalWrite(PORT, LOW);
+        digitalWrite(Port, LOW);
         delay(1);
         button.check();
         EXPECT_EQ(1, buttonListener.getCallCount()) << "Initial value still not changed - awaiting end of bouncing adter second LOW before timeout";

@@ -15,7 +15,7 @@ void MagnetoSensorMock::setPowerOnFailures(const int failures) {
     _powerFailuresLeft = failures;
 }
 
-bool MagnetoSensorMock::read(SensorData& sample) const {
+bool MagnetoSensorMock::read(SensorData& sample) {
     if (_isFlat) {
         sample.reset();
         return true;

@@ -11,7 +11,7 @@
 
 #include <cmath>
 
-bool aboutEqual(const double& a, const double& b, const double& epsilon) {
+bool isAboutEqual(const double& a, const double& b, const double& epsilon) {
 	return fabs(a - b) <= epsilon;
 }
 

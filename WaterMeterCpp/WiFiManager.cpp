@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "WiFiManager.h"
-#include "SafeCString.h"
+#include <SafeCString.h>
 #include "EventServer.h"
 #include "WiFi.h"
 
@@ -31,14 +31,14 @@ void WiFiManager::begin() {
         _hostName = nullptr;
     }
     else {
-        safeStrcpy(_hostNameBuffer, _wifiConfig->deviceName);
+        SafeCString::strcpy(_hostNameBuffer, _wifiConfig->deviceName);
         _hostName = _hostNameBuffer;
     }
     _macAddress[0] = 0;
     if (_hostName != nullptr && !WiFi.setHostname(_hostName)) {
         _eventServer->publish(Topic::ConnectionError, "Could not set host name");
     }
-    safeStrcpy(_hostNameBuffer, WiFi.getHostname());
+    SafeCString::strcpy(_hostNameBuffer, WiFi.getHostname());
     _hostName = _hostNameBuffer;
 
     WiFi.mode(WIFI_STA);
@@ -47,21 +47,21 @@ void WiFiManager::begin() {
 
 void WiFiManager::configure(const IpConfig* ipConfig) {
     _localIp = ipConfig->localIp;
-    if (ipConfig->gateway == NO_IP && ipConfig->localIp != NO_IP) {
+    if (ipConfig->gateway == NoIp && ipConfig->localIp != NoIp) {
         _gatewayIp = ipConfig->localIp;
         _gatewayIp[3] = 1;
     }
     else {
         _gatewayIp = ipConfig->gateway;
     }
-    _subnetMaskIp = ipConfig->subnetMask == NO_IP ? IPAddress(255, 255, 255, 0) : ipConfig->subnetMask;
+    _subnetMaskIp = ipConfig->subnetMask == NoIp ? IPAddress(255, 255, 255, 0) : ipConfig->subnetMask;
 
     bool result;
-    if (ipConfig->primaryDns == NO_IP) {
+    if (ipConfig->primaryDns == NoIp) {
         result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp);
     }
     else {
-        if (ipConfig->secondaryDns == NO_IP) {
+        if (ipConfig->secondaryDns == NoIp) {
             result = WiFi.config(_localIp, _gatewayIp, _subnetMaskIp, ipConfig->primaryDns);
         }
         else {
@@ -80,7 +80,7 @@ void WiFiManager::disconnect() {
 const char* WiFiManager::get(const Topic topic, const char* defaultValue) {
     switch (topic) {
     case Topic::IpAddress: {
-        safeStrcpy(_ipAddress, WiFi.localIP().toString().c_str());
+        SafeCString::strcpy(_ipAddress, WiFi.localIP().toString().c_str());
         return _ipAddress;
     }
     case Topic::MacRaw:
@@ -88,9 +88,9 @@ const char* WiFiManager::get(const Topic topic, const char* defaultValue) {
         uint8_t mac[6];
         WiFi.macAddress(mac);
         if (topic == Topic::MacRaw)
-            safeSprintf(_macAddress, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            SafeCString::sprintf(_macAddress, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         else
-            safeSprintf(_macAddress, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            SafeCString::sprintf(_macAddress, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         return _macAddress;
     default:
         return defaultValue;
@@ -104,12 +104,12 @@ const char* WiFiManager::getHostName() const { return _hostName; }
 // get valid addresses, and then we disconnect, and reconnect using the just obtained addresses, fixed.
 bool WiFiManager::needsReinit() {
     if (!isConnected()) return false;
-    _needsReconnect = _localIp == NO_IP;
+    _needsReconnect = _localIp == NoIp;
     if (_needsReconnect) _localIp = WiFi.localIP();
-    if (_gatewayIp == NO_IP) _gatewayIp = WiFi.gatewayIP();
-    if (_subnetMaskIp == NO_IP) _subnetMaskIp = WiFi.subnetMask();
-    if (_dns1Ip == NO_IP) _dns1Ip = WiFi.dnsIP(0);
-    if (_dns2Ip == NO_IP) _dns2Ip = WiFi.dnsIP(1);
+    if (_gatewayIp == NoIp) _gatewayIp = WiFi.gatewayIP();
+    if (_subnetMaskIp == NoIp) _subnetMaskIp = WiFi.subnetMask();
+    if (_dns1Ip == NoIp) _dns1Ip = WiFi.dnsIP(0);
+    if (_dns2Ip == NoIp) _dns2Ip = WiFi.dnsIP(1);
     return _needsReconnect;
 }
 

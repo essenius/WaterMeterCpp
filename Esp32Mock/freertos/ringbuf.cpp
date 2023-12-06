@@ -24,22 +24,20 @@
 #include <freertos/ringbuf.h>
 
 
-constexpr int16_t MAX_ITEMS = 100;
-constexpr int16_t MAX_ITEM_SIZE = 64;
-
-constexpr int MAX_RINGBUFFERS = 10;
-
+constexpr int16_t MaxItems = 100;
+constexpr int16_t MaxItemSize = 64;
+constexpr int MaxRingbuffers = 10;
 
 struct RingBufferContainer {
     RingbufHandle_t ringbufHandle = nullptr;
-    char ringBuffer[MAX_ITEMS][2][MAX_ITEM_SIZE]{};
-    size_t itemSize[MAX_ITEMS]{};
+    char ringBuffer[MaxItems][2][MaxItemSize]{};
+    size_t itemSize[MaxItems]{};
     short nextBufferItem = 0;
     short nextReadBufferItem = 0;
     bool bufferIsFull = false;
 };
 
-RingBufferContainer container[MAX_RINGBUFFERS];
+RingBufferContainer container[MaxRingbuffers];
 
 int getIndex(RingbufHandle_t bufferHandle) {
     // Hack, but good enough for a mock
@@ -55,7 +53,7 @@ void setRingBufferBufferFull(RingbufHandle_t bufferHandle, bool isFull) {
 
 void setRingBufferNoMoreEntries(RingbufHandle_t bufferHandle) {
     const int i = getIndex(bufferHandle);
-    container[i].nextBufferItem = MAX_ITEMS + 1;
+    container[i].nextBufferItem = MaxItems + 1;
 }
 
 void uxRingbufReset() {
@@ -72,10 +70,10 @@ void uxRingbufReset() {
 
 RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType) {
     int i = 0;
-    while (container[i].ringbufHandle != nullptr && i <= MAX_RINGBUFFERS) {
+    while (container[i].ringbufHandle != nullptr && i <= MaxRingbuffers) {
         i++;
     }
-    if (i > MAX_RINGBUFFERS) return nullptr;
+    if (i > MaxRingbuffers) return nullptr;
     container[i].ringbufHandle = reinterpret_cast<RingbufHandle_t>(i + 1);
     return container[i].ringbufHandle;
 }
@@ -84,7 +82,7 @@ size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle) {
     if (bufferHandle == nullptr) return 0;
     const int i = getIndex(bufferHandle);
     if (container[i].bufferIsFull) return 7;
-    return static_cast<size_t>(100 - container[i].nextBufferItem) * MAX_ITEM_SIZE * 2;
+    return static_cast<size_t>(100 - container[i].nextBufferItem) * MaxItemSize * 2;
 }
 
 BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
@@ -93,10 +91,10 @@ BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, v
     const int i = getIndex(bufferHandle);
     if (container[i].nextReadBufferItem >= container[i].nextBufferItem) return pdFALSE;
     *item1 = &container[i].ringBuffer[container[i].nextReadBufferItem][0];
-    if (container[i].itemSize[container[i].nextReadBufferItem] > MAX_ITEM_SIZE) {
+    if (container[i].itemSize[container[i].nextReadBufferItem] > MaxItemSize) {
         *item2 = &container[i].ringBuffer[container[i].nextReadBufferItem][1];
-        *item1Size = MAX_ITEM_SIZE;
-        *item2Size = container[i].itemSize[container[i].nextReadBufferItem] - MAX_ITEM_SIZE;
+        *item1Size = MaxItemSize;
+        *item2Size = container[i].itemSize[container[i].nextReadBufferItem] - MaxItemSize;
     }
     else {
         *item2 = nullptr;
@@ -110,12 +108,12 @@ BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, v
 UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t ticksToWait) {
     if (bufferHandle == nullptr) return pdFALSE;
     const int i = getIndex(bufferHandle);
-    if (container[i].nextBufferItem >= MAX_ITEMS) return pdFALSE;
-    if (size > 2LL * MAX_ITEM_SIZE) return pdFALSE;
-    if (size > MAX_ITEM_SIZE) {
-        const auto startItem2Pointer = static_cast<const char*>(payload) + MAX_ITEM_SIZE;
-        memcpy(&container[i].ringBuffer[container[i].nextBufferItem][0], payload, MAX_ITEM_SIZE);
-        memcpy(&container[i].ringBuffer[container[i].nextBufferItem][1], startItem2Pointer, size - MAX_ITEM_SIZE);
+    if (container[i].nextBufferItem >= MaxItems) return pdFALSE;
+    if (size > 2LL * MaxItemSize) return pdFALSE;
+    if (size > MaxItemSize) {
+        const auto startItem2Pointer = static_cast<const char*>(payload) + MaxItemSize;
+        memcpy(&container[i].ringBuffer[container[i].nextBufferItem][0], payload, MaxItemSize);
+        memcpy(&container[i].ringBuffer[container[i].nextBufferItem][1], startItem2Pointer, size - MaxItemSize);
     }
     else {
         memcpy(&container[i].ringBuffer[container[i].nextBufferItem][0], payload, size);

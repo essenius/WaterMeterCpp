@@ -36,8 +36,14 @@ union IntCoordinate {
         y = yIn;
     }
 
-    double distanceFrom(const IntCoordinate other) const {
-        return toCoordinate().distanceFrom(other.toCoordinate());
+    // we need this to pass coordinates in a memory efficient way but still keep reasonable accuracy
+
+    static IntCoordinate times10(const Coordinate& input) {
+        return {{static_cast<int16_t>(input.x * 10), static_cast<int16_t>(input.y * 10)}};
+    }
+
+    double getDistanceFrom(const IntCoordinate other) const {
+        return toCoordinate().getDistanceFrom(other.toCoordinate());
     }
 
     Coordinate toCoordinate() const {

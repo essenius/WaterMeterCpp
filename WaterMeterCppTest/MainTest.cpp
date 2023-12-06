@@ -64,29 +64,30 @@ namespace WaterMeterCppTest {
             EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
 
             setRealTime(false);
+            
             disableDelay(false);
             // make the firmware check fail
             HTTPClient::ReturnValue = 400;
             // Other tests might have run before, so begin stacks and queues
             ESP.restart();
-            Wire.setFlatline(true);
+            Wire.setFlatline(true, 0);
             Wire.setEndTransmissionTogglePeriod(10);
             uxTaskGetStackHighWaterMarkReset();
             uxQueueReset();
             uxRingbufReset();
 
             // For being able to set the firmware 
-            constexpr auto BUILD_VERSION = "0.103.0";
+            constexpr auto BuildVersion = "0.103.0";
 
             // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
             // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
             // Processing one cycle usually takes quite a bit less than that.
 
-            constexpr unsigned long MEASURE_INTERVAL_MICROS = 10UL * 1000UL;
+            constexpr unsigned long MeasureIntervalMicros = 10UL * 1000UL;
 
-            constexpr int SDA_OLED = 32;
-            constexpr int SCL_OLED = 33;
-            constexpr int BUTTON_PORT = 34;
+            constexpr int SdaOled = 32;
+            constexpr int SclOled = 33;
+            constexpr int ButtonPort = 34;
 
             // This is where you would normally use an injector framework,
             // We define the objects globally to avoid using (and fragmenting) the heap.
@@ -116,7 +117,7 @@ namespace WaterMeterCppTest {
             DataQueuePayload resultPayload;
             SampleAggregator sampleAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &measurementPayload);
             ResultAggregator resultAggregator(&samplerEventServer, &theClock, &sensorDataQueue, &resultPayload,
-                                              MEASURE_INTERVAL_MICROS);
+                                              MeasureIntervalMicros);
 
             Device device(&communicatorEventServer);
             Meter meter(&communicatorEventServer);
@@ -129,8 +130,8 @@ namespace WaterMeterCppTest {
             PubSubClient mqttClient;
             MqttGateway mqttGateway(&connectorEventServer, &mqttClient, &wifiClientFactory, &configuration.mqtt,
                                     &sensorDataQueue,
-                                    BUILD_VERSION);
-            FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BUILD_VERSION);
+                                    BuildVersion);
+            FirmwareManager firmwareManager(&connectorEventServer, &wifiClientFactory, &configuration.firmware, BuildVersion);
 
             QueueClient samplerQueueClient(&samplerEventServer, &logger, 50, 0);
             // will fill fast if we have flow during startup
@@ -147,7 +148,7 @@ namespace WaterMeterCppTest {
 
             // we need the button in the sampler loop and digitalRead() is fast enough, so we don't use the detour via Communicator here
             ChangePublisher<uint8_t> buttonPublisher(&samplerEventServer, Topic::ResetSensor);
-            Button button(&buttonPublisher, BUTTON_PORT);
+            Button button(&buttonPublisher, ButtonPort);
 
             DataQueue connectorDataQueue(&connectorEventServer, &connectorDataQueuePayload, 1, 1024, 128, 256);
             SamplerDriver sampler(&samplerEventServer, &sensorReader, &flowDetector, &button, &sampleAggregator, &resultAggregator,
@@ -161,10 +162,10 @@ namespace WaterMeterCppTest {
                                 &connectorDataQueue, &serializer, &connectorSamplerQueueClient,
                                 &connectorCommunicatorQueueClient);
 
-            static constexpr BaseType_t CORE1 = 1;
-            static constexpr BaseType_t CORE0 = 0;
-            static constexpr uint16_t STACK_DEPTH = 10000;
-            static constexpr BaseType_t PRIORITY_1 = 1;
+            static constexpr BaseType_t Core1 = 1;
+            static constexpr BaseType_t Core0 = 0;
+            static constexpr uint16_t StackDepth = 10000;
+            static constexpr BaseType_t Priority1 = 1;
 
             TaskHandle_t samplerTaskHandle;
             TaskHandle_t communicatorTaskHandle;
@@ -178,7 +179,8 @@ namespace WaterMeterCppTest {
             sensorReader.begin(sensor, sizeof sensor / sizeof sensor[0]);
 
             Wire.begin(); // standard SDA=21, SCL=22
-            Wire1.begin(SDA_OLED, SCL_OLED);
+            Wire.setFlatline(true, 0);
+            Wire1.begin(SdaOled, SclOled);
 
             FirmwareConfig firmwareConfig{"https://localhost/"};
             configuration.putFirmwareConfig(&firmwareConfig);
@@ -202,18 +204,18 @@ namespace WaterMeterCppTest {
             communicator.begin();
             connector.begin(&configuration);
 
-            EXPECT_TRUE(sampler.begin(sensor, std::size(sensor), MEASURE_INTERVAL_MICROS)) << "Sampler found a sensor";
+            EXPECT_TRUE(sampler.begin(sensor, std::size(sensor), MeasureIntervalMicros)) << "Sampler found a sensor";
             EXPECT_STREQ("[] Starting\n", getPrintOutput()) << "Print output started";
             clearPrintOutput();
 
             // On timer fire, read from the sensor and put sample in a queue. Use core 1 so we are not (or at least much less) influenced by Wifi and printing
-            xTaskCreatePinnedToCore(Sampler::task, "Sampler", STACK_DEPTH, &sampler, PRIORITY_1, &samplerTaskHandle, CORE1);
+            xTaskCreatePinnedToCore(Sampler::task, "Sampler", StackDepth, &sampler, Priority1, &samplerTaskHandle, Core1);
 
             // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
-            xTaskCreatePinnedToCore(Connector::task, "Connector", STACK_DEPTH, &connector, PRIORITY_1, &connectorTaskHandle, CORE0);
+            xTaskCreatePinnedToCore(Connector::task, "Connector", StackDepth, &connector, Priority1, &connectorTaskHandle, Core0);
 
             // Take care of logging and leds, as well as passing on data to the connector if there is a connection. Also on core 0, as not time sensitive
-            xTaskCreatePinnedToCore(Communicator::task, "Communicator", STACK_DEPTH, &communicator, PRIORITY_1, &communicatorTaskHandle, CORE0);
+            xTaskCreatePinnedToCore(Communicator::task, "Communicator", StackDepth, &communicator, Priority1, &communicatorTaskHandle, Core0);
 
             // beginLoop can only run when both sampler and connector have finished settting up, since they can start publishing right away.
             // This also starts the hardware timer.
@@ -234,8 +236,8 @@ namespace WaterMeterCppTest {
             while (communicatorSamplerQueueClient.receive()) {}
             while (communicatorConnectorQueueClient.receive()) {}
 
-            EXPECT_EQ(Led::ON, Led::get(Led::AUX)) << "AUX on";
-            EXPECT_EQ(Led::ON, Led::get(Led::RUNNING)) << "RUNNING on";
+            EXPECT_EQ(Led::On, Led::get(Led::Aux)) << "AUX on";
+            EXPECT_EQ(Led::On, Led::get(Led::Running)) << "RUNNING on";
             EXPECT_STREQ(R"([] Topic '6': 0
 [] Free Spaces Queue #1: 18
 [] Wifi summary: {"ssid":"","hostname":"","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}

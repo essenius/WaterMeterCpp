@@ -17,7 +17,7 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/Meter.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 namespace WaterMeterCppTest {
     
@@ -56,7 +56,7 @@ namespace WaterMeterCppTest {
             pulseClient.reset();
             eventServer.publish(Topic::Pulse, i*2 + 1);
             char buffer[10];
-            safeSprintf(buffer, "%d", i + 1);
+            SafeCString::sprintf(buffer, "%d", i + 1);
 
             EXPECT_EQ(1, volumeClient.getCallCount()) << "Volume published";
             EXPECT_STREQ(expected[i], volumeClient.getPayload()) << buffer;

@@ -23,7 +23,7 @@
 #include <ESP.h>
 #include <freertos/freeRTOS.h>
 
-constexpr short MAX_ELEMENTS = 20;
+constexpr short MaxElements = 20;
 
 struct QueueEntry {
     uint8_t b[18];
@@ -32,12 +32,12 @@ struct QueueEntry {
 class Queue {
 public:
     short currentIndex;
-    QueueEntry element[MAX_ELEMENTS];
+    QueueEntry element[MaxElements];
 };
 
 
-Queue queue[MAX_QUEUES];
-QueueHandle_t queueHandle[MAX_QUEUES] = {nullptr};
+Queue queue[MaxQueues];
+QueueHandle_t queueHandle[MaxQueues] = {nullptr};
 short queueIndex = 0;
 
 // xQueue
@@ -76,7 +76,7 @@ UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t taskHandle) {
 }
 
 QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize) {
-    if (queueIndex < MAX_QUEUES) {
+    if (queueIndex < MaxQueues) {
         queueHandle[queueIndex] = &queue[queueIndex];
 
         return queueHandle[queueIndex++];
@@ -98,7 +98,7 @@ BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicks
 BaseType_t xQueueSendToBack(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
     const auto queue1 = static_cast<Queue*>(xQueue);
 
-    if (queue1->currentIndex >= MAX_ELEMENTS) return pdFALSE;
+    if (queue1->currentIndex >= MaxElements) return pdFALSE;
     queue1->element[queue1->currentIndex++] = *static_cast<const QueueEntry*>(pvItemToQueue);
     return pdTRUE;
 }
@@ -107,7 +107,7 @@ BaseType_t xQueueSendToFront(QueueHandle_t xQueue, const void* pvItemToQueue, Ti
 
 void uxQueueReset() {
     queueIndex = 0;
-    for (short i = 0; i < MAX_QUEUES; i++) {
+    for (short i = 0; i < MaxQueues; i++) {
         queueHandle[i] = nullptr;
         queue[i].currentIndex = 0;
     }
@@ -115,7 +115,7 @@ void uxQueueReset() {
 
 UBaseType_t uxQueueSpacesAvailable(QueueHandle_t handle) {
     const auto queue1 = static_cast<Queue*>(handle);
-    return MAX_ELEMENTS - queue1->currentIndex;
+    return MaxElements - queue1->currentIndex;
 }
 
 // Task

@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/Serializer.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 namespace WaterMeterCppTest {
 
@@ -47,7 +47,7 @@ namespace WaterMeterCppTest {
 
         testEventClient.reset();
         payload.topic = Topic::Samples;
-        payload.buffer.samples.count = MAX_SAMPLES;
+        payload.buffer.samples.count = MaxSamples;
         short baseNumber = 475;
         for (short i = 0; i < static_cast<short>(payload.buffer.samples.count); i++) {
             const auto value = static_cast<short>(i + baseNumber);
@@ -86,7 +86,7 @@ namespace WaterMeterCppTest {
 
         testEventClient.reset();
         payload.topic = Topic::ConnectionError;
-        safeStrcpy(payload.buffer.message, "Not sure what went wrong here...");
+        SafeCString::strcpy(payload.buffer.message, "Not sure what went wrong here...");
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once error";
         EXPECT_STREQ(
@@ -95,7 +95,7 @@ namespace WaterMeterCppTest {
 
         testEventClient.reset();
         payload.topic = Topic::Info;
-        safeStrcpy(payload.buffer.message, "About to close down");
+        SafeCString::strcpy(payload.buffer.message, "About to close down");
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once info";
         EXPECT_STREQ("About to close down", testEventClient.getPayload()) << "Formatted Info payload OK";

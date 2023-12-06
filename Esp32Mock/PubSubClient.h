@@ -9,8 +9,6 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License..
 
-// Mock implementation of the PubSubClient library for unit testing (not targeting the ESP32)
-
 // Disabling warnings caused by mimicking existing interfaces
 // ReSharper disable CppMemberFunctionMayBeStatic 
 // ReSharper disable CppMemberFunctionMayBeConst
@@ -26,6 +24,9 @@
 
 #define MQTT_CALLBACK_SIGNATURE std::function<void(char*, uint8_t*, unsigned int)> callback
 
+/**
+ * \brief Mock implementation of the PubSubClient library for unit testing (not targeting the ESP32)
+ */
 class PubSubClient {
 public:
     bool connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage);
@@ -60,20 +61,20 @@ public:
     const char* user() const { return _user; }
 
 private:
-    constexpr static int FIELD_SIZE = 64;
-    constexpr static int PAYLOAD_SIZE = 1024;
-    constexpr static int TOPIC_SIZE = 2500;
+    constexpr static int FieldSize = 64;
+    constexpr static int PayloadSize = 1024;
+    constexpr static int TopicSize = 2500;
     std::function<void(char*, unsigned char*, unsigned)> _callback;
     int _callCount = 0;
     bool _canConnect = true;
     bool _canPublish = true;
     bool _canSubscribe = true;
-    char _id[FIELD_SIZE] = {};
+    char _id[FieldSize] = {};
     int _loopCount = 0;
-    char _pass[FIELD_SIZE] = {};
-    char _payload[PAYLOAD_SIZE] = {};
-    char _topic[TOPIC_SIZE] = {};
-    char _user[FIELD_SIZE] = {};
+    char _pass[FieldSize] = {};
+    char _payload[PayloadSize] = {};
+    char _topic[TopicSize] = {};
+    char _user[FieldSize] = {};
     char _loopTopic[100] = "\0";
     uint8_t _loopPayload[10] = {};
     int _loopPayloadSize = 0;

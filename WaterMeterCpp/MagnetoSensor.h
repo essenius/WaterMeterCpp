@@ -71,16 +71,16 @@ public:
     }
 
     // read a sample from the sensor
-    virtual bool read(SensorData& sample) const = 0;
+    virtual bool read(SensorData& sample) = 0;
 
     // soft reset the sensor
-    virtual void softReset() const = 0;
+    virtual void softReset() = 0;
 
     virtual void waitForPowerOff() const;
 
     virtual bool handlePowerOn();
 protected:
-    static constexpr bool STOP_AFTER_SEND = true;
+    static constexpr bool StopAfterSend = true;
     byte _address;
     TwoWire* _wire;
     void setRegister(byte sensorRegister, byte value) const;

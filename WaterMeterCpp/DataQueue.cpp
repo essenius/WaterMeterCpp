@@ -11,7 +11,7 @@
 
 #include "EventServer.h"
 #include "DataQueue.h"
-#include "SafeCString.h"
+#include <SafeCString.h>
 #include "DataQueuePayload.h"
 
 DataQueue::DataQueue(EventServer* eventServer, DataQueuePayload* payload, const int8_t index, const long queueSize,
@@ -74,6 +74,6 @@ void DataQueue::update(const Topic topic, const char* payload) {
     DataQueuePayload payloadToSend{};
     payloadToSend.topic = topic;
     // timestamp is ignored for strings
-    safeStrcpy(payloadToSend.buffer.message, payload);
+    SafeCString::strcpy(payloadToSend.buffer.message, payload);
     send(&payloadToSend);
 }

@@ -13,7 +13,7 @@
 #include <sys/time.h>
 #include <cstring>
 
-constexpr unsigned long long MICROSECONDS_PER_SECOND = 1000000ULL;
+constexpr unsigned long long MicrosecondsPerSecond = 1000000ULL;
 
 SemaphoreHandle_t Clock::_timeMutex = xSemaphoreCreateMutex();
 SemaphoreHandle_t Clock::_formatTimeMutex = xSemaphoreCreateMutex();
@@ -35,8 +35,8 @@ Timestamp Clock::getTimestamp() {
 
 bool Clock::formatTimestamp(const Timestamp timestamp, char* destination, const size_t size) {
     if (size < 27) return false;
-    const auto microseconds = static_cast<long>(timestamp % MICROSECONDS_PER_SECOND);
-    const auto seconds = static_cast<time_t>(timestamp / MICROSECONDS_PER_SECOND);
+    const auto microseconds = static_cast<long>(timestamp % MicrosecondsPerSecond);
+    const auto seconds = static_cast<time_t>(timestamp / MicrosecondsPerSecond);
     xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
     strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds)); // NOLINT(concurrency-mt-unsafe)
     xSemaphoreGive(_formatTimeMutex);
@@ -48,7 +48,7 @@ bool Clock::formatTimestamp(const Timestamp timestamp, char* destination, const 
 const char* Clock::get(const Topic topic, const char* defaultValue) {
     if (topic == Topic::Time) {
         const auto currentTime = getTimestamp();
-        formatTimestamp(currentTime, _buffer, BUFFER_SIZE);
+        formatTimestamp(currentTime, _buffer, BufferSize);
         return _buffer;
     }
     return defaultValue;

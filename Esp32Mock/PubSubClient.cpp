@@ -18,23 +18,23 @@
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppClangTidyPerformanceUnnecessaryValueParam
 
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 #include <PubSubClient.h>
 
 bool PubSubClient::connect(const char* id, const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
-    safeStrcpy(_id, id);
+    SafeCString::strcpy(_id, id);
     return _canConnect;
 }
 
 bool PubSubClient::connect(const char* id, const char* user, const char* pass,
                            const char* willTopic, uint8_t willQos, bool willRetain, const char* willMessage) {
-    safeStrcpy(_user, user);
-    safeStrcpy(_pass, pass);
+    SafeCString::strcpy(_user, user);
+    SafeCString::strcpy(_pass, pass);
     return connect(id, willTopic, willQos, willRetain, willMessage);
 }
 
 void PubSubClient::setLoopCallback(const char* topic, const uint8_t* payload, int size) {
-    safeStrcpy(_loopTopic, topic);
+    SafeCString::strcpy(_loopTopic, topic);
     memcpy(_loopPayload, payload, size);
     _loopPayloadSize = size;
 }
@@ -48,13 +48,13 @@ bool PubSubClient::loop() {
 }
 
 bool PubSubClient::publish(const char* topic, const char* payload, bool retain) {
-    if (strlen(topic) + strlen(_topic) > TOPIC_SIZE - 1) return false;
-    safeStrcat(_topic, topic);
-    safeStrcat(_topic, "\n");
-    if (strlen(payload) + strlen(_payload) > PAYLOAD_SIZE - 1) return false;
-    safeStrcat(_payload, payload);
-    if (!retain) safeStrcat(_payload, "[x]");
-    safeStrcat(_payload, "\n");
+    if (strlen(topic) + strlen(_topic) > TopicSize - 1) return false;
+    SafeCString::strcat(_topic, topic);
+    SafeCString::strcat(_topic, "\n");
+    if (strlen(payload) + strlen(_payload) > PayloadSize - 1) return false;
+    SafeCString::strcat(_payload, payload);
+    if (!retain) SafeCString::strcat(_payload, "[x]");
+    SafeCString::strcat(_payload, "\n");
     _callCount++;
     return _canPublish;
 }

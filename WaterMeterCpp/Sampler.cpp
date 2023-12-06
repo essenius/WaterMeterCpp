@@ -20,8 +20,8 @@ Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, Fl
                  SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
     _eventServer(eventServer), _sensorReader(sensorReader), _flowDetector(flowDetector), _button(button),
     _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {
-    _sampleQueue = xQueueCreate(SAMPLE_QUEUE_SIZE, sizeof(IntCoordinate));
-    _overrunQueue = xQueueCreate(OVERRUN_QUEUE_SIZE, sizeof(long));
+    _sampleQueue = xQueueCreate(SampleQueueSize, sizeof(IntCoordinate));
+    _overrunQueue = xQueueCreate(OverrunQueueSize, sizeof(long));
 }
 
 void ARDUINO_ISR_ATTR Sampler::onTimer() {
@@ -68,9 +68,9 @@ void Sampler::beginLoop(const TaskHandle_t taskHandle) {
 
     // start the timer. The task should already be listening.
 
-    _timer = timerBegin(TIMER_NUMBER, DIVIDER, COUNT_UP);
-    timerAttachInterrupt(_timer, &Sampler::onTimer, EDGE);
-    timerAlarmWrite(_timer, _samplePeriod, REPEAT);
+    _timer = timerBegin(TimerNumber, Divider, CountUp);
+    timerAttachInterrupt(_timer, &Sampler::onTimer, Edge);
+    timerAlarmWrite(_timer, _samplePeriod, Repeat);
     timerAlarmEnable(_timer);
 }
 
@@ -92,7 +92,7 @@ void Sampler::sensorLoop() {
             // if we just started, do not calculate overrun
             if (_notifyCounter > 1) {
                 const auto timeSincePreviousSample = lastReadTime - _previousReadTime;
-                const long overrun = timeSincePreviousSample > _samplePeriod + MAX_OFFSET_MICROS ? static_cast<long>(timeSincePreviousSample - _samplePeriod) : 0L;
+                const long overrun = timeSincePreviousSample > _samplePeriod + MaxOffsetMicros ? static_cast<long>(timeSincePreviousSample - _samplePeriod) : 0L;
                 if (overrun != _previousOverrun) {
                     xQueueSendToBack(_overrunQueue, &overrun, 0);
                     _previousOverrun = overrun;
@@ -130,12 +130,6 @@ void Sampler::loop() {
             case SensorState::Saturated:
             case SensorState::Ok:
             	handleSample(sample, startTime);
-                break;
-            case SensorState::PowerError:
-                printf("** power error **");
-                break;
-            case SensorState::BeginError:
-                printf("** begin error **");
                 break;
             default: {}
         }

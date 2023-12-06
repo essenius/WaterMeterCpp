@@ -15,22 +15,19 @@
 #define COORDINATE_H
 #include "Angle.h"
 
-union IntCoordinate;
-
 struct Coordinate {
 	double x;
 	double y;
 
     bool operator==(const Coordinate& other) const;
-	IntCoordinate times10() const;
-	Angle angle() const;
-	Angle angleFrom(const Coordinate& other) const;
-	double distance() const;
-	double distanceFrom(const Coordinate& other) const;
+	Angle getAngle() const;
+	Angle getAngleFrom(const Coordinate& other) const;
+	double getDistance() const;
+	double getDistanceFrom(const Coordinate& other) const;
 	Coordinate operator-() const;
-	Coordinate reciprocal() const;
-	Coordinate rotate(double angle) const;
-	Coordinate translate(const Coordinate& vector) const;
-	Coordinate scale(const Coordinate& vector) const;
+	Coordinate getReciprocal() const;
+	Coordinate rotated(double angle) const;
+	Coordinate translated(const Coordinate& vector) const;
+	Coordinate scaled(const Coordinate& vector) const;
 };
 #endif

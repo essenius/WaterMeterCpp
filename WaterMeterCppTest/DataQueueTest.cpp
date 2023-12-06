@@ -16,7 +16,7 @@
 #include "TestEventClient.h"
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/EventServer.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 #include "../WaterMeterCpp/Serializer.h"
 
@@ -56,13 +56,13 @@ namespace WaterMeterCppTest {
         DataQueue dataQueue(&eventServer, &payload, 1, 40960, 512, 4096);
         payload.topic = Topic::Samples;
 
-        for (uint16_t i = 0; i < MAX_SAMPLES; i++) {
+        for (uint16_t i = 0; i < MaxSamples; i++) {
             const auto value = static_cast<int16_t>(i + 475);
             payload.buffer.samples.value[i] = {{value, value}};
         }
 
         for (uint16_t times = 0; times < 5; times++) {
-            payload.buffer.samples.count = MAX_SAMPLES - times;
+            payload.buffer.samples.count = MaxSamples - times;
             auto size = DataQueue::requiredSize(payload.size());
             EXPECT_TRUE(size <= 128) << "Payload didn't max out at " << size;
             EXPECT_TRUE(dataQueue.send(&payload)) << "Send works for sample " << times;
@@ -86,7 +86,7 @@ namespace WaterMeterCppTest {
 
         // send an error message
         payload.topic = Topic::ConnectionError;
-        safeStrcpy(payload.buffer.message, "Not sure what went wrong here...");
+        SafeCString::strcpy(payload.buffer.message, "Not sure what went wrong here...");
         dataQueue.send(&payload);
 
         // retrieve the samples

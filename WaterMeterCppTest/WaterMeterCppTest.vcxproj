@@ -30,6 +30,10 @@
   <PropertyGroup>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifest>..\vcpkg.json</VcpkgManifest>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
@@ -131,12 +135,14 @@
     <ClCompile Include="FirmwareManagerTest.cpp" />
     <ClCompile Include="FlowDetectorTest.cpp" />
     <ClCompile Include="FlowDetectorDriver.cpp" />
+    <ClCompile Include="IntCoordinateTest.cpp" />
     <ClCompile Include="LedDriverTest.cpp" />
     <ClCompile Include="LogTest.cpp" />
     <ClCompile Include="MagnetoSensorHmcTest.cpp" />
     <ClCompile Include="MagnetoSensorMock.cpp" />
     <ClCompile Include="MagnetoSensorNullTest.cpp" />
     <ClCompile Include="MagnetoSensorQmcTest.cpp" />
+    <ClCompile Include="MainDataTest.cpp" />
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="MathUtilsTest.cpp" />
     <ClCompile Include="MeterTest.cpp" />
@@ -149,7 +155,6 @@
     <ClCompile Include="QuadraticEllipseTest.cpp" />
     <ClCompile Include="QueueClientTest.cpp" />
     <ClCompile Include="ResultAggregatorTest.cpp" />
-    <ClCompile Include="SafeCStringTest.cpp" />
     <ClCompile Include="SampleAggregatorTest.cpp" />
     <ClCompile Include="SamplerDriver.cpp" />
     <ClCompile Include="SamplerTest.cpp" />
@@ -200,6 +205,7 @@
     <CopyFileToFolders Include="testData\60cycles.txt" />
     <CopyFileToFolders Include="testData\anomaly.txt" />
     <CopyFileToFolders Include="testData\biQuadrant.txt" />
+    <CopyFileToFolders Include="testData\crash.txt" />
     <CopyFileToFolders Include="testData\fast.txt" />
     <CopyFileToFolders Include="testData\fastThenNoisy.txt" />
     <CopyFileToFolders Include="testData\flush.txt" />
@@ -212,6 +218,9 @@
     <CopyFileToFolders Include="testData\slowFast.txt" />
     <CopyFileToFolders Include="testData\verySlow.txt" />
     <CopyFileToFolders Include="testData\wrong outliers.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="crash.txt" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -242,12 +251,13 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator;Angle;Button;CartesianEllipse;Clock;Configuration;Communicator;Connector;Coordinate;DataQueue;DataQueuePayload;Device;EllipseFit;EventClient;EventServer;ESP;FirmwareManager;FlowDetector;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;Meter;MathUtils;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QuadraticEllipse;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator;Angle;Button;CartesianEllipse;Clock;Configuration;Communicator;Connector;Coordinate;DataQueue;DataQueuePayload;Device;EllipseFit;EventClient;EventServer;ESP;FirmwareManager;FlowDetector;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;MagnetoSensorSimulation;Meter;MathUtils;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QuadraticEllipse;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

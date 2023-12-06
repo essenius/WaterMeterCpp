@@ -11,25 +11,30 @@
 
 // If we don't detect a sensor, we use this null sensor instead. That makes the code a bit cleaner.
 
-#ifndef HEADER_MAGNETOSENSORNULL
-#define HEADER_MAGNETOSENSORNULL
+#ifndef HEADER_MAGNETOSENSORTEST
+#define HEADER_MAGNETOSENSORTEST
 
 #include "MagnetoSensor.h"
+#include "Wire.h"
 
-class MagnetoSensorNull : public MagnetoSensor {
+class MagnetoSensorSimulation : public MagnetoSensor {
 public:
-    MagnetoSensorNull() : MagnetoSensor(0, nullptr) {}
+    MagnetoSensorSimulation() : MagnetoSensor(0, nullptr) {
+        _index = 0;
+    }
+
 
     bool begin() override {
-        return false;
+        _index = 0;
+        return true;
     }
 
     double getGain() const override {
-        return 0.0;
+        return 390;
     }
 
     int getNoiseRange() const override {
-        return 0;
+        return 3;
     }
 
     bool isOn() const override {
@@ -40,14 +45,21 @@ public:
         return false;
     }
 
-    bool read(SensorData& sample) override {
-        sample.reset();
-        return false;
+    bool read(SensorData& sample) override;
+
+    bool done() const {
+        return _index >= MaxSamples;
     }
 
-    void softReset() override {}
+    void softReset() override { _index = 0; }
 
     void waitForPowerOff() const override {}
+
+private:
+    static constexpr int MaxSamples = 552;
+    static int16_t _dataX[MaxSamples];
+    static int16_t _dataY[MaxSamples];
+    int _index = 0;
 };
 
 #endif

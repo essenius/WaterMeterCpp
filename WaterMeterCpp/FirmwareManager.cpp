@@ -14,7 +14,7 @@
 
 #include "FirmwareManager.h"
 #include "EventServer.h"
-#include "SafeCString.h"
+#include <SafeCString.h>
 
 FirmwareManager::FirmwareManager(
     EventServer* eventServer,
@@ -29,14 +29,14 @@ FirmwareManager::FirmwareManager(
 
 
 void FirmwareManager::begin(const char* machineId) {
-    safeStrcpy(_machineId, machineId);
+    SafeCString::strcpy(_machineId, machineId);
 }
 
 void FirmwareManager::loadUpdate() const {
-    char buffer[BASE_URL_SIZE];
-    safeStrcpy(buffer, _firmwareConfig->baseUrl);
-    safeStrcat(buffer, _machineId);
-    safeStrcat(buffer, IMAGE_EXTENSION);
+    char buffer[BaseUrlSize];
+    SafeCString::strcpy(buffer, _firmwareConfig->baseUrl);
+    SafeCString::strcat(buffer, _machineId);
+    SafeCString::strcat(buffer, ImageExtension);
 
     WiFiClient* updateClient = _wifiClientFactory->create(_firmwareConfig->baseUrl);
 
@@ -47,7 +47,7 @@ void FirmwareManager::loadUpdate() const {
     // This should normally result in a reboot.
     const t_httpUpdate_return returnValue = httpUpdate.update(*updateClient, buffer);
     if (returnValue == HTTP_UPDATE_FAILED) {
-        safeSprintf(
+        SafeCString::sprintf(
             buffer,
             "Firmware update failed (%d): %s",
             httpUpdate.getLastError(),
@@ -55,7 +55,7 @@ void FirmwareManager::loadUpdate() const {
         _eventServer->publish(Topic::ConnectionError, buffer);
         return;
     }
-    safeSprintf(
+    SafeCString::sprintf(
         buffer,
         "Firmware not updated (%d/%d): %s",
         returnValue,
@@ -67,18 +67,18 @@ void FirmwareManager::loadUpdate() const {
 
 void FirmwareManager::tryUpdate() {
     // Make sure this is only done just after rebooting. We don't want reboots in the middle of a flow.
-    if (_justRebooted && updateAvailable()) {
+    if (_justRebooted && isUpdateAvailable()) {
         loadUpdate();
     }
     _justRebooted = false;
 }
 
-bool FirmwareManager::updateAvailable() const {
+bool FirmwareManager::isUpdateAvailable() const {
     if (!_justRebooted) return false;
-    char versionUrl[BASE_URL_SIZE];
-    safeStrcpy(versionUrl, _firmwareConfig->baseUrl);
-    safeStrcat(versionUrl, _machineId);
-    safeStrcat(versionUrl, VERSION_EXTENSION);
+    char versionUrl[BaseUrlSize];
+    SafeCString::strcpy(versionUrl, _firmwareConfig->baseUrl);
+    SafeCString::strcat(versionUrl, _machineId);
+    SafeCString::strcat(versionUrl, VersionExtension);
 
     const auto client = _wifiClientFactory->create(_firmwareConfig->baseUrl);
     HTTPClient httpClient;
@@ -91,17 +91,17 @@ bool FirmwareManager::updateAvailable() const {
         const String newVersion = httpClient.getString();
         newBuildAvailable = strcmp(newVersion.c_str(), _buildVersion) != 0;
         if (newBuildAvailable) {
-            safeSprintf(buffer, "Current firmware: '%s'; available: '%s'", _buildVersion, newVersion.c_str());
+            SafeCString::sprintf(buffer, "Current firmware: '%s'; available: '%s'", _buildVersion, newVersion.c_str());
             _eventServer->publish(Topic::Info, buffer);
         }
         else {
-            safeSprintf(buffer, "Already on latest firmware: '%s'", _buildVersion);
+            SafeCString::sprintf(buffer, "Already on latest firmware: '%s'", _buildVersion);
             _eventServer->publish(Topic::Info, buffer);
         }
     }
     else {
         // This can be a long message, so separating out the URL
-        safeSprintf(buffer, "Firmware version check failed with response code %d. URL:", httpCode);
+        SafeCString::sprintf(buffer, "Firmware version check failed with response code %d. URL:", httpCode);
         _eventServer->publish(Topic::ConnectionError, buffer);
         _eventServer->publish(Topic::Info, versionUrl);
     }

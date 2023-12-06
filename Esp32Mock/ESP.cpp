@@ -21,7 +21,6 @@
 #include <ESP.h>
 #include <chrono>
 #include <cstdarg>
-#include "../WaterMeterCpp/SafeCString.h"
 
 Esp ESP;
 
@@ -36,9 +35,9 @@ int Esp::getFreeHeap() {
 
 // GPIO functions
 
-constexpr uint8_t PIN_COUNT = 36;
-uint8_t pinValue[PIN_COUNT];
-uint8_t pinModeValue[PIN_COUNT];
+constexpr uint8_t PinCount = 36;
+uint8_t pinValue[PinCount];
+uint8_t pinModeValue[PinCount];
 
 uint8_t digitalRead(uint8_t pin) {
     return pinValue[pin];
@@ -147,13 +146,13 @@ const char* HardwareSerial::getOutput() {
 }
 
 void HardwareSerial::print(const char* input) {
-    safeStrcat(_printBuffer, input);
+    SafeCString::strcat(_printBuffer, input);
     _printBufferPointer = _printBuffer + strlen(_printBuffer);
 }
 
 void HardwareSerial::println(const char* input) {
     print(input);
-    safeStrcat(_printBuffer, "\n");
+    SafeCString::strcat(_printBuffer, "\n");
     _printBufferPointer = _printBuffer + strlen(_printBuffer);
 }
 
@@ -163,7 +162,7 @@ char HardwareSerial::read() {
 }
 
 void HardwareSerial::setInput(const char* input) {
-    safeStrcpy(_inputBuffer, input);
+    SafeCString::strcpy(_inputBuffer, input);
     _inputBufferPointer = _inputBuffer;
 }
 

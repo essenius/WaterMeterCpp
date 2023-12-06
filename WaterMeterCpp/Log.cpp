@@ -16,7 +16,7 @@
 SemaphoreHandle_t Log::_printMutex = xSemaphoreCreateMutex();
 
 // expects the same size and order as the ConnectionState enum
-constexpr static const char* const MESSAGES[] = {
+constexpr static const char* const Messages[] = {
     "Initializing connection",
     "Disconnected",
     "Connecting to Wifi",
@@ -47,6 +47,7 @@ void Log::begin() {
     _eventServer->subscribe(this, Topic::FreeStack);
     _eventServer->subscribe(this, Topic::FreeQueueSize);
     _eventServer->subscribe(this, Topic::FreeQueueSpaces);
+    _eventServer->subscribe(this, Topic::Info);
     _eventServer->subscribe(this, Topic::MessageFormatted);
     _eventServer->subscribe(this, Topic::NoDisplayFound);
     _eventServer->subscribe(this, Topic::NoFit);
@@ -84,6 +85,8 @@ void Log::update(Topic topic, const char* payload) {
     case Topic::FreeHeap:
         log("Free Heap: %s", payload);
         break;
+    case Topic::Info:
+        log("Info: %s", payload);
     case Topic::NoDisplayFound:
         log("No OLED display found");
         break;
@@ -130,7 +133,7 @@ void Log::update(const Topic topic, const long payload) {
     case Topic::Connection:
         if (_previousConnectionTopic != payload) {
             _previousConnectionTopic = payload;
-            update(topic, MESSAGES[payload]);
+            update(topic, Messages[payload]);
         }
         return;
     case Topic::FreeQueueSize:

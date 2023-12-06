@@ -30,16 +30,16 @@ public:
     bool send() override;
     void update(Topic topic, const char* payload) override;
     void update(Topic topic, long payload) override;
-    static constexpr int FLATLINE_STREAK = 20;
+    static constexpr int FlatlineStreak = 20;
 
 protected:
-    static constexpr long FLUSH_RATE_IDLE = 6000L;
-    static constexpr long FLUSH_RATE_INTERESTING = 100L;
+    static constexpr long FlushRateIdle = 6000L;
+    static constexpr long FlushRateInteresting = 100L;
 
     ResultData* _result;
-    long _idleFlushRate = FLUSH_RATE_IDLE;
+    long _idleFlushRate = FlushRateIdle;
     uint32_t _measureIntervalMicros = 0;
-    long _nonIdleFlushRate = FLUSH_RATE_INTERESTING;
+    long _nonIdleFlushRate = FlushRateInteresting;
     uint32_t _streak = 1;
 
     void setIdleFlushRate(long rate);

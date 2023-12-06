@@ -20,9 +20,9 @@
 #include <corecrt_math_defines.h>
 #endif
 
-constexpr double EPSILON = 1e-6;
+constexpr double Epsilon = 1e-6;
 
-bool aboutEqual(const double& a, const double& b, const double& epsilon = EPSILON);
+bool isAboutEqual(const double& a, const double& b, const double& epsilon = Epsilon);
 double sqr(const double& a);
 int modulo(int a, int b);
 #endif

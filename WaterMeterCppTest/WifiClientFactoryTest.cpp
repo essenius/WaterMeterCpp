@@ -15,8 +15,8 @@
 namespace WaterMeterCppTest {
 
     TEST(WifiClientFactoryTest, wifiClientFactoryInsecureClientTest) {
-        constexpr TlsConfig CONFIG{nullptr, nullptr, nullptr};
-        const WiFiClientFactory factory(&CONFIG);
+        constexpr TlsConfig Config{nullptr, nullptr, nullptr};
+        const WiFiClientFactory factory(&Config);
         const auto normalClient = factory.create(nullptr);
         const auto secureClient = factory.create(true);
         EXPECT_STREQ("WifiClient", normalClient->getType()) << "normalClient has type WifiClient";
@@ -25,8 +25,8 @@ namespace WaterMeterCppTest {
     }
 
     TEST(WifiClientFactoryTest, wifiClientFactorySecureClientTest) {
-        constexpr TlsConfig CONFIG{"a", "b", "c"};
-        const WiFiClientFactory factory(&CONFIG);
+        constexpr TlsConfig Config{"a", "b", "c"};
+        const WiFiClientFactory factory(&Config);
         const auto normalClient = factory.create("http://localhost");
         const auto secureClient = factory.create("https");
         EXPECT_STREQ("WifiClient", normalClient->getType()) << "Type is WifiClient";

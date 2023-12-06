@@ -46,12 +46,12 @@ namespace WaterMeterCppTest {
         EXPECT_TRUE(Serial.available()) << "Data available";
         character = Serial.read();
         EXPECT_EQ('h', character) << "First character read";
-        for (unsigned int i = 0; i < HardwareSerial::PRINTBUFFER_SIZE - 5; i++) {
+        for (unsigned int i = 0; i < HardwareSerial::PrintbufferSize - 5; i++) {
             Serial.print("x");
         }
         Serial.printf("123456");
-        EXPECT_STREQ("1234", Serial.getOutput() + HardwareSerial::PRINTBUFFER_SIZE - 5) << "No buffer overrun";
-        EXPECT_EQ(HardwareSerial::PRINTBUFFER_SIZE - 1, strlen(Serial.getOutput())) << "length OK";
+        EXPECT_STREQ("1234", Serial.getOutput() + HardwareSerial::PrintbufferSize - 5) << "No buffer overrun";
+        EXPECT_EQ(HardwareSerial::PrintbufferSize - 1, strlen(Serial.getOutput())) << "length OK";
     }
 }
 

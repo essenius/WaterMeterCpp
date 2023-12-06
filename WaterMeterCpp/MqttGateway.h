@@ -25,90 +25,91 @@
 #include "DataQueue.h"
 #include "WiFiClientFactory.h"
 
-#define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 
-constexpr const char* const EMPTY = "";
-constexpr const char* const DEVICE = "device";
-constexpr const char* const DEVICE_FREE_HEAP = "free-heap";
-constexpr const char* const DEVICE_FREE_STACK = "free-stack";
-constexpr const char* const DEVICE_FREE_QUEUE_SIZE = "free-queue-size";
-constexpr const char* const DEVICE_FREE_QUEUE_SPACES = "free-queue-spaces";
-constexpr const char* const DEVICE_BUILD = "firmware-version";
-constexpr const char* const DEVICE_MAC = "mac-address";
-constexpr const char* const DEVICE_RESET_SENSOR = "reset-sensor";
-constexpr const char* const MEASUREMENT = "measurement";
-constexpr const char* const MEASUREMENT_BATCH_SIZE = "batch-size";
-constexpr const char* const MEASUREMENT_BATCH_SIZE_DESIRED = "batch-size-desired";
-constexpr const char* const MEASUREMENT_VALUES = "values";
-constexpr const char* const RESULT = "result";
-constexpr const char* const RESULT_IDLE_RATE = "idle-rate";
-constexpr const char* const RESULT_NON_IDLE_RATE = "non-idle-rate";
-constexpr const char* const RESULT_RATE = "rate";
-constexpr const char* const RESULT_METER = "meter";
-constexpr const char* const RESULT_VALUES = "values";
-constexpr const char* const STATE = "$state";
+    #define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 
-class MqttGateway : public EventClient {
-public:
-    MqttGateway(
-        EventServer* eventServer,
-        PubSubClient* mqttClient,
-        WiFiClientFactory* wifiClientFactory,
-        const MqttConfig* mqttConfig,
-        const DataQueue* dataQueue,
-        const char* buildVersion);
-    MqttGateway(const MqttGateway&) = default;
-    MqttGateway(MqttGateway&&) = default;
-    MqttGateway& operator=(const MqttGateway&) = default;
-    MqttGateway& operator=(MqttGateway&&) = default;
-    ~MqttGateway() override;
+    constexpr const char* const Empty = "";
+    constexpr const char* const DeviceLabel = "device";
+    constexpr const char* const DeviceFreeHeap = "free-heap";
+    constexpr const char* const DeviceFreeStack = "free-stack";
+    constexpr const char* const DeviceFreeQueueSize = "free-queue-size";
+    constexpr const char* const DeviceFreeQueueSpaces = "free-queue-spaces";
+    constexpr const char* const DeviceBuild = "firmware-version";
+    constexpr const char* const DeviceMac = "mac-address";
+    constexpr const char* const DeviceResetSensor = "reset-sensor";
+    constexpr const char* const Measurement = "measurement";
+    constexpr const char* const MeasurementBatchSize = "batch-size";
+    constexpr const char* const MeasurementBatchSizeDesired = "batch-size-desired";
+    constexpr const char* const MeasurementValues = "values";
+    constexpr const char* const Result = "result";
+    constexpr const char* const ResultIdleRate = "idle-rate";
+    constexpr const char* const ResultNonIdleRate = "non-idle-rate";
+    constexpr const char* const ResultRate = "rate";
+    constexpr const char* const ResultMeter = "meter";
+    constexpr const char* const ResultValues = "values";
+    constexpr const char* const State = "$state";
 
-    virtual void announceReady();
-    virtual void begin(const char* clientName);
-    virtual void connect();
-    bool getPreviousVolume();
-    bool handleQueue();
-    virtual bool hasAnnouncement();
-    virtual bool isConnected();
-    virtual bool publishNextAnnouncement();
-    using EventClient::update;
-    void update(Topic topic, const char* payload) override;
+    class MqttGateway : public EventClient {
+    public:
+        MqttGateway(
+            EventServer* eventServer,
+            PubSubClient* mqttClient,
+            WiFiClientFactory* wifiClientFactory,
+            const MqttConfig* mqttConfig,
+            const DataQueue* dataQueue,
+            const char* buildVersion);
+        MqttGateway(const MqttGateway&) = default;
+        MqttGateway(MqttGateway&&) = default;
+        MqttGateway& operator=(const MqttGateway&) = default;
+        MqttGateway& operator=(MqttGateway&&) = default;
+        ~MqttGateway() override;
 
-protected:
-    static constexpr int TOPIC_BUFFER_SIZE = 255;
-    static constexpr int ANNOUNCEMENT_BUFFER_SIZE = 2500;
-    static constexpr int NUMBER_BUFFER_SIZE = 20;
-    PubSubClient* _mqttClient;
-    WiFiClientFactory* _wifiClientFactory;
-    WiFiClient* _wifiClient = nullptr;
-    const MqttConfig* _mqttConfig;
-    const DataQueue* _dataQueue;
-    int _announceIndex = 0;
-    bool _justStarted = true;
-    char _announcementBuffer[ANNOUNCEMENT_BUFFER_SIZE] = {0};
-    char* _announcementPointer = _announcementBuffer;
-    const char* _buildVersion;
-    const char* _clientName = nullptr;
-    unsigned long _reconnectTimestamp = 0UL;
-    char _topicBuffer[TOPIC_BUFFER_SIZE] = {0};
-    char _volume[NUMBER_BUFFER_SIZE] = "";
-    bool _volumeReceived = false;
+        virtual void announceReady();
+        virtual void begin(const char* clientName);
+        virtual void connect();
+        bool getPreviousVolume();
+        bool handleQueue();
+        virtual bool hasAnnouncement();
+        virtual bool isConnected();
+        virtual bool publishNextAnnouncement();
+        using EventClient::update;
+        void update(Topic topic, const char* payload) override;
 
-    void callback(const char* topic, const byte* payload, unsigned length);
-    static bool isRightTopic(std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty);
-    void prepareAnnouncementBuffer();
-    void prepareEntity(const char* entity, const char* payload);
-    void prepareEntity(const char* baseTopic, const char* entity, const char* payload);
-    void prepareItem(const char* item);
-    void prepareNode(const char* node, const char* name, const char* type, const char* properties);
-    void prepareProperty(const char* node, const char* property, const char* attribute,
-                         const char* dataType, const char* format = EMPTY, bool settable = false);
+    protected:
+        static constexpr int TopicBufferSize = 255;
+        static constexpr int AnnouncementBufferSize = 2500;
+        static constexpr int NumberBufferSize = 20;
+        PubSubClient* _mqttClient;
+        WiFiClientFactory* _wifiClientFactory;
+        WiFiClient* _wifiClient = nullptr;
+        const MqttConfig* _mqttConfig;
+        const DataQueue* _dataQueue;
+        int _announceIndex = 0;
+        bool _justStarted = true;
+        char _announcementBuffer[AnnouncementBufferSize] = { 0 };
+        char* _announcementPointer = _announcementBuffer;
+        const char* _buildVersion;
+        const char* _clientName = nullptr;
+        unsigned long _reconnectTimestamp = 0UL;
+        char _topicBuffer[TopicBufferSize] = { 0 };
+        char _volume[NumberBufferSize] = "";
+        bool _volumeReceived = false;
 
-    bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
-    void publishError(const char* message);
-    bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);
-    void publishToEventServer(Topic topic, const char* payload);
-    void publishUpdate(Topic topic, const char* payload);
-};
+        void callback(const char* topic, const byte* payload, unsigned length);
+        static bool isRightTopic(std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty);
+        void prepareAnnouncementBuffer();
+        void prepareEntity(const char* entity, const char* payload);
+        void prepareEntity(const char* baseTopic, const char* entity, const char* payload);
+        void prepareItem(const char* item);
+        void prepareNode(const char* node, const char* name, const char* type, const char* properties);
+        void prepareProperty(const char* node, const char* property, const char* attribute,
+            const char* dataType, const char* format = Empty, bool settable = false);
+
+        bool publishEntity(const char* baseTopic, const char* entity, const char* payload, bool retain = true);
+        void publishError(const char* message);
+        bool publishProperty(const char* node, const char* property, const char* payload, bool retain = true);
+        void publishToEventServer(Topic topic, const char* payload);
+        void publishUpdate(Topic topic, const char* payload);
+    };
 
 #endif

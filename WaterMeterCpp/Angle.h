@@ -19,7 +19,7 @@ struct Angle {
 	double value;
     Angle operator-(const Angle& other) const;
 	double operator-(const double& other) const;
-	unsigned int quadrant() const;
+	unsigned int getQuadrant() const;
 	double sin() const;
 	double cos() const;
 	int16_t degreesTimes10() const;

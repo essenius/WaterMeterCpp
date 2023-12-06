@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "TestEventClient.h"
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 namespace WaterMeterCppTest {
 
@@ -30,21 +30,21 @@ namespace WaterMeterCppTest {
         _callCount++;
         _wasLong = false;
         _topic = topic;
-        safeSprintf(_payload, "(%d,%d)", payload.x, payload.y);
+        SafeCString::sprintf(_payload, "(%d,%d)", payload.x, payload.y);
 
     }
     void TestEventClient::update(const Topic topic, const char* payload) {
         _callCount++;
         _wasLong = false;
         _topic = topic;
-        safeStrcpy(_payload, payload);
+        SafeCString::strcpy(_payload, payload);
     }
 
     void TestEventClient::update(const Topic topic, const long payload) {
         _callCount++;
         _wasLong = true;
         _topic = topic;
-        safeSprintf(_payload, "%ld", payload);
+        SafeCString::sprintf(_payload, "%ld", payload);
     }
 
     bool TestEventClient::wasLong() const { return _wasLong; }

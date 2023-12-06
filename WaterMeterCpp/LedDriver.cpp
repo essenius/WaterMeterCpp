@@ -20,8 +20,8 @@
 
 LedDriver::LedDriver(EventServer* eventServer) :
     EventClient(eventServer),
-    _connectingFlasher(Led::AUX, CONNECTING_INTERVAL),
-    _sampleFlasher(Led::RUNNING, IDLE_INTERVAL) {
+    _connectingFlasher(Led::Aux, ConnectingInterval),
+    _sampleFlasher(Led::Running, IdleInterval) {
     eventServer->subscribe(this, Topic::Begin);
 }
 
@@ -36,18 +36,18 @@ void LedDriver::begin() {
     _eventServer->subscribe(this, Topic::ResultWritten);
     _eventServer->subscribe(this, Topic::Sample);
     _eventServer->subscribe(this, Topic::TimeOverrun);
-    Led::init(Led::AUX, Led::OFF);
-    Led::init(Led::BLUE, Led::OFF);
-    Led::init(Led::GREEN, Led::OFF);
-    Led::init(Led::RED, Led::OFF);
-    Led::init(Led::RUNNING, Led::OFF);
-    Led::init(Led::YELLOW, Led::OFF);
+    Led::init(Led::Aux, Led::Off);
+    Led::init(Led::Blue, Led::Off);
+    Led::init(Led::Green, Led::Off);
+    Led::init(Led::Red, Led::Off);
+    Led::init(Led::Running, Led::Off);
+    Led::init(Led::Yellow, Led::Off);
 }
 
 void LedDriver::update(const Topic topic, const char* payload) {
     // red led means an error condition. It can have multiple causes (see below as well)
     if (topic == Topic::ConnectionError) {
-        Led::set(Led::RED, Led::ON);
+        Led::set(Led::Red, Led::On);
     }
 }
 
@@ -55,16 +55,16 @@ void LedDriver::connectionUpdate(const ConnectionState payload) {
     switch (payload) {
     case ConnectionState::Disconnected:
         _connectingFlasher.reset();
-        Led::set(Led::AUX, Led::OFF);
-        Led::set(Led::BLUE, Led::OFF);
+        Led::set(Led::Aux, Led::Off);
+        Led::set(Led::Blue, Led::Off);
         return;
     case ConnectionState::MqttReady:
         _connectingFlasher.reset();
-        Led::set(Led::AUX, Led::ON);
-        Led::set(Led::BLUE, Led::OFF);
+        Led::set(Led::Aux, Led::On);
+        Led::set(Led::Blue, Led::Off);
         return;
     case ConnectionState::CheckFirmware:
-        Led::set(Led::BLUE, Led::ON);
+        Led::set(Led::Blue, Led::On);
         _connectingFlasher.signal();
         return;
     default:
@@ -74,18 +74,18 @@ void LedDriver::connectionUpdate(const ConnectionState payload) {
 
 void LedDriver::timeOverrunUpdate(const bool isOn) {
     if (isOn) {
-        Led::set(Led::RED, Led::ON);
-        Led::set(Led::BLUE, Led::ON);
+        Led::set(Led::Red, Led::On);
+        Led::set(Led::Blue, Led::On);
     }
     else {
-        Led::set(Led::RED, Led::OFF);
-        Led::set(Led::BLUE, Led::OFF);
+        Led::set(Led::Red, Led::Off);
+        Led::set(Led::Blue, Led::Off);
     }
 }
 
 // ReSharper disable once CyclomaticComplexity - simple case statement
 void LedDriver::update(const Topic topic, long payload) {
-    const uint8_t state = payload ? Led::ON : Led::OFF;
+    const uint8_t state = payload ? Led::On : Led::Off;
     switch (topic) {
     case Topic::Begin:
         // do this as early as possible as sensors might need to signal issues
@@ -95,28 +95,28 @@ void LedDriver::update(const Topic topic, long payload) {
         break;
     // no connection causes a flashing green led, and blue while firmware is checked
     case Topic::Alert:
-        Led::set(Led::RED, state);
-        Led::set(Led::GREEN, state);
+        Led::set(Led::Red, state);
+        Led::set(Led::Green, state);
         return;
     case Topic::Anomaly:
-        _sampleFlasher.setInterval(payload ? EXCLUDE_INTERVAL : IDLE_INTERVAL);
+        _sampleFlasher.setInterval(payload ? ExcludeInterval : IdleInterval);
         return;
     case Topic::Blocked:
-        Led::set(Led::RED, state);
+        Led::set(Led::Red, state);
         return;
     case Topic::Connection:
         connectionUpdate(static_cast<ConnectionState>(payload));
         return;
     case Topic::SensorState:
-        Led::set(Led::RED, Led::ON);
+        Led::set(Led::Red, Led::On);
         break;
     case Topic::Pulse:
-        Led::set(Led::BLUE, state);
+        Led::set(Led::Blue, state);
         break;
     case Topic::ResultWritten:
-        Led::set(Led::GREEN, Led::OFF);
-        Led::set(Led::RED, Led::OFF);
-        Led::set(Led::BLUE, Led::OFF);
+        Led::set(Led::Green, Led::Off);
+        Led::set(Led::Red, Led::Off);
+        Led::set(Led::Blue, Led::Off);
         return;
     case Topic::Sample:
         _sampleFlasher.signal();

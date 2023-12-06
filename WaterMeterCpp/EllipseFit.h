@@ -34,12 +34,12 @@ public:
 	bool addMeasurement(const Coordinate& p);
 	void begin();
 	QuadraticEllipse fit();
-	bool bufferIsFull() const { return _size >= BUFFER_SIZE; }
-	unsigned int pointCount() const { return _size; }
-    static unsigned int size() { return BUFFER_SIZE; }
+	bool bufferIsFull() const { return _size >= BufferSize; }
+	unsigned int getPointCount() const { return _size; }
+    static unsigned int getSize() { return BufferSize; }
 
 private:
-	static constexpr unsigned int BUFFER_SIZE = 32;
+	static constexpr unsigned int BufferSize = 32;
 	Eigen::MatrixXd _c1Inverse;
 	Eigen::MatrixXd _design1;
 	Eigen::MatrixXd _design2;

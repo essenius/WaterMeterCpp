@@ -23,11 +23,11 @@ namespace WaterMeterCppTest {
 
     TEST(MagnetoSensorQmcTest, magnetoSensorQmcAddressTest) {
         MagnetoSensorQmc sensor;
-        constexpr uint8_t ADDRESS = 0x23;
-        sensor.configureAddress(ADDRESS);
+        constexpr uint8_t Address = 0x23;
+        sensor.configureAddress(Address);
         Wire.begin();
         sensor.begin();
-        EXPECT_EQ(ADDRESS, Wire.getAddress()) << "Custom Address OK";
+        EXPECT_EQ(Address, Wire.getAddress()) << "Custom Address OK";
         // additional tests now we have an instance
 
         EXPECT_TRUE(sensor.isReal()) << "Sensor is real";
@@ -39,15 +39,15 @@ namespace WaterMeterCppTest {
         MagnetoSensorQmc sensor;
         Wire.begin();
         sensor.begin();
-        EXPECT_EQ(MagnetoSensorQmc::DEFAULT_ADDRESS, Wire.getAddress()) << "Default address OK";
+        EXPECT_EQ(MagnetoSensorQmc::DefaultAddress, Wire.getAddress()) << "Default address OK";
     }
 
     TEST(MagnetoSensorQmcTest, magnetoSensorQmcScriptTest) {
         MagnetoSensorQmc sensor;
         Wire.begin();
         sensor.begin();
-        constexpr uint8_t BUFFER_BEGIN[] = {10, 0x80, 11, 0x01, 9, 0x19};
-        EXPECT_EQ(sizeof BUFFER_BEGIN, Wire.writeMismatchIndex(BUFFER_BEGIN, sizeof BUFFER_BEGIN)) << "writes for begin ok";
+        constexpr uint8_t BufferBegin[] = {10, 0x80, 11, 0x01, 9, 0x19};
+        EXPECT_EQ(sizeof BufferBegin, Wire.writeMismatchIndex(BufferBegin, sizeof BufferBegin)) << "writes for begin ok";
         // we are at the default address so the sensor should report it's on
         Wire.setEndTransmissionTogglePeriod(1);
         EXPECT_TRUE(sensor.isOn()) << "Sensor on";
@@ -73,8 +73,8 @@ namespace WaterMeterCppTest {
         // ensure all test variables are reset
         Wire.begin();
         sensor.begin();
-        constexpr uint8_t BUFFER_RECONFIGURE[] = {10, 0x80, 11, 0x01, 9, 0x8d};
-        EXPECT_EQ(sizeof BUFFER_RECONFIGURE, Wire.writeMismatchIndex(BUFFER_RECONFIGURE, sizeof BUFFER_RECONFIGURE)) << "Writes for reconfigure ok";
+        constexpr uint8_t BufferReconfigure[] = {10, 0x80, 11, 0x01, 9, 0x8d};
+        EXPECT_EQ(sizeof BufferReconfigure, Wire.writeMismatchIndex(BufferReconfigure, sizeof BufferReconfigure)) << "Writes for reconfigure ok";
 
     }
 }

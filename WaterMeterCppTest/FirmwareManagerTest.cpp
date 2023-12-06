@@ -25,7 +25,7 @@ namespace WaterMeterCppTest {
         static EventServer eventServer;
         static TestEventClient infoListener;
         static TestEventClient errorListener;
-        static constexpr FirmwareConfig FIRMWARE_CONFIG{"http://localhost/images/"};
+        static constexpr FirmwareConfig FirmwareConfig{"http://localhost/images/"};
 
         // ReSharper disable once CppInconsistentNaming
         static void SetUpTestCase() {
@@ -46,7 +46,7 @@ namespace WaterMeterCppTest {
     
     TEST_F(FirmwareManagerTest, firmwareManagerCheckSucceedsNoUpdateNeededTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.1");
         manager.begin("001122334455");
         HTTPClient::ReturnValue = 200;
         HTTPUpdate::ReturnValue = HTTP_UPDATE_OK;
@@ -59,13 +59,13 @@ namespace WaterMeterCppTest {
 
     TEST_F(FirmwareManagerTest, firmwareManagerCheckSucceedsUpdateFailsTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.2");
         manager.begin("001122334455");
         // check succeeds and update fails
         HTTPClient::ReturnValue = 200;
         HTTPUpdate::ReturnValue = HTTP_UPDATE_FAILED;
         manager.tryUpdate();
-        EXPECT_FALSE(manager.updateAvailable()) << "No updating after first update attempt";
+        EXPECT_FALSE(manager.isUpdateAvailable()) << "No updating after first update attempt";
         EXPECT_EQ(1, infoListener.getCallCount()) << "new info on update failure";
         EXPECT_STREQ("Current firmware: '0.1.2'; available: '0.1.1'", infoListener.getPayload()) << "info on update failure OK";
         EXPECT_EQ(1, errorListener.getCallCount()) << "error on update failure";
@@ -74,11 +74,11 @@ namespace WaterMeterCppTest {
 
     TEST_F(FirmwareManagerTest, firmwareManagerFailedCheckTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.1");
         manager.begin("001122334455");
 
         HTTPClient::ReturnValue = 400;
-        EXPECT_FALSE(manager.updateAvailable()) << "No update for version 0.1.1";
+        EXPECT_FALSE(manager.isUpdateAvailable()) << "No update for version 0.1.1";
         EXPECT_EQ(1, infoListener.getCallCount()) << "info";
         EXPECT_EQ(1, errorListener.getCallCount()) << "Error";
         EXPECT_STREQ("Firmware version check failed with response code 400. URL:", errorListener.getPayload()) << "Error correct";
@@ -87,23 +87,23 @@ namespace WaterMeterCppTest {
 
     TEST_F(FirmwareManagerTest, firmwareManagerNoUpdateAvailableTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.1");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.1");
         manager.begin("001122334455");
 
         // Successful check, same version
         HTTPClient::ReturnValue = 200;
-        EXPECT_FALSE(manager.updateAvailable()) << "No update for version 0.1.1";
+        EXPECT_FALSE(manager.isUpdateAvailable()) << "No update for version 0.1.1";
         EXPECT_EQ(1, infoListener.getCallCount()) << "info";
         EXPECT_EQ(0, errorListener.getCallCount()) << "No error";
     }
 
     TEST_F(FirmwareManagerTest, firmwareManagerOtherVersionTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+        FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.2");
         manager.begin("112233445566");
 
         HTTPClient::ReturnValue = 200;
-        EXPECT_TRUE(manager.updateAvailable()) << "update for version 0.1.2 available";
+        EXPECT_TRUE(manager.isUpdateAvailable()) << "update for version 0.1.2 available";
         EXPECT_EQ(1, infoListener.getCallCount()) << "Info called";
         EXPECT_EQ(0, errorListener.getCallCount()) << "No error";
         EXPECT_STREQ("Current firmware: '0.1.2'; available: '0.1.1'", infoListener.getPayload()) << "Info correct";
@@ -111,7 +111,7 @@ namespace WaterMeterCppTest {
 
     TEST_F(FirmwareManagerTest, firmwareManagerUpdateCheckFailsTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+        FirmwareManager manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.2");
         manager.begin("001122334455");
         HTTPClient::ReturnValue = 400;
         manager.tryUpdate();
@@ -130,7 +130,7 @@ namespace WaterMeterCppTest {
         TestEventClient progressListener(&eventServer);
         eventServer.subscribe(&progressListener, Topic::UpdateProgress);
         const WiFiClientFactory wifiClientFactory(nullptr);
-        FirmwareManager manager(&eventServer, &wifiClientFactory, &FIRMWARE_CONFIG, "0.1.2");
+        FirmwareManager manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.2");
         manager.begin("001122334455");
 
         // check succeeds, update succeeds (but doesn't reboot, obviously)

@@ -22,7 +22,7 @@
 #define ARDUINO_ISR_ATTR
 #include <cstdint>
 #include <string>
-#include "../WaterMeterCpp/SafeCString.h"
+#include <SafeCString.h>
 
 // ReSharper disable once CppUnusedIncludeDirective -- added on purpose
 #include <freertos/freeRTOS.h>
@@ -42,6 +42,9 @@ constexpr uint8_t LED_BUILTIN = 13;
 
 // emulation of the relevant Arduino capabilities
 
+/**
+ * \brief // Mock implementation of the Esp class for unit testing (not targeting the ESP32)
+ */
 class Esp {
 public:
     void restart() { _heapCount = -1; }
@@ -52,6 +55,9 @@ private:
 
 extern Esp ESP;
 
+/**
+ * \brief Mock implementation of the HardwareSerial class for unit testing (not targeting the ESP32)
+ */
 class HardwareSerial {
 public:
     int available();
@@ -69,18 +75,18 @@ public:
 
     template <typename... Arguments>
     int printf(const char* format, Arguments ... arguments) {
-        const int length = safePointerSprintf(_printBufferPointer, _printBuffer, format, arguments...);
+        const int length = SafeCString::pointerSprintf(_printBufferPointer, _printBuffer, format, arguments...);
         _printBufferPointer += length;
         return length;
     }
 
-    static constexpr size_t PRINTBUFFER_SIZE = 4096;
+    static constexpr size_t PrintbufferSize = 4096;
 
 private:
-    char _printBuffer[PRINTBUFFER_SIZE] = {};
+    char _printBuffer[PrintbufferSize] = {};
     char* _printBufferPointer = _printBuffer;
-    static constexpr size_t INPUTBUFFER_SIZE = 100;
-    char _inputBuffer[INPUTBUFFER_SIZE] = {};
+    static constexpr size_t InputBufferSize = 100;
+    char _inputBuffer[InputBufferSize] = {};
     char* _inputBufferPointer = nullptr;
 };
 
@@ -116,15 +122,28 @@ void delayMicroseconds(unsigned long delay);
 unsigned long micros();
 unsigned long millis();
 
-// for testing only
+/**
+ * \brief Testing: shift the micros() clock
+ * \param shift micros to shift 
+ */
 void shiftMicros(long long shift);
+
+/**
+ * \brief Testing: set whether the millis() clock is real time or not
+ * \param on true: realtime, false: not realtime
+ */
 void setRealTime(bool on);
+
 // delay() is often used to give time for other tasks. Whwn testing, we often run sequential and then this interferes
+
+/**
+ * \brief Testing: disable delay() (to be able to run code sequentially which is normally run in tasks)
+ * \param disable whether to disable delay() or not
+ */
 void disableDelay(bool disable);
 
 // Logging
 
-// testing only too
 enum class LogLevel { Error = 1, Warning, Info, Debug, Verbose };
 
 const char* toString(LogLevel level);
