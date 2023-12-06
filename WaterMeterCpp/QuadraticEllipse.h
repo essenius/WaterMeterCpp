@@ -16,20 +16,20 @@
 
 #include "Coordinate.h"
 
-struct QuadraticEllipse {
-	double a{};
-	double b{};
-	double c{};
-	double d{};
-	double f{};
-	double g{};
-
+class QuadraticEllipse {
+public:
 	QuadraticEllipse(const double& a1, const double& b1, const double& c1, const double& d1, const double& f1, const double& g1);
 	QuadraticEllipse() = default;
 	Angle getAngle();
 	Coordinate getCenter() const;
 	Coordinate getRadius();
 private:
+	double a{};
+	double b{};
+	double c{};
+	double d{};
+	double f{};
+	double g{};
 	double getDiscriminant() const;
 	Coordinate _radius{};
 	bool _radiusCalculated = false;

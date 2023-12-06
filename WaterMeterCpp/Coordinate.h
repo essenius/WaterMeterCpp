@@ -25,9 +25,9 @@ struct Coordinate {
 	double getDistance() const;
 	double getDistanceFrom(const Coordinate& other) const;
 	Coordinate operator-() const;
-	Coordinate reciprocal() const;
-	Coordinate rotate(double angle) const;
-	Coordinate translate(const Coordinate& vector) const;
-	Coordinate scale(const Coordinate& vector) const;
+	Coordinate getReciprocal() const;
+	Coordinate rotated(double angle) const;
+	Coordinate translated(const Coordinate& vector) const;
+	Coordinate scaled(const Coordinate& vector) const;
 };
 #endif

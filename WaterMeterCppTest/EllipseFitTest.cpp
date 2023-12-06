@@ -15,7 +15,7 @@ namespace WaterMeterCppTest {
 		ellipseFit.begin();
 		auto x = -M_PI;
 		for (unsigned int i = 0; i < pointsOnEllipse; i++) {
-			auto point = inputEllipse.getParametricRepresentation(Angle{ x });
+			auto point = inputEllipse.getPointOnEllipseAtAngle(Angle{ x });
 			ASSERT_TRUE(ellipseFit.addMeasurement(point)) << "Point " << x << " added";
 			x += M_PI / (pointsOnEllipse / 2.0);
 		}
@@ -34,7 +34,7 @@ namespace WaterMeterCppTest {
 		// check if all points of the parametric representation of the result ellipse are on the original ellipse
 		x = -M_PI;
 		for (int i = -16; i < static_cast<int>(pointsOnEllipse); i++) {
-			Coordinate pointOut = resultEllipse.getParametricRepresentation(Angle{ x });
+			Coordinate pointOut = resultEllipse.getPointOnEllipseAtAngle(Angle{ x });
 			assertDoubleEqual(0, inputEllipse.getDistanceFrom(pointOut), "Distance", 0.0001);
 			x += M_PI / (pointsOnEllipse / 2.0);
 		}
@@ -62,16 +62,16 @@ namespace WaterMeterCppTest {
 
 	void assertEllipseWithDistance(const Coordinate& center, const Coordinate& radius, const Angle& angle, const double& distance) {
 		auto distancec = Coordinate{ distance, distance };
-		const auto innerEllipse = CartesianEllipse(center, radius.translate(-distancec), angle);
-		const auto outerEllipse = CartesianEllipse(center, radius.translate(distancec), angle);
+		const auto innerEllipse = CartesianEllipse(center, radius.translated(-distancec), angle);
+		const auto outerEllipse = CartesianEllipse(center, radius.translated(distancec), angle);
 		const unsigned int pointsOnEllipse = EllipseFit::getSize();
 		EllipseFit ellipseFit;
 		ellipseFit.begin();
 		auto x = -M_PI;
 		for (unsigned int i = 0; i < pointsOnEllipse; i++) {
 			Coordinate point = i % 2 == 0
-				? innerEllipse.getParametricRepresentation(Angle{ x })
-				: outerEllipse.getParametricRepresentation(Angle{ x });
+				? innerEllipse.getPointOnEllipseAtAngle(Angle{ x })
+				: outerEllipse.getPointOnEllipseAtAngle(Angle{ x });
 			ASSERT_TRUE(ellipseFit.addMeasurement(point)) << "Point " << x << " added";
 			x += M_PI / (pointsOnEllipse / 2.0);
 		}
@@ -88,7 +88,7 @@ namespace WaterMeterCppTest {
 		const auto middleEllipse = CartesianEllipse(center, radius, angle);
 
 		for (int i = -16; i < static_cast<int>(pointsOnEllipse); i++) {
-			Coordinate pointOut = resultEllipse.getParametricRepresentation(Angle{ x });
+			Coordinate pointOut = resultEllipse.getPointOnEllipseAtAngle(Angle{ x });
 			assertDoubleEqual(0, middleEllipse.getDistanceFrom(pointOut), "Distance", 0.01);
 			x += M_PI / (pointsOnEllipse / 2.0);
 		}
@@ -107,7 +107,7 @@ namespace WaterMeterCppTest {
 		const double delta = M_PI * 2.0 * fraction / points;
 		auto x = startAngle;
 		for (unsigned int i = 0; i < points; i++) {
-			Coordinate point = ellipse.getParametricRepresentation(Angle{ x });
+			Coordinate point = ellipse.getPointOnEllipseAtAngle(Angle{ x });
 			ASSERT_TRUE(ellipseFit.addMeasurement(point)) << "Point " << x << " added";
 			printf(" | ");
 			x += delta;
@@ -126,7 +126,7 @@ namespace WaterMeterCppTest {
 		x = -M_PI;
 		constexpr int PointsOnEllipse = 32;
 		for (int i = -16; i < PointsOnEllipse; i++) {
-			Coordinate pointOut = resultEllipse.getParametricRepresentation(Angle{ x });
+			Coordinate pointOut = resultEllipse.getPointOnEllipseAtAngle(Angle{ x });
 			assertDoubleEqual(0, ellipse.getDistanceFrom(pointOut), "Distance", 0.001);
 			x += M_PI / (PointsOnEllipse / 2.0);
 		}

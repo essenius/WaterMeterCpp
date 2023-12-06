@@ -243,7 +243,7 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		const auto center = fittedEllipse.center;
 		// number of points per ellipse defines whether the fit is reliable.
 		const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
-		const auto fitSucceeded = fittedEllipse.fitSucceeded();
+		const auto fitSucceeded = fittedEllipse.isValid();
 		if (fitSucceeded && abs(passedCycles) >= MinCycleForFit) {
 			_confirmedGoodFit = fittedEllipse;
 			_previousAngleWithCenter = point.getAngleFrom(center);
@@ -260,7 +260,7 @@ void FlowDetector::updateEllipseFit(const Coordinate point) {
 		// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
 		if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MinCycleForFit) {
 			const auto fittedEllipse = executeFit();
-			const auto fitSucceeded = fittedEllipse.fitSucceeded();
+			const auto fitSucceeded = fittedEllipse.isValid();
 			if (fitSucceeded) {
 				_confirmedGoodFit = fittedEllipse;
 			} else {

@@ -27,7 +27,7 @@ Angle Coordinate::getAngle() const {
 }
 
 Angle Coordinate::getAngleFrom(const Coordinate& other) const {
-    const Coordinate difference = translate(-other);
+    const Coordinate difference = translated(-other);
     return difference.getAngle();
 }
 
@@ -36,23 +36,23 @@ double Coordinate::getDistance() const {
 }
 
 double Coordinate::getDistanceFrom(const Coordinate& other) const {
-    const Coordinate difference = translate(-other);
+    const Coordinate difference = translated(-other);
     return difference.getDistance();
 }
 
-Coordinate Coordinate::rotate(const double angle) const {
+Coordinate Coordinate::rotated(const double angle) const {
     return {x * cos(angle) - y * sin(angle), y * cos(angle) + x * sin(angle)};
 }
 
-Coordinate Coordinate::translate(const Coordinate& vector) const {
+Coordinate Coordinate::translated(const Coordinate& vector) const {
     return {x + vector.x, y + vector.y};
 }
 
-Coordinate Coordinate::scale(const Coordinate& vector) const {
+Coordinate Coordinate::scaled(const Coordinate& vector) const {
     return {x * vector.x, y * vector.y};
 }
 
-Coordinate Coordinate::reciprocal() const {
+Coordinate Coordinate::getReciprocal() const {
     return {1 / x, 1 / y};
 }
 

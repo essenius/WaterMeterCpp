@@ -35,10 +35,10 @@ struct CartesianEllipse {
 	CartesianEllipse(const Coordinate& center, const Coordinate& radius, const Angle& angle);
 	explicit CartesianEllipse(const QuadraticEllipse& quadraticEllipse);
 
-	bool fitSucceeded() const;
+	bool isValid() const;
 	double getCircumference() const;
 	double getDistanceFrom(const Coordinate& referencePoint) const;
-	Coordinate getParametricRepresentation(const Angle& referenceAngle) const;
-	Coordinate getPointOnEllipseFor(const Coordinate& referencePoint) const;
+	Coordinate getPointOnEllipseAtAngle(const Angle& referenceAngle) const;
+	Coordinate getPointOnEllipseClosestTo(const Coordinate& referencePoint) const;
 };
 #endif

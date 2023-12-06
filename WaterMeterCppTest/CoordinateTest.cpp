@@ -32,13 +32,13 @@ namespace WaterMeterCppTest {
 		ASSERT_DOUBLE_EQ(5, Coordinate1.getDistanceFrom(Coordinate2)) << "DistanceFrom OK";
 		constexpr Coordinate Coordinate3{ -4, 12 };
 		ASSERT_DOUBLE_EQ(-M_PI / 4, Coordinate1.getAngleFrom(Coordinate3).value) << "AngleFrom OK";
-		const auto rotated = Coordinate1.rotate(-M_PI / 2);
+		const auto rotated = Coordinate1.rotated(-M_PI / 2);
 		ASSERT_TRUE(coordinateEqual(Coordinate{ 4, -4 }, rotated)) << "Rotated OK";
-		const auto translated = Coordinate1.translate(Coordinate3);
+		const auto translated = Coordinate1.translated(Coordinate3);
 		ASSERT_TRUE(coordinateEqual(Coordinate{ 0, 16 }, translated)) << "Translate OK";
-		const auto scaled = Coordinate1.scale({ 0.125, 2 });
+		const auto scaled = Coordinate1.scaled({ 0.125, 2 });
 		ASSERT_TRUE(coordinateEqual(Coordinate{ 0.5, 8 }, scaled)) << "Scaled OK";
-		const auto reciproke = scaled.reciprocal();
+		const auto reciproke = scaled.getReciprocal();
 		ASSERT_TRUE(coordinateEqual(Coordinate{ 2, 0.125 }, reciproke)) << "Reciproke OK";
 
 		ASSERT_TRUE(isnan(Coordinate{ 0, 0 }.getAngle().value)) << "Angle of 0,0 is not defined";

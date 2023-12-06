@@ -29,7 +29,7 @@ CartesianEllipse::CartesianEllipse(const QuadraticEllipse& quadraticEllipse) {
 	hasData = true;
 }
 
-bool CartesianEllipse::fitSucceeded() const {
+bool CartesianEllipse::isValid() const {
 	return radius.getDistance() > Epsilon;
 }
 
@@ -43,7 +43,7 @@ double CartesianEllipse::getCircumference() const {
 
 // Calculates the parametric representation of the ellipse at the given angle
 // Note the angle is relative to the center of the ellipse, not the origin 
-Coordinate CartesianEllipse::getParametricRepresentation(const Angle& referenceAngle) const {
+Coordinate CartesianEllipse::getPointOnEllipseAtAngle(const Angle& referenceAngle) const {
 	return Coordinate {
 		center.x + radius.x * cos(referenceAngle.value) * cos(angle.value) -
 		radius.y * sin(referenceAngle.value) * sin(angle.value),
@@ -56,17 +56,17 @@ Coordinate CartesianEllipse::getParametricRepresentation(const Angle& referenceA
 // The reference point is first translated by the center of the ellipse, then rotated by the angle of the ellipse, then scaled by the reciprocal of the radius.
 // The resulting point is then used as the parametric input to the parametric representation of the ellipse.
 // The output of the parametric representation is the point on the ellipse that is closest to the reference point.
-Coordinate CartesianEllipse::getPointOnEllipseFor(const Coordinate& referencePoint) const {
-	// Normalize the point, then find the angle with the origin. This gives the angle that getParametricRepresentation needs.
+Coordinate CartesianEllipse::getPointOnEllipseClosestTo(const Coordinate& referencePoint) const {
+	// Normalize the point, then find the angle with the origin. This gives the angle that getPointOnEllipseAtAngle needs.
 	const auto transformedCoordinate = referencePoint
-		.translate(-center)
-		.rotate(-angle.value)
-		.scale(radius.reciprocal());
+		.translated(-center)
+		.rotated(-angle.value)
+		.scaled(radius.getReciprocal());
 	const auto angleWithOrigin = transformedCoordinate.getAngle();
-	return getParametricRepresentation(angleWithOrigin);
+	return getPointOnEllipseAtAngle(angleWithOrigin);
 }
 
 // returns the distance from the given point to the closest point on the ellipse
 double CartesianEllipse::getDistanceFrom(const Coordinate& referencePoint) const {
-	return getPointOnEllipseFor(referencePoint).getDistanceFrom(referencePoint);
+	return getPointOnEllipseClosestTo(referencePoint).getDistanceFrom(referencePoint);
 }
