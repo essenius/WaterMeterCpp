@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -13,16 +13,11 @@
 
 // Disabling warnings caused by mimicking existing interfaces or mocking hacks
 
-// ReSharper disable CppParameterNeverUsed
 // ReSharper disable CppParameterMayBeConst
-// ReSharper disable CppClangTidyClangDiagnosticVoidPointerToIntCast
-// ReSharper disable CppClangTidyPerformanceNoIntToPtr
-
-#pragma warning (disable:4302 4311 4312 26812)
 
 #include <ESP.h>
 #include <freertos/ringbuf.h>
-
+#include <limits>
 
 constexpr int16_t MaxItems = 100;
 constexpr int16_t MaxItemSize = 64;
@@ -40,8 +35,9 @@ struct RingBufferContainer {
 RingBufferContainer container[MaxRingbuffers];
 
 int getIndex(RingbufHandle_t bufferHandle) {
-    // Hack, but good enough for a mock
-    return reinterpret_cast<int>(bufferHandle) - 1;
+    // Match the handle size to an int, and subtract 1 to get the index
+    const uintptr_t handle = reinterpret_cast<uintptr_t>(bufferHandle); 
+    return static_cast<int>(handle & std::numeric_limits<int>::max()) - 1;
 }
 
 // testing only
@@ -62,19 +58,20 @@ void uxRingbufReset() {
         i.nextBufferItem = 0;
         i.nextReadBufferItem = 0;
         i.bufferIsFull = false;
-        for (unsigned long long& j : i.itemSize) {
+        for (size_t& j : i.itemSize) {
             j = 0;
         }
     }
 }
 
-RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType) {
+RingbufHandle_t xRingbufferCreate(size_t /*xBufferSize*/, RingbufferType_t /*xBufferType*/) {
     int i = 0;
     while (container[i].ringbufHandle != nullptr && i <= MaxRingbuffers) {
         i++;
     }
     if (i > MaxRingbuffers) return nullptr;
-    container[i].ringbufHandle = reinterpret_cast<RingbufHandle_t>(i + 1);
+    const auto pointer = static_cast<uintptr_t>(i + 1);
+    container[i].ringbufHandle = reinterpret_cast<RingbufHandle_t>(pointer);
     return container[i].ringbufHandle;
 }
 
@@ -86,7 +83,7 @@ size_t xRingbufferGetCurFreeSize(RingbufHandle_t bufferHandle) {
 }
 
 BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, void** item2, size_t* item1Size,
-                                   size_t* item2Size, uint32_t ticksToWait) {
+                                   size_t* item2Size, uint32_t /*ticksToWait*/) {
     if (bufferHandle == nullptr) return pdFALSE;
     const int i = getIndex(bufferHandle);
     if (container[i].nextReadBufferItem >= container[i].nextBufferItem) return pdFALSE;
@@ -105,7 +102,7 @@ BaseType_t xRingbufferReceiveSplit(RingbufHandle_t bufferHandle, void** item1, v
     return pdTRUE;
 }
 
-UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t ticksToWait) {
+UBaseType_t xRingbufferSend(RingbufHandle_t bufferHandle, const void* payload, size_t size, TickType_t /*ticksToWait*/) {
     if (bufferHandle == nullptr) return pdFALSE;
     const int i = getIndex(bufferHandle);
     if (container[i].nextBufferItem >= MaxItems) return pdFALSE;

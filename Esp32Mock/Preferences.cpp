@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2023 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -43,7 +43,7 @@ bool Preferences::getBool(const char* key, const bool defaultValue) {
 
 void Preferences::getBytes(const char* key, void* buf, const size_t maxLen) {
     if (!isKey(key)) {
-        buf = nullptr;
+        static_cast<char*>(buf)[0] = '\0';
         return;
     }
     (*_currentPreference)[key].copy(static_cast<char*>(buf), maxLen);
