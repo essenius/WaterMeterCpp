@@ -33,6 +33,9 @@
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgManifest>..\vcpkg.json</VcpkgManifest>
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgManifestInstall>true</VcpkgManifestInstall>
+    <VcpkgAutoLink>true</VcpkgAutoLink>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -46,6 +49,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="AggregatorTest.cpp" />
@@ -257,7 +263,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator;Angle;Button;CartesianEllipse;Clock;Configuration;Communicator;Connector;Coordinate;DataQueue;DataQueuePayload;Device;EllipseFit;EventClient;EventServer;ESP;FirmwareManager;FlowDetector;freeRTOS;HTTPClient;HTTPUpdate;IpAddress;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;MagnetoSensorSimulation;Meter;MathUtils;MqttGateway;OledDriver;Preferences;PayloadBuilder;PubSubClient;QuadraticEllipse;QueueClient;ResultAggregator;ringbuf;SampleAggregator;Sampler;Serializer;time;TimeServer;Wifi;WiFiClientSecure;WifiClientFactory;WifiManager;Wire;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator;Angle;Button;CartesianEllipse;Clock;Configuration;Communicator;Connector;Coordinate;DataQueue;DataQueuePayload;Device;EllipseFit;EventClient;EventServer;FirmwareManager;FlowDetector;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;MagnetoSensorSimulation;Meter;MathUtils;MqttGateway;OledDriver;PayloadBuilder;QuadraticEllipse;QueueClient;ResultAggregator;SampleAggregator;Sampler;Serializer;TimeServer;WiFiClientFactory;WifiManager;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
