@@ -15,8 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		vcpkg.json = vcpkg.json
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Esp32Mock", "Esp32Mock\Esp32Mock.vcxitems", "{BB523B57-D28B-4C96-840A-E3B3386C014C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WaterMeterCppTest", "WaterMeterCppTest\WaterMeterCppTest.vcxproj", "{75B05BBB-0176-4611-90FC-B1214547EE12}"
 EndProject
 Global
@@ -49,9 +47,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CAE8C191-D445-4146-9125-E3F9E9A6A6EE}
-	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Esp32Mock\Esp32Mock.vcxitems*{260f3be9-4567-4acc-8f1e-01b48e9fbdc9}*SharedItemsImports = 4
-		Esp32Mock\Esp32Mock.vcxitems*{bb523b57-d28b-4c96-840a-e3b3386c014c}*SharedItemsImports = 9
 	EndGlobalSection
 EndGlobal
