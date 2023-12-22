@@ -120,9 +120,6 @@
     <ClCompile Include="FlowDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MagnetoSensorSimulation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aggregator.h">
@@ -240,9 +237,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IntCoordinate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MagnetoSensorSimulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

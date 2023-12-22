@@ -238,7 +238,7 @@ namespace WaterMeter {
 		_eventServer->publish(Topic::Anomaly, true);
 	}
 
-	int16_t  FlowDetector::noFitParameter(const double angleDistance, const bool fitSucceeded) const {
+	int16_t  FlowDetector::noFitParameter(const double angleDistance, const bool fitSucceeded) {
 		return static_cast<int16_t>(round(abs(angleDistance * 180) * (fitSucceeded ? 1.0 : -1.0)));
 	}
 

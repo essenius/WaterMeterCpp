@@ -16,7 +16,6 @@
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/Serializer.h"
 #include "FlowDetectorDriver.h"
-
 #include "TestEventClient.h"
 
 constexpr unsigned long MeasureIntervalMicros = 10UL * 1000UL;
@@ -47,19 +46,19 @@ namespace WaterMeterCppTest {
         }
 
     protected:
-        void assertSummary(const int lastSample, const int sampleCount, const int peakCount, const int maxStreak, const ResultData* result) const {
+        static void assertSummary(const int lastSample, const int sampleCount, const int peakCount, const int maxStreak, const ResultData* result) {
             EXPECT_EQ(lastSample, static_cast<int>(result->lastSample.x)) << "Last sample OK";
             EXPECT_EQ(sampleCount, result->sampleCount) << "sampleCount OK";
             EXPECT_EQ(peakCount, result->pulseCount) << "pulseCount OK";
             EXPECT_EQ(maxStreak, result->maxStreak) << "maxStreak OK";
         }
 
-        void assertExceptions(const int outliers, const int overruns, const ResultData* result) const {
+        static void assertExceptions(const int outliers, const int overruns, const ResultData* result) {
             EXPECT_EQ(outliers, result->anomalyCount) << "anomalyCount OK";
             EXPECT_EQ(overruns, result->overrunCount) << "overrunCount OK";
         }
 
-        void assertDuration(const int totalDuration, const int averageDuration, const int maxDuration, const ResultData* result) const {
+        static void assertDuration(const int totalDuration, const int averageDuration, const int maxDuration, const ResultData* result) {
             EXPECT_EQ(totalDuration, result->totalDuration) << "totalDuration OK";
             EXPECT_EQ(averageDuration, result->averageDuration) << "averageDuration OK";
             EXPECT_EQ(maxDuration, result->maxDuration) << "maxDuration OK";
@@ -156,7 +155,7 @@ namespace WaterMeterCppTest {
         for (int16_t i = 0; i < 15; i++) {
             sample.x = static_cast<int16_t>(2400 + (i > 7 ? 200 : 0));
             sample.y = sample.x;
-            Coordinate average{ static_cast<double>(sample.x), static_cast<double>(sample.y) };
+            Coordinate average{ sample.x * 1.0, sample.y * 1.0 };
             FlowDetectorDriver fmd(&eventServer, &ellipseFit, average, false, i > 7);
             aggregator.addMeasurement(sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 7993 + i);

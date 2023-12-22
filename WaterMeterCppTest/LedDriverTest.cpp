@@ -27,15 +27,15 @@ namespace WaterMeterCppTest {
     public:
         static EventServer eventServer;
     protected:
-        void assertLed(const char* id, const uint8_t state, const unsigned char ledNo,
-                       const char* description) const {
+        static void assertLed(const char* id, const uint8_t state, const unsigned char ledNo,
+                              const char* description) {
             std::string message(description);
             message += std::string(": ") + id + std::string(" ") + std::to_string(state);
             EXPECT_EQ(state, Led::get(ledNo)) << message.c_str();
         }
 
-        void assertLeds(const uint8_t red, const uint8_t green, const uint8_t blue, const uint8_t aux, const uint8_t yellow,
-                        const char* message) const {
+        static void assertLeds(const uint8_t red, const uint8_t green, const uint8_t blue, const uint8_t aux, const uint8_t yellow,
+                               const char* message) {
             assertLed("Red", red, Led::Red, message);
             assertLed("Green", green, Led::Green, message);
             assertLed("Blue", blue, Led::Blue, message);
@@ -43,14 +43,14 @@ namespace WaterMeterCppTest {
             assertLed("Yellow", yellow, Led::Yellow, message);
         }
 
-        void expectRunningLed(const uint8_t expected, const char* description, const unsigned int index) const {
+        static void expectRunningLed(const uint8_t expected, const char* description, const unsigned int index) {
             std::string message(description);
             message += std::string(" # ") + std::to_string(index);
             EXPECT_EQ(expected, Led::get(Led::Running)) << message;
         }
 
-        void assertLedCycle(LedDriver* ledDriver, const Topic topic, const long payload, const int interval,
-                            const char* description) const {
+        static void assertLedCycle(LedDriver* ledDriver, const Topic topic, const long payload, const int interval,
+                                   const char* description) {
             std::string messageBase("Built-in led for ");
             messageBase += std::string(description) + " cycle ";
             const std::string messageOn = messageBase + "ON";

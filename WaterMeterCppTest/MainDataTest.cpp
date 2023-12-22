@@ -24,7 +24,6 @@
 #include "../WaterMeterCpp/FirmwareManager.h"
 #include "../WaterMeterCpp/DataQueue.h"
 #include "../WaterMeterCpp/LedDriver.h"
-#include "../WaterMeterCpp/MagnetoSensorSimulation.h"
 #include "../WaterMeterCpp/MagnetoSensorNull.h"
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 #include "../WaterMeterCpp/MqttGateway.h"
@@ -34,6 +33,8 @@
 #include "../WaterMeterCpp/Log.h"
 #include "../WaterMeterCpp/SampleAggregator.h"
 #include "../WaterMeterCpp/QueueClient.h"
+
+#include "MagnetoSensorSimulation.h"
 
 #include "HTTPClient.h"
 #include "SamplerDriver.h"

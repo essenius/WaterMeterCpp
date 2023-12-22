@@ -14,11 +14,14 @@
 #ifndef HEADER_MAGNETOSENSORTEST
 #define HEADER_MAGNETOSENSORTEST
 
-#include "MagnetoSensor.h"
+#include "../WaterMeterCpp/MagnetoSensor.h"
 #include "Wire.h"
 
-namespace WaterMeter {
-    class MagnetoSensorSimulation : public MagnetoSensor {
+namespace WaterMeterCppTest {
+    using WaterMeter::MagnetoSensor;
+    using WaterMeter::SensorData;
+
+    class MagnetoSensorSimulation final : public MagnetoSensor {
     public:
         MagnetoSensorSimulation() : MagnetoSensor(0, nullptr) {
             _index = 0;

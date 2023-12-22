@@ -49,7 +49,7 @@ namespace WaterMeter {
         // we use both an ifdef and an if to enable testing without having to recompile
 #ifdef HEADER_SECRETS
         if (useSecrets) {
-            putIpConfig(&configIp);
+            putIpConfig(&ConfigIp);
             putMqttConfig(&ConfigMqtt);
             putTlsConfig(&ConfigTls);
             putWifiConfig(&ConfigWifi);

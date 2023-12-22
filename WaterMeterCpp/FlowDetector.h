@@ -55,7 +55,7 @@ namespace WaterMeter {
 		bool isRelevant(const Coordinate& point);
 		void processMovingAverageSample(Coordinate averageSample);
 		void reportAnomaly();
-		int16_t noFitParameter(double angleDistance, bool fitSucceeded) const;
+        static int16_t noFitParameter(double angleDistance, bool fitSucceeded);
 		void updateEllipseFit(Coordinate point);
 		void updateMovingAverageArray(const IntCoordinate& sample);
 

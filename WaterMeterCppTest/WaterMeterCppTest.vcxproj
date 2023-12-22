@@ -143,6 +143,7 @@
     <ClCompile Include="MagnetoSensorMock.cpp" />
     <ClCompile Include="MagnetoSensorNullTest.cpp" />
     <ClCompile Include="MagnetoSensorQmcTest.cpp" />
+    <ClCompile Include="MagnetoSensorSimulation.cpp" />
     <ClCompile Include="MainDataTest.cpp" />
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="MeterTest.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="FlowDetectorDriver.h" />
     <ClInclude Include="MagnetoSensorMock.h" />
     <ClInclude Include="MagnetoSensorReaderDriver.h" />
+    <ClInclude Include="MagnetoSensorSimulation.h" />
     <ClInclude Include="MqttGatewayMock.h" />
     <ClInclude Include="PulseTestEventClient.h" />
     <ClInclude Include="SamplerDriver.h" />

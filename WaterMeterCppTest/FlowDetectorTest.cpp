@@ -29,8 +29,8 @@ namespace WaterMeterCppTest {
 			EXPECT_EQ(outlier, meter->foundAnomaly()) << message << "Anomaly";
 		}
 
-		IntCoordinate getSample(const double sampleNumber, const double samplesPerCycle = 32,
-			const double angleOffsetSamples = 0) const {
+        static IntCoordinate getSample(const double sampleNumber, const double samplesPerCycle = 32,
+                                       const double angleOffsetSamples = 0) {
 			constexpr double Radius = 10.0L;
 			constexpr int16_t XOffset = -100;
 			constexpr int16_t YOffset = 100;
@@ -43,13 +43,13 @@ namespace WaterMeterCppTest {
 			};
 		}
 
-		void expectFlowAnalysis(
+        static void expectFlowAnalysis(
 			const FlowDetectorDriver* actual,
 			const std::string& message,
 			const int index,
 			const IntCoordinate movingAverage,
 			const bool flowStarted = false,
-			const bool isPulse = false) const {
+			const bool isPulse = false) {
 			assertIntCoordinatesEqual(movingAverage, actual->_movingAverageArray[index], message + " Moving average #" + std::to_string(index));
 			EXPECT_EQ(flowStarted, actual->_justStarted) << message << ": just started";
 			EXPECT_EQ(isPulse, actual->_foundPulse) << message << ": pulse detected";
@@ -57,7 +57,7 @@ namespace WaterMeterCppTest {
 		}
 
 		// run process on test signals with a known number of pulses
-		void flowTestWithFile(const char* fileName, const unsigned int firstPulses = 0, const unsigned int nextPulses = 0, const unsigned int anomalies = 0, const unsigned int noFits = 0, const unsigned int noiseLimit = 3) const {
+        static void flowTestWithFile(const char* fileName, const unsigned int firstPulses = 0, const unsigned int nextPulses = 0, const unsigned int anomalies = 0, const unsigned int noFits = 0, const unsigned int noiseLimit = 3) {
 			FlowDetector flowDetector(&eventServer, &ellipseFit);
 			const PulseTestEventClient pulseClient(&eventServer);
 			flowDetector.begin(noiseLimit);
