@@ -14,6 +14,7 @@
 #include "../WaterMeterCpp/MagnetoSensorHmc.h"
 
 namespace WaterMeterCppTest {
+    using namespace WaterMeter;
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcCustomAddressTest) {
         MagnetoSensorHmc sensor;
@@ -37,7 +38,6 @@ namespace WaterMeterCppTest {
         sensor.configureRange(HmcRange2_5);
         EXPECT_EQ(660.f, sensor.getGain()) << "getGain() returns correct value";
     }
-
 
     TEST(MagnetoSensorHmcTest, magnetoSensorHmcTestTest) {
         MagnetoSensorHmc sensor;

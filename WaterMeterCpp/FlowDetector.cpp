@@ -29,254 +29,263 @@
 
 #include <ESP.h>
 #include "FlowDetector.h"
-#include "MathUtils.h"
+#include <EllipseFit.h>
+#include <MathUtils.h>
 
-constexpr double MinCycleForFit = 0.6;
+namespace WaterMeter {
+	using EllipseMath::EllipseFit;
+	using EllipseMath::CartesianEllipse;
 
-FlowDetector::FlowDetector(EventServer* eventServer, EllipseFit* ellipseFit): EventClient(eventServer), _ellipseFit(ellipseFit) {
-	_eventServer = eventServer;
-}
+	constexpr double MinCycleForFit = 0.6;
 
-// Public methods
-
-void FlowDetector::begin(const unsigned int noiseRange = 3) {
-	// we assume that the noise range for X and Y is the same.
-	// If the distance between two points is beyond this, it is beyond noise
-	_distanceThreshold = sqrt(2.0 * noiseRange * noiseRange) / MovingAverageNoiseReduction;
-	_eventServer->subscribe(this, Topic::Sample);
-	_eventServer->subscribe(this, Topic::SensorWasReset);
-}
-
-void FlowDetector::update(const Topic topic, const long payload) {
-	if (topic == Topic::SensorWasReset) {
-		// If we needed to reset the sensor, also reset the measurement process when the next sample comes in
-		_firstCall = true;
-		_wasReset = true;
-		_justStarted = true;
+	FlowDetector::FlowDetector(EventServer* eventServer, EllipseFit* ellipseFit) : EventClient(eventServer), _ellipseFit(ellipseFit) {
+		_eventServer = eventServer;
 	}
-}
 
-void FlowDetector::update(const Topic topic, const IntCoordinate payload) {
-	if (topic == Topic::Sample) {
-		addSample(payload);
+	// Public methods
+
+	void FlowDetector::begin(const unsigned int noiseRange = 3) {
+		// we assume that the noise range for X and Y is the same.
+		// If the distance between two points is beyond this, it is beyond noise
+		_distanceThreshold = sqrt(2.0 * noiseRange * noiseRange) / MovingAverageNoiseReduction;
+		_eventServer->subscribe(this, Topic::Sample);
+		_eventServer->subscribe(this, Topic::SensorWasReset);
 	}
-}
 
-// Private methods
-
-void FlowDetector::addSample(const IntCoordinate& sample) {
-	if (sample.isSaturated() || sample.hasError()) {
-		reportAnomaly();
-		return;
+	void FlowDetector::update(const Topic topic, const long payload) {
+		if (topic == Topic::SensorWasReset) {
+			// If we needed to reset the sensor, also reset the measurement process when the next sample comes in
+			_firstCall = true;
+			_wasReset = true;
+			_justStarted = true;
+		}
 	}
-	_foundAnomaly = false;
-	_wasReset = _firstCall;
-	if (_firstCall) {
-		// skip samples as long as we get a flatline. Happens sometimes just after startup
-		if (sample.x == 0 && sample.y == 0) {
+
+	void FlowDetector::update(const Topic topic, const IntCoordinate payload) {
+		if (topic == Topic::Sample) {
+			addSample(payload);
+		}
+	}
+
+	// Private methods
+
+	void FlowDetector::addSample(const IntCoordinate& sample) {
+		if (sample.isSaturated() || sample.hasError()) {
 			reportAnomaly();
 			return;
 		}
-		_movingAverageIndex = 0;
-		_firstRound = true;
-		_firstCall = false;
-	}
-	updateMovingAverageArray(sample);
-	// if index is 0, we made the first round and the buffer is full. Otherwise we wait.
-	if (_firstRound && _movingAverageIndex != 0) {
-		_wasSkipped = true;
-		return;
+		_foundAnomaly = false;
+		_wasReset = _firstCall;
+		if (_firstCall) {
+			// skip samples as long as we get a flatline. Happens sometimes just after startup
+			if (sample.x == 0 && sample.y == 0) {
+				reportAnomaly();
+				return;
+			}
+			_movingAverageIndex = 0;
+			_firstRound = true;
+			_firstCall = false;
+		}
+		updateMovingAverageArray(sample);
+		// if index is 0, we made the first round and the buffer is full. Otherwise we wait.
+		if (_firstRound && _movingAverageIndex != 0) {
+			_wasSkipped = true;
+			return;
+		}
+
+		const auto averageSample = calcMovingAverage();
+		processMovingAverageSample(averageSample);
 	}
 
-    const auto averageSample = calcMovingAverage();
-	processMovingAverageSample(averageSample);
-}
-
-Coordinate FlowDetector::calcMovingAverage() {
-	_movingAverage = { 0,0 };
-	for (const auto i : _movingAverageArray) {
-		_movingAverage.x += static_cast<double>(i.x);
-		_movingAverage.y += static_cast<double>(i.y);
+	Coordinate FlowDetector::calcMovingAverage() {
+		_movingAverage = { 0,0 };
+		for (const auto i : _movingAverageArray) {
+			_movingAverage.x += static_cast<double>(i.x);
+			_movingAverage.y += static_cast<double>(i.y);
+		}
+		_movingAverage.x /= MovingAverageSize;
+		_movingAverage.y /= MovingAverageSize;
+		return _movingAverage;
 	}
-	_movingAverage.x /= MovingAverageSize;
-	_movingAverage.y /= MovingAverageSize;
-	return _movingAverage;
-}
 
-void FlowDetector::detectPulse(const Coordinate point) {
-	if (_confirmedGoodFit.hasData) {
-		findPulseByCenter(point);
+	void FlowDetector::detectPulse(const Coordinate point) {
+		if (_confirmedGoodFit.isValid()) {
+			findPulseByCenter(point);
+		}
+		else {
+			findPulseByPrevious(point);
+		}
 	}
-	else {
-	    findPulseByPrevious(point);
-	}
-}
 
-CartesianEllipse FlowDetector::executeFit() const {
-	const auto fittedEllipse = _ellipseFit->fit();
-	const CartesianEllipse returnValue(fittedEllipse);
-	_ellipseFit->begin();
-	return returnValue;
-}
-
-void FlowDetector::findPulseByCenter(const Coordinate& point) {
-	const auto angleWithCenter = point.getAngleFrom(_confirmedGoodFit.center);
-	const auto quadrant = angleWithCenter.getQuadrant();
-	const auto quadrantDifference = (_previousQuadrant - quadrant) % 4;
-	// previous angle is initialized in the first fit, so always has a valid value when coming here
-	const auto angleDistance = angleWithCenter - _previousAngleWithCenter.value;
-	_angleDistanceTravelled += angleDistance;
-	if (!_searchingForPulse) {
-		_foundPulse = false;
-		// start searching at the top of the ellipse. This takes care of jitter
-		// Also consider the risk that a quadrant gets skipped because of an anomaly
-		if ((quadrantDifference == 1 && quadrant == 1) ||
-			(quadrantDifference == 2 && (quadrant == 1 || quadrant == 4))) _searchingForPulse = true;
+	CartesianEllipse FlowDetector::executeFit() const {
+		const auto fittedEllipse = _ellipseFit->fit();
+		const CartesianEllipse returnValue(fittedEllipse);
+		_ellipseFit->begin();
+		return returnValue;
 	}
-	else {
-		// reference point is the bottom of the ellipse
-		// Again, also consider the risk that a quadrant gets skipped
-		_foundPulse = (quadrantDifference == 1 && quadrant == 3) ||
-			          (quadrantDifference == 2 && (quadrant == 3 || quadrant == 2));
+
+	void FlowDetector::findPulseByCenter(const Coordinate& point) {
+		const auto angleWithCenter = point.getAngleFrom(_confirmedGoodFit.getCenter());
+		const auto quadrant = angleWithCenter.getQuadrant();
+		const auto quadrantDifference = (_previousQuadrant - quadrant) % 4;
+		// previous angle is initialized in the first fit, so always has a valid value when coming here
+		const auto angleDistance = angleWithCenter - _previousAngleWithCenter.value;
+		_angleDistanceTravelled += angleDistance;
+		if (!_searchingForPulse) {
+			_foundPulse = false;
+			// start searching at the top of the ellipse. This takes care of jitter
+			// Also consider the risk that a quadrant gets skipped because of an anomaly
+			if ((quadrantDifference == 1 && quadrant == 1) ||
+				(quadrantDifference == 2 && (quadrant == 1 || quadrant == 4))) _searchingForPulse = true;
+		}
+		else {
+			// reference point is the bottom of the ellipse
+			// Again, also consider the risk that a quadrant gets skipped
+			_foundPulse = (quadrantDifference == 1 && quadrant == 3) ||
+				(quadrantDifference == 2 && (quadrant == 3 || quadrant == 2));
+			if (_foundPulse) {
+				_eventServer->publish(Topic::Pulse, true);
+				_searchingForPulse = false;
+			}
+		}
+		_previousQuadrant = quadrant;
+		_previousAngleWithCenter = angleWithCenter;
+	}
+
+	void FlowDetector::findPulseByPrevious(const Coordinate& point) {
+
+		const auto angleWithPreviousFromStart = point.getAngleFrom(_previousPoint) - _startTangent;
+		_tangentDistanceTravelled += (angleWithPreviousFromStart - _previousAngleWithPreviousFromStart).value;
+		_previousAngleWithPreviousFromStart = angleWithPreviousFromStart;
+
+		const auto quadrant = point.getAngleFrom(_previousPoint).getQuadrant();
+
+		// this can be jittery, so use a flag to check whether we counted, and reset the counter at the other side of the ellipse
+
+		_foundPulse = _searchingForPulse && quadrant == 2 && _previousQuadrant == 3;
 		if (_foundPulse) {
-			_eventServer->publish(Topic::Pulse, true);
- 			_searchingForPulse = false;
+			_eventServer->publish(Topic::Pulse, false);
+			_searchingForPulse = false;
 		}
-	}
-	_previousQuadrant = quadrant;
-	_previousAngleWithCenter = angleWithCenter;
-}
-
-void FlowDetector::findPulseByPrevious(const Coordinate& point) {
-
-	const auto angleWithPreviousFromStart = point.getAngleFrom(_previousPoint) - _startTangent;
-	_tangentDistanceTravelled += (angleWithPreviousFromStart - _previousAngleWithPreviousFromStart).value;
-	_previousAngleWithPreviousFromStart = angleWithPreviousFromStart;
-
-	const auto quadrant = point.getAngleFrom(_previousPoint).getQuadrant();
-
-	// this can be jittery, so use a flag to check whether we counted, and reset the counter at the other side of the ellipse
-
-    _foundPulse = _searchingForPulse && quadrant == 2 && _previousQuadrant == 3;
-	if (_foundPulse) {
-		_eventServer->publish(Topic::Pulse, false);
-		_searchingForPulse = false;
-	} else if (!_searchingForPulse && (quadrant == 1 || quadrant == 4)) {
-		_searchingForPulse = true;
-	}
-	_previousQuadrant = quadrant;
-}
-
-bool FlowDetector::isRelevant(const Coordinate& point) {
-
-    const auto distance = point.getDistanceFrom(_referencePoint);
-	// if we are too close to the previous point, discard
-	if (distance < _distanceThreshold) {
-		_wasSkipped = true;
-		return false;
-	}
-	// if we have a confirmed fit and the point is too far away from it, we have an anomaly. Discard.
-	if (_confirmedGoodFit.hasData) {
-		const auto distanceFromEllipse = _confirmedGoodFit.getDistanceFrom(point);
-		if (_confirmedGoodFit.hasData && distanceFromEllipse > _distanceThreshold * 2) {
-			reportAnomaly();
-			return false;
+		else if (!_searchingForPulse && (quadrant == 1 || quadrant == 4)) {
+			_searchingForPulse = true;
 		}
+		_previousQuadrant = quadrant;
 	}
 
-	// if we have just started, we might have impact from the AC current due to the moving average. Wait until stable.
-	if (_justStarted) {
-		_waitCount++;
-		if (_waitCount <= MovingAverageSize) {
+	bool FlowDetector::isRelevant(const Coordinate& point) {
+
+		const auto distance = point.getDistanceFrom(_referencePoint);
+		// if we are too close to the previous point, discard
+		if (distance < _distanceThreshold) {
 			_wasSkipped = true;
 			return false;
 		}
-		_startTangent = point.getAngleFrom(_referencePoint);
-		_justStarted = false;
-		_waitCount = 0;
-	}
-	_referencePoint = point;
-	return true;
-}
-
-void FlowDetector::processMovingAverageSample(const Coordinate averageSample) {
-	if (_firstRound) {
-		// We have the first valid moving average. Start the process.
-		_ellipseFit->begin();
-		_startPoint = averageSample;
-		_referencePoint = _startPoint;
-		_previousPoint = _startPoint;
-		_firstRound = false;
-		_wasSkipped = true;
-		return;
-	}
-
-	if (!isRelevant(averageSample)) {
-		// not leaving potential loose ends
-		_foundPulse = false;
-		return;
-	}
-	detectPulse(averageSample);
-
-	_ellipseFit->addMeasurement(averageSample);
-	if (_ellipseFit->bufferIsFull()) {
-		updateEllipseFit(averageSample);
-	}
-	_previousPoint = averageSample;
-	_wasSkipped = false;
-}
-
-void FlowDetector::reportAnomaly() {
-	_foundAnomaly = true;
-	_wasSkipped = true;
-	_eventServer->publish(Topic::Anomaly, true);
-}
-
-int16_t  FlowDetector::noFitParameter(const double angleDistance, const bool fitSucceeded) const {
-	return static_cast<int16_t>(round(abs(angleDistance * 180) * (fitSucceeded ? 1.0 : -1.0)));
-}
-
-void FlowDetector::updateEllipseFit(const Coordinate point) {
-	if (!_confirmedGoodFit.hasData) {
-		// The first time we always run a fit. Re-run if the first time(s) didn't result in a good fit
-		const auto fittedEllipse = executeFit();
-		const auto center = fittedEllipse.center;
-		// number of points per ellipse defines whether the fit is reliable.
-		const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
-		const auto fitSucceeded = fittedEllipse.isValid();
-		if (fitSucceeded && abs(passedCycles) >= MinCycleForFit) {
-			_confirmedGoodFit = fittedEllipse;
-			_previousAngleWithCenter = point.getAngleFrom(center);
-			_previousQuadrant = _previousAngleWithCenter.getQuadrant();
-		} else {
-			// we need another round
-			_eventServer->publish(Topic::NoFit, noFitParameter( _tangentDistanceTravelled, fitSucceeded));
-		}
-		_tangentDistanceTravelled = 0;
-	}
-	else {
-		// If we already had a reliable fit, check whether the new data is good enough to warrant a new fit.
-		// Otherwise we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
-		// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
-		if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MinCycleForFit) {
-			const auto fittedEllipse = executeFit();
-			const auto fitSucceeded = fittedEllipse.isValid();
-			if (fitSucceeded) {
-				_confirmedGoodFit = fittedEllipse;
-			} else {
-				_eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, false));
+		// if we have a confirmed fit and the point is too far away from it, we have an anomaly. Discard.
+		if (_confirmedGoodFit.isValid()) {
+			const auto distanceFromEllipse = _confirmedGoodFit.getDistanceFrom(point);
+			if (distanceFromEllipse > _distanceThreshold * 2) {
+				reportAnomaly();
+				return false;
 			}
 		}
-		else {
-			// even though we didn't run a fit, we mark it as succeeded to see the difference with one that failed a fit
-			_eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, true));
-			_ellipseFit->begin();
-		}
-		_angleDistanceTravelled = 0;
-	}
-}
 
-void FlowDetector::updateMovingAverageArray(const IntCoordinate& sample) {
-	_movingAverageArray[_movingAverageIndex] = sample;
-	++_movingAverageIndex %= 4;
+		// if we have just started, we might have impact from the AC current due to the moving average. Wait until stable.
+		if (_justStarted) {
+			_waitCount++;
+			if (_waitCount <= MovingAverageSize) {
+				_wasSkipped = true;
+				return false;
+			}
+			_startTangent = point.getAngleFrom(_referencePoint);
+			_justStarted = false;
+			_waitCount = 0;
+		}
+		_referencePoint = point;
+		return true;
+	}
+
+	void FlowDetector::processMovingAverageSample(const Coordinate averageSample) {
+		if (_firstRound) {
+			// We have the first valid moving average. Start the process.
+			_ellipseFit->begin();
+			_startPoint = averageSample;
+			_referencePoint = _startPoint;
+			_previousPoint = _startPoint;
+			_firstRound = false;
+			_wasSkipped = true;
+			return;
+		}
+
+		if (!isRelevant(averageSample)) {
+			// not leaving potential loose ends
+			_foundPulse = false;
+			return;
+		}
+		detectPulse(averageSample);
+
+		_ellipseFit->addMeasurement(averageSample);
+		if (_ellipseFit->bufferIsFull()) {
+			updateEllipseFit(averageSample);
+		}
+		_previousPoint = averageSample;
+		_wasSkipped = false;
+	}
+
+	void FlowDetector::reportAnomaly() {
+		_foundAnomaly = true;
+		_wasSkipped = true;
+		_eventServer->publish(Topic::Anomaly, true);
+	}
+
+	int16_t  FlowDetector::noFitParameter(const double angleDistance, const bool fitSucceeded) const {
+		return static_cast<int16_t>(round(abs(angleDistance * 180) * (fitSucceeded ? 1.0 : -1.0)));
+	}
+
+	void FlowDetector::updateEllipseFit(const Coordinate point) {
+		if (!_confirmedGoodFit.isValid()) {
+			// The first time we always run a fit. Re-run if the first time(s) didn't result in a good fit
+			const auto fittedEllipse = executeFit();
+			const auto center = fittedEllipse.getCenter();
+			// number of points per ellipse defines whether the fit is reliable.
+			const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
+			const auto fitSucceeded = fittedEllipse.isValid();
+			if (fitSucceeded && abs(passedCycles) >= MinCycleForFit) {
+				_confirmedGoodFit = fittedEllipse;
+				_previousAngleWithCenter = point.getAngleFrom(center);
+				_previousQuadrant = _previousAngleWithCenter.getQuadrant();
+			}
+			else {
+				// we need another round
+				_eventServer->publish(Topic::NoFit, noFitParameter(_tangentDistanceTravelled, fitSucceeded));
+			}
+			_tangentDistanceTravelled = 0;
+		}
+		else {
+			// If we already had a reliable fit, check whether the new data is good enough to warrant a new fit.
+			// Otherwise we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
+			// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
+			if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MinCycleForFit) {
+				const auto fittedEllipse = executeFit();
+				const auto fitSucceeded = fittedEllipse.isValid();
+				if (fitSucceeded) {
+					_confirmedGoodFit = fittedEllipse;
+				}
+				else {
+					_eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, false));
+				}
+			}
+			else {
+				// even though we didn't run a fit, we mark it as succeeded to see the difference with one that failed a fit
+				_eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, true));
+				_ellipseFit->begin();
+			}
+			_angleDistanceTravelled = 0;
+		}
+	}
+
+	void FlowDetector::updateMovingAverageArray(const IntCoordinate& sample) {
+		_movingAverageArray[_movingAverageIndex] = sample;
+		++_movingAverageIndex %= 4;
+	}
 }

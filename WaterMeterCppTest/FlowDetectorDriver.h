@@ -15,6 +15,9 @@
 #include "../WaterMeterCpp/FlowDetector.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::EventServer;
+    using WaterMeter::FlowDetector;
+    using EllipseMath::EllipseFit;
 
     class FlowDetectorDriver final : public FlowDetector {
     public:

@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "../WaterMeterCpp/MathUtils.h"
+#include <MathUtils.h>
 #include "TestHelper.h"
-#include "../WaterMeterCpp/CartesianEllipse.h"
+#include <CartesianEllipse.h>
 
 namespace WaterMeterCppTest {
 	TEST(CartesianEllipseTest, RotatedTranslatedEllipseTest) {

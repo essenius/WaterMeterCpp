@@ -24,54 +24,55 @@
 #include "QueueClient.h"
 #include "Serializer.h"
 
-constexpr unsigned int MaxReconnectFailures = 5;
-constexpr unsigned long Seconds = 1000UL * 1000UL;
-constexpr unsigned long MqttReconnectWaitDuration = 2UL * Seconds;
-constexpr unsigned long TimeserverWaitDuration = 10UL * Seconds;
-constexpr unsigned long WifiInitialWaitDuration = 20UL * Seconds;
-constexpr unsigned long WifiReconnectWaitDuration = 10UL * Seconds;
+namespace WaterMeter {
+    constexpr unsigned int MaxReconnectFailures = 5;
+    constexpr unsigned long Seconds = 1000UL * 1000UL;
+    constexpr unsigned long MqttReconnectWaitDuration = 2UL * Seconds;
+    constexpr unsigned long TimeserverWaitDuration = 10UL * Seconds;
+    constexpr unsigned long WifiInitialWaitDuration = 20UL * Seconds;
+    constexpr unsigned long WifiReconnectWaitDuration = 10UL * Seconds;
 
-class Connector final : public EventClient {
-public:
-    Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGateway, TimeServer* timeServer,
-              FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
-              Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
-    void begin(const Configuration* configuration);
-    ConnectionState connect();
-    ConnectionState loop();
-    static void task(void* parameter);
+    class Connector final : public EventClient {
+    public:
+        Connector(EventServer* eventServer, WiFiManager* wifi, MqttGateway* mqttGateway, TimeServer* timeServer,
+            FirmwareManager* firmwareManager, DataQueue* samplerDataQueue, DataQueue* communicatorDataQueue,
+            Serializer* serializer, QueueClient* samplerQueueClient, QueueClient* communicatorQueueClient);
+        void begin(const Configuration* configuration);
+        ConnectionState connect();
+        ConnectionState loop();
+        static void task(void* parameter);
 
-private:
-    unsigned long _wifiConnectTimestamp = 0UL;
-    unsigned long _mqttConnectTimestamp = 0UL;
-    unsigned long _requestTimeTimestamp = 0UL;
-    unsigned long _lastAnnouncementTimestampMillis = 0UL;
+    private:
+        unsigned long _wifiConnectTimestamp = 0UL;
+        unsigned long _mqttConnectTimestamp = 0UL;
+        unsigned long _requestTimeTimestamp = 0UL;
+        unsigned long _lastAnnouncementTimestampMillis = 0UL;
 
-    WiFiManager* _wifi;
-    MqttGateway* _mqttGateway;
-    TimeServer* _timeServer;
-    FirmwareManager* _firmwareManager;
-    DataQueue* _samplerDataQueue;
-    DataQueue* _communicatorDataQueue;
-    Serializer* _serializer;
-    QueueClient* _samplerQueueClient;
-    QueueClient* _communicatorQueueClient;
-    ChangePublisher<ConnectionState> _state;
-    unsigned long _waitDuration = WifiInitialWaitDuration;
-    unsigned int _wifiConnectionFailureCount = 0;
+        WiFiManager* _wifi;
+        MqttGateway* _mqttGateway;
+        TimeServer* _timeServer;
+        FirmwareManager* _firmwareManager;
+        DataQueue* _samplerDataQueue;
+        DataQueue* _communicatorDataQueue;
+        Serializer* _serializer;
+        QueueClient* _samplerQueueClient;
+        QueueClient* _communicatorQueueClient;
+        ChangePublisher<ConnectionState> _state;
+        unsigned long _waitDuration = WifiInitialWaitDuration;
+        unsigned int _wifiConnectionFailureCount = 0;
 
-    void handleCheckFirmware();
-    void handleDisconnected();
-    void handleInit();
-    void handleMqttConnected();
-    void handleMqttConnecting();
-    void handleMqttReady();
-    void handleRequestTime();
-    void handleSettingTime();
-    void handleWaitingForMqttReconnect();
-    void handleWifiConnected();
-    void handleWifiConnecting();
-    void handleWifiReady();
-};
-
+        void handleCheckFirmware();
+        void handleDisconnected();
+        void handleInit();
+        void handleMqttConnected();
+        void handleMqttConnecting();
+        void handleMqttReady();
+        void handleRequestTime();
+        void handleSettingTime();
+        void handleWaitingForMqttReconnect();
+        void handleWifiConnected();
+        void handleWifiConnecting();
+        void handleWifiReady();
+    };
+}
 #endif

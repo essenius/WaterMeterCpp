@@ -13,6 +13,7 @@
 #include "../WaterMeterCpp/PayloadBuilder.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::PayloadBuilder;
     
     TEST(PayloadBuilderTest, payloadBuilderAlmostFullTest) {
         PayloadBuilder builder;

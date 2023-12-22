@@ -17,7 +17,12 @@
 #include "../WaterMeterCpp/ConnectionState.h"
 
 namespace WaterMeterCppTest {
-    
+    using WaterMeter::ConnectionState;
+    using WaterMeter::EventServer;
+    using WaterMeter::Led;
+    using WaterMeter::LedDriver;
+    using WaterMeter::Topic;
+
     class LedDriverTest : public testing::Test {
     public:
         static EventServer eventServer;

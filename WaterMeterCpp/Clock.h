@@ -24,22 +24,23 @@
 #include <freertos/freeRTOS.h>
 #include <freertos/semphr.h>
 
-using Timestamp = unsigned long long;
+namespace WaterMeter {
+    using Timestamp = unsigned long long;
 
-class Clock final : public EventClient {
-public:
-    explicit Clock(EventServer* eventServer);
-    void begin();
-    const char* get(Topic topic, const char* defaultValue) override;
+    class Clock final : public EventClient {
+    public:
+        explicit Clock(EventServer* eventServer);
+        void begin();
+        const char* get(Topic topic, const char* defaultValue) override;
 
-    static Timestamp getTimestamp();
-    static bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
+        static Timestamp getTimestamp();
+        static bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
 
-private:
-    static constexpr int BufferSize = 27;
-    char _buffer[BufferSize] = {0};
-    static SemaphoreHandle_t _timeMutex;
-    static SemaphoreHandle_t _formatTimeMutex;
-};
-
+    private:
+        static constexpr int BufferSize = 27;
+        char _buffer[BufferSize] = { 0 };
+        static SemaphoreHandle_t _timeMutex;
+        static SemaphoreHandle_t _formatTimeMutex;
+    };
+}
 #endif

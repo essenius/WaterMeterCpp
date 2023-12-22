@@ -13,19 +13,21 @@
 #include "EventServer.h"
 #include <SafeCString.h>
 
-EventClient::EventClient(EventServer* eventServer) : _eventServer(eventServer) {}
+namespace WaterMeter {
+    EventClient::EventClient(EventServer* eventServer) : _eventServer(eventServer) {}
 
-EventClient::~EventClient() {
-    _eventServer->unsubscribe(this);
-    _eventServer->cannotProvide(this);
-}
+    EventClient::~EventClient() {
+        _eventServer->unsubscribe(this);
+        _eventServer->cannotProvide(this);
+    }
 
-void EventClient::update(const Topic topic, const long payload) {
-    char numberBuffer[20];
-    SafeCString::sprintf(numberBuffer, "%ld", payload);
-    update(topic, numberBuffer);
-}
+    void EventClient::update(const Topic topic, const long payload) {
+        char numberBuffer[20];
+        SafeCString::sprintf(numberBuffer, "%ld", payload);
+        update(topic, numberBuffer);
+    }
 
-void EventClient::update(const Topic topic, const IntCoordinate payload) {
-    update(topic, payload.l);
+    void EventClient::update(const Topic topic, const IntCoordinate payload) {
+        update(topic, payload.l);
+    }
 }

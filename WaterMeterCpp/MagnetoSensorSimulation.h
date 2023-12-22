@@ -17,49 +17,50 @@
 #include "MagnetoSensor.h"
 #include "Wire.h"
 
-class MagnetoSensorSimulation : public MagnetoSensor {
-public:
-    MagnetoSensorSimulation() : MagnetoSensor(0, nullptr) {
-        _index = 0;
-    }
+namespace WaterMeter {
+    class MagnetoSensorSimulation : public MagnetoSensor {
+    public:
+        MagnetoSensorSimulation() : MagnetoSensor(0, nullptr) {
+            _index = 0;
+        }
 
 
-    bool begin() override {
-        _index = 0;
-        return true;
-    }
+        bool begin() override {
+            _index = 0;
+            return true;
+        }
 
-    double getGain() const override {
-        return 390;
-    }
+        double getGain() const override {
+            return 390;
+        }
 
-    int getNoiseRange() const override {
-        return 3;
-    }
+        int getNoiseRange() const override {
+            return 3;
+        }
 
-    bool isOn() const override {
-        return true;
-    }
+        bool isOn() const override {
+            return true;
+        }
 
-    bool isReal() const override {
-        return false;
-    }
+        bool isReal() const override {
+            return false;
+        }
 
-    bool read(SensorData& sample) override;
+        bool read(SensorData& sample) override;
 
-    bool done() const {
-        return _index >= MaxSamples;
-    }
+        bool done() const {
+            return _index >= MaxSamples;
+        }
 
-    void softReset() override { _index = 0; }
+        void softReset() override { _index = 0; }
 
-    void waitForPowerOff() const override {}
+        void waitForPowerOff() const override {}
 
-private:
-    static constexpr int MaxSamples = 552;
-    static int16_t _dataX[MaxSamples];
-    static int16_t _dataY[MaxSamples];
-    int _index = 0;
-};
-
+    private:
+        static constexpr int MaxSamples = 552;
+        static int16_t _dataX[MaxSamples];
+        static int16_t _dataY[MaxSamples];
+        int _index = 0;
+    };
+}
 #endif

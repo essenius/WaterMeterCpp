@@ -16,25 +16,26 @@
 #include "EventServer.h"
 #include "LedFlasher.h"
 
-class LedDriver final : public EventClient {
-public:
-    explicit LedDriver(EventServer* eventServer);
-    void begin();
-    void update(Topic topic, const char* payload) override;
-    void connectionUpdate(ConnectionState payload);
-    static void timeOverrunUpdate(bool isOn);
-    void update(Topic topic, long payload) override;
+namespace WaterMeter {
+    class LedDriver final : public EventClient {
+    public:
+        explicit LedDriver(EventServer* eventServer);
+        void begin();
+        void update(Topic topic, const char* payload) override;
+        void connectionUpdate(ConnectionState payload);
+        static void timeOverrunUpdate(bool isOn);
+        void update(Topic topic, long payload) override;
 
-    // number of samples for led blinking intervals (* 10 ms)
-    static constexpr unsigned int ExcludeInterval = 25;
-    static constexpr unsigned int IdleInterval = 100;
+        // number of samples for led blinking intervals (* 10 ms)
+        static constexpr unsigned int ExcludeInterval = 25;
+        static constexpr unsigned int IdleInterval = 100;
 
-    // matches interval of connect process
-    static constexpr unsigned int ConnectingInterval = 50;
+        // matches interval of connect process
+        static constexpr unsigned int ConnectingInterval = 50;
 
-private:
-    LedFlasher _connectingFlasher;
-    LedFlasher _sampleFlasher;
-};
-
+    private:
+        LedFlasher _connectingFlasher;
+        LedFlasher _sampleFlasher;
+    };
+}
 #endif

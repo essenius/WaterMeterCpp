@@ -16,20 +16,21 @@
 
 #include "Aggregator.h"
 
-class SampleAggregator final : public Aggregator {
-public:
-    SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
-    using Aggregator::begin;
-    void addSample(const IntCoordinate& sample);
-    void begin();
-    void flush() override;
-    void update(Topic topic, const char* payload) override;
-    void update(Topic topic, long payload) override;
-    void update(Topic topic, IntCoordinate payload) override;
-protected:
-    static constexpr unsigned char DefaultFlushRate = 25;
-    static constexpr unsigned char MaxFlushRate = 25;
-    uint16_t _currentSample = 0;
-};
-
+namespace WaterMeter {
+    class SampleAggregator final : public Aggregator {
+    public:
+        SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
+        using Aggregator::begin;
+        void addSample(const IntCoordinate& sample);
+        void begin();
+        void flush() override;
+        void update(Topic topic, const char* payload) override;
+        void update(Topic topic, long payload) override;
+        void update(Topic topic, IntCoordinate payload) override;
+    protected:
+        static constexpr unsigned char DefaultFlushRate = 25;
+        static constexpr unsigned char MaxFlushRate = 25;
+        uint16_t _currentSample = 0;
+    };
+}
 #endif

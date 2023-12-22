@@ -11,32 +11,35 @@
 
 #include "MagnetoSensorMock.h"
 
-void MagnetoSensorMock::setPowerOnFailures(const int failures) {
-    _powerFailuresLeft = failures;
-}
+namespace WaterMeterCppTest {
 
-bool MagnetoSensorMock::read(SensorData& sample) {
-    if (_isFlat) {
-        sample.reset();
+    void MagnetoSensorMock::setPowerOnFailures(const int failures) {
+        _powerFailuresLeft = failures;
+    }
+
+    bool MagnetoSensorMock::read(SensorData& sample) {
+        if (_isFlat) {
+            sample.reset();
+            return true;
+        }
+        sample.x = 10 - sample.x;
+        sample.y = 5 - sample.y;
         return true;
     }
-    sample.x = 10 - sample.x;
-    sample.y = 5 - sample.y;
-    return true;
-}
 
-void MagnetoSensorMock::setBeginFailures(const int failures) {
-    _beginFailuresLeft = failures;
-}
+    void MagnetoSensorMock::setBeginFailures(const int failures) {
+        _beginFailuresLeft = failures;
+    }
 
-bool MagnetoSensorMock::handlePowerOn() {
-    if (_powerFailuresLeft == 0) return true;
-    _powerFailuresLeft--;
-    return false;
-}
+    bool MagnetoSensorMock::handlePowerOn() {
+        if (_powerFailuresLeft == 0) return true;
+        _powerFailuresLeft--;
+        return false;
+    }
 
-bool MagnetoSensorMock::begin() {
-    if (_beginFailuresLeft == 0) return true;
-    _beginFailuresLeft--;
-    return false;
+    bool MagnetoSensorMock::begin() {
+        if (_beginFailuresLeft == 0) return true;
+        _beginFailuresLeft--;
+        return false;
+    }
 }

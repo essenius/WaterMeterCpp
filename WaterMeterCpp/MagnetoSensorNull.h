@@ -16,38 +16,39 @@
 
 #include "MagnetoSensor.h"
 
-class MagnetoSensorNull : public MagnetoSensor {
-public:
-    MagnetoSensorNull() : MagnetoSensor(0, nullptr) {}
+namespace WaterMeter {
+    class MagnetoSensorNull : public MagnetoSensor {
+    public:
+        MagnetoSensorNull() : MagnetoSensor(0, nullptr) {}
 
-    bool begin() override {
-        return false;
-    }
+        bool begin() override {
+            return false;
+        }
 
-    double getGain() const override {
-        return 0.0;
-    }
+        double getGain() const override {
+            return 0.0;
+        }
 
-    int getNoiseRange() const override {
-        return 0;
-    }
+        int getNoiseRange() const override {
+            return 0;
+        }
 
-    bool isOn() const override {
-        return true;
-    }
+        bool isOn() const override {
+            return true;
+        }
 
-    bool isReal() const override {
-        return false;
-    }
+        bool isReal() const override {
+            return false;
+        }
 
-    bool read(SensorData& sample) override {
-        sample.reset();
-        return false;
-    }
+        bool read(SensorData& sample) override {
+            sample.reset();
+            return false;
+        }
 
-    void softReset() override {}
+        void softReset() override {}
 
-    void waitForPowerOff() const override {}
-};
-
+        void waitForPowerOff() const override {}
+    };
+}
 #endif

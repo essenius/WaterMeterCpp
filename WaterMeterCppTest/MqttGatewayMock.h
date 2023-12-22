@@ -14,6 +14,10 @@
 #include "../WaterMeterCpp/MqttGateway.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::EventServer;
+    using WaterMeter::MqttConfig;
+    using WaterMeter::MqttGateway;
+    using WaterMeter::WiFiClientFactory;
 
     class MqttGatewayMock final : public MqttGateway {
     public:

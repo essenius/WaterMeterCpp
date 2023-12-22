@@ -16,7 +16,8 @@
 #include "../WaterMeterCpp/Button.h"
 
 namespace WaterMeterCppTest {
-
+    using WaterMeter::Button;
+    using WaterMeter::ChangePublisher;
     TEST(ButtonTest, buttonTest1) {
         constexpr uint8_t Port = 34;
         digitalWrite(Port, HIGH);

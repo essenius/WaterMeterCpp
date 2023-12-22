@@ -17,21 +17,23 @@
 #include <ESP.h>
 #include "LongChangePublisher.h"
 
-class Device final : public EventClient {
-public:
-    explicit Device(EventServer* eventServer);
-    void begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle);
-    void reportHealth();
-private:
-    TaskHandle_t _samplerHandle{};
-    TaskHandle_t _communicatorHandle{};
-    TaskHandle_t _connectorHandle{};
-    LongChangePublisher _freeHeap;
-    ChangePublisher<long> _freeStackSampler;
-    ChangePublisher<long> _freeStackCommunicator;
-    ChangePublisher<long> _freeStackConnector;
+namespace WaterMeter {
+    class Device final : public EventClient {
+    public:
+        explicit Device(EventServer* eventServer);
+        void begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle);
+        void reportHealth();
+    private:
+        TaskHandle_t _samplerHandle{};
+        TaskHandle_t _communicatorHandle{};
+        TaskHandle_t _connectorHandle{};
+        LongChangePublisher _freeHeap;
+        ChangePublisher<long> _freeStackSampler;
+        ChangePublisher<long> _freeStackCommunicator;
+        ChangePublisher<long> _freeStackConnector;
 
-    static long freeHeap();
-    static long freeStack(TaskHandle_t taskHandle);
-};
+        static long freeHeap();
+        static long freeStack(TaskHandle_t taskHandle);
+    };
+}
 #endif

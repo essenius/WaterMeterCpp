@@ -14,6 +14,9 @@
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::EventServer;
+    using WaterMeter::MagnetoSensorNull;
+    using WaterMeter::SensorData;
 
     TEST(MagnetoSensorNullTest, magnetoSensorReaderNoSensorTest1) {
         EventServer eventServer;

@@ -22,21 +22,23 @@
 #include "QueueClient.h"
 #include "Serializer.h"
 
-class Communicator final : public EventClient {
-public:
-    Communicator(EventServer* eventServer, OledDriver* oledDriver, Device* device,
-                 DataQueue* dataQueue, Serializer* serializer, 
-                 QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
-    void begin() const;
-    void loop() const;
-    static void task(void* parameter);
+namespace WaterMeter {
+    class Communicator final : public EventClient {
+    public:
+        Communicator(EventServer* eventServer, OledDriver* oledDriver, Device* device,
+            DataQueue* dataQueue, Serializer* serializer,
+            QueueClient* fromSamplerQueueClient, QueueClient* fromConnectorQueueClient);
+        void begin() const;
+        void loop() const;
+        static void task(void* parameter);
 
-private:
-    OledDriver* _oledDriver;
-    Device* _device;
-    DataQueue* _dataQueue;
-    Serializer* _serializer;
-    QueueClient* _samplerQueueClient;
-    QueueClient* _connectorQueueClient;
-};
+    private:
+        OledDriver* _oledDriver;
+        Device* _device;
+        DataQueue* _dataQueue;
+        Serializer* _serializer;
+        QueueClient* _samplerQueueClient;
+        QueueClient* _connectorQueueClient;
+    };
+}
 #endif

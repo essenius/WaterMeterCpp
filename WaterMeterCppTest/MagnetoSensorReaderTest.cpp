@@ -20,6 +20,10 @@
 // doesn't do much, just checking the interface works
 
 namespace WaterMeterCppTest {
+    using WaterMeter::IntCoordinate;
+    using WaterMeter::MagnetoSensor;
+    using WaterMeter::Topic;
+    using WaterMeter::SensorState;
 
     TEST(MagnetoSensorReaderTest, magnetoSensorReaderReadFailsTest) {
         EventServer eventServer;

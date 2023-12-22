@@ -14,6 +14,7 @@
 
 
 namespace WaterMeterCppTest {
+
     class PulseTestEventClient final : public TestEventClient {
     public:
         explicit PulseTestEventClient(EventServer* eventServer);

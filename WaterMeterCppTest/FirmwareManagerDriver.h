@@ -13,10 +13,13 @@
 #include "../WaterMeterCpp/FirmwareManager.h"
 
 // For testing we make two protected methods publicly available. Otherwise it should behave the same as FirmwareManager.
+namespace WaterMeterCppTest {
+	using WaterMeter::FirmwareManager;
 
-class FirmwareManagerDriver final : public FirmwareManager {
-public:
-	using FirmwareManager::FirmwareManager;
-	using FirmwareManager::loadUpdate;
-	using FirmwareManager::isUpdateAvailable;
-};
+	class FirmwareManagerDriver final : public FirmwareManager {
+	public:
+		using FirmwareManager::FirmwareManager;
+		using FirmwareManager::loadUpdate;
+		using FirmwareManager::isUpdateAvailable;
+	};
+}

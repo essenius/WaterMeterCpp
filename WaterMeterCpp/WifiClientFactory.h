@@ -17,13 +17,14 @@
 #include <WiFiClientSecure.h>
 #include "Configuration.h"
 
-class WiFiClientFactory {
-public:
-    explicit WiFiClientFactory(const TlsConfig* config);
-    WiFiClient* create(bool useTls) const;
-    WiFiClient* create(const char* url) const;
-private:
-    const TlsConfig* _config;
-};
-
+namespace WaterMeter {
+    class WiFiClientFactory {
+    public:
+        explicit WiFiClientFactory(const TlsConfig* config);
+        WiFiClient* create(bool useTls) const;
+        WiFiClient* create(const char* url) const;
+    private:
+        const TlsConfig* _config;
+    };
+}
 #endif

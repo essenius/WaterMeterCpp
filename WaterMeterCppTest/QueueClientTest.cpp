@@ -17,6 +17,8 @@
 #include "freertos/ringbuf.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Log;
+    using WaterMeter::QueueClient;
     
     class QueueClientTest : public testing::Test {
     public:

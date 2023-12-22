@@ -15,6 +15,14 @@
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::MagnetoSensorQmc;
+    using WaterMeter::SensorData;
+    using WaterMeter::QmcRange;
+    using WaterMeter::QmcRange2G;
+    using WaterMeter::QmcRange8G;
+    using WaterMeter::QmcRate;
+    using WaterMeter::QmcRate200Hz;
+    using WaterMeter::QmcSampling128;
 
     TEST(MagnetoSensorQmcTest, magnetoSensorQmcGetGainTest) {
         EXPECT_EQ(12000.0, MagnetoSensorQmc::getGain(QmcRange2G)) << "2G gain ok";

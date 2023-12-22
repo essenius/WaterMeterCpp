@@ -22,6 +22,8 @@
 constexpr unsigned long MeasureIntervalMicros = 10UL * 1000UL;
 
 namespace WaterMeterCppTest {
+    using namespace EllipseMath;
+    using namespace WaterMeter;
 
     class ResultAggregatorTest : public testing::Test {
     public:

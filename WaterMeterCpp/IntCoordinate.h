@@ -16,54 +16,57 @@
 #ifndef HEADER_INTCOORDINATE
 #define HEADER_INTCOORDINATE
 
-#include "Coordinate.h"
+#include <Coordinate.h>
 #include <climits>
 
-union IntCoordinate {
-    struct {
-        int16_t x;
-        int16_t y;
+using EllipseMath::Coordinate;
+
+namespace WaterMeter {
+    union IntCoordinate {
+        struct {
+            int16_t x;
+            int16_t y;
+        };
+
+        long l;
+
+        bool operator==(const IntCoordinate& other) const {
+            return x == other.x && y == other.y;
+        }
+
+        void set(const int16_t xIn, const int16_t yIn) {
+            x = xIn;
+            y = yIn;
+        }
+
+        // we need this to pass coordinates in a memory efficient way but still keep reasonable accuracy
+
+        static IntCoordinate times10(const Coordinate& input) {
+            return { {static_cast<int16_t>(input.x * 10), static_cast<int16_t>(input.y * 10)} };
+        }
+
+        double getDistanceFrom(const IntCoordinate other) const {
+            return toCoordinate().getDistanceFrom(other.toCoordinate());
+        }
+
+        Coordinate toCoordinate() const {
+            return { static_cast<double>(x), static_cast<double>(y) };
+        }
+
+        // We reserve SHRT_MIN to indicate saturated values
+        // We can't use another field for quality, because we need to transport the coordinate in 32 bits.
+        bool isSaturated() const {
+            return x == SHRT_MIN || y == SHRT_MIN;
+        }
+
+        // SHRT_MAX indicates a read error (neither QMC nor HMC delivers this as a valid value)
+        bool hasError() const {
+            return x == SHRT_MAX || y == SHRT_MAX;
+        }
+
+        static IntCoordinate error() {
+            return IntCoordinate{ SHRT_MAX, SHRT_MAX };
+        }
     };
-
-    long l;
-
-    bool operator==(const IntCoordinate& other) const {
-        return x == other.x && y == other.y;
-    }
-
-    void set(const int16_t xIn, const int16_t yIn) {
-        x = xIn;
-        y = yIn;
-    }
-
-    // we need this to pass coordinates in a memory efficient way but still keep reasonable accuracy
-
-    static IntCoordinate times10(const Coordinate& input) {
-        return {{static_cast<int16_t>(input.x * 10), static_cast<int16_t>(input.y * 10)}};
-    }
-
-    double getDistanceFrom(const IntCoordinate other) const {
-        return toCoordinate().getDistanceFrom(other.toCoordinate());
-    }
-
-    Coordinate toCoordinate() const {
-        return { static_cast<double>(x), static_cast<double>(y) };
-    }
-
-    // We reserve SHRT_MIN to indicate saturated values
-    // We can't use another field for quality, because we need to transport the coordinate in 32 bits.
-    bool isSaturated() const {
-        return x == SHRT_MIN || y == SHRT_MIN;
-    }
-
-    // SHRT_MAX indicates a read error (neither QMC nor HMC delivers this as a valid value)
-    bool hasError() const {
-        return x == SHRT_MAX || y == SHRT_MAX;
-    }
-
-    static IntCoordinate error() {
-        return IntCoordinate { SHRT_MAX, SHRT_MAX };
-    }
-};
-
+}
 #endif

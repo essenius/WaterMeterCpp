@@ -16,83 +16,86 @@
 #include "Aggregator.h"
 #include "DataQueue.h"
 
-Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload) :
-    EventClient(eventServer),
-    _clock(theClock),
-    _dataQueue(dataQueue), _payload(payload),
-    _flushRate(eventServer, Topic::Rate),
-    _blocked(eventServer, Topic::Blocked) {}
+namespace WaterMeter {
 
-void Aggregator::begin(const long desiredFlushRate) {
-    setDesiredFlushRate(desiredFlushRate);
-    flush();
-}
+    Aggregator::Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload) :
+        EventClient(eventServer),
+        _clock(theClock),
+        _dataQueue(dataQueue), _payload(payload),
+        _flushRate(eventServer, Topic::Rate),
+        _blocked(eventServer, Topic::Blocked) {}
 
-bool Aggregator::canSend() const {
-    return _dataQueue->canSend(_payload);
-}
-
-long Aggregator::convertToLong(const char* stringParam, const long defaultValue) {
-    if (strcmp(stringParam, "DEFAULT") == 0) {
-        return defaultValue;
+    void Aggregator::begin(const long desiredFlushRate) {
+        setDesiredFlushRate(desiredFlushRate);
+        flush();
     }
-    return strtol(stringParam, nullptr, 10);
-}
 
-void Aggregator::flush() {
-    _messageCount = 0;
-    for (IntCoordinate& i : _payload->buffer.samples.value) {
-        i.l = 0;
+    bool Aggregator::canSend() const {
+        return _dataQueue->canSend(_payload);
     }
-    _flushRate = _desiredFlushRate;
-}
 
-// Only used for testing, but inherited so can't easily move to a driver
-long Aggregator::getFlushRate() {
-    return _flushRate;
-}
-
-DataQueuePayload* Aggregator::getPayload() const {
-    return _payload;
-}
-
-long Aggregator::limit(const long input, const long min, const long max) {
-    return (input < min) ? min : (input > max) ? max : input;
-}
-
-bool Aggregator::newMessage() {
-    if (_flushRate == 0) return false;
-    _messageCount++;
-    return true;
-}
-
-bool Aggregator::send() {
-    if (!shouldSend()) return false;
-    _blocked = !canSend();
-    if (_blocked) return false;
-    _payload->timestamp = Clock::getTimestamp();
-    if (!_dataQueue->send(getPayload())) {
-        return false;
+    long Aggregator::convertToLong(const char* stringParam, const long defaultValue) {
+        if (strcmp(stringParam, "DEFAULT") == 0) {
+            return defaultValue;
+        }
+        return strtol(stringParam, nullptr, 10);
     }
-    flush();
-    return true;
-}
 
-void Aggregator::setDesiredFlushRate(const long flushRate) {
-    _desiredFlushRate = flushRate;
-    // Immediately apply if we are starting a new round, or aren't logging
-    // Otherwise it will be done at the next reset.
-    if (_messageCount == 0 || _flushRate == 0) {
+    void Aggregator::flush() {
+        _messageCount = 0;
+        for (IntCoordinate& i : _payload->buffer.samples.value) {
+            i.l = 0;
+        }
         _flushRate = _desiredFlushRate;
     }
-}
 
-bool Aggregator::shouldSend(const bool force) {
-    if (_flushRate == 0L || _messageCount == 0) {
-        return false;
+    // Only used for testing, but inherited so can't easily move to a driver
+    long Aggregator::getFlushRate() {
+        return _flushRate;
     }
-    if (_messageCount % _flushRate != 0 && !force) {
-        return false;
+
+    DataQueuePayload* Aggregator::getPayload() const {
+        return _payload;
     }
-    return true;
+
+    long Aggregator::limit(const long input, const long min, const long max) {
+        return (input < min) ? min : (input > max) ? max : input;
+    }
+
+    bool Aggregator::newMessage() {
+        if (_flushRate == 0) return false;
+        _messageCount++;
+        return true;
+    }
+
+    bool Aggregator::send() {
+        if (!shouldSend()) return false;
+        _blocked = !canSend();
+        if (_blocked) return false;
+        _payload->timestamp = Clock::getTimestamp();
+        if (!_dataQueue->send(getPayload())) {
+            return false;
+        }
+        flush();
+        return true;
+    }
+
+    void Aggregator::setDesiredFlushRate(const long flushRate) {
+        _desiredFlushRate = flushRate;
+        // Immediately apply if we are starting a new round, or aren't logging
+        // Otherwise it will be done at the next reset.
+        if (_messageCount == 0 || _flushRate == 0) {
+            _flushRate = _desiredFlushRate;
+        }
+    }
+
+    bool Aggregator::shouldSend(const bool force) {
+        if (_flushRate == 0L || _messageCount == 0) {
+            return false;
+        }
+        if (_messageCount % _flushRate != 0 && !force) {
+            return false;
+        }
+        return true;
+    }
 }

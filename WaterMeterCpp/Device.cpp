@@ -15,32 +15,34 @@
 
 #include "Device.h"
 
-Device::Device(EventServer* eventServer) : EventClient(eventServer),
-    // Only catch larger variations or alarmingly low values to avoid very frequent updates
-    _freeHeap(eventServer, Topic::FreeHeap, 5000L, 20000L),
-    // catch all changes as this is not expected to change
-    _freeStackSampler(eventServer, Topic::FreeStack, 0),
-    _freeStackCommunicator(eventServer, Topic::FreeStack, 1),
-    _freeStackConnector(eventServer, Topic::FreeStack, 2) {}
+namespace WaterMeter {
+    Device::Device(EventServer* eventServer) : EventClient(eventServer),
+        // Only catch larger variations or alarmingly low values to avoid very frequent updates
+        _freeHeap(eventServer, Topic::FreeHeap, 5000L, 20000L),
+        // catch all changes as this is not expected to change
+        _freeStackSampler(eventServer, Topic::FreeStack, 0),
+        _freeStackCommunicator(eventServer, Topic::FreeStack, 1),
+        _freeStackConnector(eventServer, Topic::FreeStack, 2) {}
 
-void Device::begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle) {
-    _samplerHandle = samplerHandle;
-    _communicatorHandle = communicatorHandle;
-    _connectorHandle = connectorHandle;
-}
+    void Device::begin(TaskHandle_t samplerHandle, TaskHandle_t communicatorHandle, TaskHandle_t connectorHandle) {
+        _samplerHandle = samplerHandle;
+        _communicatorHandle = communicatorHandle;
+        _connectorHandle = connectorHandle;
+    }
 
-long Device::freeStack(TaskHandle_t taskHandle) {
-    return static_cast<long>(uxTaskGetStackHighWaterMark(taskHandle));
-}
+    long Device::freeStack(TaskHandle_t taskHandle) {
+        return static_cast<long>(uxTaskGetStackHighWaterMark(taskHandle));
+    }
 
-long Device::freeHeap() {
-    return ESP.getFreeHeap();
-}
+    long Device::freeHeap() {
+        return ESP.getFreeHeap();
+    }
 
-void Device::reportHealth() {
-    _freeHeap = freeHeap();
-    if (_samplerHandle == nullptr) return;
-    _freeStackSampler = freeStack(_samplerHandle);
-    _freeStackCommunicator = freeStack(_communicatorHandle);
-    _freeStackConnector = freeStack(_connectorHandle);
+    void Device::reportHealth() {
+        _freeHeap = freeHeap();
+        if (_samplerHandle == nullptr) return;
+        _freeStackSampler = freeStack(_samplerHandle);
+        _freeStackCommunicator = freeStack(_communicatorHandle);
+        _freeStackConnector = freeStack(_connectorHandle);
+    }
 }

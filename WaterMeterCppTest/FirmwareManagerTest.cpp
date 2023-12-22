@@ -18,7 +18,10 @@
 #include "HTTPUpdate.h"
 
 namespace WaterMeterCppTest {
-    
+    using WaterMeter::FirmwareConfig;
+    using WaterMeter::FirmwareManager;
+    using WaterMeter::WiFiClientFactory;
+
     class FirmwareManagerTest : public testing::Test {
     public:
         static WiFiClient client;

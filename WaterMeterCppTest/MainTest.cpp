@@ -49,7 +49,9 @@
 // objects defined globally so we don't get into heap issues.
 
 namespace WaterMeterCppTest {
-    
+    using EllipseMath::EllipseFit;
+    using namespace WaterMeter;
+
     class MainTest : public testing::Test {
     public:
         static Preferences preferences;

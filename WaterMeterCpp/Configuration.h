@@ -18,69 +18,71 @@
 #include <IPAddress.h>
 #include <Preferences.h>
 
-struct IpConfig {
-    IPAddress localIp;
-    IPAddress gateway;
-    IPAddress subnetMask;
-    IPAddress primaryDns;
-    IPAddress secondaryDns;
-};
+namespace WaterMeter {
 
-// INADDR_NONE means auto-configure
-const IpConfig IpAutoConfig{INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE};
+    struct IpConfig {
+        IPAddress localIp;
+        IPAddress gateway;
+        IPAddress subnetMask;
+        IPAddress primaryDns;
+        IPAddress secondaryDns;
+    };
 
-struct FirmwareConfig {
-    const char* baseUrl;
-};
+    // INADDR_NONE means auto-configure
+    const IpConfig IpAutoConfig{ INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE };
 
-struct MqttConfig {
-    const char* broker;
-    unsigned int port;
-    const char* user;
-    const char* password;
-    bool useTls;
-};
+    struct FirmwareConfig {
+        const char* baseUrl;
+    };
 
-struct TlsConfig {
-    const char* rootCaCertificate;
-    const char* deviceCertificate;
-    const char* devicePrivateKey;
-};
+    struct MqttConfig {
+        const char* broker;
+        unsigned int port;
+        const char* user;
+        const char* password;
+        bool useTls;
+    };
 
-struct WifiConfig {
-    const char* ssid;
-    const char* password;
-    const char* deviceName;
-    uint8_t* bssid; // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
-};
+    struct TlsConfig {
+        const char* rootCaCertificate;
+        const char* deviceCertificate;
+        const char* devicePrivateKey;
+    };
 
-class Configuration {
-public:
-    explicit Configuration(Preferences* preferences);
-    IpConfig ip{};
-    MqttConfig mqtt{};
-    TlsConfig tls{};
-    WifiConfig wifi{};
-    FirmwareConfig firmware{};
-    void begin(bool useSecrets = true);
-    void putFirmwareConfig(const FirmwareConfig* firnwareConfig) const;
-    void putMqttConfig(const MqttConfig* mqttConfig) const;
-    void putIpConfig(const IpConfig* ipConfig) const;
-    void putTlsConfig(const TlsConfig* tlsConfig) const;
-    void putWifiConfig(const WifiConfig* wifiConfig) const;
-    int freeBufferSpace() const;
-private:
-    static constexpr int BufferSize = 8192;
-    Preferences* _preferences;
-    char _buffer[BufferSize] = {0};
-    char* _next = _buffer;
-    char* storeToBuffer(const char* key, char** startLocation);
-    char* getFirmwareConfig(char* start);
-    void getIpConfig();
-    char* getMqttConfig(char* start);
-    char* getTlsConfig(char* start);
-    char* getWifiConfig(char* start);
-    void putStringIfNotNull(const char* key, const char* value) const;
-};
+    struct WifiConfig {
+        const char* ssid;
+        const char* password;
+        const char* deviceName;
+        uint8_t* bssid; // Format: { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }. Use nullptr for autoconfigure
+    };
 
+    class Configuration {
+    public:
+        explicit Configuration(Preferences* preferences);
+        IpConfig ip{};
+        MqttConfig mqtt{};
+        TlsConfig tls{};
+        WifiConfig wifi{};
+        FirmwareConfig firmware{};
+        void begin(bool useSecrets = true);
+        void putFirmwareConfig(const FirmwareConfig* firnwareConfig) const;
+        void putMqttConfig(const MqttConfig* mqttConfig) const;
+        void putIpConfig(const IpConfig* ipConfig) const;
+        void putTlsConfig(const TlsConfig* tlsConfig) const;
+        void putWifiConfig(const WifiConfig* wifiConfig) const;
+        int freeBufferSpace() const;
+    private:
+        static constexpr int BufferSize = 8192;
+        Preferences* _preferences;
+        char _buffer[BufferSize] = { 0 };
+        char* _next = _buffer;
+        char* storeToBuffer(const char* key, char** startLocation);
+        char* getFirmwareConfig(char* start);
+        void getIpConfig();
+        char* getMqttConfig(char* start);
+        char* getTlsConfig(char* start);
+        char* getWifiConfig(char* start);
+        void putStringIfNotNull(const char* key, const char* value) const;
+    };
+}
 #endif

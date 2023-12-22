@@ -15,6 +15,10 @@
 #include <SafeCString.h>
 
 namespace WaterMeterCppTest {
+    using WaterMeter::DataQueuePayload;
+    using WaterMeter::PayloadBuilder;
+    using WaterMeter::Serializer;
+    using WaterMeter::MaxSamples;
 
     TEST(SerializerTest, serializerTest1) {
         PayloadBuilder payloadBuilder;

@@ -20,6 +20,14 @@
 #include "../WaterMeterCpp/Serializer.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Clock;
+    using WaterMeter::DataQueue;
+    using WaterMeter::DataQueuePayload;
+    using WaterMeter::MqttConfig;
+    using WaterMeter::MqttGateway;
+    using WaterMeter::PayloadBuilder;
+    using WaterMeter::Serializer;
+    using WaterMeter::WiFiClientFactory;
 
     constexpr MqttConfig MqttConfigWithUser{"broker", 1883, "user", "password", false};
     constexpr MqttConfig MqttConfigNoUser{"broker", 1883, nullptr, "", false};

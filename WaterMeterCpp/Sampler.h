@@ -23,53 +23,54 @@
 #include "ResultAggregator.h"
 #include "SampleAggregator.h"
 
-class Sampler {
-public:
-    Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowDetector* flowDetector, Button* button, 
+namespace WaterMeter {
+    class Sampler {
+    public:
+        Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowDetector* flowDetector, Button* button,
             SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient);
-    bool begin(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
-    void beginLoop(TaskHandle_t taskHandle);
-    void loop();
-    static void task(void* parameter);
+        bool begin(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
+        void beginLoop(TaskHandle_t taskHandle);
+        void loop();
+        static void task(void* parameter);
 
-protected:
-    static constexpr byte TimerNumber = 0;
-    static constexpr unsigned short Divider = 80; // 80 MHz -> 1 MHz
-    static constexpr UBaseType_t SampleQueueSize = 50;
-    static constexpr UBaseType_t OverrunQueueSize = 20;
-    static constexpr unsigned long MaxOffsetMicros = 100;
-    static constexpr bool Repeat = true;
-    static constexpr bool CountUp = true;
-    static constexpr bool Edge = true;
+    protected:
+        static constexpr byte TimerNumber = 0;
+        static constexpr unsigned short Divider = 80; // 80 MHz -> 1 MHz
+        static constexpr UBaseType_t SampleQueueSize = 50;
+        static constexpr UBaseType_t OverrunQueueSize = 20;
+        static constexpr unsigned long MaxOffsetMicros = 100;
+        static constexpr bool Repeat = true;
+        static constexpr bool CountUp = true;
+        static constexpr bool Edge = true;
 
-    EventServer* _eventServer;
-    MagnetoSensorReader* _sensorReader;
-    FlowDetector* _flowDetector;
-    Button* _button;
-    SampleAggregator* _sampleAggregator;
-    ResultAggregator* _resultAggregator;
-    QueueClient* _queueClient;
-    unsigned long _additionalDuration = 0;
-    unsigned long _samplePeriod = 10000;
-    unsigned long _ticksPerSample = 10;
-    unsigned long _previousReadTime = 0;
-    long _previousOverrun = 0;
+        EventServer* _eventServer;
+        MagnetoSensorReader* _sensorReader;
+        FlowDetector* _flowDetector;
+        Button* _button;
+        SampleAggregator* _sampleAggregator;
+        ResultAggregator* _resultAggregator;
+        QueueClient* _queueClient;
+        unsigned long _additionalDuration = 0;
+        unsigned long _samplePeriod = 10000;
+        unsigned long _ticksPerSample = 10;
+        unsigned long _previousReadTime = 0;
+        long _previousOverrun = 0;
 
-    hw_timer_t* _timer = nullptr;
-    QueueHandle_t _sampleQueue = nullptr;
-    QueueHandle_t _overrunQueue = nullptr;
-    static TaskHandle_t _taskHandle;
-    static volatile unsigned long _interruptCounter;
-    volatile unsigned long _notifyCounter = 0;
-    volatile unsigned long _queueFullCounter = 0;
-    unsigned long _sampleCount = 0;
-    unsigned long _overruns = 0;
-  
-    static void ARDUINO_ISR_ATTR onTimer();
-    void handleSample(const IntCoordinate& sample, unsigned long startTime);
+        hw_timer_t* _timer = nullptr;
+        QueueHandle_t _sampleQueue = nullptr;
+        QueueHandle_t _overrunQueue = nullptr;
+        static TaskHandle_t _taskHandle;
+        static volatile unsigned long _interruptCounter;
+        volatile unsigned long _notifyCounter = 0;
+        volatile unsigned long _queueFullCounter = 0;
+        unsigned long _sampleCount = 0;
+        unsigned long _overruns = 0;
 
-    void sensorLoop();
+        static void ARDUINO_ISR_ATTR onTimer();
+        void handleSample(const IntCoordinate& sample, unsigned long startTime);
 
-};
+        void sensorLoop();
 
+    };
+}
 #endif

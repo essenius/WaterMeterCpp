@@ -15,6 +15,7 @@
 #include "../WaterMeterCpp/SampleAggregator.h"
 
 namespace WaterMeterCppTest {
+    using namespace WaterMeter;
 
     TEST(SampleAggregatorTest, sampleAggregatorAddSampleTest) {
         EventServer eventServer;

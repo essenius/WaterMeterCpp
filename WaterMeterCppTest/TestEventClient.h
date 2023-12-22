@@ -14,6 +14,10 @@
 #include "../WaterMeterCpp/EventServer.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::EventClient;
+    using WaterMeter::EventServer;
+    using WaterMeter::IntCoordinate;
+    using WaterMeter::Topic;
 
     class TestEventClient : public EventClient {
     public:

@@ -114,28 +114,10 @@
     <ClCompile Include="Meter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Angle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Button.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CartesianEllipse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Coordinate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EllipseFit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FlowDetector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MathUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="QuadraticEllipse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MagnetoSensorSimulation.cpp">
@@ -251,28 +233,10 @@
     <ClInclude Include="Meter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Angle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Button.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CartesianEllipse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Coordinate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EllipseFit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FlowDetector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MathUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="QuadraticEllipse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IntCoordinate.h">

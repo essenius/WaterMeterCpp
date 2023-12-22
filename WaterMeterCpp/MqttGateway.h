@@ -25,8 +25,8 @@
 #include "DataQueue.h"
 #include "WiFiClientFactory.h"
 
-
-    #define CALLBACK_SIGNATURE std::function<void(char*, char*)>
+namespace WaterMeter {
+#define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 
     constexpr const char* const Empty = "";
     constexpr const char* const DeviceLabel = "device";
@@ -111,5 +111,5 @@
         void publishToEventServer(Topic topic, const char* payload);
         void publishUpdate(Topic topic, const char* payload);
     };
-
+}
 #endif

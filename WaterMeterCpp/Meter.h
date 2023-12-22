@@ -15,25 +15,27 @@
 
 #include "EventClient.h"
 
-class Meter final : public EventClient {
-public:
-    explicit Meter(EventServer* eventServer);
-    void begin();
-    const char* getVolume();
-    void newPulse();
-    void publishValues();
-    bool setVolume(const char* meterValue, double addition = 0.0);
-    void update(Topic topic, const char* payload) override;
-    void update(Topic topic, long payload) override;
+namespace WaterMeter {
+    class Meter final : public EventClient {
+    public:
+        explicit Meter(EventServer* eventServer);
+        void begin();
+        const char* getVolume();
+        void newPulse();
+        void publishValues();
+        bool setVolume(const char* meterValue, double addition = 0.0);
+        void update(Topic topic, const char* payload) override;
+        void update(Topic topic, long payload) override;
 
-private:
-    // 1 pulse per cycle, this is cycles per 1000 L
-    // This needs to be calibrated.
-    static constexpr double PulsesPerUnit = 16500;
-    static constexpr double PulseDelta = 1.0 / PulsesPerUnit;
-    double _volume = 0.0;
-    unsigned long _pulses = 0;
-    static constexpr int Buffersize = 20;
-    char _buffer[Buffersize] = "";
-};
+    private:
+        // 1 pulse per cycle, this is cycles per 1000 L
+        // This needs to be calibrated.
+        static constexpr double PulsesPerUnit = 16500;
+        static constexpr double PulseDelta = 1.0 / PulsesPerUnit;
+        double _volume = 0.0;
+        unsigned long _pulses = 0;
+        static constexpr int Buffersize = 20;
+        char _buffer[Buffersize] = "";
+    };
+}
 #endif

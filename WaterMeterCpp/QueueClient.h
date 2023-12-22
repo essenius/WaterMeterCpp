@@ -19,22 +19,23 @@
 #include "Log.h" // exception: log from here only if buffer is full
 #include "LongChangePublisher.h"
 
-class QueueClient final : public EventClient {
-public:
-    QueueClient(EventServer* eventServer, Log* logger, uint16_t size, int8_t index = 0);
-    void begin(QueueHandle_t sendQueue = nullptr);
-    QueueHandle_t getQueueHandle() const;
-    bool receive();
-    void update(Topic topic, const char* payload) override;
-    void update(Topic topic, long payload) override;
-private:
-    void send(Topic topic, intptr_t payload, bool isString = false);
-    static QueueHandle_t createQueue(uint16_t length);
-    Log* _logger;
-    LongChangePublisher _freeSpaces;
-    QueueHandle_t _receiveQueue;
-    QueueHandle_t _sendQueue = nullptr;
-    int8_t _index;
-};
-
+namespace WaterMeter {
+    class QueueClient final : public EventClient {
+    public:
+        QueueClient(EventServer* eventServer, Log* logger, uint16_t size, int8_t index = 0);
+        void begin(QueueHandle_t sendQueue = nullptr);
+        QueueHandle_t getQueueHandle() const;
+        bool receive();
+        void update(Topic topic, const char* payload) override;
+        void update(Topic topic, long payload) override;
+    private:
+        void send(Topic topic, intptr_t payload, bool isString = false);
+        static QueueHandle_t createQueue(uint16_t length);
+        Log* _logger;
+        LongChangePublisher _freeSpaces;
+        QueueHandle_t _receiveQueue;
+        QueueHandle_t _sendQueue = nullptr;
+        int8_t _index;
+    };
+}
 #endif

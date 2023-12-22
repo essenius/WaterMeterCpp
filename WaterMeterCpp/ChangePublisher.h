@@ -19,45 +19,46 @@
 
 #include "EventServer.h"
 
-template <class PayloadType>
-class ChangePublisher {
-public:
-    ChangePublisher(
-        EventServer* eventServer,
-        const Topic topic,
-        const int8_t index = 0,
-        PayloadType defaultValue = PayloadType()):
-        _eventServer(eventServer),
-        _index(index << 24),
-        _payload(defaultValue),
-        _topic(topic) {}
+namespace WaterMeter {
+    template <class PayloadType>
+    class ChangePublisher {
+    public:
+        ChangePublisher(
+            EventServer* eventServer,
+            const Topic topic,
+            const int8_t index = 0,
+            PayloadType defaultValue = PayloadType()) :
+            _eventServer(eventServer),
+            _index(index << 24),
+            _payload(defaultValue),
+            _topic(topic) {}
 
-    ChangePublisher(const ChangePublisher&) = default;
-    ChangePublisher(ChangePublisher&&) = default;
-    ChangePublisher& operator=(const ChangePublisher&) = default;
-    ChangePublisher& operator=(ChangePublisher&&) = default;
-    virtual ~ChangePublisher() = default;
+        ChangePublisher(const ChangePublisher&) = default;
+        ChangePublisher(ChangePublisher&&) = default;
+        ChangePublisher& operator=(const ChangePublisher&) = default;
+        ChangePublisher& operator=(ChangePublisher&&) = default;
+        virtual ~ChangePublisher() = default;
 
-    // ReSharper disable once CppNonExplicitConversionOperator -- done on purpose to be able to use as variable
-    operator PayloadType() const { return _payload; }
-    PayloadType get() const { return _payload; }
+        // ReSharper disable once CppNonExplicitConversionOperator -- done on purpose to be able to use as variable
+        operator PayloadType() const { return _payload; }
+        PayloadType get() const { return _payload; }
 
-    void reset() { _payload = PayloadType(); }
-    void setTopic(const Topic topic) { _topic = topic; }
+        void reset() { _payload = PayloadType(); }
+        void setTopic(const Topic topic) { _topic = topic; }
 
-    virtual ChangePublisher& operator=(PayloadType payload) {
-        if (payload != _payload) {
-            _payload = payload;
-            _eventServer->publish(_topic, static_cast<long>(payload) + _index);
+        virtual ChangePublisher& operator=(PayloadType payload) {
+            if (payload != _payload) {
+                _payload = payload;
+                _eventServer->publish(_topic, static_cast<long>(payload) + _index);
+            }
+            return *this;
         }
-        return *this;
-    }
 
-protected:
-    EventServer* _eventServer;
-    long _index;
-    PayloadType _payload;
-    Topic _topic;
-};
-
+    protected:
+        EventServer* _eventServer;
+        long _index;
+        PayloadType _payload;
+        Topic _topic;
+    };
+}
 #endif

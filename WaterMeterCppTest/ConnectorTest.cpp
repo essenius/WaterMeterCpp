@@ -23,6 +23,21 @@
 #include "../WaterMeterCpp/DataQueue.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Configuration;
+    using WaterMeter::ConnectionState;
+    using WaterMeter::Connector;
+    using WaterMeter::DataQueue;
+    using WaterMeter::DataQueuePayload;
+    using WaterMeter::FirmwareConfig;
+    using WaterMeter::FirmwareManager;
+    using WaterMeter::Log;
+    using WaterMeter::PayloadBuilder;
+    using WaterMeter::QueueClient;
+    using WaterMeter::Serializer;
+    using WaterMeter::WiFiClientFactory;
+    using WaterMeter::WifiInitialWaitDuration;
+    using WaterMeter::WifiReconnectWaitDuration;
+    using WaterMeter::MaxReconnectFailures;
 
     class ConnectorTest : public testing::Test {
     public:

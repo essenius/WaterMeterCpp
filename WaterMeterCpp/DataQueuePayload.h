@@ -20,44 +20,45 @@
 #include "EventClient.h"
 #include "IntCoordinate.h"
 
-constexpr uint16_t MaxSamples = 25;
+namespace WaterMeter {
+    constexpr uint16_t MaxSamples = 25;
 
-struct Samples {
-    uint16_t count;
-    IntCoordinate value[MaxSamples];
-};
+    struct Samples {
+        uint16_t count;
+        IntCoordinate value[MaxSamples];
+    };
 
-// ResultData size must be <= Samples size
+    // ResultData size must be <= Samples size
 
-struct ResultData {
-    IntCoordinate lastSample;
-    uint32_t sampleCount;
-    uint32_t skipCount;
-    uint16_t resetCount;
-    uint16_t maxStreak;
-    IntCoordinate ellipseCenterTimes10;
-    IntCoordinate ellipseRadiusTimes10;
-    int16_t ellipseAngleTimes10;
-    uint16_t pulseCount;
-    uint32_t anomalyCount;
-    uint32_t overrunCount;
-    uint32_t totalDuration;
-    uint32_t averageDuration;
-    uint32_t maxDuration;
-};
+    struct ResultData {
+        IntCoordinate lastSample;
+        uint32_t sampleCount;
+        uint32_t skipCount;
+        uint16_t resetCount;
+        uint16_t maxStreak;
+        IntCoordinate ellipseCenterTimes10;
+        IntCoordinate ellipseRadiusTimes10;
+        int16_t ellipseAngleTimes10;
+        uint16_t pulseCount;
+        uint32_t anomalyCount;
+        uint32_t overrunCount;
+        uint32_t totalDuration;
+        uint32_t averageDuration;
+        uint32_t maxDuration;
+    };
 
-union Content {
-    Samples samples{};
-    ResultData result;
-    char message[sizeof(Samples)];
-    uint32_t value;
-};
+    union Content {
+        Samples samples{};
+        ResultData result;
+        char message[sizeof(Samples)];
+        uint32_t value;
+    };
 
-struct DataQueuePayload {
-    Topic topic{};
-    Timestamp timestamp{};
-    Content buffer{};
-    size_t size() const;
-};
-
+    struct DataQueuePayload {
+        Topic topic{};
+        Timestamp timestamp{};
+        Content buffer{};
+        size_t size() const;
+    };
+}
 #endif

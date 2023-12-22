@@ -12,7 +12,6 @@
 #include "MqttGatewayMock.h"
 
 namespace WaterMeterCppTest {
-
     MqttGatewayMock::MqttGatewayMock(EventServer* eventServer, PubSubClient* mqttClient, WiFiClientFactory* wifiClientFactory) :
         MqttGateway(eventServer, mqttClient, wifiClientFactory, &MqttConfig, nullptr, "1.0.0") {}
 

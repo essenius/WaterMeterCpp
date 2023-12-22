@@ -20,29 +20,31 @@
 #include "ChangePublisher.h"
 #include "DataQueue.h"
 
-class Aggregator : public EventClient {
-public:
-    Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
-    virtual void begin(long desiredFlushRate);
-    bool canSend() const;
-    virtual void flush();
-    long getFlushRate();
-    bool newMessage();
-    DataQueuePayload* getPayload() const;
-    virtual bool send();
-    virtual void setDesiredFlushRate(long flushRate);
-    virtual bool shouldSend(bool force = false);
+namespace WaterMeter {
 
-protected:
-    static long convertToLong(const char* stringParam, long defaultValue = 0L);
-    static long limit(long input, long min, long max);
-    Clock* _clock;
-    DataQueue* _dataQueue;
-    DataQueuePayload* _payload;
-    ChangePublisher<long> _flushRate;
-    ChangePublisher<long> _blocked;
-    long _desiredFlushRate = 0;
-    long _messageCount = 0;
-};
+    class Aggregator : public EventClient {
+    public:
+        Aggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
+        virtual void begin(long desiredFlushRate);
+        bool canSend() const;
+        virtual void flush();
+        long getFlushRate();
+        bool newMessage();
+        DataQueuePayload* getPayload() const;
+        virtual bool send();
+        virtual void setDesiredFlushRate(long flushRate);
+        virtual bool shouldSend(bool force = false);
 
+    protected:
+        static long convertToLong(const char* stringParam, long defaultValue = 0L);
+        static long limit(long input, long min, long max);
+        Clock* _clock;
+        DataQueue* _dataQueue;
+        DataQueuePayload* _payload;
+        ChangePublisher<long> _flushRate;
+        ChangePublisher<long> _blocked;
+        long _desiredFlushRate = 0;
+        long _messageCount = 0;
+    };
+}
 #endif

@@ -18,7 +18,9 @@
 #include "../WaterMeterCpp/ConnectionState.h"
 
 namespace WaterMeterCppTest {
-    
+    using WaterMeter::ConnectionState;
+    using WaterMeter::OledDriver;
+
     class OledDriverTest : public testing::Test {
     public:
         static EventServer eventServer;

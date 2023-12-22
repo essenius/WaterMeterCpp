@@ -19,6 +19,12 @@
 #include "../WaterMeterCpp/ConnectionState.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Clock;
+    using WaterMeter::ConnectionState;
+    using WaterMeter::EventServer;
+    using WaterMeter::Log;
+    using WaterMeter::PayloadBuilder;
+    using WaterMeter::Topic;
     
     class LogTest : public testing::Test {
     public:

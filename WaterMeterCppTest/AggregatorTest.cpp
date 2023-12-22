@@ -17,7 +17,10 @@
 #include "../WaterMeterCpp/DataQueue.h"
 
 namespace WaterMeterCppTest {
-    
+    using WaterMeter::Clock;
+    using WaterMeter::DataQueue;
+    using WaterMeter::DataQueuePayload;
+
     TEST(AggregatorTest, aggregatorLimitTest) {
         EXPECT_EQ(5, AggregatorDriver::limit(-5, 5, 15));
         EXPECT_EQ(7, AggregatorDriver::limit(7, 5, 15));

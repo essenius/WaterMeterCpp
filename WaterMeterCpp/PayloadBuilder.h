@@ -17,63 +17,64 @@
 
 #include "Clock.h"
 
-class PayloadBuilder {
-public:
-    explicit PayloadBuilder(Clock* theClock = nullptr);
-    void begin();
-    void initialize(char prefix = '{');
-    bool isAlmostFull() const;
-    int getRemainingSize() const;
-    const char* toString() const;
-    void updatePosition();
-    void writeArrayEnd();
-    void writeArrayStart(const char* label);
+namespace WaterMeter {
+    class PayloadBuilder {
+    public:
+        explicit PayloadBuilder(Clock* theClock = nullptr);
+        void begin();
+        void initialize(char prefix = '{');
+        bool isAlmostFull() const;
+        int getRemainingSize() const;
+        const char* toString() const;
+        void updatePosition();
+        void writeArrayEnd();
+        void writeArrayStart(const char* label);
 
-    template <class T>
-    void writeArrayValue(T value) {
-        if (_needsDelimiter) {
-            writeDelimiter(',');
+        template <class T>
+        void writeArrayValue(T value) {
+            if (_needsDelimiter) {
+                writeDelimiter(',');
+            }
+            writeString(value);
+            updatePosition();
+            _needsDelimiter = true;
         }
-        writeString(value);
-        updatePosition();
-        _needsDelimiter = true;
-    }
 
-    void writeDelimiter(char delimiter);
-    void writeGroupEnd();
-    void writeGroupStart(const char* label);
-    void writeLabel(const char* label);
+        void writeDelimiter(char delimiter);
+        void writeGroupEnd();
+        void writeGroupStart(const char* label);
+        void writeLabel(const char* label);
 
-    template <class T>
-    void writeParam(const char* label, T value) {
-        writeLabel(label);
-        writeString(value);
-        updatePosition();
-        _needsDelimiter = true;
-    }
+        template <class T>
+        void writeParam(const char* label, T value) {
+            writeLabel(label);
+            writeString(value);
+            updatePosition();
+            _needsDelimiter = true;
+        }
 
-    void writeTimestamp(Timestamp timestampIn);
-    void writeTimestampParam(const char* label, Timestamp timestampIn);
-    void writeText(const char* text);
+        void writeTimestamp(Timestamp timestampIn);
+        void writeTimestampParam(const char* label, Timestamp timestampIn);
+        void writeText(const char* text);
 
-private:
-    static constexpr int NumberBufferSize = 16;
-    static constexpr int ResultBufferMargin = 20;
-    static constexpr int ResultBufferSize = 512;
+    private:
+        static constexpr int NumberBufferSize = 16;
+        static constexpr int ResultBufferMargin = 20;
+        static constexpr int ResultBufferSize = 512;
 
-    void writeString(const char* input);
-    void writeString(double input);
-    void writeString(int input);
-    void writeString(long input);
-    void writeString(uint32_t input);
-    void writeString(unsigned long input);
-    void writeString(IntCoordinate input);
+        void writeString(const char* input);
+        void writeString(double input);
+        void writeString(int input);
+        void writeString(long input);
+        void writeString(uint32_t input);
+        void writeString(unsigned long input);
+        void writeString(IntCoordinate input);
 
-    Clock* _clock;
-    char* _currentPosition = _resultBuffer;
-    bool _needsDelimiter = false;
-    char _numberBuffer[NumberBufferSize] = {0};
-    char _resultBuffer[ResultBufferSize] = {0};
-};
-
+        Clock* _clock;
+        char* _currentPosition = _resultBuffer;
+        bool _needsDelimiter = false;
+        char _numberBuffer[NumberBufferSize] = { 0 };
+        char _resultBuffer[ResultBufferSize] = { 0 };
+    };
+}
 #endif

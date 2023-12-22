@@ -12,6 +12,8 @@
 #include "gtest/gtest.h"
 
 #include <ESP.h>
+#include <IPAddress.h>
+
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "WiFi.h"
@@ -19,6 +21,12 @@
 #include "../WaterMeterCpp/WiFiManager.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::IpConfig;
+    using WaterMeter::NoIp;
+    using WaterMeter::PayloadBuilder;
+    using WaterMeter::WifiConfig;
+    using WaterMeter::WiFiManager;
+
     class WiFiTest : public testing::Test {
     public:
         static EventServer eventServer;

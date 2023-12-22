@@ -15,7 +15,8 @@
 #include "../WaterMeterCpp/IntCoordinate.h"
 
 namespace WaterMeterCppTest {
-
+	using EllipseMath::Coordinate;
+	using WaterMeter::IntCoordinate;
 	TEST(IntCoordinateTest, IntCoordinateTest1) {
 		constexpr IntCoordinate Base{ {3, 4} };
 		constexpr IntCoordinate Other{ {3, 4} };

@@ -14,19 +14,21 @@
 #ifndef HEADER_TIMESERVER
 #define HEADER_TIMESERVER
 
-class TimeServer {
-public:
-    TimeServer() = default;
-    virtual ~TimeServer() = default;
-    TimeServer(const TimeServer&) = default;
-    TimeServer(TimeServer&&) = default;
-    TimeServer& operator=(const TimeServer&) = default;
-    TimeServer& operator=(TimeServer&&) = default;
+namespace WaterMeter {
+    class TimeServer {
+    public:
+        TimeServer() = default;
+        virtual ~TimeServer() = default;
+        TimeServer(const TimeServer&) = default;
+        TimeServer(TimeServer&&) = default;
+        TimeServer& operator=(const TimeServer&) = default;
+        TimeServer& operator=(TimeServer&&) = default;
 
-    virtual void setTime();
-    virtual bool timeWasSet() const;
+        virtual void setTime();
+        virtual bool timeWasSet() const;
 
-protected:
-    bool _wasSet = false;
-};
+    protected:
+        bool _wasSet = false;
+    };
+}
 #endif

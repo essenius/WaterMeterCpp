@@ -13,6 +13,8 @@
 #include "../WaterMeterCpp/WiFiClientFactory.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::TlsConfig;
+    using WaterMeter::WiFiClientFactory;
 
     TEST(WifiClientFactoryTest, wifiClientFactoryInsecureClientTest) {
         constexpr TlsConfig Config{nullptr, nullptr, nullptr};

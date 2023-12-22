@@ -14,6 +14,7 @@
 #include "../WaterMeterCpp/TimeServer.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::TimeServer;
 
     class TimeServerMock final : public TimeServer {
     public:

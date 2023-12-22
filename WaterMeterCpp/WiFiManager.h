@@ -21,39 +21,41 @@
 #include "PayloadBuilder.h"
 #include "Configuration.h"
 
-const IPAddress NoIp(0, 0, 0, 0);
+namespace WaterMeter {
+    const IPAddress NoIp(0, 0, 0, 0);
 
-class WiFiManager : public EventClient {
-public:
-    WiFiManager(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder);
-    virtual void announceReady();
-    virtual void begin();
-    void configure(const IpConfig* ipConfig = &IpAutoConfig);
-    virtual void disconnect();
-    const char* get(Topic topic, const char* defaultValue) override;
-    const char* getHostName() const;
-    virtual bool isConnected();
-    virtual bool needsReinit();
-    virtual void reconnect();
-    void setStatusSummary() const;
+    class WiFiManager : public EventClient {
+    public:
+        WiFiManager(EventServer* eventServer, const WifiConfig* wifiConfig, PayloadBuilder* payloadBuilder);
+        virtual void announceReady();
+        virtual void begin();
+        void configure(const IpConfig* ipConfig = &IpAutoConfig);
+        virtual void disconnect();
+        const char* get(Topic topic, const char* defaultValue) override;
+        const char* getHostName() const;
+        virtual bool isConnected();
+        virtual bool needsReinit();
+        virtual void reconnect();
+        void setStatusSummary() const;
 
-private:
-    static constexpr int HostnameLength = 64;
-    static constexpr int MacAddressSize = 20;
-    static constexpr int IpAddressSize = 16;
+    private:
+        static constexpr int HostnameLength = 64;
+        static constexpr int MacAddressSize = 20;
+        static constexpr int IpAddressSize = 16;
 
-    PayloadBuilder* _payloadBuilder;
-    const WifiConfig* _wifiConfig;
-    WiFiClientSecure _wifiClient;
-    IPAddress _localIp = NoIp;
-    IPAddress _gatewayIp = NoIp;
-    IPAddress _subnetMaskIp = NoIp;
-    IPAddress _dns1Ip = NoIp;
-    IPAddress _dns2Ip = NoIp;
-    char _hostNameBuffer[HostnameLength] = {0};
-    char* _hostName = _hostNameBuffer;
-    char _ipAddress[IpAddressSize] = "";
-    char _macAddress[MacAddressSize] = "";
-    bool _needsReconnect = true;
-};
+        PayloadBuilder* _payloadBuilder;
+        const WifiConfig* _wifiConfig;
+        WiFiClientSecure _wifiClient;
+        IPAddress _localIp = NoIp;
+        IPAddress _gatewayIp = NoIp;
+        IPAddress _subnetMaskIp = NoIp;
+        IPAddress _dns1Ip = NoIp;
+        IPAddress _dns2Ip = NoIp;
+        char _hostNameBuffer[HostnameLength] = { 0 };
+        char* _hostName = _hostNameBuffer;
+        char _ipAddress[IpAddressSize] = "";
+        char _macAddress[MacAddressSize] = "";
+        bool _needsReconnect = true;
+    };
+}
 #endif

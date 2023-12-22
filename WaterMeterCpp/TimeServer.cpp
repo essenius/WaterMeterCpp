@@ -14,15 +14,17 @@
 
 #include "TimeServer.h"
 
-constexpr time_t OneYearInSeconds = 31536000;
+namespace WaterMeter {
+    constexpr time_t OneYearInSeconds = 31536000;
 
-void TimeServer::setTime() {
-    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-}
+    void TimeServer::setTime() {
+        configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+    }
 
-bool TimeServer::timeWasSet() const {
-    // If the time didn't get set, the system thinks we're in 1970.
-    // Then currentTime will be less than a year in seconds.
-    const time_t currentTime = time(nullptr);
-    return currentTime > OneYearInSeconds;
+    bool TimeServer::timeWasSet() const {
+        // If the time didn't get set, the system thinks we're in 1970.
+        // Then currentTime will be less than a year in seconds.
+        const time_t currentTime = time(nullptr);
+        return currentTime > OneYearInSeconds;
+    }
 }

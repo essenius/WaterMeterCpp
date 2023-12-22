@@ -17,16 +17,17 @@
 #include "PayloadBuilder.h"
 #include "DataQueuePayload.h"
 
+namespace WaterMeter {
+    class Serializer final : public EventClient {
+    public:
+        Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder);
+        void update(Topic topic, const char* payload) override;
 
-class Serializer final : public EventClient {
-public:
-    Serializer(EventServer* eventServer, PayloadBuilder* payloadBuilder);
-    void update(Topic topic, const char* payload) override;
-
-private:
-    void convertMeasurements(const DataQueuePayload* payload) const;
-    void convertResult(const DataQueuePayload* payload) const;
-    void convertString(const DataQueuePayload* data) const;
-    PayloadBuilder* _payloadBuilder;
-};
+    private:
+        void convertMeasurements(const DataQueuePayload* payload) const;
+        void convertResult(const DataQueuePayload* payload) const;
+        void convertString(const DataQueuePayload* data) const;
+        PayloadBuilder* _payloadBuilder;
+    };
+}
 #endif

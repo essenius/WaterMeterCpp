@@ -12,35 +12,37 @@
 #include "MagnetoSensor.h"
 #include "Wire.h"
 
-MagnetoSensor::MagnetoSensor(const byte address, TwoWire* wire):
-    _address(address),
-    _wire(wire) {}
+namespace WaterMeter {
+    MagnetoSensor::MagnetoSensor(const byte address, TwoWire* wire) :
+        _address(address),
+        _wire(wire) {}
 
-bool MagnetoSensor::begin() {
-    softReset();
-    return true;
-}
+    bool MagnetoSensor::begin() {
+        softReset();
+        return true;
+    }
 
-void MagnetoSensor::configureAddress(const byte address) {
-    _address = address;
-}
+    void MagnetoSensor::configureAddress(const byte address) {
+        _address = address;
+    }
 
-bool MagnetoSensor::isOn() const {
-    _wire->beginTransmission(_address);
-    return _wire->endTransmission() == 0;
-}
+    bool MagnetoSensor::isOn() const {
+        _wire->beginTransmission(_address);
+        return _wire->endTransmission() == 0;
+    }
 
-void MagnetoSensor::setRegister(const byte sensorRegister, const byte value) const {
-    _wire->beginTransmission(_address);
-    _wire->write(sensorRegister);
-    _wire->write(value);
-    _wire->endTransmission();
-}
+    void MagnetoSensor::setRegister(const byte sensorRegister, const byte value) const {
+        _wire->beginTransmission(_address);
+        _wire->write(sensorRegister);
+        _wire->write(value);
+        _wire->endTransmission();
+    }
 
-void MagnetoSensor::waitForPowerOff() const {
-    while (isOn()) {}
-}
+    void MagnetoSensor::waitForPowerOff() const {
+        while (isOn()) {}
+    }
 
-bool MagnetoSensor::handlePowerOn() {
-    return true;
+    bool MagnetoSensor::handlePowerOn() {
+        return true;
+    }
 }

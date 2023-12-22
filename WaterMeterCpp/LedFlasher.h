@@ -14,15 +14,17 @@
 
 #include <ESP.h>
 
-class LedFlasher {
-public:
-    LedFlasher(uint8_t led, unsigned int interval);
-    void reset();
-    void setInterval(unsigned int interval);
-    void signal();
-private:
-    unsigned int _interval;
-    uint8_t _led;
-    unsigned int _ledCounter = 0;
-};
+namespace WaterMeter {
+    class LedFlasher {
+    public:
+        LedFlasher(uint8_t led, unsigned int interval);
+        void reset();
+        void setInterval(unsigned int interval);
+        void signal();
+    private:
+        unsigned int _interval;
+        uint8_t _led;
+        unsigned int _ledCounter = 0;
+    };
+}
 #endif

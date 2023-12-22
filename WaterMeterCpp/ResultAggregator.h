@@ -17,34 +17,34 @@
 #include "Aggregator.h"
 #include "FlowDetector.h"
 
-class ResultAggregator final : public Aggregator {
-public:
-    ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
-                     uint32_t measureIntervalMicros);
-    void addDuration(unsigned long duration) const;
-    void addMeasurement(const IntCoordinate& value, const FlowDetector* result);
-    using Aggregator::begin;
-    void begin();
-    void flush() override;
-    bool shouldSend(bool endOfFile = false) override;
-    bool send() override;
-    void update(Topic topic, const char* payload) override;
-    void update(Topic topic, long payload) override;
-    static constexpr int FlatlineStreak = 20;
+namespace WaterMeter {
+    class ResultAggregator final : public Aggregator {
+    public:
+        ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
+            uint32_t measureIntervalMicros);
+        void addDuration(unsigned long duration) const;
+        void addMeasurement(const IntCoordinate& value, const FlowDetector* result);
+        using Aggregator::begin;
+        void begin();
+        void flush() override;
+        bool shouldSend(bool endOfFile = false) override;
+        bool send() override;
+        void update(Topic topic, const char* payload) override;
+        void update(Topic topic, long payload) override;
+        static constexpr int FlatlineStreak = 20;
 
-protected:
-    static constexpr long FlushRateIdle = 6000L;
-    static constexpr long FlushRateInteresting = 100L;
+    protected:
+        static constexpr long FlushRateIdle = 6000L;
+        static constexpr long FlushRateInteresting = 100L;
 
-    ResultData* _result;
-    long _idleFlushRate = FlushRateIdle;
-    uint32_t _measureIntervalMicros = 0;
-    long _nonIdleFlushRate = FlushRateInteresting;
-    uint32_t _streak = 1;
+        ResultData* _result;
+        long _idleFlushRate = FlushRateIdle;
+        uint32_t _measureIntervalMicros = 0;
+        long _nonIdleFlushRate = FlushRateInteresting;
+        uint32_t _streak = 1;
 
-    void setIdleFlushRate(long rate);
-    void setNonIdleFlushRate(long rate);
-};
-
-
+        void setIdleFlushRate(long rate);
+        void setNonIdleFlushRate(long rate);
+    };
+}
 #endif

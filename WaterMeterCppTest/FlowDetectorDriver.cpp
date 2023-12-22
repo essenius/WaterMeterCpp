@@ -15,6 +15,10 @@
 // constructor for ResultAggregatorTest. Uses fields that are used for reporting
 
 namespace WaterMeterCppTest {
+    using WaterMeter::EventServer;
+    using WaterMeter::FlowDetector;
+    using EllipseMath::EllipseFit;
+    using EllipseMath::Coordinate;
 
     FlowDetectorDriver::FlowDetectorDriver(EventServer* eventServer, EllipseFit* ellipseFit, const Coordinate average, 
         const bool pulse, const bool outlier, const bool first)

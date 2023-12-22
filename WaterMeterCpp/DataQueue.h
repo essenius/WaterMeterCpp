@@ -23,23 +23,24 @@
 #include "LongChangePublisher.h"
 #include "DataQueuePayload.h"
 
-class DataQueue final : public EventClient {
-public:
-    DataQueue(EventServer* eventServer, DataQueuePayload* payload, int8_t index = 0, long queueSize = 35840,
-              long epsilon = 1024, long lowThreshold = 2048);
+namespace WaterMeter {
+    class DataQueue final : public EventClient {
+    public:
+        DataQueue(EventServer* eventServer, DataQueuePayload* payload, int8_t index = 0, long queueSize = 35840,
+            long epsilon = 1024, long lowThreshold = 2048);
 
-    bool canSend(const DataQueuePayload* payload);
-    size_t freeSpace();
-    RingbufHandle_t handle() const;
-    DataQueuePayload* receive() const;
-    static size_t requiredSize(size_t realSize);
-    bool send(const DataQueuePayload* payload);
-    void update(Topic topic, const char* payload) override;
+        bool canSend(const DataQueuePayload* payload);
+        size_t freeSpace();
+        RingbufHandle_t handle() const;
+        DataQueuePayload* receive() const;
+        static size_t requiredSize(size_t realSize);
+        bool send(const DataQueuePayload* payload);
+        void update(Topic topic, const char* payload) override;
 
-private:
-    RingbufHandle_t _bufferHandle = nullptr;
-    LongChangePublisher _freeSpace;
-    DataQueuePayload* _payload;
-};
-
+    private:
+        RingbufHandle_t _bufferHandle = nullptr;
+        LongChangePublisher _freeSpace;
+        DataQueuePayload* _payload;
+    };
+}
 #endif

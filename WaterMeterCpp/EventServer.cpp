@@ -13,67 +13,69 @@
 
 #include <ESP.h>
 
-EventServer::EventServer() : _numberBuffer{0} {}
+namespace WaterMeter {
+    EventServer::EventServer() : _numberBuffer{ 0 } {}
 
-void EventServer::cannotProvide(const EventClient* client, const Topic topic) {
-    if (_providers[topic] == client) {
-        _providers.erase(topic);
-    }
-}
-
-void EventServer::cannotProvide(const EventClient* client) {
-    for (auto iterator = _providers.begin(); iterator != _providers.end();) {
-        if (iterator->second == client) {
-            iterator = _providers.erase(iterator);
-        }
-        else {
-            ++iterator;
+    void EventServer::cannotProvide(const EventClient* client, const Topic topic) {
+        if (_providers[topic] == client) {
+            _providers.erase(topic);
         }
     }
-}
 
-void EventServer::provides(EventClient* client, const Topic topic) {
-    _providers[topic] = client;
-}
-
-void EventServer::subscribe(EventClient* client, const Topic topic) {
-    for (auto& item : _subscribers) {
-        if (item.first == topic) {
-            // insert does not create duplicates
-            item.second.insert(client);
-            return;
+    void EventServer::cannotProvide(const EventClient* client) {
+        for (auto iterator = _providers.begin(); iterator != _providers.end();) {
+            if (iterator->second == client) {
+                iterator = _providers.erase(iterator);
+            }
+            else {
+                ++iterator;
+            }
         }
     }
-    // topic not found, create a new entry
-    std::set<EventClient*> subscribers;
-    subscribers.insert(client);
-    _subscribers[topic] = subscribers;
-}
 
-// unsubscribe the client from all subscribed topics
-// Note this is tricky as it could happen when another event is still being handled
-void EventServer::unsubscribe(EventClient* client) {
-    for (auto iterator = _subscribers.begin(); iterator != _subscribers.end();) {
-        iterator->second.erase(client);
-        if (iterator->second.empty()) {
-            iterator = _subscribers.erase(iterator);
-        }
-        else {
-            ++iterator;
-        }
+    void EventServer::provides(EventClient* client, const Topic topic) {
+        _providers[topic] = client;
     }
-}
 
-// unsubscribe the subscriber from the topic
-void EventServer::unsubscribe(EventClient* client, const Topic topic) {
-    for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); ++iterator) {
-        if (iterator->first == topic) {
+    void EventServer::subscribe(EventClient* client, const Topic topic) {
+        for (auto& item : _subscribers) {
+            if (item.first == topic) {
+                // insert does not create duplicates
+                item.second.insert(client);
+                return;
+            }
+        }
+        // topic not found, create a new entry
+        std::set<EventClient*> subscribers;
+        subscribers.insert(client);
+        _subscribers[topic] = subscribers;
+    }
+
+    // unsubscribe the client from all subscribed topics
+    // Note this is tricky as it could happen when another event is still being handled
+    void EventServer::unsubscribe(EventClient* client) {
+        for (auto iterator = _subscribers.begin(); iterator != _subscribers.end();) {
             iterator->second.erase(client);
             if (iterator->second.empty()) {
-                // safe because we exit the loop (interator no longer valid after erase).
-                _subscribers.erase(iterator);
+                iterator = _subscribers.erase(iterator);
             }
-            return;
+            else {
+                ++iterator;
+            }
+        }
+    }
+
+    // unsubscribe the subscriber from the topic
+    void EventServer::unsubscribe(EventClient* client, const Topic topic) {
+        for (auto iterator = _subscribers.begin(); iterator != _subscribers.end(); ++iterator) {
+            if (iterator->first == topic) {
+                iterator->second.erase(client);
+                if (iterator->second.empty()) {
+                    // safe because we exit the loop (interator no longer valid after erase).
+                    _subscribers.erase(iterator);
+                }
+                return;
+            }
         }
     }
 }

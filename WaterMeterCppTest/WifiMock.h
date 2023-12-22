@@ -14,6 +14,10 @@
 #include "../WaterMeterCpp/WiFiManager.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::EventServer;
+    using WaterMeter::PayloadBuilder;
+    using WaterMeter::WifiConfig;
+    using WaterMeter::WiFiManager;
 
     class WiFiMock final : public WiFiManager {
     public:

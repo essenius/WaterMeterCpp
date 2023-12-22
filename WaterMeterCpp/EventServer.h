@@ -18,54 +18,55 @@
 #include <map>
 #include <set>
 
-class EventServer {
-public:
-    EventServer();
-    // No need for a destructor. Clients clean up when destroyed, and do so before the server gets destroyed.
-    // Deleting the server before the client would cause an access violation when the client gets destroyed.
+namespace WaterMeter {
+    class EventServer {
+    public:
+        EventServer();
+        // No need for a destructor. Clients clean up when destroyed, and do so before the server gets destroyed.
+        // Deleting the server before the client would cause an access violation when the client gets destroyed.
 
-    void provides(EventClient* client, Topic topic);
-    void cannotProvide(const EventClient* client, Topic topic);
-    void cannotProvide(const EventClient* client);
+        void provides(EventClient* client, Topic topic);
+        void cannotProvide(const EventClient* client, Topic topic);
+        void cannotProvide(const EventClient* client);
 
-    // Request a topic. There can be only one provider
-    template <class PayloadType>
-    PayloadType request(Topic topic, PayloadType defaultValue) {
-        const auto provider = _providers.find(topic);
-        if (provider != _providers.end()) {
-            const auto eventClient = provider->second;
-            return eventClient->get(topic, defaultValue);
+        // Request a topic. There can be only one provider
+        template <class PayloadType>
+        PayloadType request(Topic topic, PayloadType defaultValue) {
+            const auto provider = _providers.find(topic);
+            if (provider != _providers.end()) {
+                const auto eventClient = provider->second;
+                return eventClient->get(topic, defaultValue);
+            }
+            return defaultValue;
         }
-        return defaultValue;
-    }
 
-    // Publish to all subscribers except the sender
-    template <class PayloadType>
-    void publish(EventClient* client, Topic topic, PayloadType payload) {
-        const auto subscribers = _subscribers.find(topic);
-        if (subscribers != _subscribers.end()) {
-            for (auto eventClient : subscribers->second) {
-                if (client != eventClient) {
-                    eventClient->update(topic, payload);
+        // Publish to all subscribers except the sender
+        template <class PayloadType>
+        void publish(EventClient* client, Topic topic, PayloadType payload) {
+            const auto subscribers = _subscribers.find(topic);
+            if (subscribers != _subscribers.end()) {
+                for (auto eventClient : subscribers->second) {
+                    if (client != eventClient) {
+                        eventClient->update(topic, payload);
+                    }
                 }
             }
         }
-    }
 
-    // Publish to all subscribers including the sender
-    template <class PayloadType>
-    void publish(Topic topic, PayloadType payload) {
-        publish(NULL, topic, payload);
-    }
+        // Publish to all subscribers including the sender
+        template <class PayloadType>
+        void publish(Topic topic, PayloadType payload) {
+            publish(NULL, topic, payload);
+        }
 
-    void subscribe(EventClient* client, Topic topic);
-    void unsubscribe(EventClient* client, Topic topic);
-    void unsubscribe(EventClient* client);
+        void subscribe(EventClient* client, Topic topic);
+        void unsubscribe(EventClient* client, Topic topic);
+        void unsubscribe(EventClient* client);
 
-private:
-    char _numberBuffer[10];
-    std::map<Topic, EventClient*> _providers;
-    std::map<Topic, std::set<EventClient*>> _subscribers;
-};
-
+    private:
+        char _numberBuffer[10];
+        std::map<Topic, EventClient*> _providers;
+        std::map<Topic, std::set<EventClient*>> _subscribers;
+    };
+}
 #endif

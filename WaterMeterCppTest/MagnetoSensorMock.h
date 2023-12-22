@@ -14,24 +14,29 @@
 #pragma once
 #include "../WaterMeterCpp/MagnetoSensorNull.h"
 
-class MagnetoSensorMock final :
-    public MagnetoSensorNull
-{
-public:
-    bool begin() override;
-    int beginFailuresLeft() const { return _beginFailuresLeft; }
-    double getGain() const override { return 3000.0; }
-    int getNoiseRange() const override { return 12; }
-    void setFlat(const bool isFlat) { _isFlat = isFlat; }
-    bool handlePowerOn() override;
-    bool isReal() const override { return true; }
-    int powerFailuresLeft() const { return _powerFailuresLeft; }
-    bool read(SensorData& sample) override;
-    void setBeginFailures(int failures);
-    void setPowerOnFailures(int failures);
+namespace WaterMeterCppTest {
+    using WaterMeter::MagnetoSensorNull;
+    using WaterMeter::SensorData;
 
-private:
-    int _beginFailuresLeft = 0;
-    int _powerFailuresLeft = 0;
-    bool _isFlat = false;
-};
+    class MagnetoSensorMock final :
+        public MagnetoSensorNull
+    {
+    public:
+        bool begin() override;
+        int beginFailuresLeft() const { return _beginFailuresLeft; }
+        double getGain() const override { return 3000.0; }
+        int getNoiseRange() const override { return 12; }
+        void setFlat(const bool isFlat) { _isFlat = isFlat; }
+        bool handlePowerOn() override;
+        bool isReal() const override { return true; }
+        int powerFailuresLeft() const { return _powerFailuresLeft; }
+        bool read(SensorData& sample) override;
+        void setBeginFailures(int failures);
+        void setPowerOnFailures(int failures);
+
+    private:
+        int _beginFailuresLeft = 0;
+        int _powerFailuresLeft = 0;
+        bool _isFlat = false;
+    };
+}

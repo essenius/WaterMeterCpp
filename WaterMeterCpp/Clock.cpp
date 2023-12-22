@@ -13,43 +13,45 @@
 #include <sys/time.h>
 #include <cstring>
 
-constexpr unsigned long long MicrosecondsPerSecond = 1000000ULL;
+namespace WaterMeter {
+    constexpr unsigned long long MicrosecondsPerSecond = 1000000ULL;
 
-SemaphoreHandle_t Clock::_timeMutex = xSemaphoreCreateMutex();
-SemaphoreHandle_t Clock::_formatTimeMutex = xSemaphoreCreateMutex();
+    SemaphoreHandle_t Clock::_timeMutex = xSemaphoreCreateMutex();
+    SemaphoreHandle_t Clock::_formatTimeMutex = xSemaphoreCreateMutex();
 
-Clock::Clock(EventServer* eventServer) : EventClient(eventServer) {}
+    Clock::Clock(EventServer* eventServer) : EventClient(eventServer) {}
 
-void Clock::begin() {
-    _eventServer->provides(this, Topic::Time);
-}
-
-// return the number of microseconds since epoch. Can be called from multipe tasks, so using a semaphore
-Timestamp Clock::getTimestamp() {
-    timeval currentTime{};
-    xSemaphoreTake(_timeMutex, portMAX_DELAY);
-    gettimeofday(&currentTime, nullptr);
-    xSemaphoreGive(_timeMutex);
-    return static_cast<Timestamp>(currentTime.tv_sec) * 1000000ULL + static_cast<Timestamp>(currentTime.tv_usec);
-}
-
-bool Clock::formatTimestamp(const Timestamp timestamp, char* destination, const size_t size) {
-    if (size < 27) return false;
-    const auto microseconds = static_cast<long>(timestamp % MicrosecondsPerSecond);
-    const auto seconds = static_cast<time_t>(timestamp / MicrosecondsPerSecond);
-    xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
-    strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds)); // NOLINT(concurrency-mt-unsafe)
-    xSemaphoreGive(_formatTimeMutex);
-    char* currentPosition = destination + strlen(destination);
-    snprintf(currentPosition, size - strlen(destination), "%06ld", microseconds);
-    return true;
-}
-
-const char* Clock::get(const Topic topic, const char* defaultValue) {
-    if (topic == Topic::Time) {
-        const auto currentTime = getTimestamp();
-        formatTimestamp(currentTime, _buffer, BufferSize);
-        return _buffer;
+    void Clock::begin() {
+        _eventServer->provides(this, Topic::Time);
     }
-    return defaultValue;
+
+    // return the number of microseconds since epoch. Can be called from multipe tasks, so using a semaphore
+    Timestamp Clock::getTimestamp() {
+        timeval currentTime{};
+        xSemaphoreTake(_timeMutex, portMAX_DELAY);
+        gettimeofday(&currentTime, nullptr);
+        xSemaphoreGive(_timeMutex);
+        return static_cast<Timestamp>(currentTime.tv_sec) * 1000000ULL + static_cast<Timestamp>(currentTime.tv_usec);
+    }
+
+    bool Clock::formatTimestamp(const Timestamp timestamp, char* destination, const size_t size) {
+        if (size < 27) return false;
+        const auto microseconds = static_cast<long>(timestamp % MicrosecondsPerSecond);
+        const auto seconds = static_cast<time_t>(timestamp / MicrosecondsPerSecond);
+        xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
+        strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds)); // NOLINT(concurrency-mt-unsafe)
+        xSemaphoreGive(_formatTimeMutex);
+        char* currentPosition = destination + strlen(destination);
+        snprintf(currentPosition, size - strlen(destination), "%06ld", microseconds);
+        return true;
+    }
+
+    const char* Clock::get(const Topic topic, const char* defaultValue) {
+        if (topic == Topic::Time) {
+            const auto currentTime = getTimestamp();
+            formatTimestamp(currentTime, _buffer, BufferSize);
+            return _buffer;
+        }
+        return defaultValue;
+    }
 }

@@ -13,23 +13,25 @@
 
 #include "Button.h"
 
-void Button::begin() {
-    pinMode(_port, _pinMode);
-    *_state = digitalRead(_port);
-    _lastState = *_state;
-    _lastSwitchTime = 0;
-}
-
-void Button::check() {
-    _currentState = digitalRead(_port);
-    // if the state changed, start the timer
-    if (_currentState != _lastState) {
-        _lastSwitchTime = millis();
-        _lastState = _currentState;
+namespace WaterMeter {
+    void Button::begin() {
+        pinMode(_port, _pinMode);
+        *_state = digitalRead(_port);
+        _lastState = *_state;
+        _lastSwitchTime = 0;
     }
 
-    // if we waited at least the duration and the button changed state, pass it on
-    if (millis() - _lastSwitchTime > _duration && _currentState != *_state) {
-        *_state = _currentState;
+    void Button::check() {
+        _currentState = digitalRead(_port);
+        // if the state changed, start the timer
+        if (_currentState != _lastState) {
+            _lastSwitchTime = millis();
+            _lastState = _currentState;
+        }
+
+        // if we waited at least the duration and the button changed state, pass it on
+        if (millis() - _lastSwitchTime > _duration && _currentState != *_state) {
+            *_state = _currentState;
+        }
     }
 }

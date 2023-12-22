@@ -15,20 +15,21 @@
 #ifndef HEADER_CONNECTIONSTATE
 #define HEADER_CONNECTIONSTATE
 
+namespace WaterMeter {
 
-enum class ConnectionState {
-    Init = 0,
-    Disconnected,
-    WifiConnecting,
-    WifiConnected,
-    WifiReady,
-    MqttConnecting,
-    WaitingForMqttReconnect,
-    MqttConnected,
-    MqttReady,
-    RequestTime,
-    SettingTime,
-    CheckFirmware
-};
-
+    enum class ConnectionState {
+        Init = 0,
+        Disconnected,
+        WifiConnecting,
+        WifiConnected,
+        WifiReady,
+        MqttConnecting,
+        WaitingForMqttReconnect,
+        MqttConnected,
+        MqttReady,
+        RequestTime,
+        SettingTime,
+        CheckFirmware
+    };
+}
 #endif

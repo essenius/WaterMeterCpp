@@ -2,19 +2,26 @@
 #include <corecrt_math_defines.h>
 
 #include <fstream>
-#include "../WaterMeterCpp/FlowDetector.h"
 #include "FlowDetectorDriver.h"
 #include "PulseTestEventClient.h"
-#include "TestHelper.h"
 
 namespace WaterMeterCppTest {
+	using EllipseMath::EllipseFit;
+	using EllipseMath::Coordinate;
+	using WaterMeter::FlowDetector;
+
 	class FlowDetectorTest : public testing::Test {
 	public:
 		static EventServer eventServer;
 		static EllipseFit ellipseFit;
 	protected:
-		void expectResult(const FlowDetector* meter, const wchar_t* description, const int index,
-			const bool pulse = false, const bool skipped = false, const bool outlier = false) const {
+        static void assertIntCoordinatesEqual(const IntCoordinate& a, const IntCoordinate& b, const std::string& label) {
+			ASSERT_EQ(a.x, b.x) << label + std::string("(X)");
+			ASSERT_EQ(a.y, b.y) << label + std::string("(Y)");
+		}
+
+        static void expectResult(const FlowDetector* meter, const wchar_t* description, const int index,
+                                 const bool pulse = false, const bool skipped = false, const bool outlier = false) {
 			std::wstring message(description);
 			message += std::wstring(L" #") + std::to_wstring(index) + std::wstring(L" @ ");
 			EXPECT_EQ(pulse, meter->foundPulse()) << message << "Pulse";

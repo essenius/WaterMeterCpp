@@ -16,83 +16,84 @@
 
 #include "IntCoordinate.h"
 
-enum class Topic: int16_t {
-    None = 0,
-    BatchSize,
-    BatchSizeDesired,
-    Rate,
-    IdleRate,
-    NonIdleRate,
-    Sample,
-    Samples,
-    SkipSamples,
-    SamplesFormatted,
-    Result,
-    ResultFormatted,
-    SensorData,
-    FreeHeap,
-    FreeStack,
-    FreeQueueSize,
-    FreeQueueSpaces,
-    Connection,
-    WifiSummaryReady,
-    ResultWritten,
-    ConnectionError,
-    Info,
-    MessageFormatted,
-    ErrorFormatted,
-    Blocked,
-    Alert,
-    ProcessTime,
-    TimeOverrun,
-    Anomaly,
-    Pulse,
-    Time,
-    IpAddress,
-    MacRaw,
-    MacFormatted,
-    ResetSensor,
-    SensorWasReset,
-    SensorState,
-    SetVolume,
-    AddVolume,
-    Volume,
-    Pulses,
-    NoDisplayFound,
-    UpdateProgress,
-    ButtonPushed,
-    Begin,
-    NoFit
-};
+namespace WaterMeter {
+    enum class Topic : int16_t {
+        None = 0,
+        BatchSize,
+        BatchSizeDesired,
+        Rate,
+        IdleRate,
+        NonIdleRate,
+        Sample,
+        Samples,
+        SkipSamples,
+        SamplesFormatted,
+        Result,
+        ResultFormatted,
+        SensorData,
+        FreeHeap,
+        FreeStack,
+        FreeQueueSize,
+        FreeQueueSpaces,
+        Connection,
+        WifiSummaryReady,
+        ResultWritten,
+        ConnectionError,
+        Info,
+        MessageFormatted,
+        ErrorFormatted,
+        Blocked,
+        Alert,
+        ProcessTime,
+        TimeOverrun,
+        Anomaly,
+        Pulse,
+        Time,
+        IpAddress,
+        MacRaw,
+        MacFormatted,
+        ResetSensor,
+        SensorWasReset,
+        SensorState,
+        SetVolume,
+        AddVolume,
+        Volume,
+        Pulses,
+        NoDisplayFound,
+        UpdateProgress,
+        ButtonPushed,
+        Begin,
+        NoFit
+    };
 
-union EventPayload {
-    int32_t n;
-    IntCoordinate coordinate;
-    bool b;
-};
+    union EventPayload {
+        int32_t n;
+        IntCoordinate coordinate;
+        bool b;
+    };
 
-class EventServer;
+    class EventServer;
 
-class EventClient {
-public:
-    explicit EventClient(EventServer* eventServer);
-    virtual ~EventClient();
-    EventClient(const EventClient&) = default;
-    EventClient(EventClient&&) = default;
-    EventClient& operator=(const EventClient&) = default;
-    EventClient& operator=(EventClient&&) = default;
+    class EventClient {
+    public:
+        explicit EventClient(EventServer* eventServer);
+        virtual ~EventClient();
+        EventClient(const EventClient&) = default;
+        EventClient(EventClient&&) = default;
+        EventClient& operator=(const EventClient&) = default;
+        EventClient& operator=(EventClient&&) = default;
 
-    // can't use generics on virtual functions, which we would need here.
-    // Since we use only a limited set of types, type erasure seems overkill 
+        // can't use generics on virtual functions, which we would need here.
+        // Since we use only a limited set of types, type erasure seems overkill 
 
-    virtual const char* get(Topic topic, const char* defaultValue) { return defaultValue; }
-    virtual long get(Topic topic, const long defaultValue) { return defaultValue; }
-    virtual void update(Topic topic, const char* payload) {}
-    virtual void update(Topic topic, long payload);
-    virtual void update(Topic topic, IntCoordinate payload);
+        virtual const char* get(Topic topic, const char* defaultValue) { return defaultValue; }
+        virtual long get(Topic topic, const long defaultValue) { return defaultValue; }
+        virtual void update(Topic topic, const char* payload) {}
+        virtual void update(Topic topic, long payload);
+        virtual void update(Topic topic, IntCoordinate payload);
 
-protected:
-    EventServer* _eventServer;
-};
-
+    protected:
+        EventServer* _eventServer;
+    };
+}
 #endif

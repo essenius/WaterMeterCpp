@@ -14,6 +14,10 @@
 #include "../WaterMeterCpp/Clock.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Timestamp;
+    using WaterMeter::Clock;
+    using WaterMeter::EventServer;
+    using WaterMeter::Topic;
 
     TEST(ClockTest, clockFormatTimestampTest) {
         constexpr Timestamp Timestamp = 1;

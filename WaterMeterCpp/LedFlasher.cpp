@@ -12,24 +12,26 @@
 #include "LedFlasher.h"
 #include "Led.h"
 
-LedFlasher::LedFlasher(const uint8_t led, const unsigned int interval) : _interval(interval), _led(led) {}
+namespace WaterMeter {
+    LedFlasher::LedFlasher(const uint8_t led, const unsigned int interval) : _interval(interval), _led(led) {}
 
-// since it's flashing anyway, it doesn't really matter if the led is on or off with HIGH
+    // since it's flashing anyway, it doesn't really matter if the led is on or off with HIGH
 
-void LedFlasher::reset() {
-    _ledCounter = 0;
-    Led::set(_led, Led::Off);
-}
-
-void LedFlasher::setInterval(const unsigned int interval) {
-    _interval = interval;
-    reset();
-}
-
-void LedFlasher::signal() {
-    if (_ledCounter == 0) {
-        Led::toggle(_led);
-        _ledCounter = _interval;
+    void LedFlasher::reset() {
+        _ledCounter = 0;
+        Led::set(_led, Led::Off);
     }
-    _ledCounter--;
+
+    void LedFlasher::setInterval(const unsigned int interval) {
+        _interval = interval;
+        reset();
+    }
+
+    void LedFlasher::signal() {
+        if (_ledCounter == 0) {
+            Led::toggle(_led);
+            _ledCounter = _interval;
+        }
+        _ledCounter--;
+    }
 }

@@ -22,27 +22,29 @@
 #include "EventClient.h"
 #include "WiFiClientFactory.h"
 
-class FirmwareManager : public EventClient {
-public:
-    explicit FirmwareManager(
-        EventServer* eventServer,
-        const WiFiClientFactory* wifiClientFactory,
-        const FirmwareConfig* firmwareConfig,
-        const char* buildVersion);
+namespace WaterMeter {
+    class FirmwareManager : public EventClient {
+    public:
+        explicit FirmwareManager(
+            EventServer* eventServer,
+            const WiFiClientFactory* wifiClientFactory,
+            const FirmwareConfig* firmwareConfig,
+            const char* buildVersion);
 
-    void begin(const char* machineId);
-    void tryUpdate();
-protected:
-    void loadUpdate() const;
-    bool isUpdateAvailable() const;
-private:
-    static constexpr int BaseUrlSize = 100;
-    static constexpr const char* ImageExtension = ".bin";
-    static constexpr const char* VersionExtension = ".version";
-    const WiFiClientFactory* _wifiClientFactory;
-    const char* _buildVersion;
-    bool _justRebooted = true;
-    char _machineId[20] = {};
-    const FirmwareConfig* _firmwareConfig;
-};
+        void begin(const char* machineId);
+        void tryUpdate();
+    protected:
+        void loadUpdate() const;
+        bool isUpdateAvailable() const;
+    private:
+        static constexpr int BaseUrlSize = 100;
+        static constexpr const char* ImageExtension = ".bin";
+        static constexpr const char* VersionExtension = ".version";
+        const WiFiClientFactory* _wifiClientFactory;
+        const char* _buildVersion;
+        bool _justRebooted = true;
+        char _machineId[20] = {};
+        const FirmwareConfig* _firmwareConfig;
+    };
+}
 #endif

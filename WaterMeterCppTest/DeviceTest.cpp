@@ -15,6 +15,7 @@
 #include "../WaterMeterCpp/Device.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Device;
     
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
     TEST(DeviceTest, deviceTest1) {

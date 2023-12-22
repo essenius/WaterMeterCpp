@@ -20,7 +20,8 @@
 #include <SafeCString.h>
 
 namespace WaterMeterCppTest {
-    
+    using WaterMeter::Meter;
+
     class MeterTest : public testing::Test {
     public:
         EventServer eventServer;

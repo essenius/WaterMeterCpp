@@ -17,20 +17,22 @@
 #include <ESP.h>
 #include "ChangePublisher.h"
 
-class Button {
-public:
-	Button(ChangePublisher<uint8_t>* publisher, const uint8_t port, const unsigned long durationMillis = 10, const uint8_t  pinMode = INPUT_PULLUP) :
-    _state(publisher), _port(port), _duration(durationMillis), _pinMode(pinMode) {}
-    void begin();
-    void check();
-private:
-    ChangePublisher<uint8_t>* _state;
-    uint8_t _port;
-    unsigned long _duration;
-    uint8_t _pinMode;
-    int _lastState = LOW;
-    unsigned long _lastSwitchTime = 0;
-    uint8_t _currentState = LOW;
-};
+namespace WaterMeter {
 
+    class Button {
+    public:
+        Button(ChangePublisher<uint8_t>* publisher, const uint8_t port, const unsigned long durationMillis = 10, const uint8_t  pinMode = INPUT_PULLUP) :
+            _state(publisher), _port(port), _duration(durationMillis), _pinMode(pinMode) {}
+        void begin();
+        void check();
+    private:
+        ChangePublisher<uint8_t>* _state;
+        uint8_t _port;
+        unsigned long _duration;
+        uint8_t _pinMode;
+        int _lastState = LOW;
+        unsigned long _lastSwitchTime = 0;
+        uint8_t _currentState = LOW;
+    };
+}
 #endif

@@ -12,30 +12,34 @@
 #include "PulseTestEventClient.h"
 #include <SafeCString.h>
 
-WaterMeterCppTest::PulseTestEventClient::PulseTestEventClient(EventServer* eventServer): TestEventClient(eventServer) {
-    eventServer->subscribe(this, Topic::Pulse);
-    eventServer->subscribe(this, Topic::Sample);
-    eventServer->subscribe(this, Topic::Anomaly);
-    eventServer->subscribe(this, Topic::NoFit);
-}
-
-void WaterMeterCppTest::PulseTestEventClient::update(const Topic topic, const long payload) {
-    TestEventClient::update(topic, payload);
-    // always Pulse since that has a long payload
-    if (topic == Topic::Pulse) {
-        _pulseCount[payload]++;
-        char numberBuffer[32];
-        SafeCString::sprintf(numberBuffer, "[%d:%d,%d]\n", _sampleNumber, _currentCoordinate.x, _currentCoordinate.y);
-        SafeCString::strcat(_buffer, numberBuffer);
-    } else if (topic == Topic::Anomaly) {
-        _excludeCount++;
-    } else if (topic == Topic::NoFit) {
-        _noFitCount++;
+namespace WaterMeterCppTest {
+    PulseTestEventClient::PulseTestEventClient(EventServer* eventServer) : TestEventClient(eventServer) {
+        eventServer->subscribe(this, Topic::Pulse);
+        eventServer->subscribe(this, Topic::Sample);
+        eventServer->subscribe(this, Topic::Anomaly);
+        eventServer->subscribe(this, Topic::NoFit);
     }
-}
 
-void WaterMeterCppTest::PulseTestEventClient::update(const Topic topic, const IntCoordinate payload) {
-    // always Sample since that has an IntCoordinate payload
-    _sampleNumber++;
-    _currentCoordinate = payload;
+    void PulseTestEventClient::update(const Topic topic, const long payload) {
+        TestEventClient::update(topic, payload);
+        // always Pulse since that has a long payload
+        if (topic == Topic::Pulse) {
+            _pulseCount[payload]++;
+            char numberBuffer[32];
+            SafeCString::sprintf(numberBuffer, "[%d:%d,%d]\n", _sampleNumber, _currentCoordinate.x, _currentCoordinate.y);
+            SafeCString::strcat(_buffer, numberBuffer);
+        }
+        else if (topic == Topic::Anomaly) {
+            _excludeCount++;
+        }
+        else if (topic == Topic::NoFit) {
+            _noFitCount++;
+        }
+    }
+
+    void PulseTestEventClient::update(const Topic topic, const IntCoordinate payload) {
+        // always Sample since that has an IntCoordinate payload
+        _sampleNumber++;
+        _currentCoordinate = payload;
+    }
 }

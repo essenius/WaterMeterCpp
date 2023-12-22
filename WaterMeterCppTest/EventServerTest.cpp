@@ -14,7 +14,7 @@
 #include "../WaterMeterCpp/EventServer.h"
 
 namespace WaterMeterCppTest {
-    
+       
     TEST(EventServerTest, eventServerDefaultGetTest) {
         EventServer server;
         EventClient client1(&server);

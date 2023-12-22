@@ -13,9 +13,14 @@
 
 #include "../WaterMeterCpp/MagnetoSensorReader.h"
 
-class MagnetoSensorReaderDriver final : public MagnetoSensorReader {
-public:
-    explicit MagnetoSensorReaderDriver(EventServer* eventServer) : MagnetoSensorReader(eventServer) {}
+namespace WaterMeterCppTest {
+    using WaterMeter::EventServer;
+    using WaterMeter::MagnetoSensorReader;
 
-    using MagnetoSensorReader::_sensor;
-};
+    class MagnetoSensorReaderDriver final : public MagnetoSensorReader {
+    public:
+        explicit MagnetoSensorReaderDriver(EventServer* eventServer) : MagnetoSensorReader(eventServer) {}
+
+        using MagnetoSensorReader::_sensor;
+    };
+}

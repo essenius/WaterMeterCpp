@@ -21,6 +21,14 @@
 #include "../WaterMeterCpp/Serializer.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Clock;
+    using WaterMeter::DataQueue;
+    using WaterMeter::DataQueuePayload;
+    using WaterMeter::IntCoordinate;
+    using WaterMeter::PayloadBuilder;
+    using WaterMeter::Serializer;
+    using WaterMeter::MaxSamples;
+
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
 
     TEST(DataQueueTest, dataQueueOverrunTest) {

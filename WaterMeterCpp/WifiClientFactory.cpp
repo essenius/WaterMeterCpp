@@ -11,31 +11,33 @@
 
 #include "WiFiClientFactory.h"
 
-WiFiClientFactory::WiFiClientFactory(const TlsConfig* config) : _config(config) {}
+namespace WaterMeter {
+    WiFiClientFactory::WiFiClientFactory(const TlsConfig* config) : _config(config) {}
 
-WiFiClient* WiFiClientFactory::create(const bool useTls) const {
-    if (!useTls) return new WiFiClient();
-    const auto client = new WiFiClientSecure();
-    bool insecure = true;
-    if (_config->rootCaCertificate != nullptr) {
-        client->setCACert(_config->rootCaCertificate);
-        insecure = false;
+    WiFiClient* WiFiClientFactory::create(const bool useTls) const {
+        if (!useTls) return new WiFiClient();
+        const auto client = new WiFiClientSecure();
+        bool insecure = true;
+        if (_config->rootCaCertificate != nullptr) {
+            client->setCACert(_config->rootCaCertificate);
+            insecure = false;
+        }
+        if (_config->deviceCertificate != nullptr) {
+            client->setCertificate(_config->deviceCertificate);
+            insecure = false;
+        }
+        if (_config->devicePrivateKey != nullptr) {
+            client->setPrivateKey(_config->devicePrivateKey);
+            insecure = false;
+        }
+        if (insecure) {
+            client->setInsecure();
+        }
+        return client;
     }
-    if (_config->deviceCertificate != nullptr) {
-        client->setCertificate(_config->deviceCertificate);
-        insecure = false;
-    }
-    if (_config->devicePrivateKey != nullptr) {
-        client->setPrivateKey(_config->devicePrivateKey);
-        insecure = false;
-    }
-    if (insecure) {
-        client->setInsecure();
-    }
-    return client;
-}
 
-WiFiClient* WiFiClientFactory::create(const char* url) const {
-    constexpr auto Https = "https";
-    return create(url != nullptr && strncmp(url, Https, strlen(Https)) == 0);
+    WiFiClient* WiFiClientFactory::create(const char* url) const {
+        constexpr auto Https = "https";
+        return create(url != nullptr && strncmp(url, Https, strlen(Https)) == 0);
+    }
 }

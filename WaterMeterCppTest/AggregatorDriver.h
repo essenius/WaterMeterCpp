@@ -14,6 +14,8 @@
 #include "../WaterMeterCpp/Aggregator.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Aggregator;
+    using WaterMeter::EventServer;
 
     class AggregatorDriver final : public Aggregator {
     public:

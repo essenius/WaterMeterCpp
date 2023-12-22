@@ -13,6 +13,12 @@
 #include "../WaterMeterCpp/secrets.h"
 
 namespace WaterMeterCppTest {
+    using WaterMeter::Configuration;
+    using WaterMeter::FirmwareConfig;
+    using WaterMeter::IpConfig;
+    using WaterMeter::MqttConfig;
+    using WaterMeter::TlsConfig;
+    using WaterMeter::WifiConfig;
     
     TEST(ConfigurationTest, configurationTestLoadSecrets) {
         Preferences preferences;

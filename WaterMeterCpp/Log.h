@@ -25,31 +25,34 @@
 
 #include "PayloadBuilder.h"
 
-class Log final : public EventClient {
-public:
-    using EventClient::update;
-    Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder);
-    void begin();
+namespace WaterMeter {
+    class Log final : public EventClient {
+    public:
+        using EventClient::update;
+        Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder);
+        void begin();
 
-    template <typename... Arguments>
-    void log(const char* format, const Arguments ... arguments) const {
-        // printf doesn't seem to influence other tasks (unlike Serial.printf)
-        xSemaphoreTake(_printMutex, portMAX_DELAY);
-        printf("[%s] ", getTimestamp());
-        printf(format, arguments...);
-        printf("\n");
-        xSemaphoreGive(_printMutex);
-    }
+        template <typename... Arguments>
+        void log(const char* format, const Arguments ... arguments) const {
+            // printf doesn't seem to influence other tasks (unlike Serial.printf)
+            xSemaphoreTake(_printMutex, portMAX_DELAY);
+            printf("[%s] ", getTimestamp());
+            printf(format, arguments...);
+            printf("\n");
+            xSemaphoreGive(_printMutex);
+        }
 
-    void update(Topic topic, const char* payload) override;
-    void update(Topic topic, long payload) override;
+        void update(Topic topic, const char* payload) override;
+        void update(Topic topic, long payload) override;
 
-private:
-    PayloadBuilder* _wifiPayloadBuilder;
-    long _previousConnectionTopic = -1;
-    static SemaphoreHandle_t _printMutex;
+    private:
+        PayloadBuilder* _wifiPayloadBuilder;
+        long _previousConnectionTopic = -1;
+        static SemaphoreHandle_t _printMutex;
 
-    const char* getTimestamp() const;
-    void printIndexedPayload(const char* entity, long payload) const;
-};
+        const char* getTimestamp() const;
+        void printIndexedPayload(const char* entity, long payload) const;
+    };
+}
 #endif
+

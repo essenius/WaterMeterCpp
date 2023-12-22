@@ -26,64 +26,65 @@
 #include <ESP.h>
 #include <Wire.h>
 
-struct SensorData {
-    short x;
-    short y;
-    short z;
+namespace WaterMeter {
+    struct SensorData {
+        short x;
+        short y;
+        short z;
 
-    void reset() {
-        x = 0;
-        y = 0;
-        z = 0;
-    }
+        void reset() {
+            x = 0;
+            y = 0;
+            z = 0;
+        }
 
-    bool operator==(const SensorData& other) const {
-        return this->x == other.x && this->y == other.y && this->z == other.z;
-    }
-};
+        bool operator==(const SensorData& other) const {
+            return this->x == other.x && this->y == other.y && this->z == other.z;
+        }
+    };
 
-// not using enum classes as we prefer weak typing to make the code more readable
+    // not using enum classes as we prefer weak typing to make the code more readable
 
-class MagnetoSensor {
-public:
-    virtual ~MagnetoSensor() = default;
-    explicit MagnetoSensor(byte address, TwoWire* wire);
-    MagnetoSensor(const MagnetoSensor&) = default;
-    MagnetoSensor(MagnetoSensor&&) = default;
-    MagnetoSensor& operator=(const MagnetoSensor&) = default;
-    MagnetoSensor& operator=(MagnetoSensor&&) = default;
+    class MagnetoSensor {
+    public:
+        virtual ~MagnetoSensor() = default;
+        explicit MagnetoSensor(byte address, TwoWire* wire);
+        MagnetoSensor(const MagnetoSensor&) = default;
+        MagnetoSensor(MagnetoSensor&&) = default;
+        MagnetoSensor& operator=(const MagnetoSensor&) = default;
+        MagnetoSensor& operator=(MagnetoSensor&&) = default;
 
-    // Configure the sensor
-    virtual bool begin();
+        // Configure the sensor
+        virtual bool begin();
 
-    // configure the wire address if not default (0x0D). Call before begin()
-    void configureAddress(byte address);
+        // configure the wire address if not default (0x0D). Call before begin()
+        void configureAddress(byte address);
 
-    virtual double getGain() const = 0;
+        virtual double getGain() const = 0;
 
-    virtual int getNoiseRange() const = 0;
+        virtual int getNoiseRange() const = 0;
 
-    // returns whether the sensor is active
-    virtual bool isOn() const;
+        // returns whether the sensor is active
+        virtual bool isOn() const;
 
-    virtual bool isReal() const {
-        return true;
-    }
+        virtual bool isReal() const {
+            return true;
+        }
 
-    // read a sample from the sensor
-    virtual bool read(SensorData& sample) = 0;
+        // read a sample from the sensor
+        virtual bool read(SensorData& sample) = 0;
 
-    // soft reset the sensor
-    virtual void softReset() = 0;
+        // soft reset the sensor
+        virtual void softReset() = 0;
 
-    virtual void waitForPowerOff() const;
+        virtual void waitForPowerOff() const;
 
-    virtual bool handlePowerOn();
-protected:
-    static constexpr bool StopAfterSend = true;
-    byte _address;
-    TwoWire* _wire;
-    void setRegister(byte sensorRegister, byte value) const;
-};
-
+        virtual bool handlePowerOn();
+    protected:
+        static constexpr bool StopAfterSend = true;
+        byte _address;
+        TwoWire* _wire;
+        void setRegister(byte sensorRegister, byte value) const;
+    };
+}
 #endif

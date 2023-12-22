@@ -20,23 +20,24 @@
 #include "EventServer.h"
 #include "ChangePublisher.h"
 
-class LongChangePublisher final : public ChangePublisher<long> {
-public:
-    LongChangePublisher(
-        EventServer* eventServer,
-        Topic topic,
-        long epsilon,
-        long lowThreshold,
-        int8_t index = 0,
-        long defaultValue = 0);
-    LongChangePublisher& operator=(long payload) override;
+namespace WaterMeter {
+    class LongChangePublisher final : public ChangePublisher<long> {
+    public:
+        LongChangePublisher(
+            EventServer* eventServer,
+            Topic topic,
+            long epsilon,
+            long lowThreshold,
+            int8_t index = 0,
+            long defaultValue = 0);
+        LongChangePublisher& operator=(long payload) override;
 
-protected:
-    long _epsilon;
-    long _lowThreshold;
-    long _lowerLimit = LONG_MAX;
-    long _upperLimit = LONG_MIN;
+    protected:
+        long _epsilon;
+        long _lowThreshold;
+        long _lowerLimit = LONG_MAX;
+        long _upperLimit = LONG_MIN;
 
-};
-
+    };
+}
 #endif
