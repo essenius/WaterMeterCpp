@@ -267,8 +267,7 @@ namespace WaterMeter {
 			// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
 			if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MinCycleForFit) {
 				const auto fittedEllipse = executeFit();
-				const auto fitSucceeded = fittedEllipse.isValid();
-				if (fitSucceeded) {
+				if (fittedEllipse.isValid()) {
 					_confirmedGoodFit = fittedEllipse;
 				}
 				else {

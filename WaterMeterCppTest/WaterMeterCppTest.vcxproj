@@ -251,7 +251,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>..\WaterMeterCpp\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Aggregator;Button;Clock;Configuration;Communicator;Connector;DataQueue;DataQueuePayload;Device;EventClient;EventServer;FirmwareManager;FlowDetector;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;MagnetoSensorSimulation;Meter;MqttGateway;OledDriver;PayloadBuilder;QueueClient;ResultAggregator;SampleAggregator;Sampler;Serializer;TimeServer;WiFiClientFactory;WifiManager;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Aggregator;Button;Clock;Configuration;Communicator;Connector;DataQueue;DataQueuePayload;Device;EventClient;EventServer;FirmwareManager;FlowDetector;Led;LedDriver;LedFlasher;Log;LongChangePublisher;MagnetoSensorHmc;MagnetoSensor;MagnetoSensorReader;MagnetoSensorQmc;Meter;MqttGateway;OledDriver;PayloadBuilder;QueueClient;ResultAggregator;SampleAggregator;Sampler;Serializer;TimeServer;WiFiClientFactory;WifiManager;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

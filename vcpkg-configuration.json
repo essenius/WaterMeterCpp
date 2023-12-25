@@ -12,7 +12,7 @@
         },
         {
             "kind": "git",
-            "baseline": "821ecc71c408a191955d9b3c119405fab60e0869",
+            "baseline": "91258a4a7b4802074034334daf76cb40856b5a3d",
             "repository": "https://github.com/essenius/vcpkg",
             "packages": [ "ellipse-fit", "esp32-mock", "rix-matrix", "safe-cstring" ]
         }
