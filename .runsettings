@@ -21,6 +21,11 @@ Included items must then not match any entries in the exclude list to remain inc
                             <Include>
                                 <Function>.*WaterMeter::.*</Function>    
                             </Include>
+                            <Exclude>
+                                <Function>.*::MagnetoSensorHmc::.*</Function>
+                                <Function>.*::MagnetoSensorQmc::.*</Function>
+                                <Function>.*::MagnetoSensor::.*</Function>
+                            </Exclude>
 						</Functions>
 
 						<!-- We recommend you do not change the following values: -->

@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -9,11 +9,9 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-// ReSharper disable CppClangTidyClangDiagnosticExitTimeDestructors
-
 // This project implements a water meter using a HMC5883L or QMC5883L compass sensor on an ESP32 board.
-// To enable unit testing in Windows (Visual Studio/Rider), some of the ESP libraries have been mocked in a separate project.
 
+// ReSharper disable CppClangTidyClangDiagnosticExitTimeDestructors
 // ReSharper disable CppClangTidyCppcoreguidelinesInterfacesGlobalInit -- Wire is not used before initialization
 
 #include <ESP.h>
@@ -47,6 +45,10 @@
 #include "Wire.h"
 
 namespace WaterMeter {
+    using MagnetoSensors::MagnetoSensorQmc;
+    using MagnetoSensors::MagnetoSensorHmc;
+    using MagnetoSensors::MagnetoSensorNull;
+
     // For being able to set the firmware 
     constexpr const char* const BuildVersion = "0.106.0";
 

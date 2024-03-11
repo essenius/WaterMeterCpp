@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -11,17 +11,19 @@
 
 // Hide the actual implementation of the sensors
 // This also takes care of detecting anomalies like flatlines (indicating the sensor might need a reboot).
-// It can also do an externally requested sensor rebootby listening to the ResetSensor event.
+// It can also do an externally requested sensor reboot by listening to the ResetSensor event.
 
 #ifndef HEADER_MAGNETOSENSORREADER
 #define HEADER_MAGNETOSENSORREADER
 
-#include "MagnetoSensor.h"
+#include <MagnetoSensor.h>
 #include "ChangePublisher.h"
 #include "EventServer.h"
 #include "IntCoordinate.h"
 
 namespace WaterMeter {
+    using MagnetoSensors::MagnetoSensor;
+
     constexpr int SoftReset = 1;
     constexpr int HardReset = 2;
 

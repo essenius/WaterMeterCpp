@@ -139,10 +139,7 @@
     <ClCompile Include="IntCoordinateTest.cpp" />
     <ClCompile Include="LedDriverTest.cpp" />
     <ClCompile Include="LogTest.cpp" />
-    <ClCompile Include="MagnetoSensorHmcTest.cpp" />
     <ClCompile Include="MagnetoSensorMock.cpp" />
-    <ClCompile Include="MagnetoSensorNullTest.cpp" />
-    <ClCompile Include="MagnetoSensorQmcTest.cpp" />
     <ClCompile Include="MagnetoSensorSimulation.cpp" />
     <ClCompile Include="MainDataTest.cpp" />
     <ClCompile Include="MainTest.cpp" />

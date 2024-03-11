@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 
 #include <ESP.h>
 #include <PubSubClient.h>
+#include <MagnetoSensorNull.h>
 
 #include "../WaterMeter/Button.h"
 #include "../WaterMeter/Communicator.h"
@@ -24,7 +25,6 @@
 #include "../WaterMeter/FirmwareManager.h"
 #include "../WaterMeter/DataQueue.h"
 #include "../WaterMeter/LedDriver.h"
-#include "../WaterMeter/MagnetoSensorNull.h"
 #include "../WaterMeter/MagnetoSensorReader.h"
 #include "../WaterMeter/MqttGateway.h"
 #include "../WaterMeter/ResultAggregator.h"
@@ -48,6 +48,7 @@
 namespace WaterMeterCppTest {
     using EllipseMath::EllipseFit;
     using namespace WaterMeter;
+    using MagnetoSensors::MagnetoSensorNull;
 
     class MainDataTest : public testing::Test {
     public:

@@ -99,15 +99,6 @@
     <ClCompile Include="WiFiClientFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MagnetoSensorQmc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MagnetoSensor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MagnetoSensorHmc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OledDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -212,19 +203,7 @@
     <ClInclude Include="WiFiClientFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MagnetoSensorQmc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MagnetoSensor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MagnetoSensorHmc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OledDriver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MagnetoSensorNull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Meter.h">

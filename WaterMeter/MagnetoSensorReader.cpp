@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -15,6 +15,8 @@
 #include "MagnetoSensorReader.h"
 
 namespace WaterMeter {
+    using MagnetoSensors::SensorData;
+
     MagnetoSensorReader::MagnetoSensorReader(EventServer* eventServer) :
         EventClient(eventServer),
         _sensorState(eventServer, Topic::SensorState) {}

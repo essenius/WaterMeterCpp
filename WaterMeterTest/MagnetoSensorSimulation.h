@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -14,12 +14,12 @@
 #ifndef HEADER_MAGNETOSENSORTEST
 #define HEADER_MAGNETOSENSORTEST
 
-#include "../WaterMeter/MagnetoSensor.h"
+#include <MagnetoSensor.h>
 #include "Wire.h"
 
 namespace WaterMeterCppTest {
-    using WaterMeter::MagnetoSensor;
-    using WaterMeter::SensorData;
+    using MagnetoSensors::MagnetoSensor;
+    using MagnetoSensors::SensorData;
 
     class MagnetoSensorSimulation final : public MagnetoSensor {
     public:
@@ -41,7 +41,7 @@ namespace WaterMeterCppTest {
             return 3;
         }
 
-        bool isOn() const override {
+        bool isOn() override {
             return true;
         }
 
@@ -57,7 +57,7 @@ namespace WaterMeterCppTest {
 
         void softReset() override { _index = 0; }
 
-        void waitForPowerOff() const override {}
+        void waitForPowerOff() override {}
 
     private:
         static constexpr int MaxSamples = 552;
