@@ -13,8 +13,8 @@
 // This also takes care of detecting anomalies like flatlines (indicating the sensor might need a reboot).
 // It can also do an externally requested sensor reboot by listening to the ResetSensor event.
 
-#ifndef HEADER_MAGNETOSENSORREADER
-#define HEADER_MAGNETOSENSORREADER
+#ifndef HEADER_MAGNETO_SENSOR_READER
+#define HEADER_MAGNETO_SENSOR_READER
 
 #include <MagnetoSensor.h>
 #include "ChangePublisher.h"

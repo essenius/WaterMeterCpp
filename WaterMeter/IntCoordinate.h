@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -10,11 +10,11 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 // The sensors deliver 16 bit int coordinates. So X-Y fits in a 32 bit payload, which we use for events.
-// We also model saturation here, using the extreme values of 16 bit ints.
+// We also model saturation here, using the extreme values of 16-bit integers.
 // Sensors are responsible to provide their extremes this way.
 
-#ifndef HEADER_INTCOORDINATE
-#define HEADER_INTCOORDINATE
+#ifndef HEADER_INT_COORDINATE
+#define HEADER_INT_COORDINATE
 
 #include <Coordinate.h>
 #include <climits>

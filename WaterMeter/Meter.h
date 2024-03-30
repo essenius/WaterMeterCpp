@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -34,8 +34,8 @@ namespace WaterMeter {
         static constexpr double PulseDelta = 1.0 / PulsesPerUnit;
         double _volume = 0.0;
         unsigned long _pulses = 0;
-        static constexpr int Buffersize = 20;
-        char _buffer[Buffersize] = "";
+        static constexpr int BufferSize = 20;
+        char _buffer[BufferSize] = "";
     };
 }
 #endif

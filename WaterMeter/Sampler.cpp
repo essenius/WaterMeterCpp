@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -19,9 +19,9 @@ namespace WaterMeter {
     volatile unsigned long Sampler::_interruptCounter = 0;
 
     Sampler::Sampler(EventServer* eventServer, MagnetoSensorReader* sensorReader, FlowDetector* flowDetector, Button* button,
-        SampleAggregator* sampleAggegator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
+        SampleAggregator* sampleAggregator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
         _eventServer(eventServer), _sensorReader(sensorReader), _flowDetector(flowDetector), _button(button),
-        _sampleAggregator(sampleAggegator), _resultAggregator(resultAggregator), _queueClient(queueClient) {
+        _sampleAggregator(sampleAggregator), _resultAggregator(resultAggregator), _queueClient(queueClient) {
         _sampleQueue = xQueueCreate(SampleQueueSize, sizeof(IntCoordinate));
         _overrunQueue = xQueueCreate(OverrunQueueSize, sizeof(long));
     }

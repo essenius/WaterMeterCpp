@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -12,8 +12,8 @@
 
 // The states that the connection state machine can have
 
-#ifndef HEADER_CONNECTIONSTATE
-#define HEADER_CONNECTIONSTATE
+#ifndef HEADER_CONNECTION_STATE
+#define HEADER_CONNECTION_STATE
 
 namespace WaterMeter {
 

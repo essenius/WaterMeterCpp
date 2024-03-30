@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 // Connector runs a process that connects with the outside world. The connect method uses a state machine
-// to make the connection with Wifi, get the time, check for a firmware upgrade and connect to the MQTT server
+// to make the connection with Wi-Fi, get the time, check for a firmware upgrade and connect to the MQTT server
 
 #ifndef HEADER_CONNECTION
 #define HEADER_CONNECTION

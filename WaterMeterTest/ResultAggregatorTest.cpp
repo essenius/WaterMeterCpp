@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -166,7 +166,7 @@ namespace WaterMeterCppTest {
 
             const auto result = &payload.buffer.result;
             if (i == 9) {
-                // At 10 we get a summary with 2 outliers and 2 excludes
+                // At 10, we get a summary with 2 outliers and 2 excludes
                 assertSummary(2600, 10, 0, 8, result);
                 assertExceptions(2, 0, result);
                 assertDuration(79975, 7998, 8002, result);
@@ -176,7 +176,7 @@ namespace WaterMeterCppTest {
                 EXPECT_TRUE(true);
             }
             else if (i == 14) {
-                // At 15 we get the next batch with 5 outliers and excludes
+                // At 15, we get the next batch with 5 outliers and excludes
                 assertSummary(2600, 5, 0, 5, result);
                 assertExceptions(5, 0, result);
                 assertDuration(40025, 8005, 8007, result);
@@ -196,7 +196,7 @@ namespace WaterMeterCppTest {
 
         eventServer.publish(Topic::IdleRate, 10);
         EXPECT_EQ(2, rateListener.getCallCount()) << "rate set again";
-        EXPECT_STREQ("10", rateListener.getPayload()) << "rate was taken from idlerate";
+        EXPECT_STREQ("10", rateListener.getPayload()) << "rate was taken from idle rate";
         EXPECT_EQ(10L, aggregator.getFlushRate()) << "Default flush rate OK.";
 
         eventServer.publish(Topic::NonIdleRate, 5);

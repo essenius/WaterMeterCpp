@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -43,7 +43,7 @@ namespace WaterMeterCppTest {
         digitalWrite(Port, LOW);
         delay(1);
         button.check();
-        EXPECT_EQ(1, buttonListener.getCallCount()) << "Initial value still not changed - awaiting end of bouncing adter second LOW before timeout";
+        EXPECT_EQ(1, buttonListener.getCallCount()) << "Initial value still not changed - awaiting end of bouncing after second LOW before timeout";
         delay(11);
         button.check();
         EXPECT_EQ(2, buttonListener.getCallCount()) << "Topic triggered after timeout";

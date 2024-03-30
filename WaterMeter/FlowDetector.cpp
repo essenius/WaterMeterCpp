@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -87,7 +87,7 @@ namespace WaterMeter {
 			_firstCall = false;
 		}
 		updateMovingAverageArray(sample);
-		// if index is 0, we made the first round and the buffer is full. Otherwise we wait.
+		// if index is 0, we made the first round and the buffer is full. Otherwise, we wait.
 		if (_firstRound && _movingAverageIndex != 0) {
 			_wasSkipped = true;
 			return;
@@ -263,8 +263,8 @@ namespace WaterMeter {
 		}
 		else {
 			// If we already had a reliable fit, check whether the new data is good enough to warrant a new fit.
-			// Otherwise we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
-			// we do this because the ellipse centers are moving a bit and we want to minimize deviations.
+			// Otherwise, we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
+			// we do this because the ellipse centers are moving a bit, and we want to minimize deviations.
 			if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MinCycleForFit) {
 				const auto fittedEllipse = executeFit();
 				if (fittedEllipse.isValid()) {

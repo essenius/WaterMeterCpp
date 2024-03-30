@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 namespace WaterMeter {
     LedFlasher::LedFlasher(const uint8_t led, const unsigned int interval) : _interval(interval), _led(led) {}
 
-    // since it's flashing anyway, it doesn't really matter if the led is on or off with HIGH
+    // since it's flashing anyway, it doesn't really matter if the LED is on or off with HIGH
 
     void LedFlasher::reset() {
         _ledCounter = 0;

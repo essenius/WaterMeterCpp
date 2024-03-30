@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -113,7 +113,7 @@ namespace WaterMeter {
     void PayloadBuilder::writeString(const double input) {
         SafeCString::pointerSprintf(_currentPosition, _resultBuffer, "%.2f", input);
         updatePosition();
-        // clean up any overprecision
+        // clean up any over-precision
         while (*--_currentPosition == '0') {}
         if (*_currentPosition != '.') {
             _currentPosition++;

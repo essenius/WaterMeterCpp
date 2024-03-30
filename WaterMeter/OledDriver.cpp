@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -54,7 +54,7 @@ namespace WaterMeter {
         _display.clearDisplay();
         _display.setTextSize(1);
         _display.setTextColor(WHITE, BLACK); // white text on black background
-        _display.cp437(true); // Use full 256 char 'Code Page 437' font
+        _display.cp437(true); // Use 'Code Page 437' font
         showMessageAtLine("Waiting", 3);
         _display.display();
         _needsDisplay = false;
@@ -144,7 +144,7 @@ namespace WaterMeter {
             return;
         case ConnectionState::WifiReady:
             setConnectionLogo(WifiLogo);
-            // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
+            // ReSharper disable once CppRedundantControlFlowJump - would introduce a fall-though warning
             return;
         default:;
             // do nothing, intermediate state
@@ -218,7 +218,7 @@ namespace WaterMeter {
         case Topic::Pulses:
             SafeCString::sprintf(buffer, "Pulses: %7ld", payload);
             showMessageAtLine(buffer, 0);
-            // ReSharper disable once CppRedundantControlFlowJump - would introduce a fallthough warning
+            // ReSharper disable once CppRedundantControlFlowJump - would introduce a fall-though warning
             return;
         default:;
             // do nothing

@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -23,7 +23,7 @@ namespace WaterMeterCppTest {
         constexpr Timestamp Timestamp = 1;
         EventServer eventServer;
         // the mock only mocks the time setting and detection, but keeps the rest
-        char destination[5] = "abcd";
+        char destination[5] = R"(abcd)";
         EXPECT_FALSE(Clock::formatTimestamp(Timestamp, destination, sizeof destination)) << "Timestamp does not fit";
         EXPECT_STREQ("abcd", destination) << "Destination not changed";
     }

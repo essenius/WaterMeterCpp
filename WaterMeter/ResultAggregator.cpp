@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -62,7 +62,7 @@ namespace WaterMeter {
             _result->skipCount++;
         }
 
-        // we only need this at the end but we don't know when that is
+        // we only need this at the end, but we don't know when that is
         _result->ellipseCenterTimes10 = result->ellipseCenterTimes10();
         _result->ellipseRadiusTimes10 = result->ellipseRadiusTimes10();
         _result->ellipseAngleTimes10 = result->ellipseAngleTimes10();

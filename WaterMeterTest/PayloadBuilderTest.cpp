@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -34,7 +34,7 @@ namespace WaterMeterCppTest {
         builder.initialize();
         builder.writeArrayStart("array");
         builder.writeArrayEnd();
-        builder.writeGroupStart("testdata");
+        builder.writeGroupStart(R"(testdata)");
         builder.writeParam("pi", 3.1415926535);
         builder.writeParam("float", 1.00);
         builder.writeParam("int", 1);

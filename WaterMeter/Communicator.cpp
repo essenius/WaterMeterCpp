@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -39,7 +39,7 @@ namespace WaterMeter {
         _eventServer->subscribe(_connectorQueueClient, Topic::Volume);
         _eventServer->subscribe(_serializer, Topic::SensorData);
 
-        // Dependencies are reduced by publishing a Begin event for objects that only need to get initialized.
+        // Dependencies are reduced by publishing a 'Begin' event for objects that only need to get initialized.
         // oledDriver begin can publish a NoDisplayFound, so we need that to happen last. We control that via the payload:
         // false for as quickly as possible, true for starting after base services are up.
 

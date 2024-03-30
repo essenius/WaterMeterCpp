@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -46,7 +46,7 @@ namespace WaterMeter {
     constexpr const char* Url = "url";
 
     void Configuration::begin(const bool useSecrets) {
-        // we use both an ifdef and an if to enable testing without having to recompile
+        // we use both an #ifdef and an if to enable testing without having to recompile
 #ifdef HEADER_SECRETS
         if (useSecrets) {
             putIpConfig(&ConfigIp);
@@ -122,10 +122,10 @@ namespace WaterMeter {
         return start;
     }
 
-    void Configuration::putFirmwareConfig(const FirmwareConfig* firnwareConfig) const {
-        if (firnwareConfig == nullptr) return;
+    void Configuration::putFirmwareConfig(const FirmwareConfig* firmwareConfig) const {
+        if (firmwareConfig == nullptr) return;
         _preferences->begin(Firmware, false);
-        _preferences->putString(Url, firnwareConfig->baseUrl);
+        _preferences->putString(Url, firmwareConfig->baseUrl);
         _preferences->end();
     }
 

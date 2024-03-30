@@ -146,7 +146,7 @@ namespace WaterMeter {
 
     void setup() {
         Serial.begin(230400);
-        // switch off buffering so we see things before a newline is entered
+        // switch off buffering, so we see things before a newline is entered
         (void)setvbuf(stdout, nullptr, _IONBF, 0);
 
         theClock.begin();
@@ -175,16 +175,16 @@ namespace WaterMeter {
         // ReSharper disable once CppUseStdSize -- we need a C++ 11 compatible way
         sampler.begin(sensor, sizeof sensor / sizeof sensor[0], MeasureIntervalMicros);
 
-        // On timer fire, read from the sensor and put sample in a queue. Use core 1 so we are not (or at least much less) influenced by Wifi and printing
+        // On timer fire, read from the sensor and put sample in a queue. Use core 1, so we are not (or at least much less) influenced by Wi-Fi and printing
         xTaskCreatePinnedToCore(Sampler::task, "Sampler", StackDepth, &sampler, Priority1, &samplerTaskHandle, Core1);
 
-        // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
+        // connect to Wi-Fi, get the time and start the MQTT client. Do this on core 0 (where Wi-Fi runs as well)
         xTaskCreatePinnedToCore(Connector::task, "Connector", StackDepth, &connector, Priority1, &connectorTaskHandle, Core0);
 
-        // Take care of logging and leds, as well as passing on data to the connector if there is a connection. Also on core 0, as not time sensitive
+        // Take care of logging and LEDs, as well as passing on data to the connector if there is a connection. Also on core 0, as not time sensitive
         xTaskCreatePinnedToCore(Communicator::task, "Communicator", StackDepth, &communicator, Priority1, &communicatorTaskHandle, Core0);
 
-        // beginLoop can only run when both sampler and connector have finished settting up, since they can start publishing right away.
+        // beginLoop can only run when both sampler and connector have finished setting up, since they can start publishing right away.
         // This also starts the hardware timer.
         sampler.beginLoop(samplerTaskHandle);
 
@@ -192,8 +192,8 @@ namespace WaterMeter {
     }
 }
 
-// Start the sampler task which is the only task on core 1 so it should not get interrupted. 
-// As Wifi runs on core 0, we don't want to run this time critical task there.
+// Start the sampler task which is the only task on core 1, so it should not get interrupted. 
+// As Wi-Fi runs on core 0, we don't want to run this time critical task there.
 // One issue: if you run Serial.printf() from core 0, then tasks running on core 1 might get delayed. 
 // printf() doesn't seem to have that problem, so we use that instead.
 

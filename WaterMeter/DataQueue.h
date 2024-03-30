@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -12,8 +12,8 @@
 // We use a data queue to transport larger items between two processes - usually from Sampler to Communicator
 // We do this to limit the number of times we need to send data, but also to be able to deal with incidental network glitches.
 
-#ifndef HEADER_DATAQUEUE
-#define HEADER_DATAQUEUE
+#ifndef HEADER_DATA_QUEUE
+#define HEADER_DATA_QUEUE
 
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include <freertos/freeRTOS.h>

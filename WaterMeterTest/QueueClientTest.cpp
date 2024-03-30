@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -50,11 +50,11 @@ namespace WaterMeterCppTest {
         EXPECT_TRUE(std::regex_match(getPrintOutput(), std::regex(matcher))) << "Log sent";
         testEventClient.reset();
         for (int i = 0; i < QueueSize; i++) {
-            char numbuf[10];
+            char numberBuffer[10];
             EXPECT_TRUE(qClient.receive()) << "receive true";
             EXPECT_EQ(i + 1, testEventClient.getCallCount()) << "Call count";
-            SafeCString::sprintf(numbuf, "%d", 11 * i);
-            EXPECT_STREQ(numbuf, testEventClient.getPayload()) << "Payload";
+            SafeCString::sprintf(numberBuffer, "%d", 11 * i);
+            EXPECT_STREQ(numberBuffer, testEventClient.getPayload()) << "Payload";
         }
         EXPECT_FALSE(qClient.receive()) << "Receive false";
         EXPECT_EQ(QueueSize, testEventClient.getCallCount()) << "Call count last";

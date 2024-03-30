@@ -14,8 +14,8 @@
 // This works by using the highest significant byte of the (4 byte) long to store the index.
 // That means 3 bytes (max value 8,388,608 for long) are left for the payload if the index is used.
 
-#ifndef HEADER_CHANGEPUBLISHER
-#define HEADER_CHANGEPUBLISHER
+#ifndef HEADER_CHANGE_PUBLISHER
+#define HEADER_CHANGE_PUBLISHER
 
 #include "EventServer.h"
 

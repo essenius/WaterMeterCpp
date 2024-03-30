@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -12,8 +12,8 @@
 // we use queues to send events between the different processes. Queues handle inter-process communication effectively
 // Every queue client has its own queue that it receives from, and it can also send to another queue (which it doesn't own).
 
-#ifndef HEADER_QUEUECLIENT
-#define HEADER_QUEUECLIENT
+#ifndef HEADER_QUEUE_CLIENT
+#define HEADER_QUEUE_CLIENT
 
 #include "EventClient.h"
 #include "Log.h" // exception: log from here only if buffer is full

@@ -1,4 +1,4 @@
-// Copyright 2023 Rik Essenius
+// Copyright 2023-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -22,8 +22,8 @@ namespace WaterMeterCppTest {
             sample.reset();
             return true;
         }
-        sample.x = 10 - sample.x;
-        sample.y = 5 - sample.y;
+        sample.x = static_cast<short>(10 - sample.x);
+        sample.y = static_cast<short>(5 - sample.y);
         return true;
     }
 

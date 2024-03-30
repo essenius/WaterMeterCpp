@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -128,8 +128,8 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ(MqttConfigWithUser.user, mqttClient.user()) << "User OK";
         EXPECT_STREQ("client1", mqttClient.id()) << "Client ID OK";
         // check if the homie init events were sent 
-        EXPECT_EQ(static_cast<size_t>(2193), strlen(mqttClient.getTopics())) << "Topic lenght OK";
-        EXPECT_EQ(static_cast<size_t>(632), strlen(mqttClient.getPayloads())) << "Payload lenght OK";
+        EXPECT_EQ(static_cast<size_t>(2193), strlen(mqttClient.getTopics())) << "Topic length OK";
+        EXPECT_EQ(static_cast<size_t>(632), strlen(mqttClient.getPayloads())) << "Payload length OK";
         EXPECT_EQ(58, mqttClient.getCallCount()) << "Call count";
 
         gateway.announceReady();

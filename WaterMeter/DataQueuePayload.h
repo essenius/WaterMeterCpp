@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -11,8 +11,8 @@
 
 // The payload structure for the data queues. We use a union so we can reuse the same data queue for different formats.
 
-#ifndef HEADER_DATAQUEUEPAYLOAD
-#define HEADER_DATAQUEUEPAYLOAD
+#ifndef HEADER_DATA_QUEUE_PAYLOAD
+#define HEADER_DATA_QUEUE_PAYLOAD
 
 #include <cstdint>
 

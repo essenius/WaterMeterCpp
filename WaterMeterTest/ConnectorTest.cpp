@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -165,7 +165,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(50UL, (micros() - timestampReady) / 1000UL) << "50 ms wait time when ready";
         EXPECT_EQ(ConnectionState::MqttReady, connector.connect()) << "MQTT stays ready if nothing changes";
 
-        // disconnecting Wifi should change state to Disconnected
+        // disconnecting Wi-Fi should change state to Disconnected
         wifiMock.setIsConnected(false);
         EXPECT_EQ(ConnectionState::Disconnected, connector.loop()) << "Disconnects if wifi is down";
 
@@ -183,7 +183,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(ConnectionState::MqttConnected, connector.connect()) << "Connected to MQTT 2";
         EXPECT_EQ(ConnectionState::MqttReady, connector.connect()) << "Mqtt Ready 2";
 
-        // disconnecting MQTT should put the state to Wifi connected
+        // disconnecting MQTT should put the state to Wi-Fi connected
         mqttGatewayMock.setIsConnected(false);
         EXPECT_EQ(ConnectionState::WifiReady, connector.connect()) << "back to Wifi Ready";
         EXPECT_EQ(ConnectionState::MqttConnecting, connector.connect()) << "Connecting to MQTT 3";

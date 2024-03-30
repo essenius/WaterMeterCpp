@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2023 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -154,8 +154,8 @@ namespace WaterMeterCppTest {
             sample1.y = static_cast <int16_t>(-190 - i % 5);
             aggregator.addSample(sample1);
         }
-        constexpr IntCoordinate Lastsample{ {-131, -194} };
-        EXPECT_EQ(Lastsample, payload.buffer.samples.value[24]) << "Last sample value correct";
+        constexpr IntCoordinate LastSample{ {-131, -194} };
+        EXPECT_EQ(LastSample, payload.buffer.samples.value[24]) << "Last sample value correct";
         EXPECT_TRUE(aggregator.send()) << "sends after 25 samples";
     }
 }

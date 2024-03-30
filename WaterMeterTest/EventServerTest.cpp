@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -67,7 +67,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(0, client1.getCallCount()) << "client 1 was not notified";
         EXPECT_EQ(0, client2.getCallCount()) << "client 2 was not notified";
         client3.reset();
-        server.publish(&client3, Topic::BatchSize, "Hola");
+        server.publish(&client3, Topic::BatchSize, R"(Hola)");
         EXPECT_EQ(1, client1.getCallCount()) << "client 1 got called";
         EXPECT_EQ(Topic::BatchSize, client1.getTopic()) << "client 1 got a notification on topic 2";
         EXPECT_STREQ("Hola", client1.getPayload()) << "client 1 received the right payload";

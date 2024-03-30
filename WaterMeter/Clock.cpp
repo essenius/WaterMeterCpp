@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -25,7 +25,7 @@ namespace WaterMeter {
         _eventServer->provides(this, Topic::Time);
     }
 
-    // return the number of microseconds since epoch. Can be called from multipe tasks, so using a semaphore
+    // return the number of microseconds since epoch. Can be called from multiple tasks, so using a semaphore
     Timestamp Clock::getTimestamp() {
         timeval currentTime{};
         xSemaphoreTake(_timeMutex, portMAX_DELAY);
@@ -39,10 +39,10 @@ namespace WaterMeter {
         const auto microseconds = static_cast<long>(timestamp % MicrosecondsPerSecond);
         const auto seconds = static_cast<time_t>(timestamp / MicrosecondsPerSecond);
         xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
-        strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds)); // NOLINT(concurrency-mt-unsafe)
+        (void)strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds)); // NOLINT(concurrency-mt-unsafe)
         xSemaphoreGive(_formatTimeMutex);
         char* currentPosition = destination + strlen(destination);
-        snprintf(currentPosition, size - strlen(destination), "%06ld", microseconds);
+        (void)snprintf(currentPosition, size - strlen(destination), "%06ld", microseconds);
         return true;
     }
 

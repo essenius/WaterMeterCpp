@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -101,9 +101,9 @@ namespace WaterMeter {
     const char* WiFiManager::getHostName() const { return _hostName; }
 
     // There is an issue on ESP32 with DHCP, timing out after 12032 seconds. Workaround is setting a fixed IP
-    // address so we don't need DHCP. So, if we still want a dynamic IP, we first connect without config to
+    // address, so we don't need DHCP. So, if we still want a dynamic IP, we first connect without config to
     // get valid addresses, and then we disconnect, and reconnect using the just obtained addresses, fixed.
-    bool WiFiManager::needsReinit() {
+    bool WiFiManager::needsReInit() {
         if (!isConnected()) return false;
         _needsReconnect = _localIp == NoIp;
         if (_needsReconnect) _localIp = WiFi.localIP();

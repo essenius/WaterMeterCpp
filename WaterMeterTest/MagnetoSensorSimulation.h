@@ -11,8 +11,8 @@
 
 // If we don't detect a sensor, we use this null sensor instead. That makes the code a bit cleaner.
 
-#ifndef HEADER_MAGNETOSENSORTEST
-#define HEADER_MAGNETOSENSORTEST
+#ifndef HEADER_MAGNETO_SENSOR_TEST
+#define HEADER_MAGNETO_SENSOR_TEST
 
 #include <MagnetoSensor.h>
 #include "Wire.h"

@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -119,7 +119,7 @@ namespace WaterMeter {
         _mqttClient->setClient(*_wifiClient);
         _mqttClient->setBufferSize(512);
         _mqttClient->setServer(_mqttConfig->broker, static_cast<uint16_t>(_mqttConfig->port));
-        _mqttClient->setCallback([=](const char* topic, const uint8_t* payload, const unsigned int length) {
+        _mqttClient->setCallback([this](const char* topic, const uint8_t* payload, const unsigned int length) {
             this->callback(topic, payload, length);
             });
         connect();

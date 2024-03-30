@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -62,7 +62,7 @@ namespace WaterMeter {
     }
 
     void QueueClient::update(const Topic topic, const char* payload) {
-        // if we can convert the input to a long, do that. Otherwise keep it a string
+        // if we can convert the input to a long, do that. Otherwise, keep it a string
         char* endPointer;
         const auto longValue = strtol(payload, &endPointer, 0);
         if (*endPointer != '\0') {

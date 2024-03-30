@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -13,8 +13,8 @@
 // It works with long integers, and it can deal with thresholds and multiples to reduce the number of times it fires.
 // This allows for e.g. not reporting each and every change to the stack size, but only if it differs more than 1kB.
 
-#ifndef HEADER_LONGCHANGEPUBLISHER
-#define HEADER_LONGCHANGEPUBLISHER
+#ifndef HEADER_LONG_CHANGE_PUBLISHER
+#define HEADER_LONG_CHANGE_PUBLISHER
 
 #include <climits>
 #include "EventServer.h"

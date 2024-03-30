@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -11,8 +11,8 @@
 
 // Simple implementation of an event server supporting publish/subscribe and request/response patterns
 
-#ifndef HEADER_EVENTSERVER
-#define HEADER_EVENTSERVER
+#ifndef HEADER_EVENT_SERVER
+#define HEADER_EVENT_SERVER
 
 #include "EventClient.h"
 #include <map>

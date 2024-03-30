@@ -43,7 +43,7 @@
 // ReSharper restore CppUnusedIncludeDirective
 
 // crude mechanism to test the main part -- copy/paste. We can't do much better than this because we need the
-// objects defined globally so we don't get into heap issues.
+// objects defined globally, so we don't get into heap issues.
 
 namespace WaterMeterCppTest {
     using EllipseMath::EllipseFit;
@@ -201,16 +201,16 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("[] Starting\n", getPrintOutput()) << "Print output started";
         clearPrintOutput();
 
-        // On timer fire, read from the sensor and put sample in a queue. Use core 1 so we are not (or at least much less) influenced by Wifi and printing
+        // On timer fire, read from the sensor and put sample in a queue. Use core 1, so we are not (or at least much less) influenced by Wi-Fi and printing
         xTaskCreatePinnedToCore(Sampler::task, "Sampler", StackDepth, &sampler, Priority1, &samplerTaskHandle, Core1);
 
-        // connect to Wifi, get the time and start the MQTT client. Do this on core 0 (where WiFi runs as well)
+        // connect to Wi-Fi, get the time and start the MQTT client. Do this on core 0 (where Wi-Fi runs as well)
         xTaskCreatePinnedToCore(Connector::task, "Connector", StackDepth, &connector, Priority1, &connectorTaskHandle, Core0);
 
-        // Take care of logging and leds, as well as passing on data to the connector if there is a connection. Also on core 0, as not time sensitive
+        // Take care of logging and LEDs, as well as passing on data to the connector if there is a connection. Also on core 0, as not time sensitive
         xTaskCreatePinnedToCore(Communicator::task, "Communicator", StackDepth, &communicator, Priority1, &communicatorTaskHandle, Core0);
 
-        // beginLoop can only run when both sampler and connector have finished settting up, since they can start publishing right away.
+        // beginLoop can only run when both sampler and connector have finished setting up, since they can start publishing right away.
         // This also starts the hardware timer.
         sampler.beginLoop(samplerTaskHandle);
 

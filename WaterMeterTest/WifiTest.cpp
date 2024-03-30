@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -62,10 +62,10 @@ namespace WaterMeterCppTest {
         eventServer.subscribe(&client1, Topic::WifiSummaryReady);
         WiFiManager wifi(&eventServer, &WifiConfig, &payloadBuilder);
         wifi.begin();
-        EXPECT_FALSE(wifi.needsReinit()) << "Does not need reinit as disconnected";
+        EXPECT_FALSE(wifi.needsReInit()) << "Does not need reInit as disconnected";
 
         while (!wifi.isConnected()) {}
-        EXPECT_TRUE(wifi.needsReinit()) << "Needs reinit";
+        EXPECT_TRUE(wifi.needsReInit()) << "Needs reInit";
         wifi.begin();
         EXPECT_EQ(0, client1.getCallCount()) << "'Summary ready' not published yet";
 
@@ -128,7 +128,7 @@ namespace WaterMeterCppTest {
         const IpConfig ipConfig{local, NoIp, NoIp, NoIp, NoIp};
         wifi.configure(&ipConfig);
         wifi.begin();
-        EXPECT_FALSE(wifi.needsReinit()) << "Does not need reinit";
+        EXPECT_FALSE(wifi.needsReInit()) << "Does not need reInit";
         wifi.announceReady();
         EXPECT_STREQ(local.toString().c_str(), WiFi.localIP().toString().c_str()) << "Local IP OK";
         EXPECT_STREQ(gateway.toString().c_str(), WiFi.gatewayIP().toString().c_str()) << "Gateway IP OK";
@@ -157,7 +157,7 @@ namespace WaterMeterCppTest {
         const IpConfig ipConfig{local, gateway, NoIp, dns, NoIp};
         wifi.configure(&ipConfig);
         wifi.begin();
-        EXPECT_FALSE(wifi.needsReinit()) << "Does not need reinit";
+        EXPECT_FALSE(wifi.needsReInit()) << "Does not need reInit";
         wifi.announceReady();
         EXPECT_EQ(local, WiFi.localIP()) << "Local IP OK";
         EXPECT_EQ(gateway, WiFi.gatewayIP()) << "Gateway IP OK";
@@ -184,7 +184,7 @@ namespace WaterMeterCppTest {
         const IpConfig ipConfig{local, NoIp, NoIp, dns1, dns2};
         wifi.configure(&ipConfig);
         wifi.begin();
-        EXPECT_FALSE(wifi.needsReinit()) << "does not need reinit";
+        EXPECT_FALSE(wifi.needsReInit()) << "does not need reInit";
         EXPECT_STREQ(gateway.toString().c_str(), WiFi.gatewayIP().toString().c_str()) << "Gateway IP OK";
         EXPECT_EQ(dns1, WiFi.dnsIP()) << "Primary DNS OK";
         EXPECT_EQ(dns2, WiFi.dnsIP(1)) << "Secondary DNS OK";

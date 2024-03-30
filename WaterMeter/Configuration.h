@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -65,7 +65,7 @@ namespace WaterMeter {
         WifiConfig wifi{};
         FirmwareConfig firmware{};
         void begin(bool useSecrets = true);
-        void putFirmwareConfig(const FirmwareConfig* firnwareConfig) const;
+        void putFirmwareConfig(const FirmwareConfig* firmwareConfig) const;
         void putMqttConfig(const MqttConfig* mqttConfig) const;
         void putIpConfig(const IpConfig* ipConfig) const;
         void putTlsConfig(const TlsConfig* tlsConfig) const;

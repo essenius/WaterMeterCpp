@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -12,8 +12,8 @@
 // drives an I2C 128x32 OLED display. Shows icons to indicate status/errors, shows the pulses and volumes, and
 // potentially short error messages.
 
-#ifndef HEADER_OLEDDRIVER
-#define HEADER_OLEDDRIVER
+#ifndef HEADER_OLED_DRIVER
+#define HEADER_OLED_DRIVER
 #include <Adafruit_SSD1306.h>
 
 #include "ConnectionState.h"
@@ -37,7 +37,7 @@ namespace WaterMeter {
         void setLogo(const unsigned char* logo, int16_t xLocation, int16_t yLocation);
         void showMessageAtLine(const char* message, int16_t line);
         void switchEventLogo(const unsigned char* logo, long switchOn);
-        // TODO: replace by pulselogo
+        // TODO: replace by pulseLogo
         void switchFlowLogo(const unsigned char* logo, long switchOn);
         void switchLogo(const unsigned char* logo, int16_t xLocation, int16_t yLocation, long switchOn);
         void updateConnectionState(ConnectionState payload);

@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -15,8 +15,8 @@
 // * Listens to events and translates those to MQTT messages to be sent to the broker,
 // * Listens to MQTT and translates understood incoming messages to events.
 
-#ifndef HEADER_MQTTGATEWAY
-#define HEADER_MQTTGATEWAY
+#ifndef HEADER_MQTT_GATEWAY
+#define HEADER_MQTT_GATEWAY
 
 #include <ESP.h>
 #include <PubSubClient.h>

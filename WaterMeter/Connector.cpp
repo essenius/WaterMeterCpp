@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -210,8 +210,8 @@ namespace WaterMeter {
             _state = ConnectionState::CheckFirmware;
             return;
         }
-        const unsigned long timesetWaitDuration = micros() - _requestTimeTimestamp;
-        if (timesetWaitDuration > TimeserverWaitDuration) {
+        const unsigned long timeSetWaitDuration = micros() - _requestTimeTimestamp;
+        if (timeSetWaitDuration > TimeserverWaitDuration) {
             // setting time failed. Retry.
             _state = ConnectionState::WifiConnected;
         }
@@ -225,7 +225,7 @@ namespace WaterMeter {
     }
 
     void Connector::handleWifiConnected() {
-        if (_wifi->needsReinit()) {
+        if (_wifi->needsReInit()) {
             _state = ConnectionState::Init;
             return;
         }

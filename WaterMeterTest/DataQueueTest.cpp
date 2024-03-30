@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Rik Essenius
+﻿// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -114,7 +114,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(Topic::Result, payloadReceive2->topic) << "Topic 2 is Result";
         EXPECT_EQ(81, payloadReceive2->buffer.result.sampleCount) << "SampleCount=81";
         EXPECT_EQ(12, payloadReceive2->buffer.result.pulseCount) << "PeakCount=12";
-        EXPECT_EQ(2, payloadReceive2->buffer.result.skipCount) << "SkioCount=2";
+        EXPECT_EQ(2, payloadReceive2->buffer.result.skipCount) << "SkipCount=2";
 
         // get the error message
         auto payloadReceive3 = dataQueue.receive();

@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -35,7 +35,7 @@ namespace WaterMeterCppTest {
     TEST(ConfigurationTest, configurationTestMqttAndTls) {
         Preferences preferences;
         constexpr MqttConfig MqttConfig{"broker", 2048, "user", "password", false};
-        constexpr TlsConfig TlsConfig{"abc", "defg", "hijkl"};
+        constexpr TlsConfig TlsConfig{"abc", R"(defg)", R"(hijkl)"};
         Configuration configuration(&preferences);
         configuration.putMqttConfig(&MqttConfig);
         configuration.putTlsConfig(&TlsConfig);
@@ -65,7 +65,7 @@ namespace WaterMeterCppTest {
         configuration.putWifiConfig(nullptr);
         configuration.putFirmwareConfig(nullptr);
 
-        EXPECT_EQ(0, configuration.ip.subnetMask) << "subnetmask not set";
+        EXPECT_EQ(0, configuration.ip.subnetMask) << "subnet mask not set";
         EXPECT_EQ(nullptr, configuration.mqtt.broker) << "Broker filled";
         EXPECT_EQ(nullptr, configuration.tls.rootCaCertificate) << "Root CA certificate filled";
         EXPECT_EQ(nullptr, configuration.wifi.ssid) << "SSID filled";

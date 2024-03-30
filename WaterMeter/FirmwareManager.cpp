@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -41,7 +41,7 @@ namespace WaterMeter {
 
         WiFiClient* updateClient = _wifiClientFactory->create(_firmwareConfig->baseUrl);
 
-        httpUpdate.onProgress([=](const int current, const int total) {
+        httpUpdate.onProgress([this](const int current, const int total) {
             _eventServer->publish(Topic::UpdateProgress, current * 100 / total);
             });
 
