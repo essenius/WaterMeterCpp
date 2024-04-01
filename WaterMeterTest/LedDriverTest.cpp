@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -10,11 +10,11 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "gtest/gtest.h"
-#include "../WaterMeter/Led.h"
+#include "Led.h"
 
-#include "../WaterMeter/LedDriver.h"
-#include "../WaterMeter/EventServer.h"
-#include "../WaterMeter/ConnectionState.h"
+#include "LedDriver.h"
+#include "EventServer.h"
+#include "ConnectionState.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::ConnectionState;
@@ -78,7 +78,7 @@ namespace WaterMeterCppTest {
 
     EventServer LedDriverTest::eventServer;
 
-    TEST_F(LedDriverTest, ledDriverCycleInterruptTest) {
+    TEST_F(LedDriverTest, cycleInterruptTest) {
         LedDriver ledDriver(&eventServer);
         ledDriver.begin();
         Led::set(Led::Running, Led::Off);
@@ -113,14 +113,14 @@ namespace WaterMeterCppTest {
         }
     }
 
-    TEST_F(LedDriverTest, ledDriverCycleTest) {
+    TEST_F(LedDriverTest, cycleTest) {
         LedDriver ledDriver(&eventServer);
         ledDriver.begin();
         assertLedCycle(&ledDriver, Topic::Anomaly, true, LedDriver::ExcludeInterval, "Anomaly");
         assertLedCycle(&ledDriver, Topic::Anomaly, false, LedDriver::IdleInterval, "Wait");
     }
 
-    TEST_F(LedDriverTest, ledDriverTestEvents) {
+    TEST_F(LedDriverTest, EventsTest) {
         LedDriver ledDriver(&eventServer);
         ledDriver.begin();
         EXPECT_EQ(OUTPUT, getPinMode(Led::Running)) << "Built-in led on output";

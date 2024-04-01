@@ -12,7 +12,7 @@
         },
         {
             "kind": "git",
-            "baseline": "a40303a27c1ca9ef153b49f4a4553c82bf3e8b93",
+            "baseline": "2f37afeafc9e93d569019006e1d9cd48128eb03c",
             "repository": "https://github.com/essenius/vcpkg",
             "packages": [ "ellipse-fit", "esp32-mock", "magneto-sensor", "rix-matrix", "safe-cstring" ]
         }

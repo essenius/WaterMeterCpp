@@ -10,8 +10,10 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "Log.h"
-
+#include "SensorSample.h"
 #include <ESP.h>
+
+#include "MagnetoSensorReader.h"
 
 namespace WaterMeter {
     SemaphoreHandle_t Log::_printMutex = xSemaphoreCreateMutex();
@@ -32,14 +34,13 @@ namespace WaterMeter {
         "Checking for firmware update"
     };
 
-    Log::Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder) :
-        EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {
+    Log::Log(EventServer* eventServer, PayloadBuilder* wifiPayloadBuilder) : EventClient(eventServer), _wifiPayloadBuilder(wifiPayloadBuilder) {
         eventServer->subscribe(this, Topic::Begin);
     }
 
     void Log::begin() {
         update(Topic::MessageFormatted, "Starting");
-        _eventServer->subscribe(this, Topic::Alert);
+        _eventServer->subscribe(this, Topic::Anomaly);
         _eventServer->subscribe(this, Topic::BatchSizeDesired);
         _eventServer->subscribe(this, Topic::Blocked);
         _eventServer->subscribe(this, Topic::Connection);
@@ -69,86 +70,95 @@ namespace WaterMeter {
     // ReSharper disable once CyclomaticComplexity - just a case statement
     void Log::update(Topic topic, const char* payload) {
         switch (topic) {
-        case Topic::Alert:
-            log("Alert: %s", payload);
-            break;
-        case Topic::BatchSizeDesired:
-            log("Batch size desired: %s", payload);
-            break;
-        case Topic::Blocked:
-            log("Blocked: %s", payload);
-            break;
-        case Topic::Connection:
-        case Topic::ErrorFormatted:
-        case Topic::MessageFormatted:
-            log("%s", payload);
-            break;
-        case Topic::FreeHeap:
-            log("Free Heap: %s", payload);
-            break;
-        case Topic::Info:
-            log("Info: %s", payload);
-            break;
-        case Topic::NoDisplayFound:
-            log("No OLED display found");
-            break;
-        case Topic::NoFit:
-            log("No fit: %s deg", payload);
-            break;
-        case Topic::SensorState:
-            log("Sensor state: %s (0 = none, 1 = ok)", payload);
-            break;
-        case Topic::ResultFormatted:
-            log("Result: %s", payload);
-            break;
-        case Topic::SensorWasReset:
-            log("Sensor was reset: %s", payload);
-            break;
-        case Topic::SetVolume:
-            log("Set meter volume: %s", payload);
-            break;
-        case Topic::SkipSamples:
-            log("Skipped %s samples", payload);
-            break;
-        case Topic::TimeOverrun:
-            log("Time overrun: %s", payload);
-            break;
-        case Topic::UpdateProgress:
-            log("Firmware update progress: %s%%", payload);
-            break;
-        case Topic::WifiSummaryReady:
-            log("Wifi summary: %s", _wifiPayloadBuilder->toString());
-            break;
-        default:
-            log("Topic '%d': %s", static_cast<int>(topic), payload);
+            case Topic::Anomaly:
+                log("Anomaly: %s", payload);
+                break;
+            case Topic::BatchSizeDesired:
+                log("Batch size desired: %s", payload);
+                break;
+            case Topic::Blocked:
+                log("Blocked: %s", payload);
+                break;
+            case Topic::Connection:
+            case Topic::ErrorFormatted:
+            case Topic::MessageFormatted:
+                log("%s", payload);
+                break;
+            case Topic::FreeHeap:
+                log("Free Heap: %s", payload);
+                break;
+            case Topic::Info:
+                log("Info: %s", payload);
+                break;
+            case Topic::NoDisplayFound:
+                log("No OLED display found");
+                break;
+            case Topic::NoFit:
+                log("No fit: %s deg", payload);
+                break;
+            case Topic::SensorState:
+                log("Sensor state: %s", payload);
+                break;
+            case Topic::ResultFormatted:
+                log("Result: %s", payload);
+                break;
+            case Topic::SensorWasReset:
+                log("Sensor was %s-reset", payload);
+                break;
+            case Topic::SetVolume:
+                log("Set meter volume: %s", payload);
+                break;
+            case Topic::SkipSamples:
+                log("Skipped %s samples", payload);
+                break;
+            case Topic::TimeOverrun:
+                log("Time overrun: %s", payload);
+                break;
+            case Topic::UpdateProgress:
+                log("Firmware update progress: %s%%", payload);
+                break;
+            case Topic::WifiSummaryReady:
+                log("Wifi summary: %s", _wifiPayloadBuilder->toString());
+                break;
+            default:
+                log("Topic '%d': %s", static_cast<int>(topic), payload);
         }
     }
 
     void Log::update(const Topic topic, const long payload) {
         switch (topic) {
-        case Topic::Begin:
-            // do this as early as possible, i.e. when called with false
-            if (!payload) {
-                begin();
-            }
-            break;
-        case Topic::Connection:
-            if (_previousConnectionTopic != payload) {
-                _previousConnectionTopic = payload;
-                update(topic, Messages[payload]);
-            }
-            return;
-        case Topic::FreeQueueSize:
-            printIndexedPayload("Memory DataQueue", payload);
-            return;
-        case Topic::FreeQueueSpaces:
-            printIndexedPayload("Spaces Queue", payload);
-            return;
-        case Topic::FreeStack:
-            printIndexedPayload("Stack", payload);
-            return;
-        default:
-            EventClient::update(topic, payload);
+            case Topic::Begin:
+                // do this as early as possible, i.e. when called with false
+                if (!payload) {
+                    begin();
+                }
+                break;
+            case Topic::Connection:
+                if (_previousConnectionTopic != payload) {
+                    _previousConnectionTopic = payload;
+                    update(topic, Messages[payload]);
+                }
+                return;
+            case Topic::FreeQueueSize:
+                printIndexedPayload("Memory DataQueue", payload);
+                return;
+            case Topic::FreeQueueSpaces:
+                printIndexedPayload("Spaces Queue", payload);
+                return;
+            case Topic::FreeStack:
+                printIndexedPayload("Stack", payload);
+                return;
+            case Topic::Anomaly:
+            case Topic::SensorState: {
+                    const char* message = SensorSample::stateToString(static_cast<SensorState>(payload));
+                    update(topic, message);
+                }
+                return;
+            case Topic::SensorWasReset:
+                update(topic, payload == SoftReset ? "soft" : "hard");
+                return;
+            default:
+                EventClient::update(topic, payload);
         }
     }
 

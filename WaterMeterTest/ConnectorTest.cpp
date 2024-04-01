@@ -16,11 +16,11 @@
 #include <ESP.h>
 #include "MqttGatewayMock.h"
 #include "WiFiMock.h"
-#include "../WaterMeter/Connector.h"
+#include "Connector.h"
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include "TestEventClient.h"
 #include "TimeServerMock.h"
-#include "../WaterMeter/DataQueue.h"
+#include "DataQueue.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::Configuration;
@@ -92,7 +92,7 @@ namespace WaterMeterCppTest {
     Connector ConnectorTest::connector(&eventServer, &wifiMock, &mqttGatewayMock, &timeServer, &firmwareManager, &dataQueue,
                                        &commsDataQueue, &serializer, &queueClient1, &communicatorQueueClient);
     
-    TEST_F(ConnectorTest, connectorMaxWifiFailuresTest) {
+    TEST_F(ConnectorTest, maxWifiFailuresTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
         connector.begin(&configuration);
         wifiMock.setIsConnected(false);
@@ -112,7 +112,7 @@ namespace WaterMeterCppTest {
         EXPECT_FALSE(uxQueueMessagesWaiting(communicatorQueueClient.getQueueHandle())) << "communicatorQueueClient ok";
     }
 
-    TEST_F(ConnectorTest, connectorReInitTest) {
+    TEST_F(ConnectorTest, reInitTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
         connector.begin(&configuration);
         wifiMock.setIsConnected(false);
@@ -133,7 +133,7 @@ namespace WaterMeterCppTest {
         EXPECT_FALSE(uxQueueMessagesWaiting(communicatorQueueClient.getQueueHandle())) << "communicatorQueueClient ok";
     }
 
-    TEST_F(ConnectorTest, connectorScriptTest) {
+    TEST_F(ConnectorTest, scriptTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
         timeServer.reset();
         // connect before timeout
@@ -212,7 +212,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
     }
 
-    TEST_F(ConnectorTest, connectorTimeFailTest) {
+    TEST_F(ConnectorTest, timeFailTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
 
         connector.begin(&configuration);
@@ -237,7 +237,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
     }
 
-    TEST_F(ConnectorTest, connectorQueueStringPayloadTest) {
+    TEST_F(ConnectorTest, queueStringPayloadTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
         connector.begin(&configuration);
         constexpr char Buffer[] = "12345.6789012";
@@ -265,7 +265,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
     }
 
-    TEST_F(ConnectorTest, connectorWifiInitTest) {
+    TEST_F(ConnectorTest, wifiInitTest) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
         connector.begin(&configuration);
 

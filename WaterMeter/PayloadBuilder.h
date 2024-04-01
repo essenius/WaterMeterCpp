@@ -68,7 +68,7 @@ namespace WaterMeter {
         void writeString(long input);
         void writeString(uint32_t input);
         void writeString(unsigned long input);
-        void writeString(IntCoordinate input);
+        void writeString(SensorSample input);
 
         Clock* _clock;
         char* _currentPosition = _resultBuffer;

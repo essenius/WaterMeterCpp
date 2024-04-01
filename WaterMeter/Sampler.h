@@ -67,7 +67,7 @@ namespace WaterMeter {
         unsigned long _overruns = 0;
 
         static void ARDUINO_ISR_ATTR onTimer();
-        void handleSample(const IntCoordinate& sample, unsigned long startTime);
+        void handleSample(const SensorSample& sample, unsigned long startTime);
 
         void sensorLoop();
 

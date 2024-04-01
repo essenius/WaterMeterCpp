@@ -17,8 +17,8 @@
 #include "CppUnitTest.h"
 #include "TestEventClient.h"
 #include "WiFi.h"
-#include "../WaterMeter/EventServer.h"
-#include "../WaterMeter/WiFiManager.h"
+#include "EventServer.h"
+#include "WiFiManager.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::IpConfig;
@@ -51,7 +51,7 @@ namespace WaterMeterCppTest {
     EventServer WiFiTest::eventServer;
     TestEventClient WiFiTest::errorListener(&eventServer);
 
-    TEST_F(WiFiTest, wifiAutomaticLocalIpTest) {
+    TEST_F(WiFiTest, automaticLocalIpTest) {
         const IPAddress local(10, 0, 0, 2);
         const IPAddress gateway(10, 0, 0, 1);
         const IPAddress dns1(8, 8, 8, 8);
@@ -84,7 +84,7 @@ namespace WaterMeterCppTest {
             payloadBuilder.toString()) << "Info OK";
     }
 
-    TEST_F(WiFiTest, wifiFailSetNameTest) {
+    TEST_F(WiFiTest,failSetNameTest) {
         constexpr WifiConfig Config{"ssid", "password", "", nullptr};
         PayloadBuilder payloadBuilder;
         WiFiManager wifi(&eventServer, &Config, &payloadBuilder);
@@ -94,14 +94,14 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("Could not set host name", errorListener.getPayload()) << "Error message OK";
     }
 
-    TEST_F(WiFiTest, wifiGetUnknownTopicTestTest) {
+    TEST_F(WiFiTest, getUnknownTopicTestTest) {
         constexpr WifiConfig Config{"ssid", "password", "hostname", nullptr};
         PayloadBuilder payloadBuilder;
         WiFiManager wifi(&eventServer, &Config, &payloadBuilder);
         EXPECT_STREQ("x", wifi.get(Topic::Pulse, "x")) << "Unexpected topic returns default";
     }
 
-    TEST_F(WiFiTest, wifiNullNameTest) {
+    TEST_F(WiFiTest, nullNameTest) {
         WiFi.setHostname("esp32_001122334455");
         constexpr WifiConfig Config{"ssid", "password", nullptr, nullptr};
         PayloadBuilder payloadBuilder;
@@ -119,7 +119,7 @@ namespace WaterMeterCppTest {
         while (!wifi.isConnected()) {}
     }
 
-    TEST_F(WiFiTest, wifiPredefinedLocalIpTest) {
+    TEST_F(WiFiTest, predefinedLocalIpTest) {
         const IPAddress local(192, 168, 1, 2);
         const IPAddress gateway(192, 168, 1, 1);
         constexpr WifiConfig WifiConfig{"ssid", "password", "hostname", nullptr};
@@ -146,7 +146,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("192.168.1.2", wifi.get(Topic::IpAddress, "")) << "IP address ok2";
     }
 
-    TEST_F(WiFiTest, wifiPredefinedPrimaryDnsTest) {
+    TEST_F(WiFiTest, predefinedPrimaryDnsTest) {
         const IPAddress local(192, 168, 1, 2);
         const IPAddress gateway(192, 168, 1, 253);
         const IPAddress dns(9, 9, 9, 9);
@@ -171,7 +171,7 @@ namespace WaterMeterCppTest {
             payloadBuilder.toString()) << "Info OK";
     }
 
-    TEST_F(WiFiTest, wifiPredefinedSecondaryDnsTest) {
+    TEST_F(WiFiTest, predefinedSecondaryDnsTest) {
         const IPAddress local(192, 168, 1, 2);
         const IPAddress gateway(192, 168, 1, 1);
         const IPAddress dns1(9, 9, 9, 9);

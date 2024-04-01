@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "../WaterMeter/WiFiManager.h"
+#include "WiFiManager.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::EventServer;

@@ -12,9 +12,9 @@
 // ReSharper disable CppRedundantParentheses - intent clearer with the parentheses
 
 #include "gtest/gtest.h"
-#include "../WaterMeter/ResultAggregator.h"
-#include "../WaterMeter/DataQueue.h"
-#include "../WaterMeter/Serializer.h"
+#include "ResultAggregator.h"
+#include "DataQueue.h"
+#include "Serializer.h"
 #include "FlowDetectorDriver.h"
 #include "TestEventClient.h"
 
@@ -71,7 +71,7 @@ namespace WaterMeterCppTest {
     TestEventClient ResultAggregatorTest::rateListener(&eventServer);
     DataQueue ResultAggregatorTest::dataQueue(&eventServer, &payload);
 
-    TEST_F(ResultAggregatorTest, resultAggregatorDisconnectTest) {
+    TEST_F(ResultAggregatorTest, disconnectTest) {
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 5);
@@ -79,7 +79,7 @@ namespace WaterMeterCppTest {
         constexpr Coordinate Average{500, 500};
         EllipseFit ellipseFit;
         const FlowDetectorDriver fmd(&eventServer, &ellipseFit, Average);
-        constexpr IntCoordinate Sample{ {500, 500} };
+        constexpr SensorSample Sample{ {500, 500} };
         for (int i = 0; i < 3; i++) {
             aggregator.addMeasurement(Sample, &fmd);
             eventServer.publish(Topic::ProcessTime, 2500 + 10 * i);
@@ -114,7 +114,7 @@ namespace WaterMeterCppTest {
     }
 
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
-    TEST_F(ResultAggregatorTest, resultAggregatorFlowTest) {
+    TEST_F(ResultAggregatorTest, flowTest) {
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 10);
@@ -123,7 +123,7 @@ namespace WaterMeterCppTest {
 
         for (int i = 0; i < 10; i++) {
             const auto measurement = static_cast<int16_t>(2400 + (i % 2) * 50);
-            const IntCoordinate sample = {{measurement, measurement}};
+            const SensorSample sample = {{measurement, measurement}};
             const double doubleMeasurement = measurement;
             const Coordinate average{doubleMeasurement, doubleMeasurement};
 
@@ -142,14 +142,14 @@ namespace WaterMeterCppTest {
         // TODO: analysis of filtered values
     }
 
-    TEST_F(ResultAggregatorTest, resultAggregatorIdleOutlierTest) {
+    TEST_F(ResultAggregatorTest, idleOutlierTest) {
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, "10");
         eventServer.publish(Topic::NonIdleRate, "5");
         EXPECT_EQ(2, rateListener.getCallCount()) << "two rate announcements";
         EXPECT_EQ(10L, aggregator.getFlushRate()) << "Flush rate at last set idle rate.";
-        IntCoordinate sample{{0, 0}};
+        SensorSample sample{{0, 0}};
         EllipseFit ellipseFit;
 
         for (int16_t i = 0; i < 15; i++) {
@@ -186,7 +186,7 @@ namespace WaterMeterCppTest {
         }
     }
 
-    TEST_F(ResultAggregatorTest, resultAggregatorIdleTest) {
+    TEST_F(ResultAggregatorTest, idleTest) {
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
 
@@ -205,7 +205,7 @@ namespace WaterMeterCppTest {
         EllipseFit ellipseFit;
 
         for (int16_t i = 0; i < 10; i++) {
-            const IntCoordinate sampleValue = {{static_cast<int16_t>(2400 + i), static_cast<int16_t>(1200 + i)}};
+            const SensorSample sampleValue = {{static_cast<int16_t>(2400 + i), static_cast<int16_t>(1200 + i)}};
             auto average = sampleValue.toCoordinate();
             FlowDetectorDriver fmd(&eventServer, &ellipseFit, average);
             aggregator.addMeasurement(sampleValue, &fmd);
@@ -247,7 +247,7 @@ namespace WaterMeterCppTest {
         // TODO: filtered value analysis
     }*/
 
-    TEST_F(ResultAggregatorTest, resultAggregatorResetTest) {
+    TEST_F(ResultAggregatorTest, resetTest) {
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();
         eventServer.publish(Topic::IdleRate, 1);
@@ -256,13 +256,13 @@ namespace WaterMeterCppTest {
         EllipseFit ellipseFit;
 
         const FlowDetectorDriver fmd(&eventServer, &ellipseFit, Average, false, false, true);
-        aggregator.addMeasurement(IntCoordinate{ {2398, 0} }, &fmd);
+        aggregator.addMeasurement(SensorSample{ {2398, 0} }, &fmd);
         EXPECT_TRUE(aggregator.shouldSend()) << "Needs flush";
         const auto result = &payload.buffer.result;
         EXPECT_EQ(1, result->resetCount);
     }
 
-    TEST_F(ResultAggregatorTest, resultAggregatorUpdateWrongTopicTest) {
+    TEST_F(ResultAggregatorTest, updateWrongTopicTest) {
         // check that wrong topics don't change the flush rate (which the valid topics do)
         ResultAggregator aggregator(&eventServer, &theClock, &dataQueue, &payload, MeasureIntervalMicros);
         aggregator.begin();

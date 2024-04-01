@@ -9,6 +9,7 @@
 // is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
+#include <fstream>
 #include <MagnetoSensorNull.h>
 #include <MagnetoSensorQmc.h>
 
@@ -17,16 +18,17 @@
 
 #include "TestEventClient.h"
 #include "MagnetoSensorReaderDriver.h"
+#include "MagnetoSensorSimulation.h"
 
 // doesn't do much, just checking the interface works
 
 namespace WaterMeterCppTest {
-    using WaterMeter::IntCoordinate;
+    using WaterMeter::SensorSample;
     using WaterMeter::MagnetoSensor;
     using WaterMeter::Topic;
     using WaterMeter::SensorState;
 
-    TEST(MagnetoSensorReaderTest, magnetoSensorReaderReadFailsTest) {
+    TEST(MagnetoSensorReaderTest, readFailsTest) {
         EventServer eventServer;
         TestEventClient client(&eventServer);
         eventServer.subscribe(&client, Topic::SensorState);
@@ -36,43 +38,50 @@ namespace WaterMeterCppTest {
         MagnetoSensorReader sensorReader(&eventServer);
         EXPECT_FALSE(sensorReader.begin(list, 1)) << "Begin failed";
         const auto result = sensorReader.read();
-        EXPECT_TRUE(result.hasError()) << "Read has error";
+        EXPECT_EQ(SensorState::ReadError, result.state()) << "Read has error";
     }
 
-    TEST(MagnetoSensorReaderTest, magnetoSensorReaderCustomPowerPinTest) {
+    TEST(MagnetoSensorReaderTest, customPowerPinTest) {
         constexpr int Pin = 23;
         digitalWrite(Pin, LOW);
         EventServer eventServer;
         MagnetoSensorNull nullSensor;
         MagnetoSensor* list[] = {&nullSensor};
-        MagnetoSensorReader sensorReader(&eventServer);
+        MagnetoSensorReaderDriver sensorReader(&eventServer);
         sensorReader.configurePowerPort(Pin);
         sensorReader.begin(list, 1);
         sensorReader.setPower(HIGH);
         EXPECT_EQ(HIGH, digitalRead(Pin)) << "Custom pin was toggled";
     }
 
-    TEST(MagnetoSensorReaderTest, magnetoSensorReaderHardResetTest) {
+    TEST(MagnetoSensorReaderTest, hardResetTest) {
         digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         EventServer eventServer;
         TestEventClient client(&eventServer);
         eventServer.subscribe(&client, Topic::SensorState);
         MagnetoSensorNull nullSensor;
         MagnetoSensor* list[] = {&nullSensor};
-        MagnetoSensorReader sensorReader(&eventServer);
+        MagnetoSensorReaderDriver sensorReader(&eventServer);
+        EXPECT_FALSE(sensorReader.hardReset()) << "Hard reset before init fails";
+
         sensorReader.begin(list, 1);
         EXPECT_EQ(1, client.getCallCount()) << "SensorState triggered";
         // simulate a power failure. The "off" should be triggered in reset as the state is now not right 
         digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
-        sensorReader.hardReset();
+        EXPECT_TRUE(sensorReader.hardReset()) << "Hard reset succeeds";
         EXPECT_EQ(3, client.getCallCount()) << "SensorState triggered again (off and then on)";
         EXPECT_STREQ("3", client.getPayload()) << "State is BeginError";
         EXPECT_EQ(HIGH, digitalRead(MagnetoSensorReader::DefaultPowerPort)) << "Default Pin was toggled";
         sensorReader.setPower(HIGH);
         EXPECT_EQ(3, client.getCallCount()) << "SensorState not triggered again (not bypassed in setPower() but still error)";
+
+        // emulate a reset in another process
+        sensorReader._isHardResetting = true;
+        EXPECT_FALSE(sensorReader.hardReset()) << "Hard reset when one is ongoing fails";
+
     }
 
-    TEST(MagnetoSensorReaderTest, magnetoSensorReaderFailedOnTest) {
+    TEST(MagnetoSensorReaderTest, failedOnTest) {
         digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         EventServer eventServer;
         TestEventClient client(&eventServer);
@@ -87,7 +96,7 @@ namespace WaterMeterCppTest {
 
     }
 
-    TEST(MagnetoSensorReaderTest, magnetoSensorReaderRecoverTest) {
+    TEST(MagnetoSensorReaderTest, recoverTest) {
         digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         EventServer eventServer;
         TestEventClient stateClient(&eventServer);
@@ -104,7 +113,36 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("1", stateClient.getPayload()) << "now OK";
     }
 
-    TEST(MagnetoSensorReaderTest, magnetoSensorReaderResetTest) {
+    TEST(MagnetoSensorReaderTest, softResetTest) {
+        EventServer eventServer;
+        TestEventClient client(&eventServer);
+        eventServer.subscribe(&client, Topic::SensorState);
+        MagnetoSensorNull nullSensor;
+        MagnetoSensor* list[] = { &nullSensor };
+        MagnetoSensorReaderDriver sensorReader(&eventServer);
+        EXPECT_FALSE(sensorReader.softReset()) << "Soft reset before init fails";
+        sensorReader.begin(list, 1);
+        EXPECT_TRUE(sensorReader.softReset()) << "Soft reset after init succeeds";
+
+        // emulate a reset in another process
+        sensorReader._isHardResetting = true;
+        EXPECT_TRUE(sensorReader.isResetting()) << "Resetting";
+        EXPECT_FALSE(sensorReader.softReset()) << "Hard reset when one is ongoing fails";
+        const auto result = sensorReader.read();
+        EXPECT_EQ(SensorState::Resetting, result.state()) << "Can't read due to reset";
+        sensorReader._isSoftResetting = true;
+        EXPECT_TRUE(sensorReader.isResetting()) << "Still resetting";
+        EXPECT_FALSE(sensorReader.softReset()) << "Hard reset when one is ongoing fails";
+        sensorReader._isHardResetting = false;
+        EXPECT_TRUE(sensorReader.isResetting()) << "And still resetting";
+        EXPECT_FALSE(sensorReader.softReset()) << "Hard reset when one is ongoing fails";
+        sensorReader._isSoftResetting = false;
+        EXPECT_FALSE(sensorReader.isResetting()) << "Not resetting";
+
+        EXPECT_TRUE(sensorReader.softReset()) << "Soft reset after succeeds again";
+    }
+
+    TEST(MagnetoSensorReaderTest, resetByStreakTest) {
         digitalWrite(MagnetoSensorReader::DefaultPowerPort, LOW);
         EventServer eventServer;
         TestEventClient stateClient(&eventServer);
@@ -120,7 +158,7 @@ namespace WaterMeterCppTest {
         EXPECT_DOUBLE_EQ(3000.0, sensorReader.getGain()) << "Gain OK";
         EXPECT_EQ(12, sensorReader.getNoiseRange()) << "Noise range OK";
 
-        constexpr IntCoordinate BaseSample{ {0,0} };
+        constexpr SensorSample BaseSample{ {0,0} };
         for (int streaks = 0; streaks < 10; streaks++) {
             auto expectedCalls = streaks == 0 ? 0 : 1;
             stateClient.reset();
@@ -140,11 +178,63 @@ namespace WaterMeterCppTest {
 
         // start getting a signal
 
-        EXPECT_EQ(SensorState::Ok, sensorReader.validate(IntCoordinate{ {1,1} })) << "getState OK after changed sensor value";
+        EXPECT_EQ(SensorState::Ok, sensorReader.validate(SensorSample{ {1,1} })) << "getState OK after changed sensor value";
 
         stateClient.reset();
         eventServer.publish(Topic::ResetSensor, true);
         EXPECT_EQ(2, stateClient.getCallCount()) << "State changed twice after reset";
         EXPECT_STREQ("1", stateClient.getPayload()) << "getState is OK afterwards";
+    }
+
+    TEST(MagnetoSensorReaderTest, MultipleResetTest) {
+        EventServer eventServer;
+        TestEventClient client(&eventServer);
+        eventServer.subscribe(&client, Topic::SensorState);
+        MagnetoSensorNull nullSensor;
+        MagnetoSensor* list[] = { &nullSensor };
+        MagnetoSensorReaderDriver sensorReader(&eventServer);
+        sensorReader.begin(list, 1);
+        sensorReader._isHardResetting = true;
+
+
+    }
+    TEST(MagnetoSensorReaderTest, dataWithResetTest) {
+        EventServer eventServer;
+        TestEventClient resetSensorClient(&eventServer);
+        eventServer.subscribe(&resetSensorClient, Topic::SensorWasReset);
+        MagnetoSensorSimulation sensor("manyresets.txt");
+        MagnetoSensor* list[] = { &sensor };
+        MagnetoSensorReaderDriver sensorReader(&eventServer);
+        EXPECT_TRUE(sensorReader.begin(list, 1)) << "begin" ;
+        bool endOfFile = false;
+        int count = 0;
+        int goodCount = 0;
+        int badCount = 0;
+        int otherCount = 0;
+        while (!sensor.done()) {
+            count++;
+            SensorSample sample = sensorReader.read();
+            std::cout << sample.x << ", " << sample.y << ": ";
+
+            auto state = sensorReader.validate(sample);
+            std::cout << sample.stateToString(state);
+            switch (state) {
+            case SensorState::ReadError:
+                badCount++;
+                break;
+            case SensorState::Ok:
+                goodCount++;
+                break;
+            default: {
+                otherCount++;
+            }
+            }
+            std::cout << std::endl;
+        }
+        EXPECT_EQ(0, resetSensorClient.getCallCount()) << "No reset events fired";
+        EXPECT_EQ(2721, count) << "Count OK";
+        EXPECT_EQ(2670, goodCount) << "Good count OK";
+        EXPECT_EQ(51, badCount) << "Bad count OK";
+        EXPECT_EQ(0, otherCount) << "Other count OK";
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -11,12 +11,12 @@
 
 #pragma once
 
-#include "../WaterMeter/EventServer.h"
+#include "EventServer.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::EventClient;
     using WaterMeter::EventServer;
-    using WaterMeter::IntCoordinate;
+    using WaterMeter::SensorSample;
     using WaterMeter::Topic;
 
     class TestEventClient : public EventClient {
@@ -29,7 +29,7 @@ namespace WaterMeterCppTest {
         char* getPayload();
         Topic getTopic() const;
         void reset();
-        void update(Topic topic, IntCoordinate payload) override;
+        void update(Topic topic, SensorSample payload) override;
         void update(Topic topic, const char* payload) override;
         void update(Topic topic, long payload) override;
         bool wasLong() const;

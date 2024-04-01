@@ -18,26 +18,26 @@
 
 #include "Clock.h"
 #include "EventClient.h"
-#include "IntCoordinate.h"
+#include "SensorSample.h"
 
 namespace WaterMeter {
     constexpr uint16_t MaxSamples = 25;
 
     struct Samples {
         uint16_t count;
-        IntCoordinate value[MaxSamples];
+        SensorSample value[MaxSamples];
     };
 
     // ResultData size must be <= Samples size
 
     struct ResultData {
-        IntCoordinate lastSample;
+        SensorSample lastSample;
         uint32_t sampleCount;
         uint32_t skipCount;
         uint16_t resetCount;
         uint16_t maxStreak;
-        IntCoordinate ellipseCenterTimes10;
-        IntCoordinate ellipseRadiusTimes10;
+        SensorSample ellipseCenterTimes10;
+        SensorSample ellipseRadiusTimes10;
         int16_t ellipseAngleTimes10;
         uint16_t pulseCount;
         uint32_t anomalyCount;

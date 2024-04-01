@@ -12,12 +12,12 @@
 #include "gtest/gtest.h"
 #include "TestEventClient.h"
 #include <PubSubClient.h>
-#include "../WaterMeter/MqttGateway.h"
-#include "../WaterMeter/EventServer.h"
-#include "../WaterMeter/PayloadBuilder.h"
-#include "../WaterMeter/DataQueue.h"
+#include "MqttGateway.h"
+#include "EventServer.h"
+#include "PayloadBuilder.h"
+#include "DataQueue.h"
 #include <SafeCString.h>
-#include "../WaterMeter/Serializer.h"
+#include "Serializer.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::Clock;
@@ -77,7 +77,7 @@ namespace WaterMeterCppTest {
     DataQueuePayload MqttGatewayTest::payload;
     DataQueue MqttGatewayTest::dataQueue(&eventServer, &payload);
 
-    TEST_F(MqttGatewayTest, mqttGatewayCannotSubscribeTest) {
+    TEST_F(MqttGatewayTest, cannotSubscribeTest) {
         mqttClient.setCanSubscribe(false);
         WiFiClientFactory wifiClientFactory(nullptr);
         MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MqttConfigWithUser, &dataQueue, Build);
@@ -85,7 +85,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("MQTT: Could not subscribe to result meter [state = 3]", errorListener.getPayload()) << "Error happened";
     }
 
-    TEST_F(MqttGatewayTest, mqttGatewayNoUserTest) {
+    TEST_F(MqttGatewayTest, noUserTest) {
         WiFiClientFactory wifiClientFactory(nullptr);
         MqttGateway gateway(&eventServer, &mqttClient, &wifiClientFactory, &MqttConfigNoUser, &dataQueue, Build);
         gateway.begin("client1");
@@ -93,7 +93,7 @@ namespace WaterMeterCppTest {
     }
 
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
-    TEST_F(MqttGatewayTest, mqttGatewayScriptTest) {
+    TEST_F(MqttGatewayTest, scriptTest) {
         // We need to make this a longer test since the init needs to be done for the rest to work
         WiFiClientFactory wifiClientFactory(nullptr);
 

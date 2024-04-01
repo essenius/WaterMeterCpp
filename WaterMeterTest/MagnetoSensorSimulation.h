@@ -14,6 +14,7 @@
 #ifndef HEADER_MAGNETO_SENSOR_TEST
 #define HEADER_MAGNETO_SENSOR_TEST
 
+#include <fstream>
 #include <MagnetoSensor.h>
 #include "Wire.h"
 
@@ -23,9 +24,10 @@ namespace WaterMeterCppTest {
 
     class MagnetoSensorSimulation final : public MagnetoSensor {
     public:
-        MagnetoSensorSimulation() : MagnetoSensor(0, nullptr) {
-            _index = 0;
-        }
+        const char* _fileName;
+        std::ifstream _measurements;
+        MagnetoSensorSimulation() : MagnetoSensorSimulation("rawSensorData.txt") {}
+        explicit MagnetoSensorSimulation(const char* fileName);
 
 
         bool begin() override {
@@ -52,7 +54,7 @@ namespace WaterMeterCppTest {
         bool read(SensorData& sample) override;
 
         bool done() const {
-            return _index >= MaxSamples;
+            return _doneReading;
         }
 
         void softReset() override { _index = 0; }
@@ -60,9 +62,7 @@ namespace WaterMeterCppTest {
         void waitForPowerOff() override {}
 
     private:
-        static constexpr int MaxSamples = 552;
-        static int16_t _dataX[MaxSamples];
-        static int16_t _dataY[MaxSamples];
+        bool _doneReading = false;
         int _index = 0;
     };
 }

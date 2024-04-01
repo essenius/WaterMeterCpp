@@ -15,7 +15,7 @@
 
 namespace WaterMeterCppTest {
 
-    TEST(TimeServerTest, timeServerScriptTest) {
+    TEST(TimeServerTest, scriptTest) {
         TimeServer timeServer;
         timeServer.setTime();
         EXPECT_TRUE(timeServer.timeWasSet()) << "Time is set on Windows devices";

@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -13,10 +13,10 @@
 
 #include <regex>
 #include <ESP.h>
-#include "../WaterMeter/Log.h"
-#include "../WaterMeter/EventServer.h"
-#include "../WaterMeter/Clock.h"
-#include "../WaterMeter/ConnectionState.h"
+#include "Log.h"
+#include "EventServer.h"
+#include "Clock.h"
+#include "ConnectionState.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::Clock;
@@ -25,6 +25,7 @@ namespace WaterMeterCppTest {
     using WaterMeter::Log;
     using WaterMeter::PayloadBuilder;
     using WaterMeter::Topic;
+    using WaterMeter::SensorState;
     
     class LogTest : public testing::Test {
     public:
@@ -35,7 +36,7 @@ namespace WaterMeterCppTest {
         }
     };
 
-    TEST_F(LogTest, logPrintfTest) {
+    TEST_F(LogTest, printfTest) {
         // making sure that the printf redirect works
         clearPrintOutput();
         redirectPrintf("Hello %s\n", "there");
@@ -44,7 +45,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(0, strlen(getPrintOutput())) << "Zero length";
     }
 
-    TEST_F(LogTest, logScriptTest) {
+    TEST_F(LogTest, scriptTest) {
         PayloadBuilder payloadBuilder;
         Log log(&eventServer, &payloadBuilder);
         Clock theClock(&eventServer);
@@ -78,8 +79,8 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("[] Topic '1': 24\n", getPrintOutput()) << "Unexpected topic handled OK";
 
         clearPrintOutput();
-        eventServer.publish(Topic::Alert, 1);
-        EXPECT_STREQ("[] Alert: 1\n", getPrintOutput()) << "Alert handled OK";
+        eventServer.publish(Topic::Anomaly, static_cast<int16_t>(SensorState::Resetting));
+        EXPECT_STREQ("[] Anomaly: Resetting\n", getPrintOutput()) << "Anomaly handled OK";
 
         clearPrintOutput();
         eventServer.publish(Topic::TimeOverrun, 1234);
@@ -90,16 +91,20 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("[] Blocked: 1\n", getPrintOutput()) << "Blocked handled OK";
 
         clearPrintOutput();
-        eventServer.publish(Topic::SensorWasReset, 3);
-        EXPECT_STREQ("[] Sensor was reset: 3\n", getPrintOutput()) << "Sensor reset handled OK";
+        eventServer.publish(Topic::SensorWasReset, 1);
+        EXPECT_STREQ("[] Sensor was soft-reset\n", getPrintOutput()) << "Sensor soft reset handled OK";
+
+        clearPrintOutput();
+        eventServer.publish(Topic::SensorWasReset, 2);
+        EXPECT_STREQ("[] Sensor was hard-reset\n", getPrintOutput()) << "Sensor hard reset handled OK";
 
         clearPrintOutput();
         eventServer.publish(Topic::FreeQueueSpaces, 0x03000010);
-        EXPECT_STREQ("[] Free Spaces Queue #3: 16\n", getPrintOutput()) << "Sensor reset handled OK";
+        EXPECT_STREQ("[] Free Spaces Queue #3: 16\n", getPrintOutput()) << "Sensor queue spaces handled OK";
 
         clearPrintOutput();
         eventServer.publish(Topic::SensorState, true);
-        EXPECT_STREQ("[] Sensor state: 1 (0 = none, 1 = ok)\n", getPrintOutput()) << "no sensor found handled OK";
+        EXPECT_STREQ("[] Sensor state: Ok\n", getPrintOutput()) << "no sensor found handled OK";
 
         clearPrintOutput();
         eventServer.publish(Topic::NoDisplayFound, true);

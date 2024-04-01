@@ -1,3 +1,14 @@
+// Copyright 2021-2024 Rik Essenius
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+// except in compliance with the License. You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software distributed under the License
+// is distributed on an "AS IS" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
+
 #include <gtest/gtest.h>
 #include <corecrt_math_defines.h>
 
@@ -15,7 +26,7 @@ namespace WaterMeterCppTest {
 		static EventServer eventServer;
 		static EllipseFit ellipseFit;
 	protected:
-        static void assertIntCoordinatesEqual(const IntCoordinate& a, const IntCoordinate& b, const std::string& label) {
+        static void assertIntCoordinatesEqual(const SensorSample& a, const SensorSample& b, const std::string& label) {
 			ASSERT_EQ(a.x, b.x) << label + std::string("(X)");
 			ASSERT_EQ(a.y, b.y) << label + std::string("(Y)");
 		}
@@ -29,13 +40,13 @@ namespace WaterMeterCppTest {
 			EXPECT_EQ(outlier, meter->foundAnomaly()) << message << "Anomaly";
 		}
 
-        static IntCoordinate getSample(const double sampleNumber, const double samplesPerCycle = 32,
+        static SensorSample getSample(const double sampleNumber, const double samplesPerCycle = 32,
                                        const double angleOffsetSamples = 0) {
 			constexpr double Radius = 10.0L;
 			constexpr int16_t XOffset = -100;
 			constexpr int16_t YOffset = 100;
 			const double angle = (sampleNumber - angleOffsetSamples) * M_PI / samplesPerCycle * 2.0;
-			return IntCoordinate{
+			return SensorSample{
 				{
 					static_cast<int16_t>(XOffset + round(sin(angle) * Radius)),
 					static_cast<int16_t>(YOffset + round(cos(angle) * Radius))
@@ -47,7 +58,7 @@ namespace WaterMeterCppTest {
 			const FlowDetectorDriver* actual,
 			const std::string& message,
 			const int index,
-			const IntCoordinate movingAverage,
+			const SensorSample movingAverage,
 			const bool flowStarted = false,
 			const bool isPulse = false) {
 			assertIntCoordinatesEqual(movingAverage, actual->_movingAverageArray[index], message + " Moving average #" + std::to_string(index));
@@ -61,12 +72,14 @@ namespace WaterMeterCppTest {
 			FlowDetector flowDetector(&eventServer, &ellipseFit);
 			const PulseTestEventClient pulseClient(&eventServer);
 			flowDetector.begin(noiseLimit);
-			IntCoordinate measurement{};
+			SensorSample measurement{};
 			std::ifstream measurements(fileName);
 			EXPECT_TRUE(measurements.is_open()) << "File open";
 			measurements.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			auto measurementCount = 0;
 			while (measurements >> measurement.x) {
 				measurements >> measurement.y;
+				measurementCount++;
 				eventServer.publish(Topic::Sample, measurement);
 			}
 
@@ -77,7 +90,7 @@ namespace WaterMeterCppTest {
 		}
 
         static void expectAnomalyAndSkipped(const FlowDetector& flowDetector, const int16_t x, const int16_t y) {
-			eventServer.publish(Topic::Sample, IntCoordinate{ {x, y} });
+			eventServer.publish(Topic::Sample, SensorSample{ {x, y} });
 			EXPECT_TRUE(flowDetector.foundAnomaly());
 			EXPECT_TRUE(flowDetector.wasSkipped());
 
@@ -175,7 +188,7 @@ namespace WaterMeterCppTest {
 			EXPECT_TRUE(flowDetector.wasReset()) << "Flow detector reset at pass " << pass;
 			for (int i = 0; i < 30; i++) {
 				const double angle = i * M_PI / 16.0;
-				eventServer.publish(Topic::Sample, IntCoordinate{ {static_cast <int16_t>(cos(angle) * Radius), static_cast <int16_t>(sin(angle) * Radius)} });
+				eventServer.publish(Topic::Sample, SensorSample{ {static_cast <int16_t>(cos(angle) * Radius), static_cast <int16_t>(sin(angle) * Radius)} });
 				if (flowDetector.wasSkipped()) skipped++;
 			}
 
@@ -186,7 +199,7 @@ namespace WaterMeterCppTest {
 				eventServer.publish(Topic::SensorWasReset, true);
 			}
 		}
-		eventServer.publish(Topic::Sample, IntCoordinate{ {Radius, 0} });
+		eventServer.publish(Topic::Sample, SensorSample{ {Radius, 0} });
 		EXPECT_FALSE(flowDetector.wasReset()) << "Flow detector not reset at end";
 		EXPECT_FALSE(flowDetector.wasSkipped()) << "sample not skipped at end";
 	}

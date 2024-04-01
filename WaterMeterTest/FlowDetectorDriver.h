@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Rik Essenius
+// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "../WaterMeter/FlowDetector.h"
+#include "FlowDetector.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::EventServer;

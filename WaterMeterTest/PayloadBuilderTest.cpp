@@ -10,12 +10,12 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "gtest/gtest.h"
-#include "../WaterMeter/PayloadBuilder.h"
+#include "PayloadBuilder.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::PayloadBuilder;
     
-    TEST(PayloadBuilderTest, payloadBuilderAlmostFullTest) {
+    TEST(PayloadBuilderTest, almostFullTest) {
         PayloadBuilder builder;
         builder.initialize();
         // fill with just under the limit of 492 characters
@@ -29,7 +29,7 @@ namespace WaterMeterCppTest {
         EXPECT_TRUE(builder.isAlmostFull()) << "Almost full";
     }
 
-    TEST(PayloadBuilderTest, payloadBuilderParamTest) {
+    TEST(PayloadBuilderTest, paramTest) {
         PayloadBuilder builder;
         builder.initialize();
         builder.writeArrayStart("array");

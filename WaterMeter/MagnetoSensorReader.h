@@ -19,24 +19,13 @@
 #include <MagnetoSensor.h>
 #include "ChangePublisher.h"
 #include "EventServer.h"
-#include "IntCoordinate.h"
+#include "SensorSample.h"
 
 namespace WaterMeter {
     using MagnetoSensors::MagnetoSensor;
 
     constexpr int SoftReset = 1;
     constexpr int HardReset = 2;
-
-    enum class SensorState : int16_t {
-        None = 0,
-        Ok,
-        PowerError,
-        BeginError,
-        ReadError,
-        Saturated,
-        NeedsHardReset,
-        NeedsSoftReset
-    };
 
     class MagnetoSensorReader : public EventClient {
     public:
@@ -45,15 +34,15 @@ namespace WaterMeter {
         void configurePowerPort(uint8_t port);
         double getGain() const;
         int getNoiseRange() const;
-        void hardReset();
-        SensorState setPower(uint8_t state);
-        IntCoordinate read() const;
-        void softReset();
+        bool hardReset();
+        SensorSample read() const;
+        bool softReset();
         SensorState getState() { return _sensorState; }
-        SensorState validate(const IntCoordinate& sample);
+        SensorState validate(const SensorSample& sample);
 
         void update(Topic topic, long payload) override;
         static constexpr byte DefaultPowerPort = 15;
+        bool isResetting() const { return _isHardResetting || _isSoftResetting; }
 
     protected:
         // Both HMC and QMC datasheets report 50 ms startup time.
@@ -63,15 +52,18 @@ namespace WaterMeter {
         static constexpr int DelaySensorMillis = 5;
 
         bool setSensor();
+        SensorState setPower(uint8_t state);
 
         MagnetoSensor* _sensor = nullptr;
         ChangePublisher<SensorState> _sensorState;
         int _consecutiveStreakCount = 0;
-        IntCoordinate _previousSample = { {0, 0} };
+        SensorSample _previousSample = { {0, 0} };
         int _flatlineCount = 0;
         uint8_t _powerPort = DefaultPowerPort;
         MagnetoSensor** _sensorList = nullptr;
         size_t _sensorListSize = 0;
+        bool _isHardResetting = true;
+        bool _isSoftResetting = true;
     };
 }
 #endif

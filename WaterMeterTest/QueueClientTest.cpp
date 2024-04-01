@@ -11,7 +11,7 @@
 
 #include "gtest/gtest.h"
 #include <regex>
-#include "../WaterMeter/QueueClient.h"
+#include "QueueClient.h"
 #include <SafeCString.h>
 #include "TestEventClient.h"
 #include "freertos/ringbuf.h"
@@ -31,7 +31,7 @@ namespace WaterMeterCppTest {
     Log QueueClientTest::logger(&eventServer, nullptr);
     TestEventClient QueueClientTest::testEventClient(&eventServer);
 
-    TEST_F(QueueClientTest, queueClientTest1) {
+    TEST_F(QueueClientTest, scriptTest) {
         uxQueueReset();
         uxRingbufReset();
         eventServer.subscribe(&testEventClient, Topic::Anomaly);

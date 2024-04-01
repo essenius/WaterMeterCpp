@@ -17,22 +17,22 @@
 #include <PubSubClient.h>
 #include <MagnetoSensorNull.h>
 
-#include "../WaterMeter/Button.h"
-#include "../WaterMeter/Communicator.h"
-#include "../WaterMeter/Connector.h"
-#include "../WaterMeter/Device.h"
-#include "../WaterMeter/EventServer.h"
-#include "../WaterMeter/FirmwareManager.h"
-#include "../WaterMeter/DataQueue.h"
-#include "../WaterMeter/LedDriver.h"
-#include "../WaterMeter/MagnetoSensorReader.h"
-#include "../WaterMeter/MqttGateway.h"
-#include "../WaterMeter/ResultAggregator.h"
-#include "../WaterMeter/TimeServer.h"
-#include "../WaterMeter/WiFiManager.h"
-#include "../WaterMeter/Log.h"
-#include "../WaterMeter/SampleAggregator.h"
-#include "../WaterMeter/QueueClient.h"
+#include "Button.h"
+#include "Communicator.h"
+#include "Connector.h"
+#include "Device.h"
+#include "EventServer.h"
+#include "FirmwareManager.h"
+#include "DataQueue.h"
+#include "LedDriver.h"
+#include "MagnetoSensorReader.h"
+#include "MqttGateway.h"
+#include "ResultAggregator.h"
+#include "TimeServer.h"
+#include "WiFiManager.h"
+#include "Log.h"
+#include "SampleAggregator.h"
+#include "QueueClient.h"
 
 #include "MagnetoSensorSimulation.h"
 
@@ -60,7 +60,7 @@ namespace WaterMeterCppTest {
     Configuration MainDataTest::configuration(&preferences);
 
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
-    TEST_F(MainDataTest, mainTest1) {
+    TEST_F(MainDataTest, mainDataTest1) {
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty start";
 
         setRealTime(false);

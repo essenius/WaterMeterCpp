@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Rik Essenius
+﻿// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -15,8 +15,8 @@
 #include <ESP.h>
 
 #include "TestEventClient.h"
-#include "../WaterMeter/Meter.h"
-#include "../WaterMeter/EventServer.h"
+#include "Meter.h"
+#include "EventServer.h"
 #include <SafeCString.h>
 
 namespace WaterMeterCppTest {
@@ -28,7 +28,7 @@ namespace WaterMeterCppTest {
     };
 
     // making sure that the printf redirect works
-    TEST_F(MeterTest, meterTest1) {
+    TEST_F(MeterTest, scriptTest) {
         Meter meter(&eventServer);
         TestEventClient volumeClient(&eventServer);
         TestEventClient pulseClient(&eventServer);

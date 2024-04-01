@@ -61,7 +61,7 @@ namespace WaterMeter {
 		}
 	}
 
-	void FlowDetector::update(const Topic topic, const IntCoordinate payload) {
+	void FlowDetector::update(const Topic topic, const SensorSample payload) {
 		if (topic == Topic::Sample) {
 			addSample(payload);
 		}
@@ -69,9 +69,10 @@ namespace WaterMeter {
 
 	// Private methods
 
-	void FlowDetector::addSample(const IntCoordinate& sample) {
-		if (sample.isSaturated() || sample.hasError()) {
-			reportAnomaly();
+	void FlowDetector::addSample(const SensorSample& sample) {
+		const auto state = sample.state();
+		if (state!= SensorState::Ok) {
+			reportAnomaly(state);
 			return;
 		}
 		_foundAnomaly = false;
@@ -79,7 +80,7 @@ namespace WaterMeter {
 		if (_firstCall) {
 			// skip samples as long as we get a flatline. Happens sometimes just after startup
 			if (sample.x == 0 && sample.y == 0) {
-				reportAnomaly();
+				reportAnomaly(SensorState::FlatLine);
 				return;
 			}
 			_movingAverageIndex = 0;
@@ -185,7 +186,7 @@ namespace WaterMeter {
 		if (_confirmedGoodFit.isValid()) {
 			const auto distanceFromEllipse = _confirmedGoodFit.getDistanceFrom(point);
 			if (distanceFromEllipse > _distanceThreshold * 2) {
-				reportAnomaly();
+				reportAnomaly(SensorState::Outlier);
 				return false;
 			}
 		}
@@ -232,10 +233,10 @@ namespace WaterMeter {
 		_wasSkipped = false;
 	}
 
-	void FlowDetector::reportAnomaly() {
+	void FlowDetector::reportAnomaly(SensorState state) {
 		_foundAnomaly = true;
 		_wasSkipped = true;
-		_eventServer->publish(Topic::Anomaly, true);
+		_eventServer->publish(Topic::Anomaly, static_cast<int16_t>(state));
 	}
 
 	int16_t  FlowDetector::noFitParameter(const double angleDistance, const bool fitSucceeded) {
@@ -283,7 +284,7 @@ namespace WaterMeter {
 		}
 	}
 
-	void FlowDetector::updateMovingAverageArray(const IntCoordinate& sample) {
+	void FlowDetector::updateMovingAverageArray(const SensorSample& sample) {
 		_movingAverageArray[_movingAverageIndex] = sample;
 		++_movingAverageIndex %= 4;
 	}

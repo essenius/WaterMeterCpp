@@ -11,7 +11,7 @@
 
 #include "gtest/gtest.h"
 #include <regex>
-#include "../WaterMeter/Clock.h"
+#include "Clock.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::Timestamp;
@@ -19,7 +19,7 @@ namespace WaterMeterCppTest {
     using WaterMeter::EventServer;
     using WaterMeter::Topic;
 
-    TEST(ClockTest, clockFormatTimestampTest) {
+    TEST(ClockTest, formatTimestampTest) {
         constexpr Timestamp Timestamp = 1;
         EventServer eventServer;
         // the mock only mocks the time setting and detection, but keeps the rest
@@ -28,7 +28,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("abcd", destination) << "Destination not changed";
     }
 
-    TEST(ClockTest, clockTest1) {
+    TEST(ClockTest, test1) {
         EventServer eventServer;
         // the mock only mocks the time setting and detection, but keeps the rest
         Clock theClock(&eventServer);

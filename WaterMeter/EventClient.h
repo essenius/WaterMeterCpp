@@ -14,7 +14,7 @@
 #ifndef HEADER_EVENT_CLIENT
 #define HEADER_EVENT_CLIENT
 
-#include "IntCoordinate.h"
+#include "SensorSample.h"
 
 namespace WaterMeter {
     enum class Topic : int16_t {
@@ -68,7 +68,7 @@ namespace WaterMeter {
 
     union EventPayload {
         int32_t n;
-        IntCoordinate coordinate;
+        SensorSample coordinate;
         bool b;
     };
 
@@ -90,7 +90,7 @@ namespace WaterMeter {
         virtual long get(Topic topic, const long defaultValue) { return defaultValue; }
         virtual void update(Topic topic, const char* payload) {}
         virtual void update(Topic topic, long payload);
-        virtual void update(Topic topic, IntCoordinate payload);
+        virtual void update(Topic topic, SensorSample payload);
 
     protected:
         EventServer* _eventServer;

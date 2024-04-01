@@ -17,7 +17,7 @@ namespace WaterMeter {
         _flushRate.setTopic(Topic::BatchSize);
     }
 
-    void SampleAggregator::addSample(const IntCoordinate& sample) {
+    void SampleAggregator::addSample(const SensorSample& sample) {
         // Only record measurements if we need to
         if (newMessage() && canSend()) {
 
@@ -59,7 +59,7 @@ namespace WaterMeter {
         }
     }
 
-    void SampleAggregator::update(const Topic topic, const IntCoordinate payload) {
+    void SampleAggregator::update(const Topic topic, const SensorSample payload) {
         if (topic == Topic::Sample) {
             addSample(payload);
         }

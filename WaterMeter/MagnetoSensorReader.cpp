@@ -48,6 +48,8 @@ namespace WaterMeter {
         _sensorListSize = listSize;
         pinMode(_powerPort, OUTPUT);
         const auto sensorFound = setPower(HIGH) == SensorState::Ok;
+        _isSoftResetting = false;
+        _isHardResetting = false;
         _eventServer->subscribe(this, Topic::ResetSensor);
         return sensorFound;
     }
@@ -66,13 +68,17 @@ namespace WaterMeter {
         return _sensor->getNoiseRange();
     }
 
-    void MagnetoSensorReader::hardReset() {
+    bool MagnetoSensorReader::hardReset() {
+        if (_isHardResetting) return false;
+        _isHardResetting = true;
         setPower(LOW);
         setPower(HIGH);
-
         _flatlineCount = 0;
         _consecutiveStreakCount = 0;
+        _isHardResetting = false;
+        _isSoftResetting = false;
         _eventServer->publish(Topic::SensorWasReset, HardReset);
+        return true;
     }
 
     SensorState MagnetoSensorReader::setPower(const uint8_t state) {
@@ -101,18 +107,17 @@ namespace WaterMeter {
     }
 
     // Run from within timed task, so do not use events and keep short
-    IntCoordinate MagnetoSensorReader::read() const {
+    SensorSample MagnetoSensorReader::read() const {
+        if (isResetting()) return SensorSample::error(SensorState::Resetting);
         SensorData sample{};
         if (!_sensor->read(sample)) {
-            return IntCoordinate::error();
+            return SensorSample::error(SensorState::ReadError);
         }
         return { { sample.x, sample.y } };
     }
 
-    SensorState MagnetoSensorReader::validate(const IntCoordinate& sample) {
-
-        _sensorState = sample.isSaturated() ? SensorState::Saturated : sample.hasError() ? SensorState::ReadError : SensorState::Ok;
-
+    SensorState MagnetoSensorReader::validate(const SensorSample& sample) {
+        _sensorState = sample.state();
         if (sample == _previousSample || _sensorState != SensorState::Ok) {
             _flatlineCount++;
             // if we have too many of the same results in a row, signal to reset the sensor
@@ -132,10 +137,14 @@ namespace WaterMeter {
         return _sensorState;
     }
 
-    void MagnetoSensorReader::softReset() {
+    bool MagnetoSensorReader::softReset() {
+        if (_isSoftResetting || _isHardResetting) return false;
+        _isSoftResetting = true;
         _sensor->softReset();
         _flatlineCount = 0;
+        _isSoftResetting = false;
         _eventServer->publish(Topic::SensorWasReset, SoftReset);
+        return true;
     }
 
     void MagnetoSensorReader::update(const Topic topic, const long payload) {

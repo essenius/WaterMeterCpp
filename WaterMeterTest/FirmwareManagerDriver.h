@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
-#include "../WaterMeter/FirmwareManager.h"
+#include "FirmwareManager.h"
 
 // For testing we make two protected methods publicly available. Otherwise, it should behave the same as FirmwareManager.
 namespace WaterMeterCppTest {

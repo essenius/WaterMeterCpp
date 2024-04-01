@@ -22,7 +22,7 @@ namespace WaterMeter {
         SampleAggregator* sampleAggregator, ResultAggregator* resultAggregator, QueueClient* queueClient) :
         _eventServer(eventServer), _sensorReader(sensorReader), _flowDetector(flowDetector), _button(button),
         _sampleAggregator(sampleAggregator), _resultAggregator(resultAggregator), _queueClient(queueClient) {
-        _sampleQueue = xQueueCreate(SampleQueueSize, sizeof(IntCoordinate));
+        _sampleQueue = xQueueCreate(SampleQueueSize, sizeof(SensorSample));
         _overrunQueue = xQueueCreate(OverrunQueueSize, sizeof(long));
     }
 
@@ -84,7 +84,7 @@ namespace WaterMeter {
         if (ulTaskNotifyTake(pdTRUE, _ticksPerSample) > 0) {
             _notifyCounter++;
             const auto lastReadTime = micros();
-            const IntCoordinate sample = _sensorReader->read();
+            const SensorSample sample = _sensorReader->read();
             if (uxQueueSpacesAvailable(_sampleQueue) == 0) {
                 _queueFullCounter++;
                 //overrun = _samplePeriod;
@@ -111,7 +111,7 @@ namespace WaterMeter {
      * As long as on average the time stays below the sample time we're good.
      */
     void Sampler::loop() {
-        IntCoordinate sample{};
+        SensorSample sample{};
         const auto startTime = micros();
         long overrun = 0;
         while (xQueueReceive(_overrunQueue, &overrun, 0) == pdTRUE) {
@@ -143,7 +143,7 @@ namespace WaterMeter {
         }
     }
 
-    void Sampler::handleSample(const IntCoordinate& sample, const unsigned long startTime) {
+    void Sampler::handleSample(const SensorSample& sample, const unsigned long startTime) {
         // this triggers flowDetector, sampleAggregator and the comms task
         //printf("@");
         _eventServer->publish(Topic::Sample, sample);

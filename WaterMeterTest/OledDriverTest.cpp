@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Rik Essenius
+﻿// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -13,9 +13,9 @@
 
 #include <ESP.h>
 #include "TestEventClient.h"
-#include "../WaterMeter/OledDriver.h"
-#include "../WaterMeter/EventServer.h"
-#include "../WaterMeter/ConnectionState.h"
+#include "OledDriver.h"
+#include "EventServer.h"
+#include "ConnectionState.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::ConnectionState;
@@ -32,7 +32,7 @@ namespace WaterMeterCppTest {
 
     EventServer OledDriverTest::eventServer;
         // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
-        TEST_F(OledDriverTest, oledDriverCycleScriptTest) {
+        TEST_F(OledDriverTest, cycleScriptTest) {
             Wire1.setFlatline(true); // make Wire1.endTransmission return the right value so begin() passes
             OledDriver oledDriver(&eventServer, &Wire1);
             TestEventClient client(&eventServer);

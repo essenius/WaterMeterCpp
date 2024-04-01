@@ -16,12 +16,12 @@
 #include "SamplerDriver.h"
 #include "gtest/gtest.h"
 #include "TestEventClient.h"
-#include "../WaterMeter/EventServer.h"
-#include "../WaterMeter/Sampler.h"
+#include "EventServer.h"
+#include "Sampler.h"
 
 namespace WaterMeterCppTest {
 
-    TEST(SamplerTest, samplerSensorNotFoundTest) {
+    TEST(SamplerTest, sensorNotFoundTest) {
         EventServer eventServer;
         TestEventClient noSensorClient(&eventServer);
         eventServer.subscribe(&noSensorClient, Topic::SensorState);
@@ -37,7 +37,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(1, noSensorClient.getCallCount()) << "No-sensor event was fired";
     }
 
-    TEST(SamplerTest, SamplerOverrunTest) {
+    TEST(SamplerTest, overrunTest) {
         EventServer eventServer;
         TestEventClient overrunClient(&eventServer);
         eventServer.subscribe(&overrunClient, Topic::TimeOverrun);

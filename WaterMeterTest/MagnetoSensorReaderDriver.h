@@ -1,4 +1,4 @@
-// Copyright 2023 Rik Essenius
+// Copyright 2023-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "../WaterMeter/MagnetoSensorReader.h"
+#include "MagnetoSensorReader.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::EventServer;
@@ -22,5 +22,9 @@ namespace WaterMeterCppTest {
         explicit MagnetoSensorReaderDriver(EventServer* eventServer) : MagnetoSensorReader(eventServer) {}
 
         using MagnetoSensorReader::_sensor;
+        using MagnetoSensorReader::setPower;
+        using MagnetoSensorReader::_isHardResetting;
+        using MagnetoSensorReader::_isSoftResetting;
+
     };
 }

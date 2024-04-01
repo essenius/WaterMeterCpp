@@ -11,7 +11,7 @@
 
 #include "gtest/gtest.h"
 #include "TestEventClient.h"
-#include "../WaterMeter/FirmwareManager.h"
+#include "FirmwareManager.h"
 #include "FirmwareManagerDriver.h"
 
 #include "HTTPClient.h"
@@ -47,7 +47,7 @@ namespace WaterMeterCppTest {
     TestEventClient FirmwareManagerTest::infoListener(&eventServer);
     TestEventClient FirmwareManagerTest::errorListener(&eventServer);
     
-    TEST_F(FirmwareManagerTest, firmwareManagerCheckSucceedsNoUpdateNeededTest) {
+    TEST_F(FirmwareManagerTest, checkSucceedsNoUpdateNeededTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
         FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.1");
         manager.begin("001122334455");
@@ -60,7 +60,7 @@ namespace WaterMeterCppTest {
     }
 
 
-    TEST_F(FirmwareManagerTest, firmwareManagerCheckSucceedsUpdateFailsTest) {
+    TEST_F(FirmwareManagerTest, checkSucceedsUpdateFailsTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
         FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.2");
         manager.begin("001122334455");
@@ -75,7 +75,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("Firmware update failed (0): OK", errorListener.getPayload()) << "error message on update failure OK";
     }
 
-    TEST_F(FirmwareManagerTest, firmwareManagerFailedCheckTest) {
+    TEST_F(FirmwareManagerTest, failedCheckTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
         FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.1");
         manager.begin("001122334455");
@@ -88,7 +88,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("http://localhost/images/001122334455.version", infoListener.getPayload()) << "Info OK";
     }
 
-    TEST_F(FirmwareManagerTest, firmwareManagerNoUpdateAvailableTest) {
+    TEST_F(FirmwareManagerTest, noUpdateAvailableTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
         FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.1");
         manager.begin("001122334455");
@@ -100,7 +100,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(0, errorListener.getCallCount()) << "No error";
     }
 
-    TEST_F(FirmwareManagerTest, firmwareManagerOtherVersionTest) {
+    TEST_F(FirmwareManagerTest, otherVersionTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
         FirmwareManagerDriver manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.2");
         manager.begin("112233445566");
@@ -112,7 +112,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("Current firmware: '0.1.2'; available: '0.1.1'", infoListener.getPayload()) << "Info correct";
     }
 
-    TEST_F(FirmwareManagerTest, firmwareManagerUpdateCheckFailsTest) {
+    TEST_F(FirmwareManagerTest, updateCheckFailsTest) {
         const WiFiClientFactory wifiClientFactory(nullptr);
         FirmwareManager manager(&eventServer, &wifiClientFactory, &FirmwareConfig, "0.1.2");
         manager.begin("001122334455");
@@ -129,7 +129,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(1, errorListener.getCallCount()) << "Second call doesn't log errors";
     }
 
-    TEST_F(FirmwareManagerTest, firmwareManagerUpdateTest) {
+    TEST_F(FirmwareManagerTest, updateTest) {
         TestEventClient progressListener(&eventServer);
         eventServer.subscribe(&progressListener, Topic::UpdateProgress);
         const WiFiClientFactory wifiClientFactory(nullptr);

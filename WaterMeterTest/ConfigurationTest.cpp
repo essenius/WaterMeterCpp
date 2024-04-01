@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "gtest/gtest.h"
-#include "../WaterMeter/secrets.h"
+#include "secrets.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::Configuration;
@@ -20,7 +20,7 @@ namespace WaterMeterCppTest {
     using WaterMeter::TlsConfig;
     using WaterMeter::WifiConfig;
     
-    TEST(ConfigurationTest, configurationTestLoadSecrets) {
+    TEST(ConfigurationTest, loadSecretsTest) {
         Preferences preferences;
         Configuration configuration(&preferences);
         configuration.begin();
@@ -32,7 +32,7 @@ namespace WaterMeterCppTest {
         EXPECT_NE(nullptr, configuration.firmware.baseUrl) << "Firmware base URL filled";
     }
 
-    TEST(ConfigurationTest, configurationTestMqttAndTls) {
+    TEST(ConfigurationTest, mqttAndTlsTest) {
         Preferences preferences;
         constexpr MqttConfig MqttConfig{"broker", 2048, "user", "password", false};
         constexpr TlsConfig TlsConfig{"abc", R"(defg)", R"(hijkl)"};
@@ -56,7 +56,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("http://localhost/firmware", configuration.firmware.baseUrl) << "firmware url ok";
     }
 
-    TEST(ConfigurationTest, configutationTestPutNullTest) {
+    TEST(ConfigurationTest, putNullTest) {
         Preferences preferences;
         const Configuration configuration(&preferences);
         configuration.putIpConfig(nullptr);
@@ -72,7 +72,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(nullptr, configuration.firmware.baseUrl) << "Firmware base URL filled";
     }
 
-    TEST(ConfigurationTest, configurationTestWifiAndIp) {
+    TEST(ConfigurationTest, WifiAndIpTest) {
         Preferences preferences;
         uint8_t bssidConfig[6] = {0, 1, 2, 3, 4, 5};
         const WifiConfig wifiConfig{"ssid", "password", "deviceName", bssidConfig};

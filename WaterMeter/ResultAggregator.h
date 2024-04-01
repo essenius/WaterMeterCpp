@@ -23,7 +23,7 @@ namespace WaterMeter {
         ResultAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload,
             uint32_t measureIntervalMicros);
         void addDuration(unsigned long duration) const;
-        void addMeasurement(const IntCoordinate& value, const FlowDetector* result);
+        void addMeasurement(const SensorSample& value, const FlowDetector* result);
         using Aggregator::begin;
         void begin();
         void flush() override;

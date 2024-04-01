@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -12,29 +12,29 @@
 #include "AggregatorDriver.h"
 #include "gtest/gtest.h"
 
-#include "../WaterMeter/Aggregator.h"
-#include "../WaterMeter/Clock.h"
-#include "../WaterMeter/DataQueue.h"
+#include "Aggregator.h"
+#include "Clock.h"
+#include "DataQueue.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::Clock;
     using WaterMeter::DataQueue;
     using WaterMeter::DataQueuePayload;
 
-    TEST(AggregatorTest, aggregatorLimitTest) {
+    TEST(AggregatorTest, limitTest) {
         EXPECT_EQ(5, AggregatorDriver::limit(-5, 5, 15));
         EXPECT_EQ(7, AggregatorDriver::limit(7, 5, 15));
         EXPECT_EQ(15, AggregatorDriver::limit(20, 5, 15));
     }
 
-    TEST(AggregatorTest, aggregatorConvertToLongTest) {
+    TEST(AggregatorTest, convertToLongTest) {
         EXPECT_EQ(3, AggregatorDriver::convertToLong("DEFAULT", 3));
         EXPECT_EQ(7, AggregatorDriver::convertToLong("7", 3));
         EXPECT_EQ(-23, AggregatorDriver::convertToLong("-23", 3));
         EXPECT_EQ(0, AggregatorDriver::convertToLong("q", 3));
     }
     // ReSharper disable once CyclomaticComplexity
-    TEST(AggregatorTest, aggregatorFlushTest) {
+    TEST(AggregatorTest, flushTest) {
         EventServer eventServer;
         Clock theClock(&eventServer);
         theClock.begin();

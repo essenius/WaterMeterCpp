@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -19,7 +19,7 @@ namespace WaterMeterCppTest {
     public:
         explicit PulseTestEventClient(EventServer* eventServer);
         void update(Topic topic, long payload) override;
-        void update(Topic topic, IntCoordinate payload) override;
+        void update(Topic topic, SensorSample payload) override;
         const char* pulseHistory() const { return _buffer; }
         unsigned int pulses(const bool stage) const { return _pulseCount[stage]; }
         unsigned int anomalies() const { return _excludeCount; }
@@ -27,7 +27,7 @@ namespace WaterMeterCppTest {
     private:
         char _buffer[4096] = {};
         unsigned int _sampleNumber = -1;
-        IntCoordinate _currentCoordinate = {};
+        SensorSample _currentCoordinate = {};
         unsigned int _pulseCount[2] = { 0 };
         unsigned int _excludeCount = 0;
         unsigned int _noFitCount = 0;

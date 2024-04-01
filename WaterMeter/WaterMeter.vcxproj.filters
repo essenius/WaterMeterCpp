@@ -215,7 +215,7 @@
     <ClInclude Include="FlowDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IntCoordinate.h">
+    <ClInclude Include="SensorSample.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

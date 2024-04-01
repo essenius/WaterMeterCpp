@@ -11,18 +11,18 @@
 
 #include "gtest/gtest.h"
 #include "TestEventClient.h"
-#include "../WaterMeter/EventServer.h"
+#include "EventServer.h"
 
 namespace WaterMeterCppTest {
        
-    TEST(EventServerTest, eventServerDefaultGetTest) {
+    TEST(EventServerTest, defaultGetTest) {
         EventServer server;
         EventClient client1(&server);
         EXPECT_STREQ("x", client1.get(Topic::ConnectionError, "x")) << "Default get char* OK";
         EXPECT_EQ(25L, client1.get(Topic::Info, 25L)) << "default get long ok";
     }
 
-    TEST(EventServerTest, eventServerErrorTest) {
+    TEST(EventServerTest, errorTest) {
         EventServer server;
         TestEventClient client1(&server);
         server.subscribe(&client1, Topic::ConnectionError);
@@ -32,7 +32,7 @@ namespace WaterMeterCppTest {
     }
 
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
-    TEST(EventServerTest, eventServerScriptTest) {
+    TEST(EventServerTest, scriptTest) {
         EventServer server;
         TestEventClient
             client1(&server),

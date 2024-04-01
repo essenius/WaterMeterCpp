@@ -19,23 +19,24 @@
 #include <MagnetoSensorQmc.h>
 #include <MagnetoSensorNull.h>
 
-#include "../WaterMeter/Button.h"
-#include "../WaterMeter/Communicator.h"
-#include "../WaterMeter/Connector.h"
-#include "../WaterMeter/Device.h"
-#include "../WaterMeter/EventServer.h"
-#include "../WaterMeter/FirmwareManager.h"
-#include "../WaterMeter/DataQueue.h"
-#include "../WaterMeter/Led.h"
-#include "../WaterMeter/LedDriver.h"
-#include "../WaterMeter/MagnetoSensorReader.h"
-#include "../WaterMeter/MqttGateway.h"
-#include "../WaterMeter/ResultAggregator.h"
-#include "../WaterMeter/TimeServer.h"
-#include "../WaterMeter/WiFiManager.h"
-#include "../WaterMeter/Log.h"
-#include "../WaterMeter/SampleAggregator.h"
-#include "../WaterMeter/QueueClient.h"
+#include "Button.h"
+#include "Communicator.h"
+#include "Connector.h"
+#include "Device.h"
+#include "EventServer.h"
+#include "FirmwareManager.h"
+#include "DataQueue.h"
+
+#include "Led.h"
+#include "LedDriver.h"
+#include "MagnetoSensorReader.h"
+#include "MqttGateway.h"
+#include "ResultAggregator.h"
+#include "TimeServer.h"
+#include "WiFiManager.h"
+#include "Log.h"
+#include "SampleAggregator.h"
+#include "QueueClient.h"
 
 #include "HTTPClient.h"
 #include "SamplerDriver.h"
@@ -245,6 +246,7 @@ namespace WaterMeterCppTest {
             EXPECT_EQ(Led::On, Led::get(Led::Running)) << "RUNNING on";
             EXPECT_STREQ(R"([] Topic '6': 0
 [] Free Spaces Queue #1: 18
+[] Anomaly: FlatLine
 [] Wifi summary: {"ssid":"","hostname":"","mac-address":"00:11:22:33:44:55","rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"0.0.0.0","gateway-ip":"0.0.0.0","dns1-ip":"0.0.0.0","dns2-ip":"0.0.0.0","subnet-mask":"255.255.255.0","bssid":"55:44:33:22:11:00"}
 [] Free Spaces Queue #2: 19
 [] Free Memory DataQueue #0: 12800
@@ -314,7 +316,7 @@ namespace WaterMeterCppTest {
 
             EXPECT_EQ(ConnectionState::MqttReady, connector.loop()) << "Connector loop";
             communicator.loop();
-            EXPECT_STREQ("[] Time overrun: 1140650\n[] Free Stack #0: 1628\n", getPrintOutput()) << "Time overrun";
+            EXPECT_STREQ("[] Time overrun: 1140650\n[] Anomaly: FlatLine\n[] Free Stack #0: 1628\n", getPrintOutput()) << "Time overrun";
 
             connectorEventServer.publish(Topic::ResetSensor, 2);
             TestEventClient client(&samplerEventServer);
@@ -329,9 +331,10 @@ namespace WaterMeterCppTest {
 
             auto expected2 = R"([] Time overrun: 65250
 [] Free Spaces Queue #1: 14
-[] Sensor state: 0 (0 = none, 1 = ok)
-[] Sensor state: 3 (0 = none, 1 = ok)
-[] Sensor was reset: 2
+[] Anomaly: FlatLine
+[] Sensor state: None
+[] Sensor state: BeginError
+[] Sensor was hard-reset
 [] Free Spaces Queue #0: 20
 [] Free Heap: 23000
 )";

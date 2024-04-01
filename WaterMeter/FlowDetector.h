@@ -39,14 +39,14 @@ namespace WaterMeter {
 		bool isSearching() const { return _searchingForPulse; }
 		Coordinate getMovingAverage() const { return _movingAverage; }
 		void update(Topic topic, long payload) override;
-		void update(Topic topic, IntCoordinate payload) override;
+		void update(Topic topic, SensorSample payload) override;
 		bool wasReset() const { return _wasReset; }
 		bool wasSkipped() const { return _wasSkipped; }
-		IntCoordinate ellipseCenterTimes10() const { return IntCoordinate::times10(_confirmedGoodFit.getCenter()); }
-		IntCoordinate ellipseRadiusTimes10() const { return IntCoordinate::times10(_confirmedGoodFit.getRadius()); }
+		SensorSample ellipseCenterTimes10() const { return SensorSample::times10(_confirmedGoodFit.getCenter()); }
+		SensorSample ellipseRadiusTimes10() const { return SensorSample::times10(_confirmedGoodFit.getRadius()); }
 		int16_t ellipseAngleTimes10() const { return _confirmedGoodFit.getAngle().degreesTimes10(); }
 	protected:
-		void addSample(const IntCoordinate& sample);
+		void addSample(const SensorSample& sample);
 		Coordinate calcMovingAverage();
 		void detectPulse(Coordinate point);
 		CartesianEllipse executeFit() const;
@@ -54,14 +54,14 @@ namespace WaterMeter {
 		void findPulseByPrevious(const Coordinate& point);
 		bool isRelevant(const Coordinate& point);
 		void processMovingAverageSample(Coordinate averageSample);
-		void reportAnomaly();
+		void reportAnomaly(SensorState state);
         static int16_t noFitParameter(double angleDistance, bool fitSucceeded);
 		void updateEllipseFit(Coordinate point);
-		void updateMovingAverageArray(const IntCoordinate& sample);
+		void updateMovingAverageArray(const SensorSample& sample);
 
 		static constexpr unsigned int MovingAverageSize = 4;
 		static constexpr double MovingAverageNoiseReduction = 2; // = sqrt(MovingAverageSize)
-		IntCoordinate _movingAverageArray[MovingAverageSize] = {};
+		SensorSample _movingAverageArray[MovingAverageSize] = {};
 		int8_t _movingAverageIndex = 0;
 		bool _justStarted = true;
 		CartesianEllipse _confirmedGoodFit;

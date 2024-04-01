@@ -141,7 +141,7 @@ namespace WaterMeter {
         updatePosition();
     }
 
-    void PayloadBuilder::writeString(const IntCoordinate input) {
+    void PayloadBuilder::writeString(const SensorSample input) {
         writeString(input.x);
         writeDelimiter(',');
         writeString(input.y);

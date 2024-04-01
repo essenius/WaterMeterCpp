@@ -14,24 +14,24 @@
 // ReSharper disable once CppUnusedIncludeDirective -- false positive
 #include <freertos/freeRTOS.h>
 #include "TestEventClient.h"
-#include "../WaterMeter/DataQueue.h"
-#include "../WaterMeter/EventServer.h"
+#include "DataQueue.h"
+#include "EventServer.h"
 #include <SafeCString.h>
 
-#include "../WaterMeter/Serializer.h"
+#include "Serializer.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::Clock;
     using WaterMeter::DataQueue;
     using WaterMeter::DataQueuePayload;
-    using WaterMeter::IntCoordinate;
+    using WaterMeter::SensorSample;
     using WaterMeter::PayloadBuilder;
     using WaterMeter::Serializer;
     using WaterMeter::MaxSamples;
 
     // ReSharper disable once CyclomaticComplexity -- caused by EXPECT macros
 
-    TEST(DataQueueTest, dataQueueOverrunTest) {
+    TEST(DataQueueTest, overrunTest) {
         EventServer eventServer;
         DataQueuePayload payload{};
         DataQueue dataQueue(&eventServer, &payload);
@@ -42,7 +42,7 @@ namespace WaterMeterCppTest {
         ASSERT_FALSE(dataQueue.send(&payload));
     }
 
-    TEST(DataQueueTest, dataQueueTest1) {
+    TEST(DataQueueTest, test1) {
         EventServer eventServer;
         Clock theClock(&eventServer);
         TestEventClient resultEventClient(&eventServer);
@@ -82,7 +82,7 @@ namespace WaterMeterCppTest {
         // send a result
         payload.topic = Topic::Result;
         // clean out buffer to all 0
-        for (IntCoordinate i : payload.buffer.samples.value) {
+        for (SensorSample i : payload.buffer.samples.value) {
             i.l = 0;
         }
         payload.buffer.samples.count = 0;
@@ -98,7 +98,7 @@ namespace WaterMeterCppTest {
         dataQueue.send(&payload);
 
         // retrieve the samples
-        IntCoordinate expected{{499, 499}};
+        SensorSample expected{{499, 499}};
         for (int i = 0; i < 5; i++) {
             auto payloadReceive = dataQueue.receive();
             EXPECT_NE(nullptr, payloadReceive) << "PayloadReceive not null 1";

@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Rik Essenius
+﻿// Copyright 2021-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -10,13 +10,13 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #include "gtest/gtest.h"
-#include "../WaterMeter/WiFiClientFactory.h"
+#include "WiFiClientFactory.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::TlsConfig;
     using WaterMeter::WiFiClientFactory;
 
-    TEST(WifiClientFactoryTest, wifiClientFactoryInsecureClientTest) {
+    TEST(WifiClientFactoryTest, insecureClientTest) {
         constexpr TlsConfig Config{nullptr, nullptr, nullptr};
         const WiFiClientFactory factory(&Config);
         const auto normalClient = factory.create(nullptr);
@@ -26,7 +26,7 @@ namespace WaterMeterCppTest {
         EXPECT_FALSE(dynamic_cast<WiFiClientSecure*>(secureClient)->isSecure()) << "Secure client without certs is not secure";
     }
 
-    TEST(WifiClientFactoryTest, wifiClientFactorySecureClientTest) {
+    TEST(WifiClientFactoryTest, secureClientTest) {
         constexpr TlsConfig Config{"a", "b", "c"};
         const WiFiClientFactory factory(&Config);
         const auto normalClient = factory.create("http://localhost");

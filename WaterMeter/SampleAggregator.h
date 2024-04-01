@@ -21,12 +21,12 @@ namespace WaterMeter {
     public:
         SampleAggregator(EventServer* eventServer, Clock* theClock, DataQueue* dataQueue, DataQueuePayload* payload);
         using Aggregator::begin;
-        void addSample(const IntCoordinate& sample);
+        void addSample(const SensorSample& sample);
         void begin();
         void flush() override;
         void update(Topic topic, const char* payload) override;
         void update(Topic topic, long payload) override;
-        void update(Topic topic, IntCoordinate payload) override;
+        void update(Topic topic, SensorSample payload) override;
     protected:
         static constexpr unsigned char DefaultFlushRate = 25;
         static constexpr unsigned char MaxFlushRate = 25;

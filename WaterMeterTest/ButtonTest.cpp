@@ -13,12 +13,12 @@
 #include <regex>
 
 #include "TestEventClient.h"
-#include "../WaterMeter/Button.h"
+#include "Button.h"
 
 namespace WaterMeterCppTest {
     using WaterMeter::Button;
     using WaterMeter::ChangePublisher;
-    TEST(ButtonTest, buttonTest1) {
+    TEST(ButtonTest, scriptTest) {
         constexpr uint8_t Port = 34;
         digitalWrite(Port, HIGH);
         EventServer eventServer;

@@ -32,7 +32,7 @@ namespace WaterMeter {
         _result->averageDuration = static_cast<uint32_t>((_result->totalDuration * 10 / _messageCount + 5) / 10);
     }
 
-    void ResultAggregator::addMeasurement(const IntCoordinate& value, const FlowDetector* result) {
+    void ResultAggregator::addMeasurement(const SensorSample& value, const FlowDetector* result) {
         newMessage();
         _result->sampleCount = _messageCount;
 
