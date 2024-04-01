@@ -186,7 +186,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("1", stateClient.getPayload()) << "getState is OK afterwards";
     }
 
-    TEST(MagnetoSensorReaderTest, MultipleResetTest) {
+    TEST(MagnetoSensorReaderTest, multipleResetTest) {
         EventServer eventServer;
         TestEventClient client(&eventServer);
         eventServer.subscribe(&client, Topic::SensorState);
