@@ -24,6 +24,9 @@
 #include <EllipseFit.h>
 #include "EventServer.h"
 
+// needed for compilation in Arduino IDE to define NAN
+#include <cmath>
+
 namespace WaterMeter {
 	using EllipseMath::Angle;
 	using EllipseMath::CartesianEllipse;
