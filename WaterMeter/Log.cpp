@@ -40,6 +40,7 @@ namespace WaterMeter {
 
     void Log::begin() {
         update(Topic::MessageFormatted, "Starting");
+        _eventServer->subscribe(this, Topic::AddVolume);
         _eventServer->subscribe(this, Topic::Anomaly);
         _eventServer->subscribe(this, Topic::BatchSizeDesired);
         _eventServer->subscribe(this, Topic::Blocked);
@@ -70,8 +71,8 @@ namespace WaterMeter {
     // ReSharper disable once CyclomaticComplexity - just a case statement
     void Log::update(Topic topic, const char* payload) {
         switch (topic) {
-            case Topic::Anomaly:
-                log("Anomaly: %s", payload);
+            case Topic::AddVolume:
+                log("Retrieved meter volume: %s", payload);
                 break;
             case Topic::BatchSizeDesired:
                 log("Batch size desired: %s", payload);
@@ -148,7 +149,12 @@ namespace WaterMeter {
             case Topic::FreeStack:
                 printIndexedPayload("Stack", payload);
                 return;
-            case Topic::Anomaly:
+            case Topic::Anomaly: {
+                    const char* message = SensorSample::stateToString(static_cast<SensorState>(payload % 16));
+                    const double value = (static_cast<uint16_t>(payload) >> 4) / 100.0;
+                    log("Anomaly: %s (%.2f)", message, value);
+                    break;
+                }
             case Topic::SensorState: {
                     const char* message = SensorSample::stateToString(static_cast<SensorState>(payload));
                     update(topic, message);

@@ -57,7 +57,7 @@ namespace WaterMeter {
 		void findPulseByPrevious(const Coordinate& point);
 		bool isRelevant(const Coordinate& point);
 		void processMovingAverageSample(Coordinate averageSample);
-		void reportAnomaly(SensorState state);
+		void reportAnomaly(SensorState state, uint16_t value = 0);
         static int16_t noFitParameter(double angleDistance, bool fitSucceeded);
 		void updateEllipseFit(Coordinate point);
 		void updateMovingAverageArray(const SensorSample& sample);

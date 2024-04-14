@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -27,11 +27,32 @@ namespace WaterMeter {
         _eventServer->subscribe(this, Topic::AddVolume);
     }
 
+
+    const char* Meter::extractVolume(const char* payload) {
+        // The payload is a JSON string that has volume as its last entry. Extract the value.
+        const auto partAfterLastColon = strrchr(payload, ':');
+        if (partAfterLastColon == nullptr) return nullptr;
+
+        size_t i = 0;
+        while (i < strlen(partAfterLastColon) && partAfterLastColon[i + 1] != '}' && i <= BufferSize) {
+            _jsonBuffer[i] = partAfterLastColon[i + 1];
+            i++;
+        }
+        _jsonBuffer[i] = 0;
+        return _jsonBuffer;
+    }
+
+    const char* Meter::getMeterPayload(const char* volume) {
+        const char* timestamp = _eventServer->request(Topic::Time, "");
+        SafeCString::sprintf(_jsonBuffer, R"({"timestamp":%s,"pulses":%d,"volume":%s})", timestamp, _pulses, volume);
+        return _jsonBuffer;
+    }
+
     const char* Meter::getVolume() {
         // trick to avoid rounding errors of .00049999999: take the next higher value
         const double volume = nextafter(_volume + _pulses * PulseDelta, 1e7);
-        SafeCString::sprintf(_buffer, "%013.7f", volume);
-        return _buffer;
+        SafeCString::sprintf(_volumeBuffer, "%013.7f", volume);
+        return _volumeBuffer;
     }
 
     void Meter::newPulse() {
@@ -41,7 +62,8 @@ namespace WaterMeter {
 
     void Meter::publishValues() {
         _eventServer->publish(Topic::Pulses, _pulses);
-        _eventServer->publish(this, Topic::Volume, getVolume());
+        _eventServer->publish(Topic::Volume, getVolume());
+        _eventServer->publish(this, Topic::MeterPayload, getMeterPayload(_volumeBuffer));
     }
 
     bool Meter::setVolume(const char* meterValue, const double addition) {
@@ -60,6 +82,7 @@ namespace WaterMeter {
     void Meter::update(const Topic topic, const char* payload) {
         if (topic == Topic::SetVolume) {
             // if it was set via a set topic, don't add current value - this is a deliberate override
+            // also, the set topic payload only contains the volume (not a json string)
             setVolume(payload);
         }
         else if (topic == Topic::AddVolume) {
@@ -67,7 +90,7 @@ namespace WaterMeter {
             // This caters for any usage between the device boot and MQTT being up.
             // This happens just once, but we can't unsubscribe while we are iterating through the subscribers.
             // it is also not really necessary as the connector is guaranteed to send it only once.
-            setVolume(payload, _volume);
+            setVolume(extractVolume(payload), _volume);
         }
     }
 

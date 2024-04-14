@@ -1,4 +1,4 @@
-// Copyright 2022 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -15,14 +15,14 @@
 
 namespace WaterMeter {
     void Button::begin() {
-        pinMode(_port, _pinMode);
-        *_state = digitalRead(_port);
+        pinMode(_port, INPUT_PULLUP);
+        *_state = !digitalRead(_port);
         _lastState = *_state;
         _lastSwitchTime = 0;
     }
 
     void Button::check() {
-        _currentState = digitalRead(_port);
+        _currentState = !digitalRead(_port);
         // if the state changed, start the timer
         if (_currentState != _lastState) {
             _lastSwitchTime = millis();

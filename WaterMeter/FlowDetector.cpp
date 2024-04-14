@@ -184,9 +184,10 @@ namespace WaterMeter {
 		}
 		// if we have a confirmed fit and the point is too far away from it, we have an anomaly. Discard.
 		if (_confirmedGoodFit.isValid()) {
-			const auto distanceFromEllipse = _confirmedGoodFit.getDistanceFrom(point);
+			auto distanceFromEllipse = _confirmedGoodFit.getDistanceFrom(point);
 			if (distanceFromEllipse > _distanceThreshold * 2) {
-				reportAnomaly(SensorState::Outlier);
+				if (distanceFromEllipse > 40.95) distanceFromEllipse = 40.95;
+				reportAnomaly(SensorState::Outlier, static_cast<uint16_t>(lround(distanceFromEllipse * 100)));
 				return false;
 			}
 		}
@@ -233,10 +234,10 @@ namespace WaterMeter {
 		_wasSkipped = false;
 	}
 
-	void FlowDetector::reportAnomaly(SensorState state) {
+	void FlowDetector::reportAnomaly(SensorState state, const uint16_t value) {
 		_foundAnomaly = true;
 		_wasSkipped = true;
-		_eventServer->publish(Topic::Anomaly, static_cast<int16_t>(state));
+		_eventServer->publish(Topic::Anomaly, static_cast<int16_t>(state) + (value << 4));
 	}
 
 	int16_t  FlowDetector::noFitParameter(const double angleDistance, const bool fitSucceeded) {

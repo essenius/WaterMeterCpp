@@ -36,7 +36,7 @@ namespace WaterMeter {
         _eventServer->subscribe(_connectorQueueClient, Topic::SensorWasReset);
         _eventServer->subscribe(_connectorQueueClient, Topic::SensorState);
         _eventServer->subscribe(_connectorQueueClient, Topic::NoDisplayFound);
-        _eventServer->subscribe(_connectorQueueClient, Topic::Volume);
+        _eventServer->subscribe(_connectorQueueClient, Topic::MeterPayload);
         _eventServer->subscribe(_serializer, Topic::SensorData);
 
         // Dependencies are reduced by publishing a 'Begin' event for objects that only need to get initialized.

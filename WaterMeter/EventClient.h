@@ -63,7 +63,8 @@ namespace WaterMeter {
         UpdateProgress,
         ButtonPushed,
         Begin,
-        NoFit
+        NoFit,
+        MeterPayload
     };
 
     union EventPayload {

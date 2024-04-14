@@ -20,7 +20,9 @@ namespace WaterMeter {
     public:
         explicit Meter(EventServer* eventServer);
         void begin();
+        const char* extractVolume(const char* payload);
         const char* getVolume();
+        const char* getMeterPayload(const char* volume);
         void newPulse();
         void publishValues();
         bool setVolume(const char* meterValue, double addition = 0.0);
@@ -34,8 +36,10 @@ namespace WaterMeter {
         static constexpr double PulseDelta = 1.0 / PulsesPerUnit;
         double _volume = 0.0;
         unsigned long _pulses = 0;
-        static constexpr int BufferSize = 20;
-        char _buffer[BufferSize] = "";
+        static constexpr int BufferSize = 100;
+        char _jsonBuffer[BufferSize] = "";
+        static constexpr int VolumeSize = 20;
+        char _volumeBuffer[VolumeSize] = "";
     };
 }
 #endif

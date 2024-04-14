@@ -105,13 +105,13 @@ namespace WaterMeterCppTest {
         TestEventClient volumeListener(&eventServer);
         eventServer.subscribe(&volumeListener, Topic::AddVolume);
 
-        constexpr int LoopPayloadSize = 7;
-        uint8_t loopPayload[LoopPayloadSize] = { '1','2','3','.','4','5','6' };
+        constexpr int LoopPayloadSize = 13;
+        uint8_t loopPayload[LoopPayloadSize] = { '{','"', 'q', '"', ':', '1','2','3','.','4','5','6', '}' };
         mqttClient.setLoopCallback("homie/client1/result/meter", loopPayload, LoopPayloadSize);
 
         EXPECT_TRUE(gateway.getPreviousVolume()) << "Found previous volume";
         ASSERT_EQ(1, volumeListener.getCallCount()) << "Volume published";
-        ASSERT_STREQ("123.456", volumeListener.getPayload()) << "volume payload ok";
+        ASSERT_STREQ("{\"q\":123.456}", volumeListener.getPayload()) << "add volume payload ok";
         EXPECT_FALSE(gateway.getPreviousVolume()) << "Previous volume only works once";
         mqttClient.setLoopCallback("\0", {}, 0);
 
@@ -120,7 +120,7 @@ namespace WaterMeterCppTest {
             EXPECT_TRUE(gateway.publishNextAnnouncement()) << "Announcement #" << count;
             count++;
         }
-        EXPECT_EQ(58, count) << "announcement count";
+        EXPECT_EQ(57, count) << "announcement count";
         gateway.publishNextAnnouncement();
         EXPECT_EQ(0, errorListener.getCallCount()) << "Error not called";
         EXPECT_EQ(0, infoListener.getCallCount()) << "Info not called";
@@ -128,9 +128,9 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ(MqttConfigWithUser.user, mqttClient.user()) << "User OK";
         EXPECT_STREQ("client1", mqttClient.id()) << "Client ID OK";
         // check if the homie init events were sent 
-        EXPECT_EQ(static_cast<size_t>(2193), strlen(mqttClient.getTopics())) << "Topic length OK";
-        EXPECT_EQ(static_cast<size_t>(632), strlen(mqttClient.getPayloads())) << "Payload length OK";
-        EXPECT_EQ(58, mqttClient.getCallCount()) << "Call count";
+        EXPECT_EQ(static_cast<size_t>(2158), strlen(mqttClient.getTopics())) << "Topic length OK";
+        EXPECT_EQ(static_cast<size_t>(617), strlen(mqttClient.getPayloads())) << "Payload length OK";
+        EXPECT_EQ(57, mqttClient.getCallCount()) << "Call count";
 
         gateway.announceReady();
 
@@ -168,9 +168,11 @@ namespace WaterMeterCppTest {
         eventServer.subscribe(&callBackListener, Topic::SetVolume);
 
         SafeCString::strcpy(topic, "homie/device_id/result/meter/set");
-        mqttClient.callBack(topic, payload1, PayloadSize);
+        constexpr int MeterPayloadSize = 7;
+        uint8_t meterPayload[MeterPayloadSize] = { '1','2','3','.','4','5','6' };
+        mqttClient.callBack(topic, meterPayload, MeterPayloadSize);
         EXPECT_EQ(1, callBackListener.getCallCount()) << "callBackListener called";
-        EXPECT_STREQ("20", callBackListener.getPayload()) << "callBackListener got right payload";
+        EXPECT_STREQ("123.456", callBackListener.getPayload()) << "callBackListener got right payload";
         callBackListener.reset();
 
         // Empty payload should get ignored

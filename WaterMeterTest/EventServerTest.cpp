@@ -18,6 +18,10 @@ namespace WaterMeterCppTest {
     TEST(EventServerTest, defaultGetTest) {
         EventServer server;
         EventClient client1(&server);
+        // just testing this doesn't break, should not do anything
+        server.subscribe(&client1, Topic::ConnectionError);
+        server.publish(Topic::ConnectionError, "My Error");
+
         EXPECT_STREQ("x", client1.get(Topic::ConnectionError, "x")) << "Default get char* OK";
         EXPECT_EQ(25L, client1.get(Topic::Info, 25L)) << "default get long ok";
     }

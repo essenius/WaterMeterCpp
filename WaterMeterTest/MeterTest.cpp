@@ -32,17 +32,20 @@ namespace WaterMeterCppTest {
         Meter meter(&eventServer);
         TestEventClient volumeClient(&eventServer);
         TestEventClient pulseClient(&eventServer);
+        TestEventClient meterClient(&eventServer);
         eventServer.subscribe(&volumeClient, Topic::Volume);
         eventServer.subscribe(&pulseClient, Topic::Pulses);
+        eventServer.subscribe(&meterClient, Topic::MeterPayload);
 
         meter.begin();
         eventServer.publish(Topic::SetVolume, "0.4567");
         EXPECT_EQ(1, volumeClient.getCallCount()) << "Volume published";
         EXPECT_STREQ("00000.4567000", volumeClient.getPayload()) << L"Volume payload returns initial value";
+        EXPECT_STREQ(R"({"timestamp":,"pulses":0,"volume":00000.4567000})", meterClient.getPayload()) << L"Volume payload returns initial value";
         EXPECT_EQ(1, pulseClient.getCallCount()) << "Pulses published";
         EXPECT_STREQ("0", pulseClient.getPayload()) << L"Pulse payload is 0";
 
-        eventServer.publish(Topic::AddVolume, "123");
+        eventServer.publish(Topic::AddVolume, R"({"timestamp":,"pulses":0,"volume":00123.0000000})");
         EXPECT_EQ(2, volumeClient.getCallCount()) << "Volume published";
         EXPECT_STREQ("00123.4567000", volumeClient.getPayload()) << L"Volume payload returns sum of published and kept value";
         EXPECT_EQ(2, pulseClient.getCallCount()) << "Pulses published";
@@ -52,17 +55,18 @@ namespace WaterMeterCppTest {
             "00123.4567606", "00123.4568212", "00123.4568818","00123.4569424", "00123.4570030",
             "00123.4570636", "00123.4571242", "00123.4571848", "00123.4572455", "00123.4573061"
         };
+
         for (unsigned int i = 0; i < std::size(expected); i++) {
             volumeClient.reset();
             pulseClient.reset();
             eventServer.publish(Topic::Pulse, i*2 + 1);
-            char buffer[10];
-            SafeCString::sprintf(buffer, "%d", i + 1);
+            char pulseBuffer[10];
+            SafeCString::sprintf(pulseBuffer, "%d", i + 1);
 
             EXPECT_EQ(1, volumeClient.getCallCount()) << "Volume published";
-            EXPECT_STREQ(expected[i], volumeClient.getPayload()) << buffer;
+            EXPECT_STREQ(expected[i], volumeClient.getPayload()) << "Volume payload for " << pulseBuffer;
             EXPECT_EQ(1, pulseClient.getCallCount()) << "Pulses published";
-            EXPECT_STREQ(buffer, pulseClient.getPayload()) << "Pulse payload is correct";
+            EXPECT_STREQ(pulseBuffer, pulseClient.getPayload()) << "Pulse payload is correct";
         }
 
         EXPECT_FALSE(meter.setVolume("x")) << "non-double not accepted";

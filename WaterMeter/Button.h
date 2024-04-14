@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rik Essenius
+// Copyright 2022-2024 Rik Essenius
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 // except in compliance with the License. You may obtain a copy of the License at
@@ -21,15 +21,14 @@ namespace WaterMeter {
 
     class Button {
     public:
-        Button(ChangePublisher<uint8_t>* publisher, const uint8_t port, const unsigned long durationMillis = 10, const uint8_t  pinMode = INPUT_PULLUP) :
-            _state(publisher), _port(port), _duration(durationMillis), _pinMode(pinMode) {}
+        Button(ChangePublisher<uint8_t>* publisher, const uint8_t port, const unsigned long durationMillis = 10) :
+            _state(publisher), _port(port), _duration(durationMillis) {}
         void begin();
         void check();
     private:
         ChangePublisher<uint8_t>* _state;
         uint8_t _port;
         unsigned long _duration;
-        uint8_t _pinMode;
         int _lastState = LOW;
         unsigned long _lastSwitchTime = 0;
         uint8_t _currentState = LOW;

@@ -79,8 +79,8 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("[] Topic '1': 24\n", getPrintOutput()) << "Unexpected topic handled OK";
 
         clearPrintOutput();
-        eventServer.publish(Topic::Anomaly, static_cast<int16_t>(SensorState::Resetting));
-        EXPECT_STREQ("[] Anomaly: Resetting\n", getPrintOutput()) << "Anomaly handled OK";
+        eventServer.publish(Topic::Anomaly, static_cast<uint16_t>(SensorState::Outlier) + (1234 << 4));
+        EXPECT_STREQ("[] Anomaly: Outlier (12.34)\n", getPrintOutput()) << "Anomaly handled OK";
 
         clearPrintOutput();
         eventServer.publish(Topic::TimeOverrun, 1234);

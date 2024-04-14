@@ -17,6 +17,10 @@
 #include <ESP.h>
 #include <PubSubClient.h>
 #include <EllipseFit.h>
+#include <MagnetoSensorHmc.h>
+#include <MagnetoSensorQmc.h>
+#include <MagnetoSensorNull.h>
+#include <Wire.h>
 
 #include "Button.h"
 #include "Configuration.h"
@@ -28,9 +32,6 @@
 #include "FlowDetector.h"
 #include "LedDriver.h"
 #include "Log.h"
-#include "MagnetoSensorHmc.h"
-#include "MagnetoSensorQmc.h"
-#include "MagnetoSensorNull.h"
 #include "MagnetoSensorReader.h"
 #include "Meter.h"
 #include "MqttGateway.h"
@@ -42,7 +43,7 @@
 #include "WiFiManager.h"
 #include "QueueClient.h"
 #include "WiFiClientFactory.h"
-#include "Wire.h"
+
 
 namespace WaterMeter {
     using MagnetoSensors::MagnetoSensorQmc;
@@ -50,7 +51,7 @@ namespace WaterMeter {
     using MagnetoSensors::MagnetoSensorNull;
 
     // For being able to set the firmware 
-    constexpr const char* const BuildVersion = "0.107.0";
+    constexpr const char* const BuildVersion = "0.107.10";
 
     // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
     // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
@@ -62,7 +63,9 @@ namespace WaterMeter {
 
     constexpr int SdaOled = 32;
     constexpr int SclOled = 33;
-    constexpr int ButtonPort = 34;
+
+    // Note: port 34 requires a pull-up resistor, see e.g. https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+    constexpr int ButtonPort = 34; 
 
     // This is where you would normally use an injector framework,
     // We define the objects globally to avoid using (and fragmenting) the heap.

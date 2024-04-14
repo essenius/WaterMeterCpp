@@ -30,7 +30,7 @@ namespace WaterMeter {
         {Topic::ResultFormatted, {false, {Result, ResultValues}}},
         {Topic::IdleRate, {true, {Result, ResultIdleRate}}},
         {Topic::NonIdleRate, {true, {Result, ResultNonIdleRate}}},
-        {Topic::Volume, {false, {Result, ResultMeter}}},
+        {Topic::MeterPayload, {false, {Result, ResultMeter}}},
         {Topic::SetVolume, {true, {Result, ResultMeter}}},
         {Topic::FreeHeap, {false, {DeviceLabel, DeviceFreeHeap}}},
         {Topic::FreeStack, {false, {DeviceLabel, DeviceFreeStack}}},
@@ -40,13 +40,12 @@ namespace WaterMeter {
         {Topic::ResetSensor, {true, {DeviceLabel, DeviceResetSensor}}}
     };
 
-    // SetVolume is not retained yet as we are not pushing it back at this stage
-    static const std::set<Topic> NonRetainedTopics{ Topic::ResetSensor, Topic::SensorWasReset, Topic::SetVolume };
+    static const std::set<Topic> NonRetainedTopics{ Topic::ResetSensor, Topic::SensorWasReset };
 
     constexpr const char* const RateRange = "0:8640000";
     constexpr const char* const TypeInteger = "integer";
     constexpr const char* const TypeString = "string";
-    constexpr const char* const TypeFloat = "float";
+    /* constexpr const char* const TypeFloat = "float"; */
     constexpr const char* const LastWillMessage = "lost";
     constexpr bool Settable = true;
     constexpr const char* const Name = "$name";
@@ -104,7 +103,7 @@ namespace WaterMeter {
         _eventServer->subscribe(this, Topic::ResultFormatted);
         _eventServer->subscribe(this, Topic::SamplesFormatted); // string
         _eventServer->subscribe(this, Topic::SensorWasReset);
-        _eventServer->subscribe(this, Topic::Volume); // string
+        _eventServer->subscribe(this, Topic::MeterPayload); // string
     }
 
     void MqttGateway::begin(const char* clientName) {
@@ -165,7 +164,7 @@ namespace WaterMeter {
     bool MqttGateway::getPreviousVolume() {
         if (!_justStarted) return false;
         const auto startTime = micros();
-        while (!_volumeReceived && micros() - startTime < 1e6) {
+        while (!_meterPayloadReceived && micros() - startTime < 1e6) {
             _mqttClient->loop();
             delay(10);
         }
@@ -199,7 +198,7 @@ namespace WaterMeter {
 
     // incoming event from EventServer. This only happens if we are connected
     void MqttGateway::update(const Topic topic, const char* payload) {
-        publishUpdate(topic, payload);
+        publishToMqtt(topic, payload);
     }
 
     // ---- Protected methods ----
@@ -264,7 +263,7 @@ namespace WaterMeter {
         prepareProperty(Result, ResultRate, "Rate", TypeInteger);
         prepareProperty(Result, ResultIdleRate, "Idle Rate", TypeInteger, RateRange, Settable);
         prepareProperty(Result, ResultNonIdleRate, "Non-Idle Rate", TypeInteger, RateRange, Settable);
-        prepareProperty(Result, ResultMeter, "Meter value", TypeFloat, "0-99999.9999999", Settable);
+        prepareProperty(Result, ResultMeter, "Meter value", TypeString, Empty, Settable); // exception, settable via different topic
         prepareProperty(Result, ResultValues, "Values", TypeString);
 
         SafeCString::sprintf(payload, "%s,%s,%s,%s,%s,%s", DeviceFreeHeap, DeviceFreeStack, DeviceFreeQueueSize,
@@ -336,19 +335,19 @@ namespace WaterMeter {
     }
 
     void MqttGateway::publishToEventServer(const Topic topic, const char* payload) {
-        if (topic != Topic::SetVolume && topic != Topic::Volume) {
+        if (topic != Topic::SetVolume && topic != Topic::MeterPayload) {
             _eventServer->publish(this, topic, payload);
             return;
         }
-        _volumeReceived = true;
+        _meterPayloadReceived = true;
         // There is one set-value that requires a string, and that needs to be persistent across tasks
         // This also happens to be the only value that can be set from the getter (just once, right after reboot)
-        SafeCString::strcpy(_volume, payload);
+        SafeCString::strcpy(_meterPayload, payload);
         const auto topicToSend = topic == Topic::SetVolume ? Topic::SetVolume : Topic::AddVolume;
-        _eventServer->publish(this, topicToSend, _volume);
+        _eventServer->publish(this, topicToSend, _meterPayload);
     }
 
-    void MqttGateway::publishUpdate(const Topic topic, const char* payload) {
+    void MqttGateway::publishToMqtt(const Topic topic, const char* payload) {
         if (topic == Topic::Alert) {
             publishEntity(_clientName, State, "alert");
             return;

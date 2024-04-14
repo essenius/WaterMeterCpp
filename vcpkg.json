@@ -6,7 +6,7 @@
         },
         {
             "name": "esp32-mock",
-            "version>=": "0.1.7"
+            "version>=": "0.1.8"
         },
         {
             "name": "ellipse-fit",

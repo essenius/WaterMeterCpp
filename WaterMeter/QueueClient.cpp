@@ -65,6 +65,7 @@ namespace WaterMeter {
         // if we can convert the input to a long, do that. Otherwise, keep it a string
         char* endPointer;
         const auto longValue = strtol(payload, &endPointer, 0);
+        // if end pointer is not at the end, it's not a long value
         if (*endPointer != '\0') {
             send(topic, reinterpret_cast<intptr_t>(payload), true);
             return;
