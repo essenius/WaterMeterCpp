@@ -12,6 +12,11 @@
 #include <gtest/gtest.h>
 #include <corecrt_math_defines.h>
 
+// ensure that Windows.h doesn't define min and max, which mess up the std::min and std::max
+#define NOMINMAX
+#include <Windows.h>
+#include <psapi.h>
+
 #include <fstream>
 #include "FlowDetectorDriver.h"
 #include "PulseTestEventClient.h"
@@ -68,12 +73,12 @@ namespace WaterMeterCppTest {
 		}
 
 		// run process on test signals with a known number of pulses
-        static void flowTestWithFile(const char* fileName, const unsigned int firstPulses = 0, const unsigned int nextPulses = 0, const unsigned int anomalies = 0, const unsigned int noFits = 0, const unsigned int noiseLimit = 3) {
+        static void flowTestWithFile(std::string fileName, const unsigned int firstPulses = 0, const unsigned int nextPulses = 0, const unsigned int anomalies = 0, const unsigned int noFits = 0, const int drifts = 0, const unsigned int noiseLimit = 3, const char* outFileName = nullptr) {
 			FlowDetector flowDetector(&eventServer, &ellipseFit);
-			const PulseTestEventClient pulseClient(&eventServer);
+			PulseTestEventClient pulseClient(&eventServer, outFileName);
 			flowDetector.begin(noiseLimit);
 			SensorSample measurement{};
-			std::ifstream measurements(fileName);
+			std::ifstream measurements("testData\\" + fileName);
 			EXPECT_TRUE(measurements.is_open()) << "File open";
 			measurements.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			auto measurementCount = 0;
@@ -82,11 +87,12 @@ namespace WaterMeterCppTest {
 				measurementCount++;
 				eventServer.publish(Topic::Sample, measurement);
 			}
-
+			pulseClient.close();
 			EXPECT_EQ(firstPulses, pulseClient.pulses(false)) << "First Pulses";
 			EXPECT_EQ(nextPulses, pulseClient.pulses(true)) << "Next Pulses";
 			EXPECT_EQ(anomalies, pulseClient.anomalies()) << "Anomalies";
 			EXPECT_EQ(noFits, pulseClient.noFits()) << "NoFits";
+			EXPECT_EQ(drifts, pulseClient.drifts()) << "Drifts";
 		}
 
         static void expectAnomalyAndSkipped(const FlowDetector& flowDetector, const int16_t x, const int16_t y) {
@@ -95,12 +101,38 @@ namespace WaterMeterCppTest {
 			EXPECT_TRUE(flowDetector.wasSkipped());
 
 		}
+
+		static long long getMemoryUsage() {
+			PROCESS_MEMORY_COUNTERS pmc;
+			if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+				return pmc.WorkingSetSize;
+			}
+			return 0;
+		}
 	};
 
 	EventServer FlowDetectorTest::eventServer;
 	EllipseFit FlowDetectorTest::ellipseFit;
 
+	TEST_F(FlowDetectorTest, MemoryTest) {
+		constexpr int Tests = 30;
+		long long memory[Tests];
+		for (auto i = 0; i < Tests; i++) {
+			flowTestWithFile("60cycles.txt", 1, 59, 0);
+			memory[i] = getMemoryUsage();
+		}
+		long long averageDifference = 0;
+		int memoryDifferenceCount = 0;
+		for (auto i = 1; i < Tests; i++) {
+            const auto difference = memory[i] - memory[i - 1];
+			if (difference != 0) memoryDifferenceCount++;
+        }
+		EXPECT_TRUE(memoryDifferenceCount < Tests / 10) << "Less than 10% differences in memory";
+	}
+
 	TEST_F(FlowDetectorTest, BiQuadrantTest) {
+		std::cout << "Current Directory = ";
+		system("cd");
 		// Tests all cases where a quadrant may be skipped close to detection of a pulse or a search start
 		// First a circle for fitting, then 12 samples that check whether skipping a quadrant is dealt with right
 		// Test is similar to flowTestWithFile, but bypasses the moving average generation for simpler testing.
@@ -108,7 +140,7 @@ namespace WaterMeterCppTest {
 		const PulseTestEventClient pulseClient(&eventServer);
 		flowDetector.begin(2);
 		Coordinate measurement{};
-		std::ifstream measurements("BiQuadrant.txt");
+		std::ifstream measurements("testData\\BiQuadrant.txt");
 		EXPECT_TRUE(measurements.is_open()) << "File open";
 		measurements.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		while (measurements >> measurement.x) {
@@ -124,6 +156,10 @@ namespace WaterMeterCppTest {
 
 	TEST_F(FlowDetectorTest, VerySlowFlowTest) {
 		flowTestWithFile("verySlow.txt", 1,0, 0);
+	}
+
+	TEST_F(FlowDetectorTest, ManyOutliersTest) {
+		flowTestWithFile("manyOutliers.txt", 4, 153, 50, 2, 1, 3, "manyOutliersResult.txt");
 	}
 
 	TEST_F(FlowDetectorTest, NoFlowTest) {
@@ -147,12 +183,12 @@ namespace WaterMeterCppTest {
 
 	TEST_F(FlowDetectorTest, FastFlowThenNoisyTest) {
 		// should not trigger on the noisy data
-		flowTestWithFile("fastThenNoisy.txt", 2, 3, 0, 0, 12);
+		flowTestWithFile("fastThenNoisy.txt", 2, 3, 0, 0, 0, 12);
 	}
 
 	TEST_F(FlowDetectorTest, AnomalyTest) {
 		// should not trigger on non-typical movement
-		flowTestWithFile("anomaly.txt", 1, 3, 661);
+		flowTestWithFile("anomaly.txt", 1, 3, 50, 0, 1);
 	}
 
 	TEST_F(FlowDetectorTest, 60CyclesTest) {
@@ -168,15 +204,15 @@ namespace WaterMeterCppTest {
 	}
 
 	TEST_F(FlowDetectorTest, FlushTest) {
-		flowTestWithFile("flush.txt", 2, 37, 325, 0, 11);
+		flowTestWithFile("flush.txt", 2, 37, 299, 0, 1, 11);
 	}
 
 	TEST_F(FlowDetectorTest, WrongOutlierTest) {
-		flowTestWithFile("wrong outliers.txt", 1, 61, 10, 0, 3);
+		flowTestWithFile("wrong outliers.txt", 1, 61, 10, 0, 0, 3);
 	}
 
 	TEST_F(FlowDetectorTest, CrashTest) {
-		flowTestWithFile("crash.txt", 1, 11, 0, 0, 3);
+		flowTestWithFile("crash.txt", 1, 11, 0, 0, 0, 3);
 	}
 
 	TEST_F(FlowDetectorTest, SensorWasResetTest) {

@@ -40,6 +40,7 @@ namespace WaterMeter {
         _eventServer->subscribe(_queueClient, Topic::BatchSize);
         _eventServer->subscribe(_queueClient, Topic::Blocked);
         _eventServer->subscribe(_queueClient, Topic::Anomaly);
+        _eventServer->subscribe(_queueClient, Topic::Drifted);
         _eventServer->subscribe(_queueClient, Topic::FreeQueueSize);
         _eventServer->subscribe(_queueClient, Topic::FreeQueueSpaces);
         _eventServer->subscribe(_queueClient, Topic::NoFit);

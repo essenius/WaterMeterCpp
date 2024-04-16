@@ -52,12 +52,18 @@ namespace WaterMeter {
 		_eventServer->subscribe(this, Topic::SensorWasReset);
 	}
 
+    void FlowDetector::resetMeasurement() {
+        _firstCall = true;
+        _wasReset = true;
+        _justStarted = true;
+        _consecutiveOutlierCount = 0;
+		_confirmedGoodFit = CartesianEllipse();
+    }
+
 	void FlowDetector::update(const Topic topic, const long payload) {
 		if (topic == Topic::SensorWasReset) {
 			// If we needed to reset the sensor, also reset the measurement process when the next sample comes in
-			_firstCall = true;
-			_wasReset = true;
-			_justStarted = true;
+			resetMeasurement();
 		}
 	}
 
@@ -188,6 +194,7 @@ namespace WaterMeter {
 			if (distanceFromEllipse > _distanceThreshold * 2) {
 				if (distanceFromEllipse > 40.95) distanceFromEllipse = 40.95;
 				reportAnomaly(SensorState::Outlier, static_cast<uint16_t>(lround(distanceFromEllipse * 100)));
+				_consecutiveOutlierCount++;
 				return false;
 			}
 		}
@@ -222,8 +229,14 @@ namespace WaterMeter {
 		if (!isRelevant(averageSample)) {
 			// not leaving potential loose ends
 			_foundPulse = false;
+			// if we have too many outliers in a row, we might have drifted (e.g. the sensor was moved), so we reset the measurement
+			if (_consecutiveOutlierCount > 0 && _consecutiveOutlierCount % MaxConsecutiveOutliers == 0) {
+			    _eventServer->publish(Topic::Drifted, _consecutiveOutlierCount);
+				resetMeasurement();
+			}
 			return;
 		}
+		_consecutiveOutlierCount = 0;
 		detectPulse(averageSample);
 
 		_ellipseFit->addMeasurement(averageSample);

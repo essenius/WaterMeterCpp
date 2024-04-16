@@ -202,7 +202,7 @@ namespace WaterMeterCppTest {
         EventServer eventServer;
         TestEventClient resetSensorClient(&eventServer);
         eventServer.subscribe(&resetSensorClient, Topic::SensorWasReset);
-        MagnetoSensorSimulation sensor("manyresets.txt");
+        MagnetoSensorSimulation sensor("testData\\manyresets.txt");
         MagnetoSensor* list[] = { &sensor };
         MagnetoSensorReaderDriver sensorReader(&eventServer);
         EXPECT_TRUE(sensorReader.begin(list, 1)) << "begin" ;

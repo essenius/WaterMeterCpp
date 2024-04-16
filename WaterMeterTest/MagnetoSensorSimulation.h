@@ -16,7 +16,6 @@
 
 #include <fstream>
 #include <MagnetoSensor.h>
-#include "Wire.h"
 
 namespace WaterMeterCppTest {
     using MagnetoSensors::MagnetoSensor;
@@ -26,7 +25,7 @@ namespace WaterMeterCppTest {
     public:
         const char* _fileName;
         std::ifstream _measurements;
-        MagnetoSensorSimulation() : MagnetoSensorSimulation("rawSensorData.txt") {}
+        MagnetoSensorSimulation() : MagnetoSensorSimulation("testData\\rawSensorData.txt") {}
         explicit MagnetoSensorSimulation(const char* fileName);
 
 

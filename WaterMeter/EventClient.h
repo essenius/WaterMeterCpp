@@ -64,7 +64,8 @@ namespace WaterMeter {
         ButtonPushed,
         Begin,
         NoFit,
-        MeterPayload
+        MeterPayload,
+        Drifted
     };
 
     union EventPayload {

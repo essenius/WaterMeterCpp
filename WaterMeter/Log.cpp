@@ -45,6 +45,7 @@ namespace WaterMeter {
         _eventServer->subscribe(this, Topic::BatchSizeDesired);
         _eventServer->subscribe(this, Topic::Blocked);
         _eventServer->subscribe(this, Topic::Connection);
+        _eventServer->subscribe(this, Topic::Drifted);
         _eventServer->subscribe(this, Topic::ErrorFormatted);
         _eventServer->subscribe(this, Topic::FreeHeap);
         _eventServer->subscribe(this, Topic::FreeStack);
@@ -84,6 +85,9 @@ namespace WaterMeter {
             case Topic::ErrorFormatted:
             case Topic::MessageFormatted:
                 log("%s", payload);
+                break;
+            case Topic::Drifted:
+                log ("Drifted: %s consecutive outliers", payload);
                 break;
             case Topic::FreeHeap:
                 log("Free Heap: %s", payload);

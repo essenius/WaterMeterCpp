@@ -51,7 +51,7 @@ namespace WaterMeter {
     using MagnetoSensors::MagnetoSensorNull;
 
     // For being able to set the firmware 
-    constexpr const char* const BuildVersion = "0.107.10";
+    constexpr const char* const BuildVersion = "0.107.13";
 
     // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
     // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.

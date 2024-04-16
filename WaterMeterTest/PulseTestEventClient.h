@@ -10,6 +10,9 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 #pragma once
+#include <fstream>
+#include <sstream>
+
 #include "TestEventClient.h"
 
 
@@ -17,19 +20,31 @@ namespace WaterMeterCppTest {
 
     class PulseTestEventClient final : public TestEventClient {
     public:
-        explicit PulseTestEventClient(EventServer* eventServer);
-        void update(Topic topic, long payload) override;
-        void update(Topic topic, SensorSample payload) override;
+        explicit PulseTestEventClient(EventServer* eventServer, const char* fileName = nullptr);
+        unsigned int anomalies() const { return _excludeCount; }
+        unsigned int drifts() const { return _driftCount; }
+        unsigned int noFits() const { return _noFitCount; }
         const char* pulseHistory() const { return _buffer; }
         unsigned int pulses(const bool stage) const { return _pulseCount[stage]; }
-        unsigned int anomalies() const { return _excludeCount; }
-        unsigned int noFits() const { return _noFitCount; }
+        void update(Topic topic, long payload) override;
+        void writeAttributes();
+        void update(Topic topic, SensorSample payload) override;
+        void close();
+
     private:
         char _buffer[4096] = {};
-        unsigned int _sampleNumber = -1;
-        SensorSample _currentCoordinate = {};
-        unsigned int _pulseCount[2] = { 0 };
+        SensorSample _currentSample = {};
+        unsigned int _driftCount = 0;
         unsigned int _excludeCount = 0;
+        unsigned int _pulseCount[2] = { 0 };
         unsigned int _noFitCount = 0;
+        unsigned int _sampleNumber = -1;
+        bool _writeToFile;
+        std::ofstream _file;
+        std::stringstream _line;
+        bool _anomaly = false;
+        bool _noFit = false;
+        bool _drift = false;
+        bool _pulse = false;
     };
 }

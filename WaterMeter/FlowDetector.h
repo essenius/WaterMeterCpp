@@ -37,10 +37,11 @@ namespace WaterMeter {
 	public:
 		FlowDetector(EventServer* eventServer, EllipseFit* ellipseFit);
 		void begin(unsigned int noiseRange);
-		bool foundAnomaly() const { return _foundAnomaly; }
+        bool foundAnomaly() const { return _foundAnomaly; }
 		bool foundPulse() const { return _foundPulse; }
 		bool isSearching() const { return _searchingForPulse; }
 		Coordinate getMovingAverage() const { return _movingAverage; }
+        void resetMeasurement();
 		void update(Topic topic, long payload) override;
 		void update(Topic topic, SensorSample payload) override;
 		bool wasReset() const { return _wasReset; }
@@ -64,6 +65,7 @@ namespace WaterMeter {
 
 		static constexpr unsigned int MovingAverageSize = 4;
 		static constexpr double MovingAverageNoiseReduction = 2; // = sqrt(MovingAverageSize)
+		static constexpr unsigned int MaxConsecutiveOutliers = 50; // half a second
 		SensorSample _movingAverageArray[MovingAverageSize] = {};
 		int8_t _movingAverageIndex = 0;
 		bool _justStarted = true;
@@ -89,7 +91,8 @@ namespace WaterMeter {
 		double _tangentDistanceTravelled = 0;
 		Angle _previousAngleWithPreviousFromStart = {};
 		bool _wasReset = true;
-	};
+        unsigned int _consecutiveOutlierCount = 0;
+    };
 }
 
 #endif

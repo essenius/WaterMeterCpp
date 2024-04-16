@@ -38,7 +38,7 @@ namespace WaterMeter {
         static constexpr unsigned short Divider = 80; // 80 MHz -> 1 MHz
         static constexpr UBaseType_t SampleQueueSize = 50;
         static constexpr UBaseType_t OverrunQueueSize = 20;
-        static constexpr unsigned long MaxOffsetMicros = 100;
+        static constexpr unsigned long MaxOffsetMicros = 250;
         static constexpr bool Repeat = true;
         static constexpr bool CountUp = true;
         static constexpr bool Edge = true;

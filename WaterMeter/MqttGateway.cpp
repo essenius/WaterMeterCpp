@@ -17,6 +17,8 @@
 #include <SafeCString.h>
 #include "MqttGateway.h"
 
+#include <memory>
+
 namespace WaterMeter {
     using namespace std::placeholders;
 
@@ -42,15 +44,14 @@ namespace WaterMeter {
 
     static const std::set<Topic> NonRetainedTopics{ Topic::ResetSensor, Topic::SensorWasReset };
 
-    constexpr const char* const RateRange = "0:8640000";
-    constexpr const char* const TypeInteger = "integer";
-    constexpr const char* const TypeString = "string";
-    /* constexpr const char* const TypeFloat = "float"; */
-    constexpr const char* const LastWillMessage = "lost";
+    constexpr auto RateRange = "0:8640000";
+    constexpr auto TypeInteger = "integer";
+    constexpr auto TypeString = "string";
+    constexpr auto LastWillMessage = "lost";
     constexpr bool Settable = true;
-    constexpr const char* const Name = "$name";
+    constexpr auto Name = "$name";
 
-    constexpr const char* const BaseTopicTemplate = "homie/%s/%s";
+    constexpr auto BaseTopicTemplate = "homie/%s/%s";
 
     // thread safe alternative for strtok
     char* nextToken(char** start, const int delimiter) {
@@ -207,7 +208,9 @@ namespace WaterMeter {
         // ignore messages with an empty payload.
         if (length == 0) return;
 
-        char* copyTopic = strdup(topic);
+        auto deleter = [](char* ptr) { free(ptr); };
+        std::unique_ptr<char, decltype(deleter)> copyTopicPointer(strdup(topic), deleter);
+        char* copyTopic = copyTopicPointer.get();
         constexpr int Delimiter = '/';
         // if the topic is invalid, ignore the message
         if (nextToken(&copyTopic, Delimiter) == nullptr) return; // homie, ignore
@@ -217,7 +220,7 @@ namespace WaterMeter {
         const char* set = nextToken(&copyTopic, Delimiter);
         if (node == nullptr || property == nullptr) return;
         const auto isSetter = set != nullptr && strcmp(set, "set") == 0;
-        const auto payloadStr = new char[length + 1];
+        const auto payloadStr = std::unique_ptr<char[]>(new char[length + 1]);
         for (unsigned int i = 0; i < length; i++) {
             payloadStr[i] = static_cast<char>(payload[i]);
         }
@@ -228,13 +231,11 @@ namespace WaterMeter {
             if (isSetter == isSetProperty) {
                 const auto topicPair = topicTriplet.second;
                 if (isRightTopic(topicPair, node, property)) {
-                    publishToEventServer(entry.first, payloadStr);
+                    publishToEventServer(entry.first, payloadStr.get());
                     break;
                 }
             }
         }
-        delete[] payloadStr;
-        free(copyTopic);
     }
 
     bool MqttGateway::isRightTopic(const std::pair<const char*, const char*> topicPair, const char* expectedNode, const char* expectedProperty) {
