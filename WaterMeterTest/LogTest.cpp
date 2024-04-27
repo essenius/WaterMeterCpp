@@ -56,7 +56,7 @@ namespace WaterMeterCppTest {
         publishConnectionState(Topic::Connection, ConnectionState::MqttReady);
 
         // the pattern we expect here is [2022-02-22T01:02:03.456789] MQTT Ready\n
-        const auto regexPattern = R"(\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\]\sMQTT ready\n)";
+        const auto regexPattern = R"(\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z\]\sMQTT ready\n)";
         EXPECT_TRUE(std::regex_match(getPrintOutput(), std::regex(regexPattern))) << "Log pattern matches";
 
         // switch off time stamp generation for the rest of the tests

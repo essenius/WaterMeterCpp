@@ -36,7 +36,7 @@ namespace WaterMeter {
         static bool formatTimestamp(Timestamp timestamp, char* destination, size_t size);
 
     private:
-        static constexpr int BufferSize = 27;
+        static constexpr int BufferSize = 28;
         char _buffer[BufferSize] = { 0 };
         static SemaphoreHandle_t _timeMutex;
         static SemaphoreHandle_t _formatTimeMutex;

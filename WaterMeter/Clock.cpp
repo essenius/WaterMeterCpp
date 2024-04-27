@@ -35,14 +35,14 @@ namespace WaterMeter {
     }
 
     bool Clock::formatTimestamp(const Timestamp timestamp, char* destination, const size_t size) {
-        if (size < 27) return false;
+        if (size < BufferSize) return false;
         const auto microseconds = static_cast<long>(timestamp % MicrosecondsPerSecond);
         const auto seconds = static_cast<time_t>(timestamp / MicrosecondsPerSecond);
         xSemaphoreTake(_formatTimeMutex, portMAX_DELAY);
         (void)strftime(destination, size, "%Y-%m-%dT%H:%M:%S.", gmtime(&seconds)); // NOLINT(concurrency-mt-unsafe)
         xSemaphoreGive(_formatTimeMutex);
         char* currentPosition = destination + strlen(destination);
-        (void)snprintf(currentPosition, size - strlen(destination), "%06ld", microseconds);
+        (void)snprintf(currentPosition, size - strlen(destination), "%06ldZ", microseconds);
         return true;
     }
 

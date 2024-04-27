@@ -51,7 +51,7 @@ namespace WaterMeter {
     using MagnetoSensors::MagnetoSensorNull;
 
     // For being able to set the firmware 
-    constexpr const char* const BuildVersion = "0.107.13";
+    constexpr const char* const BuildVersion = "0.107.14";
 
     // We measure every 10 ms. That is twice the frequency of the AC in Europe, which we need to take into account since
     // there are water pumps close to the water meter, and is about the fastest that the sensor can do reliably.
@@ -179,6 +179,8 @@ namespace WaterMeter {
         sampler.begin(sensor, sizeof sensor / sizeof sensor[0], MeasureIntervalMicros);
 
         // On timer fire, read from the sensor and put sample in a queue. Use core 1, so we are not (or at least much less) influenced by Wi-Fi and printing
+        // One issue: if you run Serial.printf() from core 0, then tasks running on core 1 might get delayed. 
+        // printf() doesn't seem to have that problem, so we use that instead.
         xTaskCreatePinnedToCore(Sampler::task, "Sampler", StackDepth, &sampler, Priority1, &samplerTaskHandle, Core1);
 
         // connect to Wi-Fi, get the time and start the MQTT client. Do this on core 0 (where Wi-Fi runs as well)
@@ -194,11 +196,6 @@ namespace WaterMeter {
         device.begin(xTaskGetCurrentTaskHandle(), communicatorTaskHandle, connectorTaskHandle);
     }
 }
-
-// Start the sampler task which is the only task on core 1, so it should not get interrupted. 
-// As Wi-Fi runs on core 0, we don't want to run this time critical task there.
-// One issue: if you run Serial.printf() from core 0, then tasks running on core 1 might get delayed. 
-// printf() doesn't seem to have that problem, so we use that instead.
 
 #ifdef ESP32
 void setup() {

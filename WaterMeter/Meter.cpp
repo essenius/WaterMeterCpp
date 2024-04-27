@@ -44,7 +44,7 @@ namespace WaterMeter {
 
     const char* Meter::getMeterPayload(const char* volume) {
         const char* timestamp = _eventServer->request(Topic::Time, "");
-        SafeCString::sprintf(_jsonBuffer, R"({"timestamp":%s,"pulses":%d,"volume":%s})", timestamp, _pulses, volume);
+        SafeCString::sprintf(_jsonBuffer, R"({"timestamp":"%s","pulses":%d,"volume":%s})", timestamp, _pulses, volume);
         return _jsonBuffer;
     }
 

@@ -31,8 +31,8 @@ namespace WaterMeter {
 
     private:
         // 1 pulse per cycle, this is cycles per 1000 L
-        // This needs to be calibrated.
-        static constexpr double PulsesPerUnit = 16500;
+        // This needs to be calibrated. TODO: Make this a configuration parameter
+        static constexpr double PulsesPerUnit = 16432.3;
         static constexpr double PulseDelta = 1.0 / PulsesPerUnit;
         double _volume = 0.0;
         unsigned long _pulses = 0;

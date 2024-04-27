@@ -41,7 +41,7 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::SetVolume, "0.4567");
         EXPECT_EQ(1, volumeClient.getCallCount()) << "Volume published";
         EXPECT_STREQ("00000.4567000", volumeClient.getPayload()) << L"Volume payload returns initial value";
-        EXPECT_STREQ(R"({"timestamp":,"pulses":0,"volume":00000.4567000})", meterClient.getPayload()) << L"Volume payload returns initial value";
+        EXPECT_STREQ(R"({"timestamp":"","pulses":0,"volume":00000.4567000})", meterClient.getPayload()) << L"Volume payload returns initial value";
         EXPECT_EQ(1, pulseClient.getCallCount()) << "Pulses published";
         EXPECT_STREQ("0", pulseClient.getPayload()) << L"Pulse payload is 0";
 
@@ -52,8 +52,8 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("0", pulseClient.getPayload()) << L"Pulse payload is 0";
 
         const char* expected[] = {
-            "00123.4567606", "00123.4568212", "00123.4568818","00123.4569424", "00123.4570030",
-            "00123.4570636", "00123.4571242", "00123.4571848", "00123.4572455", "00123.4573061"
+            "00123.4567609", "00123.4568217", "00123.4568826","00123.4569434", "00123.4570043",
+            "00123.4570651", "00123.4571260", "00123.4571868", "00123.4572477", "00123.4573086"
         };
 
         for (unsigned int i = 0; i < std::size(expected); i++) {

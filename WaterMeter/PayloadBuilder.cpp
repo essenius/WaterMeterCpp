@@ -69,8 +69,9 @@ namespace WaterMeter {
     }
 
     void PayloadBuilder::writeTimestamp(const Timestamp timestampIn) {
+        writeText( "\"");
         Clock::formatTimestamp(timestampIn, _currentPosition, ResultBufferSize - strlen(_resultBuffer));
-        updatePosition();
+        writeText("\"");
     }
 
     void PayloadBuilder::writeTimestampParam(const char* label, const Timestamp timestampIn) {
@@ -86,12 +87,13 @@ namespace WaterMeter {
 
     // low level functions 
 
-    bool PayloadBuilder::isAlmostFull() const {
-        return getRemainingSize() < ResultBufferMargin;
-    }
 
     int PayloadBuilder::getRemainingSize() const {
         return ResultBufferSize - static_cast<int>(strlen(_resultBuffer)) - 1;
+    }
+
+    bool PayloadBuilder::isAlmostFull() const {
+        return getRemainingSize() < ResultBufferMargin;
     }
 
     void PayloadBuilder::updatePosition() {

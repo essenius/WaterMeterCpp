@@ -42,7 +42,7 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once result";
         EXPECT_STREQ(
-            R"({"timestamp":1970-01-01T00:00:00.000000,"last.x":0,"last.y":0,)"
+            R"({"timestamp":"1970-01-01T00:00:00.000000Z","last.x":0,"last.y":0,)"
             R"("summaryCount":{"samples":81,"pulses":3,"maxStreak":0,"skips":23},)"
             R"("exceptionCount":{"outliers":0,"overruns":0,"resets":0},)"
             R"("duration":{"total":0,"average":0,"max":12345},)"
@@ -60,7 +60,7 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once max sample";
         EXPECT_STREQ(
-            R"({"timestamp":1970-01-01T00:00:00.000000,"measurements":)"
+            R"({"timestamp":"1970-01-01T00:00:00.000000Z","measurements":)"
             R"([475,475,476,476,477,477,478,478,479,479,480,480,481,481,482,482,483,483,484,484,485,485,486,486,487,)"
             R"(487,488,488,489,489,490,490,491,491,492,492,493,493,494,494,495,495,496,496,497,497,498,498,499,499]})",
             testEventClient.getPayload()) << "Formatted max sample payload OK";
@@ -76,7 +76,7 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once 1 sample";
         EXPECT_STREQ(
-            R"({"timestamp":1970-01-01T00:00:00.000000,"measurements":[475,475]})",
+            R"({"timestamp":"1970-01-01T00:00:00.000000Z","measurements":[475,475]})",
             testEventClient.getPayload()) << "Formatted 1 sample payload OK";
 
         testEventClient.reset();
@@ -85,7 +85,7 @@ namespace WaterMeterCppTest {
         eventServer.publish(Topic::SensorData, reinterpret_cast<const char*>(&payload));
         EXPECT_EQ(1, testEventClient.getCallCount()) << "Test client called once empty";
         EXPECT_STREQ(
-            R"({"timestamp":1970-01-01T00:00:00.000000,"measurements":[]})",
+            R"({"timestamp":"1970-01-01T00:00:00.000000Z","measurements":[]})",
             testEventClient.getPayload()) << "Formatted empty sample payload OK";
 
         testEventClient.reset();

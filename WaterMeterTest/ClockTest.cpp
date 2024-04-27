@@ -37,8 +37,8 @@ namespace WaterMeterCppTest {
 
         // trigger the get function with Topic::Time
         const char* timestamp = eventServer.request(Topic::Time, "");
-        EXPECT_EQ(std::size_t{26}, strlen(timestamp)) << "Length of timestamp ok";
-        EXPECT_TRUE(std::regex_match(timestamp, std::regex(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6})"))) << "Time pattern matches";
+        EXPECT_EQ(std::size_t{27}, strlen(timestamp)) << "Length of timestamp ok";
+        EXPECT_TRUE(std::regex_match(timestamp, std::regex(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z)"))) << "Time pattern matches";
 
         timestamp = theClock.get(Topic::BatchSize, nullptr);
         EXPECT_EQ(nullptr, timestamp) << "Unexpected topic returns default";

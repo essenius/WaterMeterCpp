@@ -297,7 +297,7 @@ namespace WaterMeterCppTest {
 [] Free Memory DataQueue #1: 12544
 [] Error: Firmware version check failed with response code 400. URL:
 [] https://localhost/001122334455.version
-[] Result: {"timestamp":1970-01-01T00:00:01.000000,"last.x":0,"last.y":0,"summaryCount":{"samples":327,"pulses":0,"maxStreak":0,"skips":34},"exceptionCount":{"outliers":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"ellipse":{"cx":-1,"cy":-55.3,"rx":0,"ry":0,"phi":0}}
+[] Result: {"timestamp":"1970-01-01T00:00:01.000000Z","last.x":0,"last.y":0,"summaryCount":{"samples":327,"pulses":0,"maxStreak":0,"skips":34},"exceptionCount":{"outliers":0,"overruns":0,"resets":0},"duration":{"total":0,"average":0,"max":0},"ellipse":{"cx":-1,"cy":-55.3,"rx":0,"ry":0,"phi":0}}
 [] Free Stack #0: 1564
 )";
             EXPECT_STREQ(expected, getPrintOutput()) << "Formatted result came through";
@@ -344,14 +344,14 @@ namespace WaterMeterCppTest {
             communicator.loop();
             connector.loop();
             EXPECT_STREQ("[] Set meter volume: 98765.4321098\n", getPrintOutput()) << "Set volume worked";
-            EXPECT_STREQ("1628\n2[x]\n23000\n{\"timestamp\":,\"pulses\":0,\"volume\":98765.4321098}\n", mqttClient.getPayloads()) << "New value sent back to MQTT for SetVolume";
+            EXPECT_STREQ("1628\n2[x]\n23000\n{\"timestamp\":\"\",\"pulses\":0,\"volume\":98765.4321098}\n", mqttClient.getPayloads()) << "New value sent back to MQTT for SetVolume";
 
             mqttClient.reset();
 
             clearPrintOutput();
             // connector unsubscribes right after starting as it should occur only once, so we need to set it manually here
             connectorEventServer.subscribe(&connectorCommunicatorQueueClient, Topic::AddVolume);
-            connectorEventServer.publish(Topic::AddVolume, R"({"timestamp":,"pulses":0,"volume":00123.0000000})");
+            connectorEventServer.publish(Topic::AddVolume, R"({"timestamp":"","pulses":0,"volume":00123.0000000})");
             connectorEventServer.unsubscribe(&connectorCommunicatorQueueClient, Topic::AddVolume);
 
             EXPECT_STREQ("", mqttClient.getPayloads()) << "Nothing sent to MQTT yet (1)";
@@ -359,20 +359,20 @@ namespace WaterMeterCppTest {
             communicator.loop();
             EXPECT_STREQ("", mqttClient.getPayloads()) << "Nothing sent to MQTT yet (2)";
 
-            EXPECT_STREQ(R"([] Retrieved meter volume: {"timestamp":,"pulses":0,"volume":00123.0000000}
+            EXPECT_STREQ(R"([] Retrieved meter volume: {"timestamp":"","pulses":0,"volume":00123.0000000}
 [] Free Heap: 17000
 [] Free Stack #0: 1500
 )", getPrintOutput()) << "Retrieve worked";
             clearPrintOutput();
 
             connector.loop();
-            EXPECT_STREQ("{\"timestamp\":,\"pulses\":0,\"volume\":98888.4321098}\n17000\n1500\n", mqttClient.getPayloads()) << "New volume sent";
+            EXPECT_STREQ("{\"timestamp\":\"\",\"pulses\":0,\"volume\":98888.4321098}\n17000\n1500\n", mqttClient.getPayloads()) << "New volume sent";
 
-            communicatorEventServer.publish(Topic::MeterPayload, R"({"timestamp":,"pulses":0,"volume":00123.4560000})");
+            communicatorEventServer.publish(Topic::MeterPayload, R"({"timestamp":"","pulses":0,"volume":00123.4560000})");
             mqttClient.reset();
             communicator.loop();
             connector.loop();
-            EXPECT_STREQ(R"({"timestamp":,"pulses":0,"volume":00123.4560000}
+            EXPECT_STREQ(R"({"timestamp":"","pulses":0,"volume":00123.4560000}
 14000
 )", mqttClient.getPayloads()) << "Meter payload sent";
             disableDelay(false);
