@@ -44,12 +44,13 @@ namespace WaterMeter {
 
     const char* Meter::getMeterPayload(const char* volume) {
         const char* timestamp = _eventServer->request(Topic::Time, "");
+        // it's important that volume is the last entry, as extractVolume depends on that
         SafeCString::sprintf(_jsonBuffer, R"({"timestamp":"%s","pulses":%d,"volume":%s})", timestamp, _pulses, volume);
         return _jsonBuffer;
     }
 
     const char* Meter::getVolume() {
-        // trick to avoid rounding errors of .00049999999: take the next higher value
+        // trick to avoid rounding errors of .00049999999: take the next higher representable value
         const double volume = nextafter(_volume + _pulses * PulseDelta, 1e7);
         SafeCString::sprintf(_volumeBuffer, "%013.7f", volume);
         return _volumeBuffer;
