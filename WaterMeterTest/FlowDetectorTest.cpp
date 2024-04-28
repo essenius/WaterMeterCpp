@@ -127,7 +127,7 @@ namespace WaterMeterCppTest {
             const auto difference = memory[i] - memory[i - 1];
 			if (difference != 0) memoryDifferenceCount++;
         }
-		EXPECT_TRUE(memoryDifferenceCount < Tests / 10) << "Less than 10% differences in memory";
+		EXPECT_TRUE(memoryDifferenceCount < Tests / 10) << "Less than 10% differences in memory: " << memoryDifferenceCount;
 	}
 
 	TEST_F(FlowDetectorTest, BiQuadrantTest) {

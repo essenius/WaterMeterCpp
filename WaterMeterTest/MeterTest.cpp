@@ -40,20 +40,20 @@ namespace WaterMeterCppTest {
         meter.begin();
         eventServer.publish(Topic::SetVolume, "0.4567");
         EXPECT_EQ(1, volumeClient.getCallCount()) << "Volume published";
-        EXPECT_STREQ("00000.4567000", volumeClient.getPayload()) << L"Volume payload returns initial value";
-        EXPECT_STREQ(R"({"timestamp":"","pulses":0,"volume":00000.4567000})", meterClient.getPayload()) << L"Volume payload returns initial value";
+        EXPECT_STREQ("0.4567000", volumeClient.getPayload()) << L"Volume payload returns initial value";
+        EXPECT_STREQ(R"({"timestamp":"","pulses":0,"volume":0.4567000})", meterClient.getPayload()) << L"Volume payload returns initial value";
         EXPECT_EQ(1, pulseClient.getCallCount()) << "Pulses published";
         EXPECT_STREQ("0", pulseClient.getPayload()) << L"Pulse payload is 0";
 
-        eventServer.publish(Topic::AddVolume, R"({"timestamp":,"pulses":0,"volume":00123.0000000})");
+        eventServer.publish(Topic::AddVolume, R"({"timestamp":,"pulses":0,"volume":123.0000000})");
         EXPECT_EQ(2, volumeClient.getCallCount()) << "Volume published";
-        EXPECT_STREQ("00123.4567000", volumeClient.getPayload()) << L"Volume payload returns sum of published and kept value";
+        EXPECT_STREQ("123.4567000", volumeClient.getPayload()) << L"Volume payload returns sum of published and kept value";
         EXPECT_EQ(2, pulseClient.getCallCount()) << "Pulses published";
         EXPECT_STREQ("0", pulseClient.getPayload()) << L"Pulse payload is 0";
 
         const char* expected[] = {
-            "00123.4567609", "00123.4568217", "00123.4568826","00123.4569434", "00123.4570043",
-            "00123.4570651", "00123.4571260", "00123.4571868", "00123.4572477", "00123.4573085"
+            "123.4567609", "123.4568217", "123.4568826","123.4569434", "123.4570043",
+            "123.4570651", "123.4571260", "123.4571868", "123.4572477", "123.4573085"
         };
 
         for (unsigned int i = 0; i < std::size(expected); i++) {
