@@ -121,7 +121,6 @@ namespace WaterMeterCppTest {
 			flowTestWithFile("60cycles.txt", 1, 59, 0);
 			memory[i] = getMemoryUsage();
 		}
-		long long averageDifference = 0;
 		int memoryDifferenceCount = 0;
 		for (auto i = 1; i < Tests; i++) {
             const auto difference = memory[i] - memory[i - 1];

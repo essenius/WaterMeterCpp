@@ -209,7 +209,7 @@ namespace WaterMeter {
         if (length == 0) return;
 
         auto deleter = [](char* ptr) { free(ptr); };
-        std::unique_ptr<char, decltype(deleter)> copyTopicPointer(strdup(topic), deleter);
+        std::unique_ptr<char, decltype(deleter)> copyTopicPointer(_strdup(topic), deleter);
         char* copyTopic = copyTopicPointer.get();
         constexpr int Delimiter = '/';
         // if the topic is invalid, ignore the message

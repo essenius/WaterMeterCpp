@@ -73,8 +73,8 @@ namespace WaterMeter {
         Clock* _clock;
         char* _currentPosition = _resultBuffer;
         bool _needsDelimiter = false;
-        char _numberBuffer[NumberBufferSize] = { 0 };
-        char _resultBuffer[ResultBufferSize] = { 0 };
+        char _numberBuffer[NumberBufferSize] = {};
+        char _resultBuffer[ResultBufferSize] = {};
     };
 }
 #endif

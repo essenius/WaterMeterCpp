@@ -38,8 +38,8 @@ namespace WaterMeter {
         bool isUpdateAvailable() const;
     private:
         static constexpr int BaseUrlSize = 100;
-        static constexpr const char* ImageExtension = ".bin";
-        static constexpr const char* VersionExtension = ".version";
+        static constexpr auto ImageExtension = ".bin";
+        static constexpr auto VersionExtension = ".version";
         const WiFiClientFactory* _wifiClientFactory;
         const char* _buildVersion;
         bool _justRebooted = true;

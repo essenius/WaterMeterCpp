@@ -14,7 +14,7 @@
 #include <ESP.h>
 
 namespace WaterMeter {
-    EventServer::EventServer() : _numberBuffer{ 0 } {}
+    EventServer::EventServer() : _numberBuffer{} {}
 
     void EventServer::cannotProvide(const EventClient* client, const Topic topic) {
         if (_providers[topic] == client) {

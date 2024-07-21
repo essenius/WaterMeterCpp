@@ -51,7 +51,7 @@ namespace WaterMeter {
         IPAddress _subnetMaskIp = NoIp;
         IPAddress _dns1Ip = NoIp;
         IPAddress _dns2Ip = NoIp;
-        char _hostNameBuffer[HostnameLength] = { 0 };
+        char _hostNameBuffer[HostnameLength] = {};
         char* _hostName = _hostNameBuffer;
         char _ipAddress[IpAddressSize] = "";
         char _macAddress[MacAddressSize] = "";

@@ -206,7 +206,6 @@ namespace WaterMeterCppTest {
         MagnetoSensor* list[] = { &sensor };
         MagnetoSensorReaderDriver sensorReader(&eventServer);
         EXPECT_TRUE(sensorReader.begin(list, 1)) << "begin" ;
-        bool endOfFile = false;
         int count = 0;
         int goodCount = 0;
         int badCount = 0;

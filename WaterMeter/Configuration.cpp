@@ -17,33 +17,33 @@ namespace WaterMeter {
 
     Configuration::Configuration(Preferences* preferences) : _preferences(preferences) {}
 
-    constexpr const char* Ip = "ip";
+    constexpr auto Ip = "ip";
 
-    constexpr const char* Local = "local";
-    constexpr const char* Gateway = "gateway";
-    constexpr const char* SubnetMask = "subNetMask";
-    constexpr const char* Dns1 = "dns1";
-    constexpr const char* Dns2 = "dns2";
+    constexpr auto Local = "local";
+    constexpr auto Gateway = "gateway";
+    constexpr auto SubnetMask = "subNetMask";
+    constexpr auto Dns1 = "dns1";
+    constexpr auto Dns2 = "dns2";
 
-    constexpr const char* Mqtt = "mqtt";
-    constexpr const char* Broker = "broker";
-    constexpr const char* Port = "port";
-    constexpr const char* User = "user";
-    constexpr const char* Password = "password";
-    constexpr const char* UseTls = "useTls";
+    constexpr auto Mqtt = "mqtt";
+    constexpr auto Broker = "broker";
+    constexpr auto Port = "port";
+    constexpr auto User = "user";
+    constexpr auto Password = "password";
+    constexpr auto UseTls = "useTls";
 
-    constexpr const char* Wifi = "wifi";
-    constexpr const char* DeviceName = "deviceName";
-    constexpr const char* Ssid = "ssid";
-    constexpr const char* Bssid = "bssid";
+    constexpr auto Wifi = "wifi";
+    constexpr auto DeviceName = "deviceName";
+    constexpr auto Ssid = "ssid";
+    constexpr auto Bssid = "bssid";
 
-    constexpr const char* Tls = "tls";
-    constexpr const char* RootCaCert = "rootCaCert";
-    constexpr const char* DeviceCert = "deviceCert";
-    constexpr const char* DeviceKey = "deviceKey";
+    constexpr auto Tls = "tls";
+    constexpr auto RootCaCert = "rootCaCert";
+    constexpr auto DeviceCert = "deviceCert";
+    constexpr auto DeviceKey = "deviceKey";
 
-    constexpr const char* Firmware = "firmware";
-    constexpr const char* Url = "url";
+    constexpr auto Firmware = "firmware";
+    constexpr auto Url = "url";
 
     void Configuration::begin(const bool useSecrets) {
         // we use both an #ifdef and an if to enable testing without having to recompile

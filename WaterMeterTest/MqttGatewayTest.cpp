@@ -32,7 +32,7 @@ namespace WaterMeterCppTest {
     constexpr MqttConfig MqttConfigWithUser{"broker", 1883, "user", "password", false};
     constexpr MqttConfig MqttConfigNoUser{"broker", 1883, nullptr, "", false};
 
-    constexpr const char* const Build = "1";
+    constexpr auto Build = "1";
 
     class MqttGatewayTest : public testing::Test {
     public:

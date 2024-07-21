@@ -28,26 +28,26 @@
 namespace WaterMeter {
 #define CALLBACK_SIGNATURE std::function<void(char*, char*)>
 
-    constexpr const char* const Empty = "";
-    constexpr const char* const DeviceLabel = "device";
-    constexpr const char* const DeviceFreeHeap = "free-heap";
-    constexpr const char* const DeviceFreeStack = "free-stack";
-    constexpr const char* const DeviceFreeQueueSize = "free-queue-size";
-    constexpr const char* const DeviceFreeQueueSpaces = "free-queue-spaces";
-    constexpr const char* const DeviceBuild = "firmware-version";
-    constexpr const char* const DeviceMac = "mac-address";
-    constexpr const char* const DeviceResetSensor = "reset-sensor";
-    constexpr const char* const Measurement = "measurement";
-    constexpr const char* const MeasurementBatchSize = "batch-size";
-    constexpr const char* const MeasurementBatchSizeDesired = "batch-size-desired";
-    constexpr const char* const MeasurementValues = "values";
-    constexpr const char* const Result = "result";
-    constexpr const char* const ResultIdleRate = "idle-rate";
-    constexpr const char* const ResultNonIdleRate = "non-idle-rate";
-    constexpr const char* const ResultRate = "rate";
-    constexpr const char* const ResultMeter = "meter";
-    constexpr const char* const ResultValues = "values";
-    constexpr const char* const State = "$state";
+    constexpr auto Empty = "";
+    constexpr auto DeviceLabel = "device";
+    constexpr auto DeviceFreeHeap = "free-heap";
+    constexpr auto DeviceFreeStack = "free-stack";
+    constexpr auto DeviceFreeQueueSize = "free-queue-size";
+    constexpr auto DeviceFreeQueueSpaces = "free-queue-spaces";
+    constexpr auto DeviceBuild = "firmware-version";
+    constexpr auto DeviceMac = "mac-address";
+    constexpr auto DeviceResetSensor = "reset-sensor";
+    constexpr auto Measurement = "measurement";
+    constexpr auto MeasurementBatchSize = "batch-size";
+    constexpr auto MeasurementBatchSizeDesired = "batch-size-desired";
+    constexpr auto MeasurementValues = "values";
+    constexpr auto Result = "result";
+    constexpr auto ResultIdleRate = "idle-rate";
+    constexpr auto ResultNonIdleRate = "non-idle-rate";
+    constexpr auto ResultRate = "rate";
+    constexpr auto ResultMeter = "meter";
+    constexpr auto ResultValues = "values";
+    constexpr auto State = "$state";
 
     class MqttGateway : public EventClient {
     public:
@@ -86,12 +86,12 @@ namespace WaterMeter {
         const DataQueue* _dataQueue;
         int _announceIndex = 0;
         bool _justStarted = true;
-        char _announcementBuffer[AnnouncementBufferSize] = { 0 };
+        char _announcementBuffer[AnnouncementBufferSize] = {};
         char* _announcementPointer = _announcementBuffer;
         const char* _buildVersion;
         const char* _clientName = nullptr;
         unsigned long _reconnectTimestamp = 0UL;
-        char _topicBuffer[TopicBufferSize] = { 0 };
+        char _topicBuffer[TopicBufferSize] = {};
         char _meterPayload[PayloadBufferSize] = "";
         bool _meterPayloadReceived = false;
 

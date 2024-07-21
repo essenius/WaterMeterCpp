@@ -36,7 +36,7 @@ namespace WaterMeterCppTest {
         SensorSample _currentSample = {};
         unsigned int _driftCount = 0;
         unsigned int _excludeCount = 0;
-        unsigned int _pulseCount[2] = { 0 };
+        unsigned int _pulseCount[2] = {};
         unsigned int _noFitCount = 0;
         unsigned int _sampleNumber = -1;
         bool _writeToFile;

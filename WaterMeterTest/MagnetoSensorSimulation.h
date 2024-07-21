@@ -23,8 +23,6 @@ namespace WaterMeterCppTest {
 
     class MagnetoSensorSimulation final : public MagnetoSensor {
     public:
-        const char* _fileName;
-        std::ifstream _measurements;
         MagnetoSensorSimulation() : MagnetoSensorSimulation("testData\\rawSensorData.txt") {}
         explicit MagnetoSensorSimulation(const char* fileName);
 
@@ -61,6 +59,8 @@ namespace WaterMeterCppTest {
         void waitForPowerOff() override {}
 
     private:
+        const char* _fileName;
+        std::ifstream _measurements;
         bool _doneReading = false;
         int _index = 0;
     };
