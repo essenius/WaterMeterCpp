@@ -17,7 +17,6 @@
 
 #include "DataQueue.h"
 #include "Device.h"
-#include "Meter.h"
 #include "OledDriver.h"
 #include "QueueClient.h"
 #include "Serializer.h"

@@ -74,7 +74,7 @@ namespace WaterMeter {
     private:
         static constexpr int BufferSize = 8192;
         Preferences* _preferences;
-        char _buffer[BufferSize] = { 0 };
+        char _buffer[BufferSize] = {};
         char* _next = _buffer;
         char* storeToBuffer(const char* key, char** startLocation);
         char* getFirmwareConfig(char* start);

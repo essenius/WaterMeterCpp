@@ -37,6 +37,7 @@
 #include "MagnetoSensorSimulation.h"
 
 #include "HTTPClient.h"
+#include "Meter.h"
 #include "SamplerDriver.h"
 #include "Wire.h"
 

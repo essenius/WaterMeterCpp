@@ -39,6 +39,8 @@ namespace WaterMeterCppTest {
     using WaterMeter::WifiReconnectWaitDuration;
     using WaterMeter::MaxReconnectFailures;
 
+
+
     class ConnectorTest : public testing::Test {
     public:
         static Preferences preferences;
@@ -66,6 +68,12 @@ namespace WaterMeterCppTest {
             setRealTime(false);
             queueClient1.begin(communicatorQueueClient.getQueueHandle());
             communicatorQueueClient.begin();
+        }
+
+        // Predicate function within the test file
+        static void expectConnectWithState(const ConnectionState state, const char* message) {
+            const auto result = connector.connect();
+            EXPECT_TRUE(result == state) << message;
         }
     };
 
@@ -117,18 +125,19 @@ namespace WaterMeterCppTest {
         connector.begin(&configuration);
         wifiMock.setIsConnected(false);
         wifiMock.setNeedsReconnect(true);
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Connecting";
+        expectConnectWithState(ConnectionState::WifiConnecting, "Connecting");
+
         wifiMock.setIsConnected(true);
+        expectConnectWithState(ConnectionState::WifiConnected, "Connected");
+        expectConnectWithState(ConnectionState::Init, "Back to init");
 
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Connected";
-        EXPECT_EQ(ConnectionState::Init, connector.connect()) << "Back to init";
         wifiMock.setNeedsReconnect(false);
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Connecting";
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Connected";
-        wifiMock.setIsConnected(false);
-        EXPECT_EQ(ConnectionState::Disconnected, connector.connect()) << "Disconnected";
-        EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
+        expectConnectWithState(ConnectionState::WifiConnecting,"Connecting");
+        expectConnectWithState(ConnectionState::WifiConnected, "Connected");
 
+        wifiMock.setIsConnected(false);
+        expectConnectWithState(ConnectionState::Disconnected, "Disconnected");
+        EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
         EXPECT_FALSE(uxQueueMessagesWaiting(queueClient1.getQueueHandle())) << "queueClient1 ok";
         EXPECT_FALSE(uxQueueMessagesWaiting(communicatorQueueClient.getQueueHandle())) << "communicatorQueueClient ok";
     }
@@ -140,74 +149,79 @@ namespace WaterMeterCppTest {
         connector.begin(&configuration);
         wifiMock.setNeedsReconnect(false);
         wifiMock.setIsConnected(false);
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Wifi connecting";
+        expectConnectWithState(ConnectionState::WifiConnecting, "Wifi connecting");
+        expectConnectWithState(ConnectionState::WifiConnecting, "Wifi connecting 2");
 
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Wifi connecting 2";
         delay(3000);
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Wifi connecting 3";
+        expectConnectWithState(ConnectionState::WifiConnecting, "Wifi connecting 3");
 
         wifiMock.setIsConnected(true);
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Wifi connected";
-        EXPECT_EQ(ConnectionState::RequestTime, connector.connect()) << "Set time";
-
-        EXPECT_EQ(ConnectionState::SettingTime, connector.connect()) << "Setting time";
-        EXPECT_EQ(ConnectionState::CheckFirmware, connector.connect()) << "Checking firmware";
-        EXPECT_EQ(ConnectionState::WifiReady, connector.connect()) << "Wifi ready";
+        expectConnectWithState(ConnectionState::WifiConnected, "Wifi connected");
+        expectConnectWithState(ConnectionState::RequestTime, "Set time");
+        expectConnectWithState(ConnectionState::SettingTime, "Setting time");
+        expectConnectWithState(ConnectionState::CheckFirmware, "Checking firmware");
+        expectConnectWithState(ConnectionState::WifiReady, "Wifi ready");
 
         // happy path for mqtt
         mqttGatewayMock.setIsConnected(true);
-        EXPECT_EQ(ConnectionState::MqttConnecting, connector.connect()) << "Connecting to MQTT 1";
-        EXPECT_EQ(ConnectionState::MqttConnected, connector.connect()) << "Connected to MQTT 1";
+        expectConnectWithState(ConnectionState::MqttConnecting, "Connecting to MQTT 1");
+        expectConnectWithState(ConnectionState::MqttConnected, "Connected to MQTT 1");
+
         const auto timestampReady = micros();
         EXPECT_EQ(ConnectionState::MqttReady, connector.loop()) << "MQTT ready";
 
         // we're doing the division to filter out the few micros that the statement costs
         EXPECT_EQ(50UL, (micros() - timestampReady) / 1000UL) << "50 ms wait time when ready";
-        EXPECT_EQ(ConnectionState::MqttReady, connector.connect()) << "MQTT stays ready if nothing changes";
+        expectConnectWithState(ConnectionState::MqttReady, "MQTT stays ready if nothing changes");
 
         // disconnecting Wi-Fi should change state to Disconnected
         wifiMock.setIsConnected(false);
         EXPECT_EQ(ConnectionState::Disconnected, connector.loop()) << "Disconnects if wifi is down";
 
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Reconnecting Wifi";
+        expectConnectWithState(ConnectionState::WifiConnecting, "Reconnecting Wifi");
         delay(20000);
-        EXPECT_EQ(ConnectionState::Disconnected, connector.connect()) << "Still down, disconnected";
-        wifiMock.setIsConnected(true);
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Connecting after Wifi comes up";
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Wifi reconnected";
-        EXPECT_EQ(ConnectionState::RequestTime, connector.connect()) << "SetTime 2 (does nothing)";
-        EXPECT_EQ(ConnectionState::CheckFirmware, connector.connect()) << "Checking firmware 2 (does nothing)";
+        expectConnectWithState(ConnectionState::Disconnected, "Still down, disconnected");
 
-        EXPECT_EQ(ConnectionState::WifiReady, connector.connect()) << "Wifi Ready 2";
-        EXPECT_EQ(ConnectionState::MqttConnecting, connector.connect()) << "Connecting to MQTT 2";
-        EXPECT_EQ(ConnectionState::MqttConnected, connector.connect()) << "Connected to MQTT 2";
-        EXPECT_EQ(ConnectionState::MqttReady, connector.connect()) << "Mqtt Ready 2";
+        wifiMock.setIsConnected(true);
+        expectConnectWithState(ConnectionState::WifiConnecting, "Connecting after Wifi comes up");
+        expectConnectWithState(ConnectionState::WifiConnected, "Wifi reconnected");
+        expectConnectWithState(ConnectionState::RequestTime, "SetTime 2 (does nothing)");
+        expectConnectWithState(ConnectionState::CheckFirmware, "Checking firmware 2 (does nothing)");
+
+        expectConnectWithState(ConnectionState::WifiReady, "Wifi Ready 2");
+        expectConnectWithState(ConnectionState::MqttConnecting, "Connecting to MQTT 2");
+        expectConnectWithState(ConnectionState::MqttConnected, "Connected to MQTT 2");
+        expectConnectWithState(ConnectionState::MqttReady, "Mqtt Ready 2");
 
         // disconnecting MQTT should put the state to Wi-Fi connected
         mqttGatewayMock.setIsConnected(false);
-        EXPECT_EQ(ConnectionState::WifiReady, connector.connect()) << "back to Wifi Ready";
-        EXPECT_EQ(ConnectionState::MqttConnecting, connector.connect()) << "Connecting to MQTT 3";
-        EXPECT_EQ(ConnectionState::WaitingForMqttReconnect, connector.connect()) << "awaiting MQTT timeout";
+        expectConnectWithState(ConnectionState::WifiReady, "back to Wifi Ready");
+        expectConnectWithState(ConnectionState::MqttConnecting, "Connecting to MQTT 3");
+        expectConnectWithState(ConnectionState::WaitingForMqttReconnect, "awaiting MQTT timeout");
         delay(2000);
-        EXPECT_EQ(ConnectionState::WifiReady, connector.connect()) << "done waiting, back to Wifi Ready";
+        expectConnectWithState(ConnectionState::WifiReady, "done waiting, back to Wifi Ready");
+
         wifiMock.setIsConnected(false);
-        EXPECT_EQ(ConnectionState::Disconnected, connector.connect()) << "Wifi disconnected too";
+        expectConnectWithState(ConnectionState::Disconnected, "Wifi disconnected too");
+
         wifiMock.setIsConnected(true);
         mqttGatewayMock.setIsConnected(true);
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Connecting Wifi 4";
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Wifi Connected 4";
-        EXPECT_EQ(ConnectionState::RequestTime, connector.connect()) << "SetTime 3(does nothing)";
-        EXPECT_EQ(ConnectionState::CheckFirmware, connector.connect()) << "Checking firmware 3 (does nothing)";
+        expectConnectWithState(ConnectionState::WifiConnecting, "Connecting Wifi 4");
+        expectConnectWithState(ConnectionState::WifiConnected, "Wifi Connected 4");
+        expectConnectWithState(ConnectionState::RequestTime, "SetTime 3(does nothing)");
+        expectConnectWithState(ConnectionState::CheckFirmware, "Checking firmware 3 (does nothing)");
 
-        EXPECT_EQ(ConnectionState::WifiReady, connector.connect()) << "Wifi Ready 4";
-        EXPECT_EQ(ConnectionState::MqttConnecting, connector.connect()) << "Connecting to MQTT 4";
-        EXPECT_EQ(ConnectionState::MqttConnected, connector.connect()) << "Connected to MQTT 4";
+        expectConnectWithState(ConnectionState::WifiReady, "Wifi Ready 4");
+        expectConnectWithState(ConnectionState::MqttConnecting, "Connecting to MQTT 4");
+        expectConnectWithState(ConnectionState::MqttConnected, "Connected to MQTT 4");
+
         mqttGatewayMock.setIsConnected(false);
-        EXPECT_EQ(ConnectionState::WifiReady, connector.connect()) << "announce failed, to Wifi ready";
+        expectConnectWithState(ConnectionState::WifiReady, "announce failed, to Wifi ready");
+
         mqttGatewayMock.setIsConnected(true);
-        EXPECT_EQ(ConnectionState::MqttConnecting, connector.connect()) << "Connecting to MQTT 5";
-        EXPECT_EQ(ConnectionState::MqttConnected, connector.connect()) << "Connected to MQTT 5";
-        EXPECT_EQ(ConnectionState::MqttReady, connector.connect()) << "Final MQTT Ready";
+        expectConnectWithState(ConnectionState::MqttConnecting, "Connecting to MQTT 5");
+        expectConnectWithState(ConnectionState::MqttConnected, "Connected to MQTT 5");
+        expectConnectWithState(ConnectionState::MqttReady, "Final MQTT Ready");
 
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
     }
@@ -219,21 +233,24 @@ namespace WaterMeterCppTest {
         wifiMock.setIsConnected(true);
         wifiMock.setNeedsReconnect(false);
 
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Connecting";
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Connected";
-        EXPECT_EQ(ConnectionState::RequestTime, connector.connect()) << "Request time 1";
+        expectConnectWithState(ConnectionState::WifiConnecting, "Connecting");
+        expectConnectWithState(ConnectionState::WifiConnected, "Connected");
+        expectConnectWithState(ConnectionState::RequestTime, "Request time 1");
+
         // make sure time was not set
         timeServer.reset();
-        EXPECT_EQ(ConnectionState::SettingTime, connector.connect()) << "Waiting for time to be set 1";
+        expectConnectWithState(ConnectionState::SettingTime, "Waiting for time to be set 1");
+
         // and again, since the standard mock mechanism switches it on
         timeServer.reset();
-        EXPECT_EQ(ConnectionState::SettingTime, connector.connect()) << "Waiting for time to be set 2";
+        expectConnectWithState(ConnectionState::SettingTime, "Waiting for time to be set 2");
         delayMicroseconds(11000000);
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Back to Connected";
-        EXPECT_EQ(ConnectionState::RequestTime, connector.connect()) << "Request time 2";
+        expectConnectWithState(ConnectionState::WifiConnected, "Back to Connected");
+        expectConnectWithState(ConnectionState::RequestTime, "Request time 2");
+
         // now let timeServer succeed
         timeServer.setTime();
-        EXPECT_EQ(ConnectionState::CheckFirmware, connector.connect()) << "Time was set";
+        expectConnectWithState(ConnectionState::CheckFirmware, "Time was set");
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
     }
 
@@ -272,25 +289,26 @@ namespace WaterMeterCppTest {
         wifiMock.setNeedsReconnect(true);
         wifiMock.setIsConnected(true);
         timeServer.reset();
+        expectConnectWithState(ConnectionState::WifiConnecting, "Connecting");
+        expectConnectWithState(ConnectionState::WifiConnected, "Connected");
+        expectConnectWithState(ConnectionState::Init, "Disconnected (reconnect)");
 
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Connecting";
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Connected";
-        EXPECT_EQ(ConnectionState::Init, connector.connect()) << "Disconnected (reconnect)";
         wifiMock.setNeedsReconnect(false);
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Reconnecting";
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Reconnected";
-        EXPECT_EQ(ConnectionState::RequestTime, connector.connect()) << "Requesting time";
+        expectConnectWithState(ConnectionState::WifiConnecting, "Reconnecting");
+        expectConnectWithState(ConnectionState::WifiConnected, "Reconnected");
+        expectConnectWithState(ConnectionState::RequestTime, "Requesting time");
+
         // disconnected just after time was requested. Time still comes in
         wifiMock.setIsConnected(false);
-        EXPECT_EQ(ConnectionState::SettingTime, connector.connect()) << "Setting time";
+        expectConnectWithState(ConnectionState::SettingTime, "Setting time");
+        expectConnectWithState(ConnectionState::Disconnected, "Disconnected");
+        expectConnectWithState(ConnectionState::WifiConnecting, "Connecting");
+        expectConnectWithState(ConnectionState::WifiConnecting, "Still Connecting");
 
-        EXPECT_EQ(ConnectionState::Disconnected, connector.connect()) << "Disconnected";
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Connecting";
-        EXPECT_EQ(ConnectionState::WifiConnecting, connector.connect()) << "Still Connecting";
         wifiMock.setIsConnected(true);
-        EXPECT_EQ(ConnectionState::WifiConnected, connector.connect()) << "Connected 2";
-        EXPECT_EQ(ConnectionState::RequestTime, connector.connect()) << "Requesting time 2";
-        EXPECT_EQ(ConnectionState::CheckFirmware, connector.connect()) << "Checking firmware";
+        expectConnectWithState(ConnectionState::WifiConnected, "Connected 2");
+        expectConnectWithState(ConnectionState::RequestTime, "Requesting time 2");
+        expectConnectWithState(ConnectionState::CheckFirmware, "Checking firmware");
         EXPECT_STREQ("", getPrintOutput()) << "Print buffer empty end";
     }
 }

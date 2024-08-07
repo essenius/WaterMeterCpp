@@ -12,6 +12,8 @@
 #include "Communicator.h"
 #include "Connector.h"
 #include "DataQueuePayload.h"
+#include "Meter.h"
+
 
 namespace WaterMeter {
     Communicator::Communicator(EventServer* eventServer, OledDriver* oledDriver, Device* device,

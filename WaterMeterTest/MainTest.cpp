@@ -39,6 +39,7 @@
 #include "QueueClient.h"
 
 #include "HTTPClient.h"
+#include "Meter.h"
 #include "SamplerDriver.h"
 #include "TestEventClient.h"
 #include "WiFi.h"
