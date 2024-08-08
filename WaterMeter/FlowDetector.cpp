@@ -131,6 +131,22 @@ namespace WaterMeter {
 		return returnValue;
 	}
 
+    void FlowDetector::waitToSearch(const int quadrant, const int quadrantDifference) {
+		// Consider the risk that a quadrant gets skipped because of an anomaly
+        // start searching at the top of the ellipse. This takes care of jitter
+		auto passedTop =  (quadrantDifference == 1 && quadrant == 1) ||
+			(quadrantDifference == 2 && (quadrant == 1 || quadrant == 4));
+		if (passedTop) {
+            _searchingForPulse = true;
+        }
+	}
+
+	bool passedBottom(const int quadrant, const int quadrantDifference) {
+		// Consider the risk that a quadrant gets skipped
+		return (quadrantDifference == 1 && quadrant == 3) ||
+			(quadrantDifference == 2 && (quadrant == 3 || quadrant == 2));
+	}
+
 	void FlowDetector::findPulseByCenter(const Coordinate& point) {
 		const auto angleWithCenter = point.getAngleFrom(_confirmedGoodFit.getCenter());
 		const auto quadrant = angleWithCenter.getQuadrant();
@@ -140,16 +156,11 @@ namespace WaterMeter {
 		_angleDistanceTravelled += angleDistance;
 		if (!_searchingForPulse) {
 			_foundPulse = false;
-			// start searching at the top of the ellipse. This takes care of jitter
-			// Also consider the risk that a quadrant gets skipped because of an anomaly
-			if ((quadrantDifference == 1 && quadrant == 1) ||
-				(quadrantDifference == 2 && (quadrant == 1 || quadrant == 4))) _searchingForPulse = true;
+			waitToSearch(quadrant, quadrantDifference);
 		}
 		else {
 			// reference point is the bottom of the ellipse
-			// Again, also consider the risk that a quadrant gets skipped
-			_foundPulse = (quadrantDifference == 1 && quadrant == 3) ||
-				(quadrantDifference == 2 && (quadrant == 3 || quadrant == 2));
+			_foundPulse = passedBottom(quadrant, quadrantDifference);
 			if (_foundPulse) {
 				_eventServer->publish(Topic::Pulse, true);
 				_searchingForPulse = false;
@@ -180,7 +191,34 @@ namespace WaterMeter {
 		_previousQuadrant = quadrant;
 	}
 
-	bool FlowDetector::isRelevant(const Coordinate& point) {
+	// We have an outlier if the point is too far away from the confirmed fit.
+    bool FlowDetector::isOutlier(const Coordinate point) {
+		const auto distanceFromEllipse = _confirmedGoodFit.getDistanceFrom(point);
+		if (distanceFromEllipse <= _distanceThreshold * 2) return false;
+
+	    const auto reportedDistance = static_cast<uint16_t>(std::min(lround(distanceFromEllipse * 100), 4095l));
+		reportAnomaly(SensorState::Outlier, reportedDistance);
+		_consecutiveOutlierCount++;
+		return true;
+    }
+
+	// if we have just started, we might have impact from the AC current due to the moving average. Wait until stable.
+	// Calculates the start tangent once waited long enough.
+    bool FlowDetector::isStartingUp(const Coordinate point) {
+		if (_justStarted) {
+			_waitCount++;
+			if (_waitCount <= MovingAverageSize) {
+				_wasSkipped = true;
+				return true;
+			}
+			_startTangent = point.getAngleFrom(_referencePoint);
+			_justStarted = false;
+			_waitCount = 0;
+		}
+		return false;
+	}
+
+    bool FlowDetector::isRelevant(const Coordinate& point) {
 
 		const auto distance = point.getDistanceFrom(_referencePoint);
 		// if we are too close to the previous point, discard
@@ -188,27 +226,12 @@ namespace WaterMeter {
 			_wasSkipped = true;
 			return false;
 		}
-		// if we have a confirmed fit and the point is too far away from it, we have an anomaly. Discard.
-		if (_confirmedGoodFit.isValid()) {
-			auto distanceFromEllipse = _confirmedGoodFit.getDistanceFrom(point);
-			if (distanceFromEllipse > _distanceThreshold * 2) {
-				if (distanceFromEllipse > 40.95) distanceFromEllipse = 40.95;
-				reportAnomaly(SensorState::Outlier, static_cast<uint16_t>(lround(distanceFromEllipse * 100)));
-				_consecutiveOutlierCount++;
-				return false;
-			}
+		if (_confirmedGoodFit.isValid() && isOutlier(point)) {
+    		return false;
 		}
 
-		// if we have just started, we might have impact from the AC current due to the moving average. Wait until stable.
-		if (_justStarted) {
-			_waitCount++;
-			if (_waitCount <= MovingAverageSize) {
-				_wasSkipped = true;
-				return false;
-			}
-			_startTangent = point.getAngleFrom(_referencePoint);
-			_justStarted = false;
-			_waitCount = 0;
+		if (isStartingUp(point)) {
+			return false;
 		}
 		_referencePoint = point;
 		return true;
@@ -257,44 +280,52 @@ namespace WaterMeter {
 		return static_cast<int16_t>(round(abs(angleDistance * 180) * (fitSucceeded ? 1.0 : -1.0)));
 	}
 
+    void FlowDetector::runFirstFit(const Coordinate point) {
+        const auto fittedEllipse = executeFit();
+        const auto center = fittedEllipse.getCenter();
+        // number of points per ellipse defines whether the fit is reliable.
+        const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
+        const auto fitSucceeded = fittedEllipse.isValid();
+        if (fitSucceeded && abs(passedCycles) >= MinCycleForFit) {
+            _confirmedGoodFit = fittedEllipse;
+            _previousAngleWithCenter = point.getAngleFrom(center);
+            _previousQuadrant = _previousAngleWithCenter.getQuadrant();
+        }
+        else {
+            // we need another round
+            _eventServer->publish(Topic::NoFit, noFitParameter(_tangentDistanceTravelled, fitSucceeded));
+        }
+        _tangentDistanceTravelled = 0;
+    }
+
+    void FlowDetector::runNextFit() {
+        // If we already had a reliable fit, check whether the new data is good enough to warrant a new fit.
+        // Otherwise, we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
+        // we do this because the ellipse centers are moving a bit, and we want to minimize deviations.
+        if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MinCycleForFit) {
+            const auto fittedEllipse = executeFit();
+            if (fittedEllipse.isValid()) {
+                _confirmedGoodFit = fittedEllipse;
+            }
+            else {
+                _eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, false));
+            }
+        }
+        else {
+            // even though we didn't run a fit, we mark it as succeeded to see the difference with one that failed a fit
+            _eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, true));
+            _ellipseFit->begin();
+        }
+        _angleDistanceTravelled = 0;
+    }
+
 	void FlowDetector::updateEllipseFit(const Coordinate point) {
+		// The first time we always run a fit. Re-run if the first time(s) didn't result in a good fit
 		if (!_confirmedGoodFit.isValid()) {
-			// The first time we always run a fit. Re-run if the first time(s) didn't result in a good fit
-			const auto fittedEllipse = executeFit();
-			const auto center = fittedEllipse.getCenter();
-			// number of points per ellipse defines whether the fit is reliable.
-			const auto passedCycles = _tangentDistanceTravelled / (2 * M_PI);
-			const auto fitSucceeded = fittedEllipse.isValid();
-			if (fitSucceeded && abs(passedCycles) >= MinCycleForFit) {
-				_confirmedGoodFit = fittedEllipse;
-				_previousAngleWithCenter = point.getAngleFrom(center);
-				_previousQuadrant = _previousAngleWithCenter.getQuadrant();
-			}
-			else {
-				// we need another round
-				_eventServer->publish(Topic::NoFit, noFitParameter(_tangentDistanceTravelled, fitSucceeded));
-			}
-			_tangentDistanceTravelled = 0;
+			runFirstFit(point);
 		}
 		else {
-			// If we already had a reliable fit, check whether the new data is good enough to warrant a new fit.
-			// Otherwise, we keep the old one. 'Good enough' means we covered at least 60% of a cycle.
-			// we do this because the ellipse centers are moving a bit, and we want to minimize deviations.
-			if (fabs(_angleDistanceTravelled / (2 * M_PI)) > MinCycleForFit) {
-				const auto fittedEllipse = executeFit();
-				if (fittedEllipse.isValid()) {
-					_confirmedGoodFit = fittedEllipse;
-				}
-				else {
-					_eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, false));
-				}
-			}
-			else {
-				// even though we didn't run a fit, we mark it as succeeded to see the difference with one that failed a fit
-				_eventServer->publish(Topic::NoFit, noFitParameter(_angleDistanceTravelled, true));
-				_ellipseFit->begin();
-			}
-			_angleDistanceTravelled = 0;
+			runNextFit();
 		}
 	}
 

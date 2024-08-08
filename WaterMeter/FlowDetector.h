@@ -54,13 +54,18 @@ namespace WaterMeter {
 		Coordinate calcMovingAverage();
 		void detectPulse(Coordinate point);
 		CartesianEllipse executeFit() const;
-		void findPulseByCenter(const Coordinate& point);
+        void waitToSearch(int quadrant, int quadrantDifference);
+        void findPulseByCenter(const Coordinate& point);
 		void findPulseByPrevious(const Coordinate& point);
+        bool isOutlier(Coordinate point);
+        bool isStartingUp(Coordinate point);
 		bool isRelevant(const Coordinate& point);
 		void processMovingAverageSample(Coordinate averageSample);
 		void reportAnomaly(SensorState state, uint16_t value = 0);
         static int16_t noFitParameter(double angleDistance, bool fitSucceeded);
-		void updateEllipseFit(Coordinate point);
+        void runFirstFit(Coordinate point);
+        void runNextFit();
+        void updateEllipseFit(Coordinate point);
 		void updateMovingAverageArray(const SensorSample& sample);
 
 		static constexpr unsigned int MovingAverageSize = 4;
