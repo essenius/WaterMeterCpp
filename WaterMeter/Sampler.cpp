@@ -77,6 +77,18 @@ namespace WaterMeter {
         timerAlarmEnable(_timer);
     }
 
+    void Sampler::checkForOverrun(const unsigned long lastReadTime) {
+        // if we just started, do not calculate overrun
+        if (_notifyCounter > 1) {
+            const auto timeSincePreviousSample = lastReadTime - _previousReadTime;
+            const long overrun = timeSincePreviousSample > _samplePeriod + MaxOffsetMicros ? static_cast<long>(timeSincePreviousSample - _samplePeriod) : 0L;
+            if (overrun != _previousOverrun) {
+                xQueueSendToBack(_overrunQueue, &overrun, 0);
+                _previousOverrun = overrun;
+            }
+        }
+    }
+
     /**
      * \brief Wait for a notification from the timer, get a sensor reading and put it on a queue. Also check for time overrun.
      * This runs in a different thread, so we need queues to communicate.
@@ -88,22 +100,46 @@ namespace WaterMeter {
             const SensorSample sample = _sensorReader->read();
             if (uxQueueSpacesAvailable(_sampleQueue) == 0) {
                 _queueFullCounter++;
-                //overrun = _samplePeriod;
-                //xQueueSendToBack(_overrunQueue, &overrun, 0);
             }
             else {
                 xQueueSendToBack(_sampleQueue, &sample, 0);
-                // if we just started, do not calculate overrun
-                if (_notifyCounter > 1) {
-                    const auto timeSincePreviousSample = lastReadTime - _previousReadTime;
-                    const long overrun = timeSincePreviousSample > _samplePeriod + MaxOffsetMicros ? static_cast<long>(timeSincePreviousSample - _samplePeriod) : 0L;
-                    if (overrun != _previousOverrun) {
-                        xQueueSendToBack(_overrunQueue, &overrun, 0);
-                        _previousOverrun = overrun;
-                    }
-                }
+                checkForOverrun(lastReadTime);
             }
             _previousReadTime = lastReadTime;
+        }
+    }
+
+    void Sampler::addSample(const SensorSample& sample, const unsigned long startTime) {
+        // this triggers flowDetector, sampleAggregator and the comms task
+        //printf("@");
+        _eventServer->publish(Topic::Sample, sample);
+        _resultAggregator->addMeasurement(sample, _flowDetector);
+        _sampleAggregator->send();
+        // Duration gets picked up by resultAggregator, so must be published before sending
+        // making sure to use durations to operate on, not timestamps -- to avoid overflow issues
+        const auto durationSoFar = micros() - startTime;
+        // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
+        _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar + _additionalDuration));
+        _resultAggregator->send();
+        const auto duration = micros() - startTime;
+        _additionalDuration = duration - durationSoFar;
+    }
+
+    void Sampler::handleSample(const SensorSample sample, const unsigned long startTime) {
+        const auto state = _sensorReader->validate(sample);
+        switch (state) {
+        case SensorState::NeedsSoftReset:
+            _sensorReader->softReset();
+            break;
+        case SensorState::NeedsHardReset:
+            _sensorReader->hardReset();
+            break;
+        case SensorState::ReadError:
+        case SensorState::Saturated:
+        case SensorState::Ok:
+            addSample(sample, startTime);
+            break;
+        default: {}
         }
     }
 
@@ -122,42 +158,10 @@ namespace WaterMeter {
 
         while (xQueueReceive(_sampleQueue, &sample, _ticksPerSample) == pdTRUE) {
             _sampleCount++;
-            const auto state = _sensorReader->validate(sample);
-            switch (state) {
-            case SensorState::NeedsSoftReset:
-                _sensorReader->softReset();
-                break;
-            case SensorState::NeedsHardReset:
-                _sensorReader->hardReset();
-                break;
-            case SensorState::ReadError:
-            case SensorState::Saturated:
-            case SensorState::Ok:
-                handleSample(sample, startTime);
-                break;
-            default: {}
-            }
-            //printf(".");
+            handleSample(sample, startTime);
             _queueClient->receive();
-            //printf("$");
             _button->check();
         }
-    }
-
-    void Sampler::handleSample(const SensorSample& sample, const unsigned long startTime) {
-        // this triggers flowDetector, sampleAggregator and the comms task
-        //printf("@");
-        _eventServer->publish(Topic::Sample, sample);
-        _resultAggregator->addMeasurement(sample, _flowDetector);
-        _sampleAggregator->send();
-        // Duration gets picked up by resultAggregator, so must be published before sending
-        // making sure to use durations to operate on, not timestamps -- to avoid overflow issues
-        const auto durationSoFar = micros() - startTime;
-        // adding the missed duration to the next sample. Not entirely accurate, but better than leaving it out
-        _eventServer->publish(Topic::ProcessTime, static_cast<long>(durationSoFar + _additionalDuration));
-        _resultAggregator->send();
-        const auto duration = micros() - startTime;
-        _additionalDuration = duration - durationSoFar;
     }
 
     [[ noreturn ]] void Sampler::task(void* parameter) {

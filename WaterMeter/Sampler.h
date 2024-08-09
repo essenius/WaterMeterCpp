@@ -30,6 +30,7 @@ namespace WaterMeter {
             SampleAggregator* sampleAggregator, ResultAggregator* resultAggregator, QueueClient* queueClient);
         bool begin(MagnetoSensor* sensor[], size_t listSize = 3, unsigned long samplePeriod = 10000UL);
         void beginLoop(TaskHandle_t taskHandle);
+        void checkForOverrun(unsigned long lastReadTime);
         void loop();
         static void task(void* parameter);
 
@@ -67,10 +68,9 @@ namespace WaterMeter {
         unsigned long _overruns = 0;
 
         static void ARDUINO_ISR_ATTR onTimer();
-        void handleSample(const SensorSample& sample, unsigned long startTime);
-
+        void addSample(const SensorSample& sample, unsigned long startTime);
+        void handleSample(SensorSample sample, unsigned long startTime);
         void sensorLoop();
-
     };
 }
 #endif
