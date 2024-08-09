@@ -229,11 +229,12 @@ namespace WaterMeter {
         for (const auto& entry : TopicMap) {
             const auto topicTriplet = entry.second;
             const auto isSetProperty = topicTriplet.first;
-            if (isSetter != isSetProperty) continue;
-            const auto topicPair = topicTriplet.second;
-            if (isRightTopic(topicPair, node, property)) {
-                publishToEventServer(entry.first, payloadStr.get());
-                break;
+            if (isSetter == isSetProperty) {
+                const auto topicPair = topicTriplet.second;
+                if (isRightTopic(topicPair, node, property)) {
+                    publishToEventServer(entry.first, payloadStr.get());
+                    break;
+                }
             }
         }
     }
