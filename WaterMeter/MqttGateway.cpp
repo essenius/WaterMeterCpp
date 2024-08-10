@@ -204,6 +204,19 @@ namespace WaterMeter {
 
     // ---- Protected methods ----
 
+    bool MqttGateway::tryParseTopic(char* copyTopic, const char*& node, const char*& property, bool& isSetter) {
+        constexpr int Delimiter = '/';
+        // if the topic is invalid, ignore the message
+        if (nextToken(&copyTopic, Delimiter) == nullptr) return false; // homie, ignore
+        if (nextToken(&copyTopic, Delimiter) == nullptr) return false; // device ID, ignore
+        node = nextToken(&copyTopic, Delimiter);
+        property = nextToken(&copyTopic, Delimiter);
+        const auto set = nextToken(&copyTopic, Delimiter);
+        isSetter = set != nullptr && strcmp(set, "set") == 0;
+        if (node == nullptr || property == nullptr) return false;
+        return true;
+    }
+
     void MqttGateway::callback(const char* topic, const byte* payload, const unsigned length) {
         // ignore messages with an empty payload.
         if (length == 0) return;
@@ -212,20 +225,17 @@ namespace WaterMeter {
         // ReSharper disable once CppDeprecatedEntity -- _strdup doesn't exist in Arduino
         const std::unique_ptr<char, decltype(deleter)> copyTopicPointer(strdup(topic), deleter);
         char* copyTopic = copyTopicPointer.get();
-        constexpr int Delimiter = '/';
-        // if the topic is invalid, ignore the message
-        if (nextToken(&copyTopic, Delimiter) == nullptr) return; // homie, ignore
-        if (nextToken(&copyTopic, Delimiter) == nullptr) return; // device ID, ignore
-        const char* node = nextToken(&copyTopic, Delimiter);
-        const char* property = nextToken(&copyTopic, Delimiter);
-        const char* set = nextToken(&copyTopic, Delimiter);
-        if (node == nullptr || property == nullptr) return;
-        const auto isSetter = set != nullptr && strcmp(set, "set") == 0;
+        const char* node;
+        const char* property;
+        bool isSetter;
+        if (!tryParseTopic(copyTopic, node, property, isSetter)) return;
+
         const auto payloadStr = std::unique_ptr<char[]>(new char[length + 1]);
         for (unsigned int i = 0; i < length; i++) {
             payloadStr[i] = static_cast<char>(payload[i]);
         }
         payloadStr[length] = 0;
+
         for (const auto& entry : TopicMap) {
             const auto topicTriplet = entry.second;
             const auto isSetProperty = topicTriplet.first;

@@ -74,6 +74,7 @@ namespace WaterMeter {
         virtual bool publishNextAnnouncement();
         using EventClient::update;
         void update(Topic topic, const char* payload) override;
+        static bool tryParseTopic(char* copyTopic, const char*& node, const char*& property, bool& isSetter);
 
     protected:
         static constexpr int TopicBufferSize = 255;
