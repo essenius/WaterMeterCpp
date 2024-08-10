@@ -51,6 +51,13 @@ namespace WaterMeterCppTest {
     EventServer WiFiTest::eventServer;
     TestEventClient WiFiTest::errorListener(&eventServer);
 
+    void expectWiFiIp(IPAddress local, IPAddress gateway, IPAddress dns1, IPAddress dns2) {
+        EXPECT_EQ(local, WiFi.localIP()) << "Local IP OK";
+        EXPECT_EQ(gateway, WiFi.gatewayIP()) << "Gateway IP OK";
+        EXPECT_EQ(dns1, WiFi.dnsIP()) << "Primary DNS OK";
+        EXPECT_EQ(dns2, WiFi.dnsIP(1)) << "Secondary DNS OK";
+    }
+
     TEST_F(WiFiTest, automaticLocalIpTest) {
         const IPAddress local(10, 0, 0, 2);
         const IPAddress gateway(10, 0, 0, 1);
@@ -71,11 +78,11 @@ namespace WaterMeterCppTest {
 
         wifi.announceReady();
         EXPECT_EQ(1, client1.getCallCount()) << "'Summary ready' was published";
-        EXPECT_EQ(local, WiFi.localIP()) << "Local IP OK";
-        EXPECT_EQ(gateway, WiFi.gatewayIP()) << "Gateway IP OK";
+
+        expectWiFiIp(local, gateway, dns1, dns2);
+
         EXPECT_EQ(IPAddress(255, 255, 0, 0), WiFi.subnetMask()) << "Subnet mask IP OK";
-        EXPECT_EQ(dns1, WiFi.dnsIP()) << "Primary DNS OK";
-        EXPECT_EQ(dns2, WiFi.dnsIP(1)) << "Secondary DNS OK";
+
         EXPECT_STREQ(
             R"({"ssid":"ssid","hostname":"hostname","mac-address":"00:11:22:33:44:55",)"
             R"("rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"10.0.0.2",)"
@@ -130,11 +137,8 @@ namespace WaterMeterCppTest {
         wifi.begin();
         EXPECT_FALSE(wifi.needsReInit()) << "Does not need reInit";
         wifi.announceReady();
-        EXPECT_STREQ(local.toString().c_str(), WiFi.localIP().toString().c_str()) << "Local IP OK";
-        EXPECT_STREQ(gateway.toString().c_str(), WiFi.gatewayIP().toString().c_str()) << "Gateway IP OK";
+        expectWiFiIp(local, gateway, gateway, gateway);
         EXPECT_EQ(IPAddress(255, 255, 255, 0), WiFi.subnetMask()) << "Subnet mask IP OK";
-        EXPECT_EQ(gateway, WiFi.dnsIP()) << "Primary DNS OK";
-        EXPECT_EQ(gateway, WiFi.dnsIP(1)) << "Secondary DNS OK";
         EXPECT_STREQ(
             R"({"ssid":"ssid","hostname":"hostname","mac-address":"00:11:22:33:44:55",)"
             R"("rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"192.168.1.2",)"
@@ -159,10 +163,7 @@ namespace WaterMeterCppTest {
         wifi.begin();
         EXPECT_FALSE(wifi.needsReInit()) << "Does not need reInit";
         wifi.announceReady();
-        EXPECT_EQ(local, WiFi.localIP()) << "Local IP OK";
-        EXPECT_EQ(gateway, WiFi.gatewayIP()) << "Gateway IP OK";
-        EXPECT_EQ(dns, WiFi.dnsIP()) << "Primary DNS OK";
-        EXPECT_EQ(dns, WiFi.dnsIP(1)) << "Secondary DNS OK";
+        expectWiFiIp(local, gateway, dns, dns);
         EXPECT_STREQ(
             R"({"ssid":"ssid","hostname":"hostname","mac-address":"00:11:22:33:44:55",)"
             R"("rssi-dbm":1,"channel":13,"network-id":"192.168.1.0","ip-address":"192.168.1.2",)"
