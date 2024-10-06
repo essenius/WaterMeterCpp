@@ -17,7 +17,7 @@
 
 namespace WaterMeter {
 
-    enum class ConnectionState {
+    enum class ConnectionState: uint8_t {
         Init = 0,
         Disconnected,
         WifiConnecting,

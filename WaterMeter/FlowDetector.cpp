@@ -131,17 +131,18 @@ namespace WaterMeter {
 		return returnValue;
 	}
 
-    void FlowDetector::waitToSearch(const int quadrant, const int quadrantDifference) {
+    void FlowDetector::waitToSearch(const unsigned int quadrant, const unsigned int quadrantDifference) {
 		// Consider the risk that a quadrant gets skipped because of an anomaly
         // start searching at the top of the ellipse. This takes care of jitter
-		auto passedTop =  (quadrantDifference == 1 && quadrant == 1) ||
+        const auto passedTop =  
+			(quadrantDifference == 1 && quadrant == 1) ||
 			(quadrantDifference == 2 && (quadrant == 1 || quadrant == 4));
 		if (passedTop) {
             _searchingForPulse = true;
         }
 	}
 
-	bool passedBottom(const int quadrant, const int quadrantDifference) {
+	bool passedBottom(const unsigned int quadrant, const unsigned int quadrantDifference) {
 		// Consider the risk that a quadrant gets skipped
 		return (quadrantDifference == 1 && quadrant == 3) ||
 			(quadrantDifference == 2 && (quadrant == 3 || quadrant == 2));

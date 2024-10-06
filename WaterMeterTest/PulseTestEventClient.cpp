@@ -22,7 +22,7 @@ namespace WaterMeterCppTest {
             _file.open(fileName);
             
             system("cd");
-            std::cout << "Writing to " << fileName << std::endl;
+            std::cout << "Writing to " << fileName << "\n";
             _file << "SampleNo,X,Y,Pulse,Anomaly,NoFit,Drift\n";
         }
         eventServer->subscribe(this, Topic::Anomaly);
