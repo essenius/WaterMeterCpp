@@ -51,8 +51,8 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(0u, configuration.ip.localIp) << "IP 0";
         EXPECT_EQ(0u, configuration.ip.secondaryDns) << "DNS2 0";
         EXPECT_STREQ("abc", configuration.tls.rootCaCertificate) << "rootCA ok";
-        EXPECT_STREQ("defg", configuration.tls.deviceCertificate) << "device cert ok";
-        EXPECT_STREQ("hijkl", configuration.tls.devicePrivateKey) << "device key ok";
+        EXPECT_STREQ(R"(defg)", configuration.tls.deviceCertificate) << "device cert ok";
+        EXPECT_STREQ(R"(hijkl)", configuration.tls.devicePrivateKey) << "device key ok";
         EXPECT_EQ(nullptr, configuration.wifi.deviceName) << "deviceName null";
         EXPECT_STREQ("http://localhost/firmware", configuration.firmware.baseUrl) << "firmware url ok";
 		preferences.reset();

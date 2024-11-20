@@ -17,7 +17,7 @@
 #include "SensorSample.h"
 
 namespace WaterMeter {
-    enum class Topic : int16_t {
+    enum class Topic : int8_t {
         None = 0,
         BatchSize,
         BatchSizeDesired,

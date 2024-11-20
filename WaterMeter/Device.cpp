@@ -35,7 +35,8 @@ namespace WaterMeter {
     }
 
     long Device::freeHeap() {
-        return ESP.getFreeHeap();
+        // this works as the ESP32's heap is small enough to fit in a long
+        return ESP.getFreeHeap();  // NOLINT(bugprone-narrowing-conversions)
     }
 
     void Device::reportHealth() {

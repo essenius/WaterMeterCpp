@@ -22,7 +22,7 @@
 using EllipseMath::Coordinate;
 
 namespace WaterMeter {
-    enum class SensorState : int16_t {
+    enum class SensorState : int8_t {
         None = 0,
         Ok,
         PowerError,

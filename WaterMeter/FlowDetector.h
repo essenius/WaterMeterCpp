@@ -54,7 +54,7 @@ namespace WaterMeter {
 		Coordinate calcMovingAverage();
 		void detectPulse(Coordinate point);
 		CartesianEllipse executeFit() const;
-        void waitToSearch(int quadrant, int quadrantDifference);
+        void waitToSearch(unsigned int quadrant, unsigned int quadrantDifference);
         void findPulseByCenter(const Coordinate& point);
 		void findPulseByPrevious(const Coordinate& point);
         bool isOutlier(Coordinate point);
