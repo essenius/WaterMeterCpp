@@ -6,11 +6,11 @@
         },
         {
             "name": "esp32-mock",
-            "version>=": "0.1.8"
+            "version>=": "0.1.11"
         },
         {
             "name": "ellipse-fit",
-            "version>=": "0.2.2"
+            "version>=": "0.2.6"
         },
         {
             "name": "magneto-sensor",

@@ -30,6 +30,7 @@ namespace WaterMeterCppTest {
         EXPECT_NE(nullptr, configuration.tls.rootCaCertificate) << "Root CA certificate filled";
         EXPECT_NE(nullptr, configuration.wifi.ssid) << "SSID filled";
         EXPECT_NE(nullptr, configuration.firmware.baseUrl) << "Firmware base URL filled";
+        preferences.reset();
     }
 
     TEST(ConfigurationTest, mqttAndTlsTest) {
@@ -54,6 +55,7 @@ namespace WaterMeterCppTest {
         EXPECT_STREQ("hijkl", configuration.tls.devicePrivateKey) << "device key ok";
         EXPECT_EQ(nullptr, configuration.wifi.deviceName) << "deviceName null";
         EXPECT_STREQ("http://localhost/firmware", configuration.firmware.baseUrl) << "firmware url ok";
+		preferences.reset();
     }
 
     TEST(ConfigurationTest, putNullTest) {
@@ -70,6 +72,7 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(nullptr, configuration.tls.rootCaCertificate) << "Root CA certificate filled";
         EXPECT_EQ(nullptr, configuration.wifi.ssid) << "SSID filled";
         EXPECT_EQ(nullptr, configuration.firmware.baseUrl) << "Firmware base URL filled";
+        preferences.reset();
     }
 
     TEST(ConfigurationTest, WifiAndIpTest) {
@@ -97,5 +100,6 @@ namespace WaterMeterCppTest {
         EXPECT_EQ(nullptr, configuration.tls.rootCaCertificate) << "rootCA null";
         EXPECT_EQ(nullptr, configuration.mqtt.broker) << "broker null";
         EXPECT_EQ(1883u, configuration.mqtt.port) << "port 1883";
+        preferences.reset();
     }
 }

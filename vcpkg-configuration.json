@@ -1,9 +1,9 @@
 {
-  "default-registry": {
-    "kind": "git",
-    "baseline": "638b1588be3a265a9c7ad5b212cef72a1cad336a",
-    "repository": "https://github.com/microsoft/vcpkg"
-  },
+    "default-registry": {
+        "kind": "git",
+        "baseline": "db4924694eabc161a7fb8eb43f083d0ca55396e2",
+        "repository": "https://github.com/microsoft/vcpkg"
+    },
     "registries": [
         {
             "kind": "artifact",
@@ -12,7 +12,7 @@
         },
         {
             "kind": "git",
-            "baseline": "b58d2a2bc749bac1eabe57e1852e1f69f67910e1",
+            "baseline": "8a17e63043f1f8c072f49653f3b3c92ef54185f6",
             "repository": "https://github.com/essenius/vcpkg",
             "packages": [ "ellipse-fit", "esp32-mock", "magneto-sensor", "rix-matrix", "safe-cstring" ]
         }
